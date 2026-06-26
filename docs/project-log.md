@@ -5,7 +5,7 @@
 - Confirmed the project as a viable MVP and clickable product prototype.
 - Selected the recommended repository name: `nutanix-developer-cloud-studio`.
 - Created the initial repo documentation structure.
-- Created the external Obsidian vault mirror at `C:\Users\john\OneDrive\09 Profile\Documents\OBSIDIAN VAULT GITS\Nutanix Developer Cloud Studio`.
+- Created an optional external Obsidian vault mirror for local project notes.
 - Added an Obsidian sync script.
 - Configured a tracked Git post-commit hook to refresh the Obsidian vault after local commits.
 - Added build plan and architecture notes as living project documentation.
@@ -32,10 +32,11 @@
 - Added hosting notes for static prototype sharing and future on-premises deployment.
 - Performed public-readiness checks for committed environment files, likely secrets, screenshots, and branding caveats.
 - Added README disclaimer that the project is currently an independent prototype with simulated Nutanix integrations and no endorsement unless explicitly stated.
+- Removed personal local filesystem paths from public documentation and made Obsidian sync configurable through `NDC_STUDIO_OBSIDIAN_VAULT`.
 
 ## Documentation Rule
 
-When the product changes, update the relevant Markdown files in `docs/` during the same work session. The Obsidian vault is a mirror of those notes.
+When the product changes, update the relevant Markdown files in `docs/` during the same work session. An optional local Obsidian vault can mirror those notes.
 
 Recommended updates:
 

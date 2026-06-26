@@ -56,17 +56,16 @@ npm run test
 
 ## Documentation
 
-Project documentation lives in `docs/` and can be mirrored into the external Obsidian vault:
+Project documentation lives in `docs/`.
 
-`C:\Users\john\OneDrive\09 Profile\Documents\OBSIDIAN VAULT GITS\Nutanix Developer Cloud Studio`
-
-Run:
+To mirror the Markdown notes into a personal Obsidian vault, set `NDC_STUDIO_OBSIDIAN_VAULT` to your local vault path and run:
 
 ```powershell
+$env:NDC_STUDIO_OBSIDIAN_VAULT="C:\path\to\your\Obsidian Vault"
 .\scripts\sync-obsidian.ps1
 ```
 
-This repo also uses a tracked Git hook in `.githooks/post-commit` so the Obsidian vault is refreshed after each local commit.
+This repo also includes a tracked Git hook in `.githooks/post-commit`. When `NDC_STUDIO_OBSIDIAN_VAULT` is set locally, the hook refreshes the vault after each local commit.
 
 ## Development Documentation Rule
 

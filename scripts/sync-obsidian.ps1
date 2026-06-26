@@ -2,10 +2,15 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $docsSource = Join-Path $repoRoot "docs"
-$vaultRoot = "C:\Users\john\OneDrive\09 Profile\Documents\OBSIDIAN VAULT GITS\Nutanix Developer Cloud Studio"
+$vaultRoot = $env:NDC_STUDIO_OBSIDIAN_VAULT
 
 if (-not (Test-Path -Path $docsSource)) {
     throw "Docs source not found: $docsSource"
+}
+
+if ([string]::IsNullOrWhiteSpace($vaultRoot)) {
+    Write-Host "Skipping Obsidian sync. Set NDC_STUDIO_OBSIDIAN_VAULT to your local vault path to enable it."
+    exit 0
 }
 
 New-Item -ItemType Directory -Force -Path $vaultRoot | Out-Null
