@@ -17,8 +17,19 @@
 - Started local dev server at `http://localhost:4180`.
 - Verified desktop render, create-environment flow, and mobile layout.
 - Replaced the app shell logo and browser favicon with the Veridian teal mark.
-- Confirmed `C:\Users\john\OneDrive\09 Profile\Documents\GitHub\nutanix-developer-cloud-studio` as the local source-of-truth checkout.
-- Marked the older duplicate project folder as archived/do-not-use. Renaming was blocked by the active Codex workspace file handle, so the GitHub checkout remains the documented source of truth.
+- Extracted prototype domain data into `src/data/cloudStudioData.ts`.
+- Added local browser persistence for requested environments.
+- Added timed mock provisioning transitions with an approval pause for AI endpoint requests.
+- Added golden-path template detail pages with outcomes and readiness notes.
+- Added admin template governance editing states for owner and tier.
+- Added integration readiness notes for NCI, NKP, NDB, NUS, NCM, and NAI.
+- Verified production build with `npm.cmd run build`.
+- Moved the current implementation slice into the renamed GitHub checkout.
+- Added a mock provisioning service for cost estimates, persistence, request upserts, status updates, and job transitions.
+- Added Vitest unit coverage for provisioning service behavior.
+- Persisted admin template governance edits in browser local storage.
+- Added stakeholder demo script documentation.
+- Added hosting notes for static prototype sharing and future on-premises deployment.
 
 ## Documentation Rule
 

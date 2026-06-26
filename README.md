@@ -18,10 +18,6 @@ Nutanix Developer Cloud Studio shows how developers could request, launch, and g
 
 ## Run The Prototype
 
-Use this local checkout as the source of truth:
-
-`C:\Users\john\OneDrive\09 Profile\Documents\GitHub\nutanix-developer-cloud-studio`
-
 Install dependencies:
 
 ```powershell
@@ -42,6 +38,12 @@ Build check:
 
 ```powershell
 npm run build
+```
+
+Run unit tests:
+
+```powershell
+npm run test
 ```
 
 ## Documentation
@@ -67,6 +69,8 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/architecture.md` for product and technical structure
 - `docs/roadmap.md` for phase planning
 - `docs/project-brief.md` for positioning and scope
+- `docs/demo-script.md` for stakeholder walkthroughs
+- `docs/hosting.md` for prototype and on-premises hosting direction
 
 ## Repository Standards
 

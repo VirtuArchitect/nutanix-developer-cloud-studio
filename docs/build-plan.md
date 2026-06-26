@@ -19,12 +19,35 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Next Implementation Slice
 
-- Extract mock data into dedicated domain files
-- Add persisted local state for requested environments
-- Add a richer job simulation with timed status transitions
-- Add template detail pages
-- Add admin template editing states
-- Add integration readiness notes for Prism Central, NKP, NDB, NUS, NCM, and NAI
+- Extract mock data into dedicated domain files - done
+- Add persisted local state for requested environments - done
+- Add a richer job simulation with timed status transitions - done
+- Add template detail pages - done
+- Add admin template editing states - done
+- Add integration readiness notes for Prism Central, NKP, NDB, NUS, NCM, and NAI - done
+
+## Current Implementation Slice
+
+- Mock product data now lives in `src/data/cloudStudioData.ts`
+- Mock provisioning behavior now lives in `src/services/provisioningService.ts`
+- Requested environments persist in browser local storage
+- Admin template governance edits persist in browser local storage
+- The environment status screen advances through timed mock job states
+- AI endpoint requests pause at an approval state
+- Catalog templates have a details view with outcomes and integration readiness
+- Admins can edit prototype template owner and tier state
+- Admin integration readiness notes describe the first real API questions for NCI, NKP, NDB, NUS, NCM, and NAI
+- Unit tests cover cost estimates, persistence, environment upsert/status behavior, and job transitions
+- `docs/demo-script.md` provides the stakeholder walkthrough
+- `docs/hosting.md` captures prototype and on-premises hosting direction
+
+## Next Recommended Slice
+
+- Add an end-to-end smoke test for catalog to create to status
+- Add a backend-shaped mock API adapter interface for future Nutanix integrations
+- Add CI checks for build and unit tests
+- Add GitHub Pages or another static hosting workflow for prototype sharing
+- Add a lightweight approval queue interaction for AI endpoint and regulated data requests
 
 ## Suggested Tech Stack
 

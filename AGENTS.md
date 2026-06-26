@@ -19,17 +19,17 @@ instructions for all code changes in this repo.
 Replace these placeholders with the exact commands for this repository:
 
 ```text
-Install:
-Lint:
-Format check:
-Type check:
-Unit tests:
-Integration tests:
-End-to-end tests:
-Build:
-Run app:
-Smoke test:
-Security scan:
+Install: npm.cmd install
+Lint: not configured
+Format check: not configured
+Type check: npm.cmd run build
+Unit tests: npm.cmd run test
+Integration tests: not configured
+End-to-end tests: not configured
+Build: npm.cmd run build
+Run app: npm.cmd run dev -- --host localhost --port 4180
+Smoke test: npm.cmd run dev -- --host localhost --port 4180, open http://localhost:4180, create an environment, and confirm the status timeline advances
+Security scan: not configured
 ```
 
 ## Project Context
@@ -108,4 +108,3 @@ Include:
 - Smoke test performed.
 - Security notes if applicable.
 - Untested items or residual risk.
-

@@ -1,148 +1,45 @@
 import {
   Activity,
-  Boxes,
   CheckCircle2,
   CircleDollarSign,
   Cloud,
   Code2,
-  Database,
   Gauge,
-  HardDrive,
   Layers3,
   LockKeyhole,
   Network,
+  Pencil,
   Play,
-  Server,
   ShieldCheck,
-  Sparkles,
   TerminalSquare,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ElementType, type ReactNode } from "react";
 import cloudVisual from "./assets/developer-cloud-visual.png";
 import veridianMark from "./assets/veridian-mark-teal.svg";
-
-type View = "dashboard" | "catalog" | "create" | "environment" | "admin";
-type Target = "VM" | "Kubernetes" | "Database" | "Storage" | "AI Endpoint";
-
-type Template = {
-  id: string;
-  name: string;
-  summary: string;
-  owner: string;
-  tier: "Standard" | "Regulated" | "Accelerated";
-  targets: Target[];
-  runtime: string;
-  monthlyCost: number;
-  compliance: string[];
-};
-
-type Environment = {
-  name: string;
-  template: string;
-  owner: string;
-  region: string;
-  status: "Ready" | "Provisioning" | "Needs approval";
-  cost: number;
-};
-
-const templates: Template[] = [
-  {
-    id: "spring-postgres",
-    name: "Spring API with NDB Postgres",
-    summary: "Kubernetes service, managed Postgres, backup policy, and developer observability.",
-    owner: "App Platform",
-    tier: "Standard",
-    targets: ["Kubernetes", "Database", "Storage"],
-    runtime: "NKP + NDB + NUS",
-    monthlyCost: 1840,
-    compliance: ["SRE owned", "Backups enabled", "Cost guardrail"],
-  },
-  {
-    id: "vm-app",
-    name: "Linux VM App Sandbox",
-    summary: "Self-service VM with image hardening, Prism Central inventory, and lifecycle expiry.",
-    owner: "Cloud Infrastructure",
-    tier: "Standard",
-    targets: ["VM", "Storage"],
-    runtime: "NCI + NCM",
-    monthlyCost: 920,
-    compliance: ["Hardened image", "30 day expiry", "Patch baseline"],
-  },
-  {
-    id: "ai-endpoint",
-    name: "AI Endpoint Lab",
-    summary: "GPU-backed model endpoint, object storage mount, and prompt test workspace.",
-    owner: "AI Platform",
-    tier: "Accelerated",
-    targets: ["AI Endpoint", "Storage", "Kubernetes"],
-    runtime: "NAI + NKP + NUS",
-    monthlyCost: 4200,
-    compliance: ["PII scan", "GPU quota", "Approval required"],
-  },
-  {
-    id: "regulated-db",
-    name: "Regulated Data Service",
-    summary: "Database environment with encryption, audit export, retention, and approval routing.",
-    owner: "Data Platform",
-    tier: "Regulated",
-    targets: ["Database", "Storage"],
-    runtime: "NDB + NUS + NCM",
-    monthlyCost: 3100,
-    compliance: ["Encryption", "Audit export", "Change approval"],
-  },
-];
-
-const initialEnvironments: Environment[] = [
-  {
-    name: "payments-dev",
-    template: "Spring API with NDB Postgres",
-    owner: "mira.chen",
-    region: "Berlin Lab",
-    status: "Ready",
-    cost: 1840,
-  },
-  {
-    name: "ml-reco-lab",
-    template: "AI Endpoint Lab",
-    owner: "samir.patel",
-    region: "London Edge",
-    status: "Needs approval",
-    cost: 4200,
-  },
-  {
-    name: "billing-sandbox",
-    template: "Linux VM App Sandbox",
-    owner: "jordan.lee",
-    region: "Berlin Lab",
-    status: "Provisioning",
-    cost: 920,
-  },
-];
-
-const integrations = [
-  ["NCI", "Infrastructure", "Healthy", 99],
-  ["NKP", "Kubernetes", "Healthy", 98],
-  ["NDB", "Databases", "Healthy", 96],
-  ["NUS", "Storage", "Healthy", 97],
-  ["NCM", "Governance", "Warning", 88],
-  ["NAI", "AI Services", "Preview", 74],
-];
-
-const targetIcons: Record<Target, React.ElementType> = {
-  VM: Server,
-  Kubernetes: Boxes,
-  Database: Database,
-  Storage: HardDrive,
-  "AI Endpoint": Sparkles,
-};
-
-const timeline = [
-  "Template validated",
-  "Policy bundle attached",
-  "Cost estimate approved",
-  "Provisioning job queued",
-  "Nutanix integration handoff",
-];
+import {
+  allTargets,
+  integrations,
+  provisioningEvents,
+  targetIcons,
+  templates,
+  type Environment,
+  type JobState,
+  type Target,
+  type Template,
+  type TemplateGovernance,
+  type TemplateTier,
+  type View,
+} from "./data/cloudStudioData";
+import {
+  estimateMonthlyCost,
+  getProvisioningSnapshot,
+  loadEnvironments,
+  loadTemplateGovernance,
+  saveEnvironments,
+  saveTemplateGovernance,
+  updateEnvironmentStatus,
+  upsertRequestedEnvironment,
+} from "./services/provisioningService";
 
 export function App() {
   const [view, setView] = useState<View>("dashboard");
@@ -150,20 +47,57 @@ export function App() {
   const [selectedTargets, setSelectedTargets] = useState<Target[]>(templates[0].targets);
   const [environmentName, setEnvironmentName] = useState("checkout-api-dev");
   const [region, setRegion] = useState("Berlin Lab");
-  const [jobStarted, setJobStarted] = useState(false);
-  const [environments, setEnvironments] = useState(initialEnvironments);
+  const [jobState, setJobState] = useState<JobState>("Idle");
+  const [jobStep, setJobStep] = useState(0);
+  const [environments, setEnvironments] = useState<Environment[]>(() => loadEnvironments());
+  const [templateGovernance, setTemplateGovernance] = useState<TemplateGovernance>(() =>
+    loadTemplateGovernance(templates)
+  );
 
-  const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
-  const estimatedCost = useMemo(() => {
-    const targetPremium = selectedTargets.includes("AI Endpoint") ? 960 : 0;
-    return selectedTemplate.monthlyCost + targetPremium + selectedTargets.length * 85;
-  }, [selectedTargets, selectedTemplate]);
+  const selectedTemplate = enrichTemplate(templates.find((template) => template.id === selectedTemplateId) ?? templates[0], templateGovernance);
+  const estimatedCost = useMemo(() => estimateMonthlyCost(selectedTemplate, selectedTargets), [selectedTargets, selectedTemplate]);
+
+  useEffect(() => {
+    saveEnvironments(environments);
+  }, [environments]);
+
+  useEffect(() => {
+    saveTemplateGovernance(templateGovernance);
+  }, [templateGovernance]);
+
+  useEffect(() => {
+    if (jobState !== "Queued" && jobState !== "Running") {
+      return;
+    }
+
+    const snapshot = getProvisioningSnapshot(jobStep, selectedTargets);
+    if (snapshot.complete) {
+      setJobState(snapshot.jobState);
+      const nextEnvironmentStatus = snapshot.environmentStatus;
+      if (nextEnvironmentStatus) {
+        setEnvironments((current) => updateEnvironmentStatus(current, environmentName, nextEnvironmentStatus));
+      }
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setJobStep((current) => current + 1);
+      setJobState("Running");
+    }, provisioningEvents[jobStep].durationMs);
+
+    return () => window.clearTimeout(timeout);
+  }, [environmentName, jobState, jobStep, selectedTargets]);
 
   function selectTemplate(id: string) {
     const template = templates.find((item) => item.id === id) ?? templates[0];
     setSelectedTemplateId(template.id);
     setSelectedTargets(template.targets);
     setView("create");
+  }
+
+  function openTemplate(id: string) {
+    setSelectedTemplateId(id);
+    setView("template");
   }
 
   function toggleTarget(target: Target) {
@@ -173,19 +107,31 @@ export function App() {
   }
 
   function launchEnvironment() {
-    setJobStarted(true);
-    setEnvironments((current) => [
-      {
+    setJobState("Queued");
+    setJobStep(0);
+    setEnvironments((current) =>
+      upsertRequestedEnvironment(current, {
         name: environmentName,
         template: selectedTemplate.name,
         owner: "john",
         region,
-        status: selectedTargets.includes("AI Endpoint") ? "Needs approval" : "Provisioning",
         cost: estimatedCost,
-      },
-      ...current.filter((env) => env.name !== environmentName),
-    ]);
+      })
+    );
     setView("environment");
+  }
+
+  function updateTemplateGovernance(id: string, field: "owner" | "tier", value: string) {
+    setTemplateGovernance((current) => {
+      const currentTemplate = current[id] ?? { owner: "", tier: "Standard" };
+      return {
+        ...current,
+        [id]: {
+          ...currentTemplate,
+          [field]: field === "tier" ? (value as TemplateTier) : value,
+        },
+      };
+    });
   }
 
   return (
@@ -234,10 +180,14 @@ export function App() {
           <Dashboard
             environments={environments}
             selectTemplate={selectTemplate}
+            openTemplate={openTemplate}
             setView={setView}
           />
         )}
-        {view === "catalog" && <Catalog selectedId={selectedTemplateId} selectTemplate={selectTemplate} />}
+        {view === "catalog" && (
+          <Catalog selectedId={selectedTemplateId} selectTemplate={selectTemplate} openTemplate={openTemplate} />
+        )}
+        {view === "template" && <TemplateDetail template={selectedTemplate} selectTemplate={selectTemplate} />}
         {view === "create" && (
           <CreateEnvironment
             template={selectedTemplate}
@@ -254,7 +204,8 @@ export function App() {
         )}
         {view === "environment" && (
           <EnvironmentStatus
-            jobStarted={jobStarted}
+            jobState={jobState}
+            jobStep={jobStep}
             environmentName={environmentName}
             templateName={selectedTemplate.name}
             selectedTargets={selectedTargets}
@@ -262,7 +213,13 @@ export function App() {
             setView={setView}
           />
         )}
-        {view === "admin" && <AdminView environments={environments} />}
+        {view === "admin" && (
+          <AdminView
+            environments={environments}
+            templateGovernance={templateGovernance}
+            updateTemplateGovernance={updateTemplateGovernance}
+          />
+        )}
       </main>
     </div>
   );
@@ -271,10 +228,12 @@ export function App() {
 function Dashboard({
   environments,
   selectTemplate,
+  openTemplate,
   setView,
 }: {
   environments: Environment[];
   selectTemplate: (id: string) => void;
+  openTemplate: (id: string) => void;
   setView: (view: View) => void;
 }) {
   return (
@@ -311,7 +270,7 @@ function Dashboard({
         <Panel title="Recommended golden paths" action="Catalog">
           <div className="templateList">
             {templates.slice(0, 3).map((template) => (
-              <button className="templateRow" key={template.id} onClick={() => selectTemplate(template.id)}>
+              <button className="templateRow" key={template.id} onClick={() => openTemplate(template.id)}>
                 <div>
                   <strong>{template.name}</strong>
                   <span>{template.runtime}</span>
@@ -339,7 +298,15 @@ function Dashboard({
   );
 }
 
-function Catalog({ selectedId, selectTemplate }: { selectedId: string; selectTemplate: (id: string) => void }) {
+function Catalog({
+  selectedId,
+  selectTemplate,
+  openTemplate,
+}: {
+  selectedId: string;
+  selectTemplate: (id: string) => void;
+  openTemplate: (id: string) => void;
+}) {
   return (
     <section className="screen">
       <div className="catalogGrid">
@@ -371,9 +338,54 @@ function Catalog({ selectedId, selectTemplate }: { selectedId: string; selectTem
             <button className="fullButton" onClick={() => selectTemplate(template.id)}>
               Use template
             </button>
+            <button className="textButton" onClick={() => openTemplate(template.id)}>
+              View details
+            </button>
           </article>
         ))}
       </div>
+    </section>
+  );
+}
+
+function TemplateDetail({ template, selectTemplate }: { template: Template; selectTemplate: (id: string) => void }) {
+  return (
+    <section className="screen detailGrid">
+      <Panel title={template.name} action={template.tier}>
+        <p className="detailLead">{template.description}</p>
+        <div className="targetStrip spacious">
+          {template.targets.map((target) => {
+            const Icon = targetIcons[target];
+            return (
+              <span key={target}>
+                <Icon size={14} />
+                {target}
+              </span>
+            );
+          })}
+        </div>
+        <div className="cardMeta detailMeta">
+          <span>{template.owner}</span>
+          <strong>${template.monthlyCost.toLocaleString()}/mo baseline</strong>
+        </div>
+        <button className="fullButton launch" onClick={() => selectTemplate(template.id)}>
+          Use this golden path
+        </button>
+      </Panel>
+      <Panel title="What gets created" action={template.runtime}>
+        <div className="bulletList">
+          {template.outcomes.map((item) => (
+            <CheckLine key={item} icon={CheckCircle2} label={item} value="Included in prototype workflow" passed />
+          ))}
+        </div>
+      </Panel>
+      <Panel title="Integration readiness" action="Next">
+        <div className="bulletList">
+          {template.readiness.map((item) => (
+            <CheckLine key={item} icon={Network} label={item} value="Required before real provisioning" passed={false} />
+          ))}
+        </div>
+      </Panel>
     </section>
   );
 }
@@ -401,8 +413,6 @@ function CreateEnvironment({
   toggleTarget: (target: Target) => void;
   launchEnvironment: () => void;
 }) {
-  const allTargets: Target[] = ["VM", "Kubernetes", "Database", "Storage", "AI Endpoint"];
-
   return (
     <section className="screen createGrid">
       <Panel title="Request details" action="Step 1">
@@ -464,40 +474,45 @@ function CreateEnvironment({
 }
 
 function EnvironmentStatus({
-  jobStarted,
+  jobState,
+  jobStep,
   environmentName,
   templateName,
   selectedTargets,
   estimatedCost,
   setView,
 }: {
-  jobStarted: boolean;
+  jobState: JobState;
+  jobStep: number;
   environmentName: string;
   templateName: string;
   selectedTargets: Target[];
   estimatedCost: number;
   setView: (view: View) => void;
 }) {
+  const jobStarted = jobState !== "Idle";
+  const actionLabel = jobStarted ? jobState : "Ready";
+
   return (
     <section className="screen statusGrid">
-      <Panel title={jobStarted ? environmentName : "No active request"} action={jobStarted ? "Simulated job" : "Ready"}>
+      <Panel title={jobStarted ? environmentName : "No active request"} action={actionLabel}>
         <div className="statusSummary">
           <div className="statusBadge">
             <TerminalSquare size={28} />
           </div>
           <div>
-            <h2>{jobStarted ? "Provisioning workflow started" : "Create an environment to see status"}</h2>
+            <h2>{jobStarted ? jobHeadline(jobState) : "Create an environment to see status"}</h2>
             <p>{jobStarted ? templateName : "The status view will show checks, events, and Nutanix integration handoff."}</p>
           </div>
         </div>
         {jobStarted && (
           <div className="timeline">
-            {timeline.map((item, index) => (
-              <div className="timelineItem" key={item}>
+            {provisioningEvents.map((item, index) => (
+              <div className={`timelineItem ${timelineClass(index, jobStep, jobState)}`} key={item.title}>
                 <span>{index + 1}</span>
                 <div>
-                  <strong>{item}</strong>
-                  <small>{index < 3 ? "Complete" : index === 3 ? "Running" : "Waiting"}</small>
+                  <strong>{item.title}</strong>
+                  <small>{timelineLabel(index, jobStep, jobState)} - {item.detail}</small>
                 </div>
               </div>
             ))}
@@ -530,12 +545,20 @@ function EnvironmentStatus({
   );
 }
 
-function AdminView({ environments }: { environments: Environment[] }) {
+function AdminView({
+  environments,
+  templateGovernance,
+  updateTemplateGovernance,
+}: {
+  environments: Environment[];
+  templateGovernance: TemplateGovernance;
+  updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
+}) {
   return (
     <section className="screen adminGrid">
       <Panel title="Integration health" action="Mock adapters">
         <div className="integrationList">
-          {integrations.map(([name, label, state, score]) => (
+          {integrations.map(({ name, label, state, score }) => (
             <div className="integrationRow" key={name}>
               <div className="integrationLogo">{name}</div>
               <div>
@@ -570,6 +593,47 @@ function AdminView({ environments }: { environments: Environment[] }) {
           <CheckLine icon={LockKeyhole} label="Approvals" value="AI and regulated data require review" passed={false} />
         </div>
       </Panel>
+      <Panel title="Template governance" action="Editable">
+        <div className="templateEditList">
+          {templates.map((template) => (
+            <div className="templateEditRow" key={template.id}>
+              <div className="editRowHeader">
+                <strong>{template.name}</strong>
+                <Pencil size={15} />
+              </div>
+              <label className="field compact">
+                Owner
+                <input
+                  value={templateGovernance[template.id]?.owner ?? template.owner}
+                  onChange={(event) => updateTemplateGovernance(template.id, "owner", event.target.value)}
+                />
+              </label>
+              <label className="field compact">
+                Tier
+                <select
+                  value={templateGovernance[template.id]?.tier ?? template.tier}
+                  onChange={(event) => updateTemplateGovernance(template.id, "tier", event.target.value)}
+                >
+                  <option>Standard</option>
+                  <option>Regulated</option>
+                  <option>Accelerated</option>
+                </select>
+              </label>
+            </div>
+          ))}
+        </div>
+      </Panel>
+      <Panel title="Integration readiness" action="Real API path">
+        <div className="readinessList">
+          {integrations.map((integration) => (
+            <div className="readinessRow" key={integration.name}>
+              <strong>{integration.product}</strong>
+              <span>{integration.readiness}</span>
+              <small>{integration.nextStep}</small>
+            </div>
+          ))}
+        </div>
+      </Panel>
     </section>
   );
 }
@@ -580,7 +644,7 @@ function NavButton({
   active,
   onClick,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   active: boolean;
   onClick: () => void;
@@ -593,7 +657,7 @@ function NavButton({
   );
 }
 
-function Panel({ title, action, children }: { title: string; action: string; children: React.ReactNode }) {
+function Panel({ title, action, children }: { title: string; action: string; children: ReactNode }) {
   return (
     <section className="panel">
       <div className="panelHeader">
@@ -611,7 +675,7 @@ function MetricCard({
   value,
   detail,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   value: string;
   detail: string;
@@ -632,7 +696,7 @@ function CheckLine({
   value,
   passed,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   value: string;
   passed: boolean;
@@ -655,6 +719,8 @@ function viewTitle(view: View) {
       return "Developer portal";
     case "catalog":
       return "Golden path catalog";
+    case "template":
+      return "Template details";
     case "create":
       return "Create environment";
     case "environment":
@@ -681,4 +747,55 @@ function resourceDescription(target: Target) {
     case "AI Endpoint":
       return "NAI model endpoint with GPU quota review";
   }
+}
+
+function enrichTemplate(template: Template, governance: TemplateGovernance) {
+  return {
+    ...template,
+    owner: governance[template.id]?.owner ?? template.owner,
+    tier: governance[template.id]?.tier ?? template.tier,
+  };
+}
+
+function jobHeadline(jobState: JobState) {
+  switch (jobState) {
+    case "Queued":
+      return "Provisioning job queued";
+    case "Running":
+      return "Provisioning workflow running";
+    case "Approval":
+      return "Approval required before activation";
+    case "Complete":
+      return "Environment ready";
+    case "Failed":
+      return "Provisioning needs attention";
+    case "Idle":
+      return "Create an environment to see status";
+  }
+}
+
+function timelineClass(index: number, jobStep: number, jobState: JobState) {
+  if (jobState === "Approval" && index >= jobStep) {
+    return "approvalStep";
+  }
+  if (index < jobStep || jobState === "Complete") {
+    return "completeStep";
+  }
+  if (index === jobStep) {
+    return "activeStep";
+  }
+  return "";
+}
+
+function timelineLabel(index: number, jobStep: number, jobState: JobState) {
+  if (jobState === "Approval" && index >= jobStep) {
+    return "Approval";
+  }
+  if (index < jobStep || jobState === "Complete") {
+    return "Complete";
+  }
+  if (index === jobStep) {
+    return jobState === "Queued" ? "Queued" : "Running";
+  }
+  return "Waiting";
 }

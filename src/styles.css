@@ -163,7 +163,8 @@ button {
 
 .primaryAction,
 .secondaryAction,
-.fullButton {
+.fullButton,
+.textButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -186,6 +187,14 @@ button {
   color: #17242b;
   background: #fff;
   border: 1px solid #cfd9dd;
+}
+
+.textButton {
+  min-height: 36px;
+  padding: 0 10px;
+  color: #005f66;
+  background: transparent;
+  border: 1px solid transparent;
 }
 
 .screen {
@@ -283,7 +292,8 @@ button {
 .twoColumn,
 .createGrid,
 .statusGrid,
-.adminGrid {
+.adminGrid,
+.detailGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
@@ -292,6 +302,10 @@ button {
 .createGrid,
 .adminGrid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.detailGrid {
+  grid-template-columns: minmax(320px, 1.1fr) minmax(280px, 0.95fr);
 }
 
 .panel {
@@ -332,7 +346,10 @@ button {
 .envTable,
 .integrationList,
 .resourceList,
-.controlGrid {
+.controlGrid,
+.bulletList,
+.templateEditList,
+.readinessList {
   display: grid;
   gap: 10px;
 }
@@ -341,7 +358,9 @@ button {
 .envRow,
 .resourceRow,
 .integrationRow,
-.checkLine {
+.checkLine,
+.templateEditRow,
+.readinessRow {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -417,10 +436,21 @@ button {
   line-height: 1.5;
 }
 
+.detailLead {
+  margin: 0 0 18px;
+  color: #526772;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
 .targetStrip {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.targetStrip.spacious {
+  margin-bottom: 18px;
 }
 
 .targetStrip span {
@@ -482,6 +512,10 @@ button {
   background: #fff;
   border: 1px solid #cdd9dd;
   border-radius: 8px;
+}
+
+.field.compact {
+  margin-bottom: 0;
 }
 
 .targetGrid {
@@ -587,6 +621,19 @@ button {
   font-weight: 800;
 }
 
+.timelineItem.completeStep > span {
+  background: #10a764;
+}
+
+.timelineItem.activeStep > span {
+  background: #d62138;
+  box-shadow: 0 0 0 4px rgba(214, 33, 56, 0.12);
+}
+
+.timelineItem.approvalStep > span {
+  background: #d88400;
+}
+
 .timelineItem strong,
 .timelineItem small {
   display: block;
@@ -603,6 +650,46 @@ button {
 .integrationRow {
   display: grid;
   grid-template-columns: 56px 1fr 110px;
+}
+
+.templateEditRow,
+.readinessRow {
+  display: grid;
+  align-items: stretch;
+}
+
+.templateEditRow {
+  grid-template-columns: 1fr;
+}
+
+.editRowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.editRowHeader svg {
+  color: #00a5ad;
+}
+
+.readinessRow {
+  gap: 5px;
+}
+
+.readinessRow strong,
+.readinessRow span,
+.readinessRow small {
+  display: block;
+}
+
+.readinessRow span {
+  color: #60747c;
+}
+
+.readinessRow small {
+  color: #3c5963;
+  font-weight: 700;
 }
 
 .integrationLogo {
@@ -645,7 +732,8 @@ meter {
   .twoColumn,
   .createGrid,
   .statusGrid,
-  .adminGrid {
+  .adminGrid,
+  .detailGrid {
     grid-template-columns: 1fr;
   }
 
