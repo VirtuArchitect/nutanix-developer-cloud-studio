@@ -22,13 +22,13 @@ Replace these placeholders with the exact commands for this repository:
 Install: npm.cmd install
 Lint: not configured
 Format check: not configured
-Type check: npm.cmd run build
+Type check: npm.cmd run build:all
 Unit tests: npm.cmd run test
 Integration tests: not configured
 End-to-end tests: npm.cmd run test:e2e
-Build: npm.cmd run build
+Build: npm.cmd run build:all
 Run app: npm.cmd run dev -- --host localhost --port 4180
-Smoke test: npm.cmd run dev -- --host localhost --port 4180, open http://localhost:4180, create an environment, and confirm the status timeline advances
+Smoke test: npm.cmd run test:all
 Security scan: not configured
 ```
 

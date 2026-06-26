@@ -24,6 +24,33 @@ Recommended on-premises pattern:
 - Nutanix API adapters for Prism Central, NCM, NKP, NDB, NUS, and NAI
 - Audit logging for requests, approvals, and provisioning events
 
+## On-Premises Starter Deployment
+
+The repository now includes a containerized starter that serves the built frontend and mock API from one process.
+
+Run locally:
+
+```powershell
+docker compose up --build
+```
+
+Open:
+
+`http://localhost:8080`
+
+The starter exposes:
+
+- `GET /healthz`
+- `GET /readyz`
+- `GET /api/templates`
+- `GET /api/environments`
+- `POST /api/environments`
+- `GET /api/integrations`
+- `GET /api/provisioning-jobs`
+- `GET /api/audit-events`
+
+Mock API state can be persisted with `NDC_DATA_FILE`.
+
 ## Integration Boundary
 
 Keep Nutanix credentials and provisioning logic out of the browser. The frontend should call a backend API, and the backend should own policy checks, approvals, audit logging, and Nutanix API calls.

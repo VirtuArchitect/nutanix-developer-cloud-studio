@@ -45,6 +45,13 @@
 - Updated Vite asset base for repository-path static hosting.
 - Added ready-to-paste GitHub Release notes for `v0.1.0-mvp`.
 - Enabled GitHub Pages deployment and verified the live static prototype URL.
+- Added a Node HTTP API starter for hosted and on-premises evaluation.
+- Added health, readiness, templates, environments, integrations, provisioning jobs, and audit events API routes.
+- Added memory and JSON-file persistence abstractions for mock API state.
+- Added Dockerfile and Docker Compose starter deployment.
+- Added API and on-prem deployment docs.
+- Added server-side API tests and included API type checking in the build flow.
+- Verified API health/readiness, environment creation, static serving, Docker image build, and Docker Compose startup.
 
 ## Documentation Rule
 

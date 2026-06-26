@@ -68,6 +68,30 @@ Run the full local verification suite:
 npm run test:all
 ```
 
+## Run The Hosted/On-Prem Starter
+
+Run the mock API locally:
+
+```powershell
+npm run api:dev
+```
+
+Build the frontend and type-check the API:
+
+```powershell
+npm run build:all
+```
+
+Run the containerized starter:
+
+```powershell
+docker compose up --build
+```
+
+Open:
+
+`http://localhost:8080`
+
 ## Documentation
 
 Project documentation lives in `docs/`.
@@ -92,6 +116,8 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/project-brief.md` for positioning and scope
 - `docs/demo-script.md` for stakeholder walkthroughs
 - `docs/hosting.md` for prototype and on-premises hosting direction
+- `docs/api.md` for the backend API starter
+- `docs/on-prem-deployment.md` for the containerized deployment starter
 - `docs/release-notes/` for GitHub Release copy
 
 ## Repository Standards

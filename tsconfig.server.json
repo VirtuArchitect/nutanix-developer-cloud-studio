@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "declaration": false,
+    "sourceMap": true
+  },
+  "include": ["server/**/*.ts", "src/data/cloudStudioDomain.ts", "src/services/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "server/**/*.test.ts"]
+}

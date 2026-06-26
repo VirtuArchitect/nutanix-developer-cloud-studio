@@ -16,6 +16,20 @@ flowchart LR
     Portal --> Integrations["Mock Nutanix Integrations"]
 ```
 
+## Hosted / On-Premises Starter Architecture
+
+```mermaid
+flowchart LR
+    Browser["Browser"] --> Web["Static React Frontend"]
+    Browser --> Api["NDC Studio API"]
+    Api --> Store["JSON File Store"]
+    Api --> Provider["Mock Platform Provider"]
+    Provider --> Adapters["Mock Nutanix Adapter Contracts"]
+    Api --> Audit["Audit Events"]
+```
+
+The GitHub Pages demo remains a static frontend. The on-premises starter adds a same-origin Node API that can serve the built frontend and expose mock API routes from one container.
+
 ## Prototype Domains
 
 - Templates: approved golden paths for apps and services
@@ -49,16 +63,21 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Repository-owned dashboard screenshot in `docs/assets/dashboard-screenshot.png`
 - Responsive console layout in `src/styles.css`
 - GitHub Actions CI and Pages deployment workflows in `.github/workflows`
+- Node HTTP API starter in `server/`
+- JSON file persistence option through `NDC_DATA_FILE`
+- Containerized starter deployment through `Dockerfile` and `docker-compose.yml`
 - No live Nutanix API calls yet
 
 ## Current State Boundaries
 
-- UI state remains local to the React app.
+- The public GitHub Pages UI state remains local to the React app.
+- The on-prem starter API exposes templates, environments, integrations, provisioning jobs, and audit events over HTTP.
 - Environment requests persist across browser refreshes through local storage.
 - Admin template governance edits persist across browser refreshes through local storage.
 - Job transitions are simulated in the browser with timers.
 - Approval states are modeled for AI endpoint requests, but no identity or workflow engine is connected.
 - Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
+- The frontend is not yet wired to use the API by default; that is the next hosted/on-prem slice.
 
 ## Real Integration Readiness Questions
 

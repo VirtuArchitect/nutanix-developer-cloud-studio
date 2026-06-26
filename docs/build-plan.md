@@ -63,9 +63,30 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 - Create the GitHub Release from tag `v0.1.0-mvp` if it has not already been created in GitHub.
 - Enable GitHub Pages in repository settings and confirm the deployed URL.
+- Add a backend API starter with mock providers - done
+- Add a containerized on-prem deployment starter - done
 - Add a lightweight approval queue interaction for AI endpoint and regulated data requests.
 - Add environment detail pages with owner, cost, resources, timeline, mock logs, and expiry state.
 - Add template versioning states: draft, published, deprecated, and owner approval.
+
+## Hosted / On-Prem Starter Slice
+
+- Added a Node HTTP API in `server/`.
+- Added health and readiness endpoints.
+- Added API routes for templates, environments, integrations, provisioning jobs, and audit events.
+- Added a POST environment request endpoint with validation, mock jobs, and audit events.
+- Added memory and JSON-file persistence abstractions.
+- Added Dockerfile and Docker Compose starter deployment.
+- Added API and on-prem deployment documentation.
+- Added server-side tests for API behavior.
+
+## Next Hosted / On-Prem Slice
+
+- Wire the frontend to the API when `VITE_API_BASE_URL` or same-origin `/api` is available.
+- Keep local mock mode as a fallback for GitHub Pages.
+- Add real approval queue views backed by the API.
+- Add OIDC-ready auth boundaries and role modeling.
+- Replace JSON-file persistence with a database-ready repository interface.
 
 ## Suggested Tech Stack
 

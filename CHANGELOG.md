@@ -8,6 +8,11 @@ This project uses release tags for public milestones. The current MVP release is
 
 ### Added
 
+- Node HTTP API starter with health, readiness, catalog, environment, integration, job, and audit endpoints.
+- Memory and JSON-file persistence abstractions for hosted/on-prem mock API state.
+- Dockerfile and Docker Compose starter for private-network evaluation.
+- API and on-prem deployment documentation.
+- Server-side API tests.
 - GitHub Actions CI workflow for unit tests, production build, and Playwright smoke tests.
 - GitHub Pages deployment workflow for the static prototype.
 - Playwright end-to-end smoke test for the core prototype workflow.

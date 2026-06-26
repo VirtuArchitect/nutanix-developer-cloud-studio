@@ -1,0 +1,24 @@
+services:
+  ndc-studio:
+    build:
+      context: .
+    image: nutanix-developer-cloud-studio:local
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8080
+      NDC_STATIC_DIR: /app/dist
+      NDC_DATA_FILE: /data/ndc-studio.json
+    volumes:
+      - ndc-studio-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  ndc-studio-data:

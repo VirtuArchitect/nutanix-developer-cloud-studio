@@ -15,6 +15,7 @@ Thumbs.db
 *.log
 logs/
 vite-dev.log
+.data/
 
 # Dependencies and builds
 node_modules/
