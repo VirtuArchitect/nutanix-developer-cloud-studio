@@ -1,10 +1,20 @@
-import type { ApprovalRequest, Environment, Integration, Template, TemplateGovernance } from "../src/data/cloudStudioDomain";
+import type {
+  ApprovalRequest,
+  Environment,
+  Integration,
+  IntegrationConfig,
+  PlatformSession,
+  Template,
+  TemplateGovernance,
+} from "../src/data/cloudStudioDomain";
 import type { ProvisioningJob } from "../src/services/nutanixAdapters";
 
 export type ApiState = {
   templates: Template[];
   environments: Environment[];
   integrations: Integration[];
+  integrationConfigs: IntegrationConfig[];
+  session: PlatformSession;
   governance: TemplateGovernance;
   jobs: ProvisioningJob[];
   approvals: ApprovalRequest[];
@@ -26,6 +36,12 @@ export type CreateEnvironmentRequest = {
   owner: string;
   region: string;
   targets?: string[];
+};
+
+export type UpdateIntegrationConfigRequest = {
+  endpoint?: string;
+  credentialProfile?: string;
+  status?: IntegrationConfig["status"];
 };
 
 export type ApiResponse<T> = {

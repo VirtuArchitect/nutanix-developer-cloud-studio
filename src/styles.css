@@ -353,6 +353,7 @@ button {
 
 .opsDashboardGrid {
   grid-template-columns: minmax(520px, 1.35fr) minmax(320px, 0.65fr);
+  align-items: start;
 }
 
 .opsMain,
@@ -360,6 +361,48 @@ button {
 .detailStack {
   display: grid;
   gap: 16px;
+}
+
+.opsCommandGrid {
+  display: grid;
+  grid-template-columns: minmax(520px, 1.2fr) minmax(320px, 0.8fr);
+  gap: 16px;
+}
+
+.commandPanel {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 280px;
+  gap: 20px;
+  align-items: center;
+}
+
+.commandPanel h2,
+.commandPanel p {
+  margin: 0;
+}
+
+.commandPanel h2 {
+  color: #0f1b22;
+  font-size: 26px;
+  line-height: 1.12;
+}
+
+.commandPanel p:not(.eyebrow) {
+  margin-top: 10px;
+  color: #526772;
+  line-height: 1.5;
+}
+
+.commandPanel img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+}
+
+.compactMetrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .panel {
@@ -399,6 +442,7 @@ button {
 .templateList,
 .envTable,
 .integrationList,
+.integrationConfigList,
 .resourceList,
 .controlGrid,
 .bulletList,
@@ -418,7 +462,8 @@ button {
 .templateEditRow,
 .readinessRow,
 .approvalRow,
-.eventRow {
+.eventRow,
+.integrationConfigRow {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -433,6 +478,32 @@ button {
   justify-content: space-between;
   width: 100%;
   text-align: left;
+}
+
+.identityPanel,
+.integrationConfigHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.identityPanel strong,
+.identityPanel span,
+.identityPanel small,
+.integrationConfigHeader strong,
+.integrationConfigHeader span {
+  display: block;
+}
+
+.identityPanel span,
+.identityPanel small,
+.integrationConfigHeader span {
+  color: #60747c;
+}
+
+.statusBadge.compact {
+  width: 42px;
+  height: 42px;
 }
 
 .buttonRowLike {
@@ -561,6 +632,28 @@ button {
 .integrationTile span {
   color: #60747c;
   font-size: 13px;
+}
+
+.integrationConfigRow {
+  display: grid;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.integrationConfigHeader {
+  justify-content: space-between;
+}
+
+.integrationConfigHeader > div:nth-child(2) {
+  flex: 1;
+}
+
+.integrationConfigRow .inlineActions {
+  align-items: center;
+}
+
+.integrationConfigRow .inlineActions small {
+  color: #60747c;
 }
 
 .emptyState {
@@ -935,6 +1028,7 @@ meter {
   .twoColumn,
   .opsStatusStrip,
   .opsDashboardGrid,
+  .opsCommandGrid,
   .createGrid,
   .statusGrid,
   .adminGrid,
@@ -952,6 +1046,14 @@ meter {
 
   .tableRow {
     grid-template-columns: 1fr;
+  }
+
+  .commandPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .commandPanel img {
+    max-height: 220px;
   }
 }
 
@@ -995,6 +1097,7 @@ meter {
   .dashboardGrid,
   .catalogGrid,
   .miniIntegrationGrid,
+  .compactMetrics,
   .targetGrid {
     grid-template-columns: 1fr;
   }

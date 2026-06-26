@@ -2,16 +2,36 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.2.0-hosted-starter`.
+This project uses release tags for public milestones. The current release is `v0.3.0-integration-readiness`.
 
 ## [Unreleased]
 
 ### Planned
 
-- Add OIDC-ready auth boundaries and role modeling.
-- Add a database-ready repository interface to replace JSON-file persistence.
 - Add template versioning states: draft, published, deprecated, and owner approval.
 - Add first real lab adapter spike once Prism Central/NKP/NDB/NUS/NCM/NAI access details are available.
+
+## [v0.3.0-integration-readiness] - 2026-06-26
+
+### Added
+
+- Mock OIDC session endpoint and role model for developer, approver, and platform admin workflows.
+- API-backed integration configuration endpoint for lab endpoint and credential profile placeholders.
+- API-backed integration readiness check endpoint with configured, reachable, failed, and not configured states.
+- Database-ready `ApiRepository` persistence contract while keeping memory and JSON-file implementations.
+- Admin access model panel showing current mock identity and roles.
+- Admin integration configuration panel with editable endpoint/profile fields and readiness checks.
+- Dashboard refresh that prioritizes environment operations and reduces the visual hero into a compact command-center panel.
+- Hosted starter validation script for health, readiness, session, and integration configuration checks.
+- Expanded `.env.example` for OIDC and Nutanix lab integration placeholders.
+
+### Changed
+
+- README, API docs, architecture notes, roadmap, and build plan now describe the integration-readiness phase.
+
+### Notes
+
+- Auth, roles, and integration checks remain simulated. No real SSO, Nutanix credentials, or infrastructure calls are used.
 
 ## [v0.2.0-hosted-starter] - 2026-06-26
 

@@ -4,9 +4,9 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Developer portal" })).toBeVisible();
-  await expect(page.getByText("Operate governed developer environments from one private cloud console.")).toBeVisible();
-  await expect(page.getByText("Approval queue")).toBeVisible();
   await expect(page.getByText("Environment operations")).toBeVisible();
+  await expect(page.getByText("Access context")).toBeVisible();
+  await expect(page.getByText("Approval queue")).toBeVisible();
 
   await page.getByRole("button", { name: "Details" }).first().click();
   await expect(page.getByRole("heading", { name: "Environment details" })).toBeVisible();
@@ -31,10 +31,18 @@ test("developer can browse catalog, create an environment, and review admin read
 
   await page.getByRole("button", { name: "Admin", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Platform admin" })).toBeVisible();
+  await expect(page.getByText("Access model")).toBeVisible();
+  await expect(page.getByText("Integration configuration")).toBeVisible();
+  await page.getByLabel("Endpoint").first().fill("https://prism.lab.example");
+  await page.getByLabel("Credential profile").first().fill("nci-readonly");
+  await page.getByRole("button", { name: "Save" }).first().click();
+  await expect(page.getByText("Configuration saved")).toBeVisible();
+  await page.getByRole("button", { name: "Check" }).first().click();
+  await expect(page.getByText("Reachable")).toBeVisible();
   await expect(page.getByText("Approval queue")).toBeVisible();
   await expect(page.getByText("ml-reco-lab").first()).toBeVisible();
   await page.getByRole("button", { name: "Approve" }).first().click();
-  await expect(page.getByText("Approved")).toBeVisible();
+  await expect(page.getByText("Provisioning").first()).toBeVisible();
   await expect(page.getByText("Template governance")).toBeVisible();
   await expect(page.getByText("Hosted integration path")).toBeVisible();
 });

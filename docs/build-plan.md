@@ -103,10 +103,22 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Next Hosted / On-Prem Slice
 
-- Add OIDC-ready auth boundaries and role modeling.
-- Add a database-ready repository interface to replace JSON-file persistence.
+- Add OIDC-ready auth boundaries and role modeling - done.
+- Add a database-ready repository interface to replace JSON-file persistence - done.
+- Add integration configuration and readiness checks for lab planning - done.
+- Add hosted starter validation script - done.
 - Add template versioning states: draft, published, deprecated, and owner approval.
 - Add a real lab adapter spike once Prism Central/NKP/NDB/NUS/NCM/NAI access details are available.
+
+## Current Integration Readiness Slice
+
+- API exposes a mock OIDC session through `/api/session`.
+- Role context models developer, approver, and platform admin access for future authorization.
+- API exposes integration configuration records through `/api/integration-config`.
+- API exposes mock readiness checks through `/api/integrations/:name/check`.
+- Admin view includes access model and integration configuration panels.
+- Dashboard first screen prioritizes environment operations and compact status rather than a large hero.
+- `scripts/validate-hosted-starter.ps1` validates health, readiness, session, and integration configuration endpoints.
 
 ## Suggested Tech Stack
 

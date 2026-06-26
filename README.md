@@ -4,7 +4,7 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
-Current release: `v0.2.0-hosted-starter`
+Current release: `v0.3.0-integration-readiness`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -22,7 +22,7 @@ This repository is an independent clickable MVP prototype. All Nutanix integrati
 - Environment status page with simulated provisioning
 - Mock integrations for NCI, NKP, NDB, NUS, NCM, and NAI
 - Admin view for platform teams
-- Hosted/on-prem starter API for prototype provisioning jobs, approvals, environment details, and integration readiness
+- Hosted/on-prem starter API for prototype provisioning jobs, approvals, environment details, role context, integration configuration, and readiness checks
 
 ![Nutanix Developer Cloud Studio dashboard](docs/assets/dashboard-screenshot.png)
 
@@ -93,6 +93,12 @@ Open:
 `http://localhost:8080`
 
 In the hosted/on-prem starter, the frontend auto-detects the same-origin API through `/healthz`, loads environments from `/api/environments`, and submits requests to `POST /api/environments`. If no API is available, it falls back to browser mock mode for the public GitHub Pages demo.
+
+Validate the hosted starter locally:
+
+```powershell
+.\scripts\validate-hosted-starter.ps1
+```
 
 ## Documentation
 

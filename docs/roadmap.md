@@ -43,6 +43,8 @@
 - Evaluate Prism Central, NCM Self-Service, NKP, NDB, NUS, and NAI integration paths
 - Add OIDC-ready auth and role model
 - Replace JSON-file persistence behind a database-ready repository interface
+- Add integration configuration and mock readiness checks
+- Add hosted starter validation command
 
 ## Phase 6 - Lab Adapter Pilot (`v0.4.0-lab-adapter`)
 

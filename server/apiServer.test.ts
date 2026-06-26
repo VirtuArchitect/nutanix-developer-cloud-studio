@@ -34,9 +34,32 @@ describe("api server", () => {
   it("lists templates and integrations", async () => {
     const templates = await requestJson("/api/templates");
     const integrations = await requestJson("/api/integrations");
+    const session = await requestJson("/api/session");
 
     expect(templates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: "spring-postgres" })]));
     expect(integrations.data).toEqual(expect.arrayContaining([expect.objectContaining({ name: "NCI" })]));
+    expect(session.data).toMatchObject({ authMode: "Mock OIDC", roles: expect.arrayContaining(["Platform Admin"]) });
+  });
+
+  it("updates integration config and runs readiness checks", async () => {
+    const saved = await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    const checked = await requestJson("/api/integrations/NCI/check", { method: "POST" });
+    const configs = await requestJson("/api/integration-config");
+
+    expect(saved.data).toMatchObject({
+      name: "NCI",
+      endpoint: "https://prism.lab.example",
+      credentialProfile: "nci-readonly",
+      status: "Configured",
+    });
+    expect(checked.data).toMatchObject({ name: "NCI", status: "Reachable" });
+    expect(configs.data).toEqual(expect.arrayContaining([expect.objectContaining({ name: "NCI", status: "Reachable" })]));
   });
 
   it("creates an environment request and records jobs and audit events", async () => {

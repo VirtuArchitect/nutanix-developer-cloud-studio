@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { checkApiHealth, createEnvironmentViaApi, fetchEnvironmentsFromApi } from "./cloudStudioApi";
+import {
+  checkApiHealth,
+  createEnvironmentViaApi,
+  fetchEnvironmentsFromApi,
+  fetchSessionFromApi,
+  runIntegrationCheckViaApi,
+  saveIntegrationConfigViaApi,
+} from "./cloudStudioApi";
 
 describe("cloudStudioApi", () => {
   afterEach(() => {
@@ -48,6 +55,37 @@ describe("cloudStudioApi", () => {
         method: "POST",
         body: expect.stringContaining("api-dev"),
       })
+    );
+  });
+
+  it("fetches the API session envelope", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(okResponse({ data: { user: "platform.admin" } })));
+
+    await expect(fetchSessionFromApi()).resolves.toEqual({ user: "platform.admin" });
+  });
+
+  it("saves and checks integration configuration", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: { name: "NCI", status: "Configured" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await saveIntegrationConfigViaApi("NCI", {
+      endpoint: "https://prism.lab.example",
+      credentialProfile: "nci-readonly",
+    });
+    await runIntegrationCheckViaApi("NCI");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "/api/integration-config/NCI",
+      expect.objectContaining({
+        method: "PUT",
+        body: expect.stringContaining("prism.lab.example"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/integrations/NCI/check",
+      expect.objectContaining({ method: "POST" })
     );
   });
 });

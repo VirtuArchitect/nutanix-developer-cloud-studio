@@ -4,7 +4,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { extname, join, normalize, relative } from "node:path";
 import { createEnvironmentRequest, decideApproval, RequestValidationError } from "./mockPlatform";
 import type { ApiStore } from "./storage";
-import type { ApiError, ApiResponse, CreateEnvironmentRequest } from "./types";
+import type { IntegrationConfig } from "../src/data/cloudStudioDomain";
+import type { ApiError, ApiResponse, CreateEnvironmentRequest, UpdateIntegrationConfigRequest } from "./types";
 
 export type ApiServerOptions = {
   store: ApiStore;
@@ -77,6 +78,11 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/session") {
+    sendJson(response, 200, { data: state.session });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/environments") {
     sendJson(response, 200, { data: state.environments });
     return;
@@ -84,6 +90,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/integrations") {
     sendJson(response, 200, { data: state.integrations });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/integration-config") {
+    sendJson(response, 200, { data: state.integrationConfigs });
     return;
   }
 
@@ -146,6 +157,103 @@ async function routeApi(
 
       throw error;
     }
+    return;
+  }
+
+  const integrationConfigMatch = url.pathname.match(/^\/api\/integration-config\/([^/]+)$/);
+  if (request.method === "PUT" && integrationConfigMatch) {
+    const integrationName = decodeURIComponent(integrationConfigMatch[1]).toUpperCase();
+    const integration = state.integrations.find((item) => item.name === integrationName);
+    if (!integration) {
+      sendJson(response, 404, {
+        error: {
+          code: "integration_not_found",
+          message: `Integration not found: ${integrationName}`,
+        },
+      });
+      return;
+    }
+
+    const body = await readJson<UpdateIntegrationConfigRequest>(request);
+    const existing =
+      state.integrationConfigs.find((item) => item.name === integrationName) ??
+      {
+        name: integrationName,
+        endpoint: "",
+        credentialProfile: "",
+        status: "Not configured" as const,
+        message: integration.nextStep,
+      };
+    const updated: IntegrationConfig = {
+      ...existing,
+      endpoint: body.endpoint ?? existing.endpoint,
+      credentialProfile: body.credentialProfile ?? existing.credentialProfile,
+      status: body.status ?? (body.endpoint || body.credentialProfile ? "Configured" : existing.status),
+      message:
+        body.endpoint || body.credentialProfile
+          ? "Configuration saved. Run readiness check before enabling provisioning."
+          : existing.message,
+    };
+    state.integrationConfigs = [
+      updated,
+      ...state.integrationConfigs.filter((item) => item.name !== integrationName),
+    ].sort((a, b) => a.name.localeCompare(b.name));
+    state.auditEvents = [
+      {
+        id: `audit-integration-config-${integrationName}-${Date.now()}`,
+        action: "integration.config.updated",
+        actor: state.session.user,
+        target: integrationName,
+        createdAt: new Date().toISOString(),
+      },
+      ...state.auditEvents,
+    ];
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
+    return;
+  }
+
+  const integrationCheckMatch = url.pathname.match(/^\/api\/integrations\/([^/]+)\/check$/);
+  if (request.method === "POST" && integrationCheckMatch) {
+    const integrationName = decodeURIComponent(integrationCheckMatch[1]).toUpperCase();
+    const integration = state.integrations.find((item) => item.name === integrationName);
+    const existing = state.integrationConfigs.find((item) => item.name === integrationName);
+    if (!integration || !existing) {
+      sendJson(response, 404, {
+        error: {
+          code: "integration_not_found",
+          message: `Integration not found: ${integrationName}`,
+        },
+      });
+      return;
+    }
+
+    const reachable = Boolean(existing.endpoint && existing.credentialProfile && integration.state !== "Preview");
+    const updated: IntegrationConfig = {
+      ...existing,
+      status: reachable ? "Reachable" : existing.endpoint || existing.credentialProfile ? "Failed" : "Not configured",
+      lastCheckedAt: new Date().toISOString(),
+      message: reachable
+        ? `${integration.name} mock readiness check passed.`
+        : existing.endpoint || existing.credentialProfile
+          ? `${integration.name} needs a complete endpoint and credential profile before lab validation.`
+          : `${integration.name} is not configured yet.`,
+    };
+    state.integrationConfigs = state.integrationConfigs.map((item) =>
+      item.name === integrationName ? updated : item
+    );
+    state.auditEvents = [
+      {
+        id: `audit-integration-check-${integrationName}-${Date.now()}`,
+        action: "integration.readiness.checked",
+        actor: state.session.user,
+        target: integrationName,
+        createdAt: new Date().toISOString(),
+      },
+      ...state.auditEvents,
+    ];
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
     return;
   }
 

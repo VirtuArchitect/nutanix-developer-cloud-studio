@@ -11,8 +11,11 @@ import {
   Network,
   Pencil,
   Play,
+  RefreshCw,
+  Settings,
   ShieldCheck,
   TerminalSquare,
+  UserRound,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ElementType, type ReactNode } from "react";
 import cloudVisual from "./assets/developer-cloud-visual.png";
@@ -26,7 +29,9 @@ import {
   type Environment,
   type ApprovalRequest,
   type Integration,
+  type IntegrationConfig,
   type JobState,
+  type PlatformSession,
   type Target,
   type Template,
   type TemplateGovernance,
@@ -50,7 +55,11 @@ import {
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchApprovalsFromApi,
+  fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
+  fetchSessionFromApi,
+  runIntegrationCheckViaApi,
+  saveIntegrationConfigViaApi,
   type ApiHealth,
   type EnvironmentDetail,
 } from "./services/cloudStudioApi";
@@ -65,6 +74,10 @@ export function App() {
   const [jobStep, setJobStep] = useState(0);
   const [environments, setEnvironments] = useState<Environment[]>(() => loadEnvironments());
   const [runtimeIntegrations, setRuntimeIntegrations] = useState<Integration[]>(integrations);
+  const [integrationConfigs, setIntegrationConfigs] = useState<IntegrationConfig[]>(() =>
+    deriveMockIntegrationConfigs(integrations)
+  );
+  const [session, setSession] = useState<PlatformSession>(mockSession);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -101,15 +114,19 @@ export function App() {
 
       if (health.mode === "api") {
         try {
-          const [apiEnvironments, apiIntegrations, apiApprovals] = await Promise.all([
+          const [apiEnvironments, apiIntegrations, apiApprovals, apiIntegrationConfigs, apiSession] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
             fetchApprovalsFromApi(),
+            fetchIntegrationConfigsFromApi(),
+            fetchSessionFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
             setRuntimeIntegrations(apiIntegrations);
             setApprovals(apiApprovals);
+            setIntegrationConfigs(apiIntegrationConfigs);
+            setSession(apiSession);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -221,14 +238,18 @@ export function App() {
       return;
     }
 
-    const [apiEnvironments, apiIntegrations, apiApprovals] = await Promise.all([
+    const [apiEnvironments, apiIntegrations, apiApprovals, apiIntegrationConfigs, apiSession] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
       fetchApprovalsFromApi(),
+      fetchIntegrationConfigsFromApi(),
+      fetchSessionFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
     setApprovals(apiApprovals);
+    setIntegrationConfigs(apiIntegrationConfigs);
+    setSession(apiSession);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -282,6 +303,47 @@ export function App() {
         )
       );
     }
+  }
+
+  async function saveIntegrationConfig(
+    integrationName: string,
+    payload: Pick<IntegrationConfig, "endpoint" | "credentialProfile">
+  ) {
+    if (apiHealth.mode === "api") {
+      const updated = await saveIntegrationConfigViaApi(integrationName, payload);
+      setIntegrationConfigs((current) => replaceIntegrationConfig(current, updated));
+      return;
+    }
+
+    setIntegrationConfigs((current) =>
+      replaceIntegrationConfig(current, {
+        ...(current.find((item) => item.name === integrationName) ?? createEmptyIntegrationConfig(integrationName)),
+        ...payload,
+        status: payload.endpoint || payload.credentialProfile ? "Configured" : "Not configured",
+        message: "Configuration saved in browser mock mode.",
+      })
+    );
+  }
+
+  async function runIntegrationCheck(integrationName: string) {
+    if (apiHealth.mode === "api") {
+      const updated = await runIntegrationCheckViaApi(integrationName);
+      setIntegrationConfigs((current) => replaceIntegrationConfig(current, updated));
+      return;
+    }
+
+    setIntegrationConfigs((current) => {
+      const existing = current.find((item) => item.name === integrationName) ?? createEmptyIntegrationConfig(integrationName);
+      const reachable = Boolean(existing.endpoint && existing.credentialProfile);
+      return replaceIntegrationConfig(current, {
+        ...existing,
+        status: reachable ? "Reachable" : "Failed",
+        lastCheckedAt: new Date().toISOString(),
+        message: reachable
+          ? `${integrationName} mock readiness check passed.`
+          : `${integrationName} needs endpoint and credential profile values.`,
+      });
+    });
   }
 
   function updateTemplateGovernance(id: string, field: "owner" | "tier", value: string) {
@@ -344,6 +406,8 @@ export function App() {
             environments={environments}
             approvals={approvals}
             integrations={runtimeIntegrations}
+            integrationConfigs={integrationConfigs}
+            session={session}
             apiHealth={apiHealth}
             openTemplate={openTemplate}
             openEnvironmentDetail={openEnvironmentDetail}
@@ -391,10 +455,14 @@ export function App() {
           <AdminView
             environments={environments}
             integrations={runtimeIntegrations}
+            integrationConfigs={integrationConfigs}
+            session={session}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
             decideApproval={decideApproval}
+            saveIntegrationConfig={saveIntegrationConfig}
+            runIntegrationCheck={runIntegrationCheck}
             openEnvironmentDetail={openEnvironmentDetail}
           />
         )}
@@ -407,6 +475,8 @@ function Dashboard({
   environments,
   approvals,
   integrations,
+  integrationConfigs,
+  session,
   apiHealth,
   openTemplate,
   openEnvironmentDetail,
@@ -415,6 +485,8 @@ function Dashboard({
   environments: Environment[];
   approvals: ApprovalRequest[];
   integrations: Integration[];
+  integrationConfigs: IntegrationConfig[];
+  session: PlatformSession;
   apiHealth: ApiHealth;
   openTemplate: (id: string) => void;
   openEnvironmentDetail: (name: string) => void;
@@ -425,6 +497,7 @@ function Dashboard({
   const readinessAverage = Math.round(
     integrations.reduce((total, integration) => total + integration.score, 0) / Math.max(integrations.length, 1)
   );
+  const reachableIntegrations = integrationConfigs.filter((config) => config.status === "Reachable").length;
 
   return (
     <section className="screen">
@@ -449,39 +522,6 @@ function Dashboard({
           <strong>{readinessAverage}%</strong>
           <small>NCI, NKP, NDB, NUS, NCM, NAI</small>
         </div>
-      </div>
-
-      <div className="dashboardGrid">
-        <div className="heroPanel">
-          <div className="heroCopy">
-            <p className="eyebrow">Private cloud developer operations</p>
-            <h2>Operate governed developer environments from one private cloud console.</h2>
-            <p>
-              Request and govern VMs, Kubernetes namespaces, databases, storage, and AI endpoints
-              with hosted API workflows, approval gates, and integration readiness surfaced together.
-            </p>
-            <div className="buttonRow">
-              <button className="primaryAction" onClick={() => setView("create")}>
-                <Play size={16} />
-                Create environment
-              </button>
-              <button className="secondaryAction" onClick={() => setView("catalog")}>
-                <Layers3 size={16} />
-                Browse catalog
-              </button>
-            </div>
-          </div>
-          <img src={cloudVisual} alt="" />
-        </div>
-
-        <MetricCard icon={Cloud} label="Active environments" value={String(environments.length)} detail="Across 3 labs" />
-        <MetricCard icon={ShieldCheck} label="Pending approvals" value={String(openApprovals.length)} detail="AI and regulated paths" />
-        <MetricCard
-          icon={CircleDollarSign}
-          label="Monthly estimate"
-          value={`$${Math.round(environments.reduce((total, environment) => total + environment.cost, 0) / 100) / 10}k`}
-          detail="Current prototype state"
-        />
       </div>
 
       <div className="opsDashboardGrid">
@@ -511,6 +551,18 @@ function Dashboard({
           </Panel>
         </div>
         <div className="opsSide">
+          <Panel title="Access context" action={session.authMode}>
+            <div className="identityPanel">
+              <div className="statusBadge compact">
+                <UserRound size={20} />
+              </div>
+              <div>
+                <strong>{session.displayName}</strong>
+                <span>{session.roles.join(" / ")}</span>
+                <small>{session.identityProvider}</small>
+              </div>
+            </div>
+          </Panel>
           <Panel title="Approval queue" action={`${openApprovals.length} pending`}>
             <ApprovalQueue approvals={approvals} compact openEnvironmentDetail={openEnvironmentDetail} />
           </Panel>
@@ -525,6 +577,48 @@ function Dashboard({
               ))}
             </div>
           </Panel>
+        </div>
+      </div>
+
+      <div className="opsCommandGrid">
+        <Panel title="Private cloud command center" action="Prototype">
+          <div className="commandPanel">
+            <div>
+              <p className="eyebrow">Private cloud developer operations</p>
+              <h2>Operate governed developer environments from one private cloud console.</h2>
+              <p>
+                Request and govern VMs, Kubernetes namespaces, databases, storage, and AI endpoints
+                with hosted API workflows, approval gates, and integration readiness surfaced together.
+              </p>
+              <div className="buttonRow">
+                <button className="primaryAction" onClick={() => setView("create")}>
+                  <Play size={16} />
+                  Create environment
+                </button>
+                <button className="secondaryAction" onClick={() => setView("catalog")}>
+                  <Layers3 size={16} />
+                  Browse catalog
+                </button>
+              </div>
+            </div>
+            <img src={cloudVisual} alt="" />
+          </div>
+        </Panel>
+        <div className="dashboardGrid compactMetrics">
+          <MetricCard icon={Cloud} label="Active environments" value={String(environments.length)} detail="Across 3 labs" />
+          <MetricCard icon={ShieldCheck} label="Pending approvals" value={String(openApprovals.length)} detail="AI and regulated paths" />
+          <MetricCard
+            icon={CircleDollarSign}
+            label="Monthly estimate"
+            value={`$${Math.round(environments.reduce((total, environment) => total + environment.cost, 0) / 100) / 10}k`}
+            detail="Current prototype state"
+          />
+          <MetricCard
+            icon={Settings}
+            label="Reachable integrations"
+            value={`${reachableIntegrations}/${integrationConfigs.length}`}
+            detail="Mock readiness checks"
+          />
         </div>
       </div>
 
@@ -820,24 +914,42 @@ function EnvironmentStatus({
 function AdminView({
   environments,
   integrations,
+  integrationConfigs,
+  session,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
   decideApproval,
+  saveIntegrationConfig,
+  runIntegrationCheck,
   openEnvironmentDetail,
 }: {
   environments: Environment[];
   integrations: Integration[];
+  integrationConfigs: IntegrationConfig[];
+  session: PlatformSession;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
   decideApproval: (approvalId: string, decision: "approve" | "reject") => void;
+  saveIntegrationConfig: (
+    integrationName: string,
+    payload: Pick<IntegrationConfig, "endpoint" | "credentialProfile">
+  ) => void;
+  runIntegrationCheck: (integrationName: string) => void;
   openEnvironmentDetail: (name: string) => void;
 }) {
   const pendingApprovals = approvals.filter((approval) => approval.status === "Pending").length;
 
   return (
     <section className="screen adminGrid">
+      <Panel title="Access model" action={session.authMode}>
+        <div className="controlGrid">
+          <CheckLine icon={UserRound} label="Current identity" value={`${session.displayName} (${session.user})`} passed />
+          <CheckLine icon={ShieldCheck} label="Roles" value={session.roles.join(", ")} passed />
+          <CheckLine icon={LockKeyhole} label="Authorization" value="Mock role boundaries, ready for OIDC mapping" passed={false} />
+        </div>
+      </Panel>
       <Panel title="Integration readiness" action="API connected">
         <div className="integrationList">
           {integrations.map(({ name, label, state, score }) => (
@@ -851,6 +963,14 @@ function AdminView({
             </div>
           ))}
         </div>
+      </Panel>
+      <Panel title="Integration configuration" action="Lab readiness">
+        <IntegrationConfigPanel
+          integrations={integrations}
+          configs={integrationConfigs}
+          saveIntegrationConfig={saveIntegrationConfig}
+          runIntegrationCheck={runIntegrationCheck}
+        />
       </Panel>
       <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
         <ApprovalQueue
@@ -972,6 +1092,98 @@ function ApprovalQueue({
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function IntegrationConfigPanel({
+  integrations,
+  configs,
+  saveIntegrationConfig,
+  runIntegrationCheck,
+}: {
+  integrations: Integration[];
+  configs: IntegrationConfig[];
+  saveIntegrationConfig: (
+    integrationName: string,
+    payload: Pick<IntegrationConfig, "endpoint" | "credentialProfile">
+  ) => void;
+  runIntegrationCheck: (integrationName: string) => void;
+}) {
+  return (
+    <div className="integrationConfigList">
+      {integrations.map((integration) => (
+        <IntegrationConfigRow
+          key={integration.name}
+          integration={integration}
+          config={configs.find((item) => item.name === integration.name) ?? createEmptyIntegrationConfig(integration.name)}
+          saveIntegrationConfig={saveIntegrationConfig}
+          runIntegrationCheck={runIntegrationCheck}
+        />
+      ))}
+    </div>
+  );
+}
+
+function IntegrationConfigRow({
+  integration,
+  config,
+  saveIntegrationConfig,
+  runIntegrationCheck,
+}: {
+  integration: Integration;
+  config: IntegrationConfig;
+  saveIntegrationConfig: (
+    integrationName: string,
+    payload: Pick<IntegrationConfig, "endpoint" | "credentialProfile">
+  ) => void;
+  runIntegrationCheck: (integrationName: string) => void;
+}) {
+  const [endpoint, setEndpoint] = useState(config.endpoint);
+  const [credentialProfile, setCredentialProfile] = useState(config.credentialProfile);
+
+  useEffect(() => {
+    setEndpoint(config.endpoint);
+    setCredentialProfile(config.credentialProfile);
+  }, [config.credentialProfile, config.endpoint]);
+
+  return (
+    <div className="integrationConfigRow">
+      <div className="integrationConfigHeader">
+        <div className="integrationLogo">{integration.name}</div>
+        <div>
+          <strong>{integration.product}</strong>
+          <span>{config.message}</span>
+        </div>
+        <span className={`status ${integrationConfigClass(config.status)}`}>{config.status}</span>
+      </div>
+      <label className="field compact">
+        Endpoint
+        <input
+          value={endpoint}
+          placeholder={`https://${integration.name.toLowerCase()}.lab.example`}
+          onChange={(event) => setEndpoint(event.target.value)}
+        />
+      </label>
+      <label className="field compact">
+        Credential profile
+        <input
+          value={credentialProfile}
+          placeholder={`${integration.name.toLowerCase()}-lab-readonly`}
+          onChange={(event) => setCredentialProfile(event.target.value)}
+        />
+      </label>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={() => saveIntegrationConfig(integration.name, { endpoint, credentialProfile })}>
+          <Settings size={15} />
+          Save
+        </button>
+        <button className="iconTextButton" onClick={() => runIntegrationCheck(integration.name)}>
+          <RefreshCw size={15} />
+          Check
+        </button>
+        {config.lastCheckedAt && <small>Last check {formatDateTime(config.lastCheckedAt)}</small>}
+      </div>
     </div>
   );
 }
@@ -1147,6 +1359,16 @@ function statusClass(status: Environment["status"]) {
   return status === "Ready" ? "ready" : status === "Provisioning" ? "running" : status === "Failed" ? "failed" : "approval";
 }
 
+function integrationConfigClass(status: IntegrationConfig["status"]) {
+  return status === "Reachable"
+    ? "ready"
+    : status === "Configured"
+      ? "running"
+      : status === "Failed"
+        ? "failed"
+        : "approval";
+}
+
 function resourceDescription(target: Target) {
   switch (target) {
     case "VM":
@@ -1168,6 +1390,36 @@ function enrichTemplate(template: Template, governance: TemplateGovernance) {
     owner: governance[template.id]?.owner ?? template.owner,
     tier: governance[template.id]?.tier ?? template.tier,
   };
+}
+
+const mockSession: PlatformSession = {
+  user: "platform.admin",
+  displayName: "Platform Admin",
+  roles: ["Developer", "Approver", "Platform Admin"],
+  authMode: "Mock OIDC",
+  identityProvider: "Browser mock identity stub",
+};
+
+function createEmptyIntegrationConfig(name: string): IntegrationConfig {
+  return {
+    name,
+    endpoint: "",
+    credentialProfile: "",
+    status: "Not configured",
+    message: "Add endpoint and credential profile values before lab validation.",
+  };
+}
+
+function deriveMockIntegrationConfigs(sourceIntegrations: Integration[]): IntegrationConfig[] {
+  return sourceIntegrations.map((integration) => ({
+    ...createEmptyIntegrationConfig(integration.name),
+    status: integration.state === "Healthy" ? "Configured" : "Not configured",
+    message: integration.state === "Healthy" ? "Mock adapter is configured for prototype readiness." : integration.nextStep,
+  }));
+}
+
+function replaceIntegrationConfig(configs: IntegrationConfig[], updated: IntegrationConfig) {
+  return [updated, ...configs.filter((item) => item.name !== updated.name)].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function deriveMockApprovals(environments: Environment[]): ApprovalRequest[] {

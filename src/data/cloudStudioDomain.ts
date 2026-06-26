@@ -31,6 +31,8 @@ export type Environment = {
 };
 
 export type ApprovalStatus = "Pending" | "Approved" | "Rejected";
+export type PlatformRole = "Developer" | "Approver" | "Platform Admin";
+export type IntegrationConfigStatus = "Not configured" | "Configured" | "Reachable" | "Failed";
 
 export type ApprovalRequest = {
   id: string;
@@ -52,6 +54,23 @@ export type Integration = {
   product: string;
   readiness: string;
   nextStep: string;
+};
+
+export type PlatformSession = {
+  user: string;
+  displayName: string;
+  roles: PlatformRole[];
+  authMode: "Mock OIDC";
+  identityProvider: string;
+};
+
+export type IntegrationConfig = {
+  name: string;
+  endpoint: string;
+  credentialProfile: string;
+  status: IntegrationConfigStatus;
+  lastCheckedAt?: string;
+  message: string;
 };
 
 export type JobEvent = {

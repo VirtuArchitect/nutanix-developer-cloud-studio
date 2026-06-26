@@ -5,14 +5,18 @@ import {
   integrations,
   templates,
   type ApprovalRequest,
+  type IntegrationConfig,
+  type PlatformSession,
   type TemplateGovernance,
 } from "../src/data/cloudStudioDomain";
 import type { ApiState } from "./types";
 
-export type ApiStore = {
+export type ApiRepository = {
   load(): Promise<ApiState>;
   save(state: ApiState): Promise<void>;
 };
+
+export type ApiStore = ApiRepository;
 
 function defaultGovernance(): TemplateGovernance {
   return Object.fromEntries(
@@ -36,11 +40,36 @@ function defaultApprovals(): ApprovalRequest[] {
     }));
 }
 
+function defaultSession(): PlatformSession {
+  return {
+    user: "platform.admin",
+    displayName: "Platform Admin",
+    roles: ["Developer", "Approver", "Platform Admin"],
+    authMode: "Mock OIDC",
+    identityProvider: "NDC Studio local identity stub",
+  };
+}
+
+function defaultIntegrationConfigs(): IntegrationConfig[] {
+  return integrations.map((integration) => ({
+    name: integration.name,
+    endpoint: "",
+    credentialProfile: "",
+    status: integration.state === "Healthy" ? "Configured" : "Not configured",
+    message:
+      integration.state === "Healthy"
+        ? "Mock adapter is configured for prototype readiness."
+        : integration.nextStep,
+  }));
+}
+
 export function createDefaultState(): ApiState {
   return {
     templates,
     environments: initialEnvironments,
     integrations,
+    integrationConfigs: defaultIntegrationConfigs(),
+    session: defaultSession(),
     governance: defaultGovernance(),
     jobs: [],
     approvals: defaultApprovals(),

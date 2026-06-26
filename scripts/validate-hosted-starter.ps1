@@ -1,0 +1,60 @@
+param(
+  [string]$HostName = "127.0.0.1",
+  [int]$Port = 8098
+)
+
+$ErrorActionPreference = "Stop"
+
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$dataFile = Join-Path $repoRoot ".data\validate-hosted-starter.json"
+$baseUrl = "http://${HostName}:${Port}"
+
+if (Test-Path $dataFile) {
+  Remove-Item -LiteralPath $dataFile -Force
+}
+
+$job = Start-Job -ScriptBlock {
+  param($repoRoot, $dataFile, $HostName, $Port)
+  Set-Location $repoRoot
+  $env:HOST = $HostName
+  $env:PORT = [string]$Port
+  $env:NDC_STATIC_DIR = "dist"
+  $env:NDC_DATA_FILE = $dataFile
+  npm.cmd run api:start
+} -ArgumentList $repoRoot, $dataFile, $HostName, $Port
+
+try {
+  Start-Sleep -Seconds 5
+
+  $health = Invoke-RestMethod -Uri "$baseUrl/healthz"
+  $ready = Invoke-RestMethod -Uri "$baseUrl/readyz"
+  $session = Invoke-RestMethod -Uri "$baseUrl/api/session"
+  $configs = Invoke-RestMethod -Uri "$baseUrl/api/integration-config"
+
+  if (-not $health.data.ok) {
+    throw "Health check failed."
+  }
+
+  if (-not $ready.data.ready) {
+    throw "Readiness check failed."
+  }
+
+  if (-not $session.data.roles -or $session.data.roles -notcontains "Platform Admin") {
+    throw "Session role check failed."
+  }
+
+  if (-not $configs.data -or $configs.data.Count -lt 1) {
+    throw "Integration configuration check failed."
+  }
+
+  Write-Output "Hosted starter validation passed at $baseUrl"
+}
+finally {
+  Stop-Job $job -ErrorAction SilentlyContinue | Out-Null
+  Receive-Job $job -ErrorAction SilentlyContinue | Out-String | Write-Output
+  Remove-Job $job -Force -ErrorAction SilentlyContinue
+
+  if (Test-Path $dataFile) {
+    Remove-Item -LiteralPath $dataFile -Force
+  }
+}

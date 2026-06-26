@@ -61,6 +61,13 @@
 - Refreshed the dashboard toward an operations/on-prem console layout.
 - Connected admin integration readiness and approval queue panels to API state.
 - Updated Playwright smoke coverage for approval queue and environment detail.
+- Started `v0.3.0-integration-readiness`.
+- Added mock OIDC session and role context to the hosted API.
+- Added API-backed integration configuration records and readiness checks.
+- Added a database-ready `ApiRepository` persistence contract.
+- Added admin access model and integration configuration panels.
+- Refined the dashboard to prioritize environment operations over the visual hero.
+- Added hosted starter validation script and expanded deployment configuration notes.
 
 ## Documentation Rule
 

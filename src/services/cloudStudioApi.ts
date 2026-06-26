@@ -1,4 +1,11 @@
-import type { ApprovalRequest, Environment, Integration, Target } from "../data/cloudStudioDomain";
+import type {
+  ApprovalRequest,
+  Environment,
+  Integration,
+  IntegrationConfig,
+  PlatformSession,
+  Target,
+} from "../data/cloudStudioDomain";
 
 export type ApiMode = "api" | "mock";
 
@@ -77,8 +84,32 @@ export async function fetchEnvironmentsFromApi() {
   return fetchJson<Environment[]>("/api/environments");
 }
 
+export async function fetchSessionFromApi() {
+  return fetchJson<PlatformSession>("/api/session");
+}
+
 export async function fetchIntegrationsFromApi() {
   return fetchJson<Integration[]>("/api/integrations");
+}
+
+export async function fetchIntegrationConfigsFromApi() {
+  return fetchJson<IntegrationConfig[]>("/api/integration-config");
+}
+
+export async function saveIntegrationConfigViaApi(
+  integrationName: string,
+  payload: Partial<Pick<IntegrationConfig, "endpoint" | "credentialProfile" | "status">>
+) {
+  return fetchJson<IntegrationConfig>(`/api/integration-config/${encodeURIComponent(integrationName)}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function runIntegrationCheckViaApi(integrationName: string) {
+  return fetchJson<IntegrationConfig>(`/api/integrations/${encodeURIComponent(integrationName)}/check`, {
+    method: "POST",
+  });
 }
 
 export async function fetchApprovalsFromApi() {

@@ -23,6 +23,12 @@ Invoke-WebRequest http://localhost:8080/healthz
 Invoke-WebRequest http://localhost:8080/readyz
 ```
 
+Hosted starter validation:
+
+```powershell
+.\scripts\validate-hosted-starter.ps1
+```
+
 ## Runtime Configuration
 
 The container uses these environment variables:
@@ -33,6 +39,19 @@ The container uses these environment variables:
 - `NDC_DATA_FILE=/data/ndc-studio.json`
 
 `NDC_DATA_FILE` stores mock API state in the `ndc-studio-data` Docker volume.
+
+Use `.env.example` as the local template for OIDC and Nutanix lab placeholders. Keep real URLs, client IDs, credential profile names, tokens, and passwords in environment-specific secret management, not in Git.
+
+## Prototype State Backup
+
+The starter uses a JSON file for mock state. For local evaluation, back up the state file or Docker volume before resetting the container:
+
+```powershell
+docker compose stop
+docker run --rm -v nutanix-developer-cloud-studio_ndc-studio-data:/data -v ${PWD}:/backup alpine cp /data/ndc-studio.json /backup/ndc-studio.backup.json
+```
+
+Restore by copying the backup back into the same volume before starting the service. This is only a prototype workflow; a production deployment should use a real database, backup schedule, restore test, and retention policy.
 
 ## Recommended Network Placement
 
