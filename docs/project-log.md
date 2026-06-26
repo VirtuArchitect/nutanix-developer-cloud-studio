@@ -52,6 +52,9 @@
 - Added API and on-prem deployment docs.
 - Added server-side API tests and included API type checking in the build flow.
 - Verified API health/readiness, environment creation, static serving, Docker image build, and Docker Compose startup.
+- Wired the frontend to auto-detect hosted/on-prem API mode through `/healthz`.
+- Added API-backed environment loading and request submission with browser mock fallback.
+- Verified Playwright smoke against the API-hosted built app using `PLAYWRIGHT_BASE_URL`.
 
 ## Documentation Rule
 

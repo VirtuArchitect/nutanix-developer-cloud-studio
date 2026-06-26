@@ -1,4 +1,5 @@
 import type { Server } from "node:http";
+import { request as httpRequest } from "node:http";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApiServer } from "./apiServer";
 import { MemoryStore } from "./storage";
@@ -85,25 +86,49 @@ describe("api server", () => {
   });
 
   async function requestJson(path: string, init?: RequestInit) {
-    const response = await fetch(`${baseUrl}${path}`, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...init?.headers,
-      },
-    });
-    return response.json();
+    const response = await nodeRequest(path, init);
+    return JSON.parse(response.body);
   }
 
   async function expectJson(path: string, status: number, body: unknown, init?: RequestInit) {
-    const response = await fetch(`${baseUrl}${path}`, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...init?.headers,
-      },
-    });
+    const response = await nodeRequest(path, init);
     expect(response.status).toBe(status);
-    expect(await response.json()).toEqual(body);
+    expect(JSON.parse(response.body)).toEqual(body);
+  }
+
+  async function nodeRequest(path: string, init?: RequestInit): Promise<{ status: number; body: string }> {
+    const url = new URL(`${baseUrl}${path}`);
+    const body = typeof init?.body === "string" ? init.body : undefined;
+
+    return new Promise((resolve, reject) => {
+      const request = httpRequest(
+        {
+          hostname: url.hostname,
+          port: url.port,
+          path: url.pathname,
+          method: init?.method ?? "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(body ? { "Content-Length": Buffer.byteLength(body) } : {}),
+          },
+        },
+        (response) => {
+          const chunks: Buffer[] = [];
+          response.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+          response.on("end", () =>
+            resolve({
+              status: response.statusCode ?? 0,
+              body: Buffer.concat(chunks).toString("utf8"),
+            })
+          );
+        }
+      );
+
+      request.on("error", reject);
+      if (body) {
+        request.write(body);
+      }
+      request.end();
+    });
   }
 });

@@ -40,6 +40,12 @@ import {
   updateEnvironmentStatus,
   upsertRequestedEnvironment,
 } from "./services/provisioningService";
+import {
+  checkApiHealth,
+  createEnvironmentViaApi,
+  fetchEnvironmentsFromApi,
+  type ApiHealth,
+} from "./services/cloudStudioApi";
 
 export function App() {
   const [view, setView] = useState<View>("dashboard");
@@ -53,17 +59,53 @@ export function App() {
   const [templateGovernance, setTemplateGovernance] = useState<TemplateGovernance>(() =>
     loadTemplateGovernance(templates)
   );
+  const [apiHealth, setApiHealth] = useState<ApiHealth>({ mode: "mock", label: "Checking API" });
+  const [requestError, setRequestError] = useState("");
 
   const selectedTemplate = enrichTemplate(templates.find((template) => template.id === selectedTemplateId) ?? templates[0], templateGovernance);
   const estimatedCost = useMemo(() => estimateMonthlyCost(selectedTemplate, selectedTargets), [selectedTargets, selectedTemplate]);
 
   useEffect(() => {
-    saveEnvironments(environments);
-  }, [environments]);
+    if (apiHealth.mode === "mock") {
+      saveEnvironments(environments);
+    }
+  }, [apiHealth.mode, environments]);
 
   useEffect(() => {
     saveTemplateGovernance(templateGovernance);
   }, [templateGovernance]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function hydrateFromApi() {
+      const health = await checkApiHealth();
+      if (!active) {
+        return;
+      }
+
+      setApiHealth(health);
+
+      if (health.mode === "api") {
+        try {
+          const apiEnvironments = await fetchEnvironmentsFromApi();
+          if (active) {
+            setEnvironments(apiEnvironments);
+          }
+        } catch {
+          if (active) {
+            setApiHealth({ mode: "mock", label: "Browser mock mode" });
+          }
+        }
+      }
+    }
+
+    void hydrateFromApi();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (jobState !== "Queued" && jobState !== "Running") {
@@ -106,19 +148,47 @@ export function App() {
     );
   }
 
-  function launchEnvironment() {
+  async function launchEnvironment() {
+    setRequestError("");
     setJobState("Queued");
     setJobStep(0);
-    setEnvironments((current) =>
-      upsertRequestedEnvironment(current, {
-        name: environmentName,
-        template: selectedTemplate.name,
-        owner: "demo.user",
-        region,
-        cost: estimatedCost,
-      })
-    );
+
+    if (apiHealth.mode === "api") {
+      try {
+        const result = await createEnvironmentViaApi({
+          name: environmentName,
+          templateId: selectedTemplate.id,
+          owner: "demo.user",
+          region,
+          targets: selectedTargets,
+        });
+        setEnvironments((current) => [
+          result.environment,
+          ...current.filter((environment) => environment.name !== result.environment.name),
+        ]);
+        if (result.environment.status === "Needs approval") {
+          setJobState("Approval");
+        }
+      } catch {
+        setRequestError("API request failed. Falling back to browser mock mode for this request.");
+        setApiHealth({ mode: "mock", label: "Browser mock mode" });
+        setEnvironments((current) => createMockEnvironment(current));
+      }
+    } else {
+      setEnvironments((current) => createMockEnvironment(current));
+    }
+
     setView("environment");
+  }
+
+  function createMockEnvironment(current: Environment[]) {
+    return upsertRequestedEnvironment(current, {
+      name: environmentName,
+      template: selectedTemplate.name,
+      owner: "demo.user",
+      region,
+      cost: estimatedCost,
+    });
   }
 
   function updateTemplateGovernance(id: string, field: "owner" | "tier", value: string) {
@@ -160,7 +230,7 @@ export function App() {
         </nav>
         <div className="sidebarStatus">
           <span className="dot" />
-          Prism Central mock connected
+          {apiHealth.label}
         </div>
       </aside>
 
@@ -200,6 +270,8 @@ export function App() {
             setSelectedTemplateId={setSelectedTemplateId}
             toggleTarget={toggleTarget}
             launchEnvironment={launchEnvironment}
+            requestError={requestError}
+            apiMode={apiHealth.mode}
           />
         )}
         {view === "environment" && (
@@ -401,6 +473,8 @@ function CreateEnvironment({
   setSelectedTemplateId,
   toggleTarget,
   launchEnvironment,
+  requestError,
+  apiMode,
 }: {
   template: Template;
   selectedTargets: Target[];
@@ -412,6 +486,8 @@ function CreateEnvironment({
   setSelectedTemplateId: (value: string) => void;
   toggleTarget: (target: Target) => void;
   launchEnvironment: () => void;
+  requestError: string;
+  apiMode: "api" | "mock";
 }) {
   return (
     <section className="screen createGrid">
@@ -464,7 +540,13 @@ function CreateEnvironment({
           value={selectedTargets.includes("AI Endpoint") ? "Requires AI platform approval" : "No approval required"}
           passed={!selectedTargets.includes("AI Endpoint")}
         />
-        <CheckLine icon={Network} label="Integrations" value={template.runtime} passed />
+        <CheckLine
+          icon={Network}
+          label="Integrations"
+          value={apiMode === "api" ? `${template.runtime} via hosted API` : `${template.runtime} in browser mock mode`}
+          passed
+        />
+        {requestError && <p className="formNotice">{requestError}</p>}
         <button className="fullButton launch" onClick={launchEnvironment}>
           Launch simulated provisioning
         </button>

@@ -8,6 +8,9 @@ This project uses release tags for public milestones. The current MVP release is
 
 ### Added
 
+- Frontend API auto-detection through `/healthz` for hosted/on-prem mode.
+- API-backed environment loading and environment request submission.
+- Browser mock fallback when the hosted API is unavailable.
 - Node HTTP API starter with health, readiness, catalog, environment, integration, job, and audit endpoints.
 - Memory and JSON-file persistence abstractions for hosted/on-prem mock API state.
 - Dockerfile and Docker Compose starter for private-network evaluation.
@@ -21,6 +24,7 @@ This project uses release tags for public milestones. The current MVP release is
 
 ### Changed
 
+- Playwright can target an API-hosted built app with `PLAYWRIGHT_BASE_URL`.
 - Vite now emits relative asset paths for repository-path static hosting.
 - README now references the repo-owned dashboard screenshot instead of a GitHub attachment URL.
 

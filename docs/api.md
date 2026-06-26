@@ -22,6 +22,15 @@ Useful environment variables:
 - `PORT`: listen port. Default: `8080`
 - `NDC_STATIC_DIR`: optional static frontend directory to serve from the same process
 - `NDC_DATA_FILE`: optional JSON file for persisted mock API state
+- `VITE_API_BASE_URL`: optional frontend build-time override for API calls. Leave empty for same-origin `/api`.
+
+## Frontend API Mode
+
+The React frontend now checks `/healthz` on load:
+
+- If the API responds, the app enters hosted/on-prem API mode and loads environments from `/api/environments`.
+- If the API is unavailable, the app stays in browser mock mode for GitHub Pages and local Vite demos.
+- Environment launches call `POST /api/environments` in API mode and fall back to browser mock behavior if the request fails.
 
 ## Endpoints
 
@@ -62,4 +71,4 @@ The API returns a mock environment, mock provisioning jobs, and an audit event.
 - No authentication or authorization yet.
 - No production database yet.
 - No secret storage yet.
-- The GitHub Pages frontend still uses the browser mock path; the on-prem starter API is ready for the next UI wiring slice.
+- GitHub Pages uses browser mock mode because no backend is deployed with the static site.

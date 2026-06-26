@@ -12,6 +12,11 @@
     "declaration": false,
     "sourceMap": true
   },
-  "include": ["server/**/*.ts", "src/data/cloudStudioDomain.ts", "src/services/**/*.ts"],
+  "include": [
+    "server/**/*.ts",
+    "src/data/cloudStudioDomain.ts",
+    "src/services/nutanixAdapters.ts",
+    "src/services/provisioningService.ts"
+  ],
   "exclude": ["src/**/*.test.ts", "server/**/*.test.ts"]
 }

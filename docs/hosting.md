@@ -51,6 +51,8 @@ The starter exposes:
 
 Mock API state can be persisted with `NDC_DATA_FILE`.
 
+The frontend auto-detects this hosted API through `/healthz`. When it is running behind the same origin, environment activity is loaded from `/api/environments` and new environment requests are submitted to `POST /api/environments`.
+
 ## Integration Boundary
 
 Keep Nutanix credentials and provisioning logic out of the browser. The frontend should call a backend API, and the backend should own policy checks, approvals, audit logging, and Nutanix API calls.

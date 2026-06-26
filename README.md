@@ -92,6 +92,8 @@ Open:
 
 `http://localhost:8080`
 
+In the hosted/on-prem starter, the frontend auto-detects the same-origin API through `/healthz`, loads environments from `/api/environments`, and submits requests to `POST /api/environments`. If no API is available, it falls back to browser mock mode for the public GitHub Pages demo.
+
 ## Documentation
 
 Project documentation lives in `docs/`.

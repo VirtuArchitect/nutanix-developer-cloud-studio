@@ -82,11 +82,26 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Next Hosted / On-Prem Slice
 
-- Wire the frontend to the API when `VITE_API_BASE_URL` or same-origin `/api` is available.
-- Keep local mock mode as a fallback for GitHub Pages.
+- Wire the frontend to the API when `VITE_API_BASE_URL` or same-origin `/api` is available - done.
+- Keep local mock mode as a fallback for GitHub Pages - done.
 - Add real approval queue views backed by the API.
 - Add OIDC-ready auth boundaries and role modeling.
 - Replace JSON-file persistence with a database-ready repository interface.
+
+## Current Hosted / On-Prem Slice
+
+- Frontend checks `/healthz` at startup to detect hosted/on-prem API mode.
+- API mode loads environments from `/api/environments`.
+- API mode launches environment requests through `POST /api/environments`.
+- Browser mock mode remains the fallback for GitHub Pages, plain Vite dev, and API failures.
+- Playwright can target either Vite dev or an API-hosted built app through `PLAYWRIGHT_BASE_URL`.
+
+## Next Hosted / On-Prem Slice
+
+- Add approval queue views backed by `/api/audit-events` and future approval endpoints.
+- Add environment detail pages backed by `/api/environments` and `/api/provisioning-jobs`.
+- Add OIDC-ready auth boundaries and role modeling.
+- Add a database-ready repository interface to replace JSON-file persistence.
 
 ## Suggested Tech Stack
 

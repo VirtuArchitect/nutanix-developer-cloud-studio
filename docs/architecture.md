@@ -77,7 +77,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Job transitions are simulated in the browser with timers.
 - Approval states are modeled for AI endpoint requests, but no identity or workflow engine is connected.
 - Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
-- The frontend is not yet wired to use the API by default; that is the next hosted/on-prem slice.
+- The frontend auto-detects the hosted/on-prem API through `/healthz` and falls back to browser mock mode when the API is unavailable.
 
 ## Real Integration Readiness Questions
 
