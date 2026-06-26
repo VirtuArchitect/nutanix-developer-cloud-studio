@@ -1,0 +1,35 @@
+name: Documentation
+description: Report missing, confusing, or outdated documentation.
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Documentation location
+      description: Which file, section, or page needs attention?
+      placeholder: README.md, docs/architecture.md, docs/demo-script.md
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What should change?
+      description: Describe what is missing, inaccurate, or confusing.
+    validations:
+      required: true
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested wording or structure
+      description: Optional. Add proposed wording, examples, or links.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I checked existing issues and discussions for a duplicate.
+          required: true
+        - label: I did not include private local paths, credentials, customer data, or sensitive infrastructure details.
+          required: true

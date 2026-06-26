@@ -33,6 +33,8 @@
 - Performed public-readiness checks for committed environment files, likely secrets, screenshots, and branding caveats.
 - Added README disclaimer that the project is currently an independent prototype with simulated Nutanix integrations and no endorsement unless explicitly stated.
 - Removed personal local filesystem paths from public documentation and made Obsidian sync configurable through `NDC_STUDIO_OBSIDIAN_VAULT`.
+- Added GitHub issue templates for bug reports, feature requests, and documentation updates.
+- Added a GitHub pull request template aligned to the project definition of done.
 
 ## Documentation Rule
 

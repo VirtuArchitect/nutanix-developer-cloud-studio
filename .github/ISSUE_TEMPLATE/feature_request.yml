@@ -1,0 +1,64 @@
+name: Feature request
+description: Suggest a product, prototype, or integration improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for actionable feature ideas. For open-ended conversation, use GitHub Discussions.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What user need, workflow gap, or platform-team problem does this address?
+      placeholder: Platform admins need a clearer approval queue for AI endpoint requests.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the experience or behavior you want.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Developer portal
+        - App catalog and golden paths
+        - Create environment workflow
+        - Environment status and provisioning
+        - Platform admin
+        - Nutanix integration readiness
+        - Documentation
+        - Testing or engineering
+    validations:
+      required: true
+  - type: textarea
+    id: nutanix_context
+    attributes:
+      label: Nutanix context
+      description: If relevant, note which simulated or future integration this relates to.
+      placeholder: NCI, NKP, NDB, NUS, NCM, NAI, Prism Central, NCM Self-Service, Terraform, Crossplane.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How will we know this is done?
+      placeholder: |
+        - Admins can see approval requests in one queue.
+        - AI endpoint requests show owner, cost, and reason.
+        - Unit tests cover the approval state transition.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I checked existing issues and discussions for a duplicate.
+          required: true
+        - label: This request does not require or expose real Nutanix credentials or private infrastructure details.
+          required: true

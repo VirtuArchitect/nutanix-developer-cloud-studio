@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Product ideas and open discussion
+    url: https://github.com/VirtuArchitect/nutanix-developer-cloud-studio/discussions
+    about: Use Discussions for brainstorming, roadmap conversation, and broader feedback.
+  - name: Security policy
+    url: https://github.com/VirtuArchitect/nutanix-developer-cloud-studio/security/policy
+    about: Please report security concerns through the security policy rather than public issues.

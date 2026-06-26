@@ -1,0 +1,64 @@
+name: Bug report
+description: Report something that is broken or behaving unexpectedly.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Nutanix Developer Cloud Studio. Please include enough detail for someone else to reproduce the issue.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is broken?
+      placeholder: The environment status timeline does not advance after launching a request.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps that trigger the issue.
+      placeholder: |
+        1. Open the dashboard.
+        2. Click Create environment.
+        3. Launch provisioning.
+        4. Observe the status page.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, and local app URL if relevant.
+      placeholder: Chrome on Windows 11, http://localhost:4180
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or logs
+      description: Add screenshots or relevant console output if helpful. Do not include secrets or private infrastructure details.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I checked existing issues and discussions for a duplicate.
+          required: true
+        - label: I did not include credentials, API keys, tokens, customer data, or private infrastructure details.
+          required: true
