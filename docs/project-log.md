@@ -37,6 +37,13 @@
 - Added a GitHub pull request template aligned to the project definition of done.
 - Set the MVP release version to `v0.1.0-mvp`.
 - Added `CHANGELOG.md` with the initial MVP release notes and planned next changes.
+- Added GitHub Actions CI for unit tests, build, and Playwright smoke tests.
+- Added GitHub Pages deployment workflow for the static prototype.
+- Added Playwright smoke coverage for the dashboard-to-admin workflow.
+- Added backend-shaped mock Nutanix adapter contracts and tests.
+- Added a repo-owned dashboard screenshot asset and updated the README image reference.
+- Updated Vite asset base for repository-path static hosting.
+- Added ready-to-paste GitHub Release notes for `v0.1.0-mvp`.
 
 ## Documentation Rule
 

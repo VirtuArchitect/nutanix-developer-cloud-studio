@@ -22,9 +22,7 @@ This repository is an independent clickable MVP prototype. All Nutanix integrati
 - Admin view for platform teams
 - Optional mock API layer for prototype provisioning jobs
 
-<img width="1719" height="1268" alt="image" src="https://github.com/user-attachments/assets/25e94adf-551b-4f06-9d46-884191cfa3ef" />
-
-
+![Nutanix Developer Cloud Studio dashboard](docs/assets/dashboard-screenshot.png)
 
 ## Run The Prototype
 
@@ -56,6 +54,18 @@ Run unit tests:
 npm run test
 ```
 
+Run end-to-end smoke tests:
+
+```powershell
+npm run test:e2e
+```
+
+Run the full local verification suite:
+
+```powershell
+npm run test:all
+```
+
 ## Documentation
 
 Project documentation lives in `docs/`.
@@ -80,6 +90,7 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/project-brief.md` for positioning and scope
 - `docs/demo-script.md` for stakeholder walkthroughs
 - `docs/hosting.md` for prototype and on-premises hosting direction
+- `docs/release-notes/` for GitHub Release copy
 
 ## Repository Standards
 
@@ -93,5 +104,10 @@ This repository also includes project governance and delivery guidance:
 - `CONTRIBUTING.md`: contribution workflow
 - `SECURITY.md`: vulnerability reporting policy
 - `CHANGELOG.md`: release history and planned next changes
+
+## Automation
+
+- `.github/workflows/ci.yml`: runs unit tests, build, and Playwright smoke tests.
+- `.github/workflows/pages.yml`: builds and deploys the static prototype to GitHub Pages when Pages is enabled for the repository.
 
 Changes are complete only when implementation, tests, smoke testing, and any required security review are finished or explicitly documented as blocked.

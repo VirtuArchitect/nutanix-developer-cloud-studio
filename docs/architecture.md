@@ -36,14 +36,19 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Vite, React, and TypeScript
 - Domain mock data in `src/data/cloudStudioData.ts`
 - Mock provisioning service in `src/services/provisioningService.ts`
+- Backend-shaped Nutanix adapter contracts in `src/services/nutanixAdapters.ts`
 - Requested environments persisted in browser local storage
 - Admin template governance edits persisted in browser local storage
 - Timed mock provisioning state transitions exposed through the provisioning service
 - Template details view for golden-path outcomes and readiness notes
 - Admin governance controls for prototype template owner and tier edits
 - Unit tests in `src/services/provisioningService.test.ts`
+- Adapter contract tests in `src/services/nutanixAdapters.test.ts`
+- End-to-end smoke test in `tests/e2e/prototype-smoke.spec.ts`
 - Generated dashboard bitmap asset in `src/assets/developer-cloud-visual.png`
+- Repository-owned dashboard screenshot in `docs/assets/dashboard-screenshot.png`
 - Responsive console layout in `src/styles.css`
+- GitHub Actions CI and Pages deployment workflows in `.github/workflows`
 - No live Nutanix API calls yet
 
 ## Current State Boundaries
@@ -53,6 +58,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Admin template governance edits persist across browser refreshes through local storage.
 - Job transitions are simulated in the browser with timers.
 - Approval states are modeled for AI endpoint requests, but no identity or workflow engine is connected.
+- Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
 
 ## Real Integration Readiness Questions
 

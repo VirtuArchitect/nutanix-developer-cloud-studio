@@ -25,7 +25,7 @@ Format check: not configured
 Type check: npm.cmd run build
 Unit tests: npm.cmd run test
 Integration tests: not configured
-End-to-end tests: not configured
+End-to-end tests: npm.cmd run test:e2e
 Build: npm.cmd run build
 Run app: npm.cmd run dev -- --host localhost --port 4180
 Smoke test: npm.cmd run dev -- --host localhost --port 4180, open http://localhost:4180, create an environment, and confirm the status timeline advances

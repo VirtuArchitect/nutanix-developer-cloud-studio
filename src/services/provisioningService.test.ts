@@ -37,7 +37,7 @@ describe("provisioningService", () => {
       {
         name: "saved-dev",
         template: "Linux VM App Sandbox",
-        owner: "john",
+        owner: "demo.user",
         region: "Berlin Lab",
         status: "Ready",
         cost: 920,
@@ -78,7 +78,7 @@ describe("provisioningService", () => {
       {
         name: "payments-dev",
         template: "Spring API with NDB Postgres",
-        owner: "john",
+        owner: "demo.user",
         region: "Paris DR",
         cost: 1995,
       },

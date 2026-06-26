@@ -6,13 +6,24 @@ This project uses release tags for public milestones. The current MVP release is
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Actions CI workflow for unit tests, production build, and Playwright smoke tests.
+- GitHub Pages deployment workflow for the static prototype.
+- Playwright end-to-end smoke test for the core prototype workflow.
+- Backend-shaped mock Nutanix adapter contracts and tests.
+- Repository-owned dashboard screenshot asset for the README.
+
+### Changed
+
+- Vite now emits relative asset paths for repository-path static hosting.
+- README now references the repo-owned dashboard screenshot instead of a GitHub attachment URL.
+
 ### Planned
 
-- Add end-to-end smoke coverage for catalog to create to environment status.
-- Add a backend-shaped mock API adapter interface for future Nutanix integrations.
-- Add CI checks for build and unit tests.
-- Add GitHub Pages or another static hosting workflow for prototype sharing.
 - Add a lightweight approval queue interaction for AI endpoint and regulated data requests.
+- Add environment detail pages with owner, cost, resources, timeline, mock logs, and expiry state.
+- Add template versioning states: draft, published, deprecated, and owner approval.
 
 ## [v0.1.0-mvp] - 2026-06-26
 

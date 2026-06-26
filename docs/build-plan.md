@@ -43,11 +43,29 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Next Recommended Slice
 
-- Add an end-to-end smoke test for catalog to create to status
-- Add a backend-shaped mock API adapter interface for future Nutanix integrations
-- Add CI checks for build and unit tests
-- Add GitHub Pages or another static hosting workflow for prototype sharing
+- Add an end-to-end smoke test for catalog to create to status - done
+- Add a backend-shaped mock API adapter interface for future Nutanix integrations - done
+- Add CI checks for build and unit tests - done
+- Add GitHub Pages or another static hosting workflow for prototype sharing - done
+- Add a repo-owned dashboard screenshot asset - done
 - Add a lightweight approval queue interaction for AI endpoint and regulated data requests
+
+## Current Upgrade Slice
+
+- Playwright smoke coverage now verifies dashboard, catalog, template detail, create environment, environment status, and admin readiness.
+- GitHub Actions CI runs unit tests, production build, and the Playwright smoke test.
+- GitHub Pages deployment workflow builds the static prototype from `main`.
+- Vite uses relative asset paths for repository-path static hosting.
+- README uses `docs/assets/dashboard-screenshot.png` instead of a GitHub attachment URL.
+- Mock Nutanix adapter contracts define readiness checks, provisioning jobs, and resource descriptions for future real integrations.
+
+## Next Upgrade Slice
+
+- Create the GitHub Release from tag `v0.1.0-mvp` if it has not already been created in GitHub.
+- Enable GitHub Pages in repository settings and confirm the deployed URL.
+- Add a lightweight approval queue interaction for AI endpoint and regulated data requests.
+- Add environment detail pages with owner, cost, resources, timeline, mock logs, and expiry state.
+- Add template versioning states: draft, published, deprecated, and owner approval.
 
 ## Suggested Tech Stack
 

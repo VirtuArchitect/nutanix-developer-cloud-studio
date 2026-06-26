@@ -113,7 +113,7 @@ export function App() {
       upsertRequestedEnvironment(current, {
         name: environmentName,
         template: selectedTemplate.name,
-        owner: "john",
+        owner: "demo.user",
         region,
         cost: estimatedCost,
       })
