@@ -4,6 +4,8 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
+Current release: `v0.1.0-mvp`
+
 ## Disclaimer
 
 This repository is an independent clickable MVP prototype. All Nutanix integrations, provisioning jobs, policy checks, costs, environments, and admin workflows are simulated for demonstration purposes only. This project does not currently provision real Nutanix infrastructure and is not affiliated with, sponsored by, or endorsed by Nutanix unless explicitly stated otherwise.
@@ -90,5 +92,6 @@ This repository also includes project governance and delivery guidance:
 - `PENTEST_SCOPE_TEMPLATE.md`: authorization template for security testing
 - `CONTRIBUTING.md`: contribution workflow
 - `SECURITY.md`: vulnerability reporting policy
+- `CHANGELOG.md`: release history and planned next changes
 
 Changes are complete only when implementation, tests, smoke testing, and any required security review are finished or explicitly documented as blocked.

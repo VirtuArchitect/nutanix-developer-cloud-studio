@@ -35,6 +35,8 @@
 - Removed personal local filesystem paths from public documentation and made Obsidian sync configurable through `NDC_STUDIO_OBSIDIAN_VAULT`.
 - Added GitHub issue templates for bug reports, feature requests, and documentation updates.
 - Added a GitHub pull request template aligned to the project definition of done.
+- Set the MVP release version to `v0.1.0-mvp`.
+- Added `CHANGELOG.md` with the initial MVP release notes and planned next changes.
 
 ## Documentation Rule
 
