@@ -16,6 +16,10 @@ Nutanix Developer Cloud Studio shows how developers could request, launch, and g
 - Admin view for platform teams
 - Optional mock API layer for prototype provisioning jobs
 
+<img width="1719" height="1268" alt="image" src="https://github.com/user-attachments/assets/25e94adf-551b-4f06-9d46-884191cfa3ef" />
+
+
+
 ## Run The Prototype
 
 Install dependencies:
