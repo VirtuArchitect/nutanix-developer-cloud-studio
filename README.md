@@ -6,6 +6,8 @@ Nutanix Developer Cloud Studio shows how developers could request, launch, and g
 
 Current release: `v0.1.0-mvp`
 
+Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
+
 ## Disclaimer
 
 This repository is an independent clickable MVP prototype. All Nutanix integrations, provisioning jobs, policy checks, costs, environments, and admin workflows are simulated for demonstration purposes only. This project does not currently provision real Nutanix infrastructure and is not affiliated with, sponsored by, or endorsed by Nutanix unless explicitly stated otherwise.

@@ -44,6 +44,7 @@
 - Added a repo-owned dashboard screenshot asset and updated the README image reference.
 - Updated Vite asset base for repository-path static hosting.
 - Added ready-to-paste GitHub Release notes for `v0.1.0-mvp`.
+- Enabled GitHub Pages deployment and verified the live static prototype URL.
 
 ## Documentation Rule
 

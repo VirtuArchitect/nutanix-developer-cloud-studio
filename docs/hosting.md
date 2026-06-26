@@ -31,3 +31,9 @@ Keep Nutanix credentials and provisioning logic out of the browser. The frontend
 ## First Deployment Recommendation
 
 Use static hosting for the clickable MVP first. Move to on-premises or private-cloud hosting when real Nutanix APIs, SSO, credentials, and audit requirements are introduced.
+
+## Current Prototype Deployment
+
+The current static prototype is published with GitHub Pages:
+
+`https://virtuarchitect.github.io/nutanix-developer-cloud-studio/`
