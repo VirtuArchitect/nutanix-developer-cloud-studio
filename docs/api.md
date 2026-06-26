@@ -31,6 +31,7 @@ The React frontend now checks `/healthz` on load:
 - If the API responds, the app enters hosted/on-prem API mode and loads environments from `/api/environments`.
 - If the API is unavailable, the app stays in browser mock mode for GitHub Pages and local Vite demos.
 - Environment launches call `POST /api/environments` in API mode and fall back to browser mock behavior if the request fails.
+- Approval queue, environment detail, and admin integration readiness views read from API endpoints in hosted/on-prem API mode.
 
 ## Endpoints
 
@@ -45,7 +46,9 @@ The React frontend now checks `/healthz` on load:
 - `GET /api/environments`
 - `GET /api/integrations`
 - `GET /api/provisioning-jobs`
+- `GET /api/approvals`
 - `GET /api/audit-events`
+- `GET /api/environments/:name`
 
 ### Environment Requests
 
@@ -63,7 +66,14 @@ Example request:
 }
 ```
 
-The API returns a mock environment, mock provisioning jobs, and an audit event.
+The API returns a mock environment, mock provisioning jobs, an audit event, and an approval request when the target/template requires platform review.
+
+### Approval Decisions
+
+- `POST /api/approvals/:id/approve`
+- `POST /api/approvals/:id/reject`
+
+Approval decisions update the stored approval request, write an audit event, and move the associated mock environment to `Provisioning` or `Failed`.
 
 ## Current Limits
 
@@ -72,3 +82,4 @@ The API returns a mock environment, mock provisioning jobs, and an audit event.
 - No production database yet.
 - No secret storage yet.
 - GitHub Pages uses browser mock mode because no backend is deployed with the static site.
+- Approval decisions are mock governance records only; they do not authorize real infrastructure changes.

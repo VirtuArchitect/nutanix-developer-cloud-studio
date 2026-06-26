@@ -1,4 +1,4 @@
-export type View = "dashboard" | "catalog" | "template" | "create" | "environment" | "admin";
+export type View = "dashboard" | "catalog" | "template" | "create" | "environment" | "environmentDetail" | "admin";
 export type Target = "VM" | "Kubernetes" | "Database" | "Storage" | "AI Endpoint";
 export type TemplateTier = "Standard" | "Regulated" | "Accelerated";
 export type EnvironmentStatus = "Ready" | "Provisioning" | "Needs approval" | "Failed";
@@ -28,6 +28,20 @@ export type Environment = {
   status: EnvironmentStatus;
   cost: number;
   createdAt: string;
+};
+
+export type ApprovalStatus = "Pending" | "Approved" | "Rejected";
+
+export type ApprovalRequest = {
+  id: string;
+  environmentName: string;
+  template: string;
+  owner: string;
+  reason: string;
+  status: ApprovalStatus;
+  requestedAt: string;
+  decidedAt?: string;
+  decidedBy?: string;
 };
 
 export type Integration = {

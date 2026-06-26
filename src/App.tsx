@@ -4,6 +4,7 @@ import {
   CircleDollarSign,
   Cloud,
   Code2,
+  ExternalLink,
   Gauge,
   Layers3,
   LockKeyhole,
@@ -23,6 +24,8 @@ import {
   targetIcons,
   templates,
   type Environment,
+  type ApprovalRequest,
+  type Integration,
   type JobState,
   type Target,
   type Template,
@@ -43,8 +46,13 @@ import {
 import {
   checkApiHealth,
   createEnvironmentViaApi,
+  decideApprovalViaApi,
   fetchEnvironmentsFromApi,
+  fetchEnvironmentDetailFromApi,
+  fetchApprovalsFromApi,
+  fetchIntegrationsFromApi,
   type ApiHealth,
+  type EnvironmentDetail,
 } from "./services/cloudStudioApi";
 
 export function App() {
@@ -56,6 +64,10 @@ export function App() {
   const [jobState, setJobState] = useState<JobState>("Idle");
   const [jobStep, setJobStep] = useState(0);
   const [environments, setEnvironments] = useState<Environment[]>(() => loadEnvironments());
+  const [runtimeIntegrations, setRuntimeIntegrations] = useState<Integration[]>(integrations);
+  const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
+  const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
+  const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
   const [templateGovernance, setTemplateGovernance] = useState<TemplateGovernance>(() =>
     loadTemplateGovernance(templates)
   );
@@ -68,6 +80,7 @@ export function App() {
   useEffect(() => {
     if (apiHealth.mode === "mock") {
       saveEnvironments(environments);
+      setApprovals(deriveMockApprovals(environments));
     }
   }, [apiHealth.mode, environments]);
 
@@ -88,13 +101,21 @@ export function App() {
 
       if (health.mode === "api") {
         try {
-          const apiEnvironments = await fetchEnvironmentsFromApi();
+          const [apiEnvironments, apiIntegrations, apiApprovals] = await Promise.all([
+            fetchEnvironmentsFromApi(),
+            fetchIntegrationsFromApi(),
+            fetchApprovalsFromApi(),
+          ]);
           if (active) {
             setEnvironments(apiEnvironments);
+            setRuntimeIntegrations(apiIntegrations);
+            setApprovals(apiApprovals);
+            setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
           if (active) {
             setApiHealth({ mode: "mock", label: "Browser mock mode" });
+            setApprovals(deriveMockApprovals(environments));
           }
         }
       }
@@ -166,6 +187,10 @@ export function App() {
           result.environment,
           ...current.filter((environment) => environment.name !== result.environment.name),
         ]);
+        setSelectedEnvironmentName(result.environment.name);
+        if (result.approval) {
+          setApprovals((current) => [result.approval as ApprovalRequest, ...current]);
+        }
         if (result.environment.status === "Needs approval") {
           setJobState("Approval");
         }
@@ -189,6 +214,74 @@ export function App() {
       region,
       cost: estimatedCost,
     });
+  }
+
+  async function refreshApiState(environmentNameToRefresh = selectedEnvironmentName) {
+    if (apiHealth.mode !== "api") {
+      return;
+    }
+
+    const [apiEnvironments, apiIntegrations, apiApprovals] = await Promise.all([
+      fetchEnvironmentsFromApi(),
+      fetchIntegrationsFromApi(),
+      fetchApprovalsFromApi(),
+    ]);
+    setEnvironments(apiEnvironments);
+    setRuntimeIntegrations(apiIntegrations);
+    setApprovals(apiApprovals);
+
+    if (environmentNameToRefresh) {
+      const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
+      setEnvironmentDetail(detail);
+    }
+  }
+
+  async function openEnvironmentDetail(name: string) {
+    setSelectedEnvironmentName(name);
+    if (apiHealth.mode === "api") {
+      try {
+        setEnvironmentDetail(await fetchEnvironmentDetailFromApi(name));
+      } catch {
+        setEnvironmentDetail(createMockEnvironmentDetail(environments, approvals, name));
+      }
+    } else {
+      setEnvironmentDetail(createMockEnvironmentDetail(environments, approvals, name));
+    }
+    setView("environmentDetail");
+  }
+
+  async function decideApproval(approvalId: string, decision: "approve" | "reject") {
+    if (apiHealth.mode === "api") {
+      const updated = await decideApprovalViaApi(approvalId, decision);
+      await refreshApiState(updated.environmentName);
+      return;
+    }
+
+    setApprovals((current) =>
+      current.map((approval) =>
+        approval.id === approvalId
+          ? {
+              ...approval,
+              status: decision === "approve" ? "Approved" : "Rejected",
+              decidedAt: new Date().toISOString(),
+              decidedBy: "platform.admin",
+            }
+          : approval
+      )
+    );
+    const approval = approvals.find((item) => item.id === approvalId);
+    if (approval) {
+      setEnvironments((current) =>
+        updateEnvironmentStatus(current, approval.environmentName, decision === "approve" ? "Provisioning" : "Failed")
+      );
+      setEnvironmentDetail(
+        createMockEnvironmentDetail(
+          updateEnvironmentStatus(environments, approval.environmentName, decision === "approve" ? "Provisioning" : "Failed"),
+          approvals,
+          approval.environmentName
+        )
+      );
+    }
   }
 
   function updateTemplateGovernance(id: string, field: "owner" | "tier", value: string) {
@@ -223,8 +316,8 @@ export function App() {
           <NavButton
             icon={Activity}
             label="Environment"
-            active={view === "environment"}
-            onClick={() => setView("environment")}
+            active={view === "environment" || view === "environmentDetail"}
+            onClick={() => openEnvironmentDetail(selectedEnvironmentName || environments[0]?.name || environmentName)}
           />
           <NavButton icon={ShieldCheck} label="Admin" active={view === "admin"} onClick={() => setView("admin")} />
         </nav>
@@ -249,8 +342,11 @@ export function App() {
         {view === "dashboard" && (
           <Dashboard
             environments={environments}
-            selectTemplate={selectTemplate}
+            approvals={approvals}
+            integrations={runtimeIntegrations}
+            apiHealth={apiHealth}
             openTemplate={openTemplate}
+            openEnvironmentDetail={openEnvironmentDetail}
             setView={setView}
           />
         )}
@@ -285,11 +381,21 @@ export function App() {
             setView={setView}
           />
         )}
+        {view === "environmentDetail" && (
+          <EnvironmentDetailView
+            detail={environmentDetail ?? createMockEnvironmentDetail(environments, approvals, selectedEnvironmentName)}
+            openCreate={() => setView("create")}
+          />
+        )}
         {view === "admin" && (
           <AdminView
             environments={environments}
+            integrations={runtimeIntegrations}
+            approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
+            decideApproval={decideApproval}
+            openEnvironmentDetail={openEnvironmentDetail}
           />
         )}
       </main>
@@ -299,25 +405,60 @@ export function App() {
 
 function Dashboard({
   environments,
-  selectTemplate,
+  approvals,
+  integrations,
+  apiHealth,
   openTemplate,
+  openEnvironmentDetail,
   setView,
 }: {
   environments: Environment[];
-  selectTemplate: (id: string) => void;
+  approvals: ApprovalRequest[];
+  integrations: Integration[];
+  apiHealth: ApiHealth;
   openTemplate: (id: string) => void;
+  openEnvironmentDetail: (name: string) => void;
   setView: (view: View) => void;
 }) {
+  const readyCount = environments.filter((environment) => environment.status === "Ready").length;
+  const openApprovals = approvals.filter((approval) => approval.status === "Pending");
+  const readinessAverage = Math.round(
+    integrations.reduce((total, integration) => total + integration.score, 0) / Math.max(integrations.length, 1)
+  );
+
   return (
     <section className="screen">
+      <div className="opsStatusStrip">
+        <div className="statusTile strong">
+          <span>Runtime</span>
+          <strong>{apiHealth.mode === "api" ? "Hosted API" : "Static demo"}</strong>
+          <small>{apiHealth.label}</small>
+        </div>
+        <div className="statusTile">
+          <span>Environments</span>
+          <strong>{environments.length}</strong>
+          <small>{readyCount} ready across lab targets</small>
+        </div>
+        <div className="statusTile">
+          <span>Approvals</span>
+          <strong>{openApprovals.length}</strong>
+          <small>Pending platform decisions</small>
+        </div>
+        <div className="statusTile">
+          <span>Integration readiness</span>
+          <strong>{readinessAverage}%</strong>
+          <small>NCI, NKP, NDB, NUS, NCM, NAI</small>
+        </div>
+      </div>
+
       <div className="dashboardGrid">
         <div className="heroPanel">
           <div className="heroCopy">
-            <p className="eyebrow">Golden paths across Nutanix Cloud Platform</p>
-            <h2>Launch governed developer environments in minutes.</h2>
+            <p className="eyebrow">Private cloud developer operations</p>
+            <h2>Operate governed developer environments from one private cloud console.</h2>
             <p>
-              Request VMs, Kubernetes namespaces, databases, storage, and AI endpoints through one
-              platform workflow with policy and cost checks built in.
+              Request and govern VMs, Kubernetes namespaces, databases, storage, and AI endpoints
+              with hosted API workflows, approval gates, and integration readiness surfaced together.
             </p>
             <div className="buttonRow">
               <button className="primaryAction" onClick={() => setView("create")}>
@@ -334,8 +475,57 @@ function Dashboard({
         </div>
 
         <MetricCard icon={Cloud} label="Active environments" value={String(environments.length)} detail="Across 3 labs" />
-        <MetricCard icon={ShieldCheck} label="Policy pass rate" value="94%" detail="Last 30 days" />
-        <MetricCard icon={CircleDollarSign} label="Monthly estimate" value="$18.6k" detail="12% below guardrail" />
+        <MetricCard icon={ShieldCheck} label="Pending approvals" value={String(openApprovals.length)} detail="AI and regulated paths" />
+        <MetricCard
+          icon={CircleDollarSign}
+          label="Monthly estimate"
+          value={`$${Math.round(environments.reduce((total, environment) => total + environment.cost, 0) / 100) / 10}k`}
+          detail="Current prototype state"
+        />
+      </div>
+
+      <div className="opsDashboardGrid">
+        <div className="opsMain">
+          <Panel title="Environment operations" action="API-backed detail">
+            <div className="opsTable">
+              <div className="tableHeader">
+                <span>Name</span>
+                <span>Owner</span>
+                <span>Target</span>
+                <span>Status</span>
+                <span>Action</span>
+              </div>
+              {environments.map((env) => (
+                <div className="tableRow" key={env.name}>
+                  <strong>{env.name}</strong>
+                  <span>{env.owner}</span>
+                  <span>{env.region}</span>
+                  <span className={`status ${statusClass(env.status)}`}>{env.status}</span>
+                  <button className="iconTextButton" onClick={() => openEnvironmentDetail(env.name)}>
+                    <ExternalLink size={15} />
+                    Details
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
+        <div className="opsSide">
+          <Panel title="Approval queue" action={`${openApprovals.length} pending`}>
+            <ApprovalQueue approvals={approvals} compact openEnvironmentDetail={openEnvironmentDetail} />
+          </Panel>
+          <Panel title="Integration readiness" action={`${readinessAverage}%`}>
+            <div className="miniIntegrationGrid">
+              {integrations.map((integration) => (
+                <div className="integrationTile" key={integration.name}>
+                  <strong>{integration.name}</strong>
+                  <span>{integration.state}</span>
+                  <meter min="0" max="100" value={integration.score} />
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
       </div>
 
       <div className="twoColumn">
@@ -629,16 +819,26 @@ function EnvironmentStatus({
 
 function AdminView({
   environments,
+  integrations,
+  approvals,
   templateGovernance,
   updateTemplateGovernance,
+  decideApproval,
+  openEnvironmentDetail,
 }: {
   environments: Environment[];
+  integrations: Integration[];
+  approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
+  decideApproval: (approvalId: string, decision: "approve" | "reject") => void;
+  openEnvironmentDetail: (name: string) => void;
 }) {
+  const pendingApprovals = approvals.filter((approval) => approval.status === "Pending").length;
+
   return (
     <section className="screen adminGrid">
-      <Panel title="Integration health" action="Mock adapters">
+      <Panel title="Integration readiness" action="API connected">
         <div className="integrationList">
           {integrations.map(({ name, label, state, score }) => (
             <div className="integrationRow" key={name}>
@@ -652,20 +852,12 @@ function AdminView({
           ))}
         </div>
       </Panel>
-      <Panel title="Governance queue" action={`${environments.filter((env) => env.status !== "Ready").length} open`}>
-        <div className="envTable">
-          {environments.map((env) => (
-            <div className="envRow" key={env.name}>
-              <div>
-                <strong>{env.name}</strong>
-                <span>
-                  {env.owner} / {env.region}
-                </span>
-              </div>
-              <span className={`status ${statusClass(env.status)}`}>{env.status}</span>
-            </div>
-          ))}
-        </div>
+      <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
+        <ApprovalQueue
+          approvals={approvals}
+          decideApproval={decideApproval}
+          openEnvironmentDetail={openEnvironmentDetail}
+        />
       </Panel>
       <Panel title="Platform controls" action="Admin">
         <div className="controlGrid">
@@ -705,13 +897,150 @@ function AdminView({
           ))}
         </div>
       </Panel>
-      <Panel title="Integration readiness" action="Real API path">
+      <Panel title="Hosted integration path" action="Real API path">
         <div className="readinessList">
           {integrations.map((integration) => (
             <div className="readinessRow" key={integration.name}>
               <strong>{integration.product}</strong>
               <span>{integration.readiness}</span>
               <small>{integration.nextStep}</small>
+            </div>
+          ))}
+        </div>
+      </Panel>
+      <Panel title="Governance queue" action={`${environments.filter((env) => env.status !== "Ready").length} open`}>
+        <div className="envTable">
+          {environments.map((env) => (
+            <button className="envRow buttonRowLike" key={env.name} onClick={() => openEnvironmentDetail(env.name)}>
+              <div>
+                <strong>{env.name}</strong>
+                <span>
+                  {env.owner} / {env.region}
+                </span>
+              </div>
+              <span className={`status ${statusClass(env.status)}`}>{env.status}</span>
+            </button>
+          ))}
+        </div>
+      </Panel>
+    </section>
+  );
+}
+
+function ApprovalQueue({
+  approvals,
+  compact = false,
+  decideApproval,
+  openEnvironmentDetail,
+}: {
+  approvals: ApprovalRequest[];
+  compact?: boolean;
+  decideApproval?: (approvalId: string, decision: "approve" | "reject") => void;
+  openEnvironmentDetail: (name: string) => void;
+}) {
+  if (approvals.length === 0) {
+    return <p className="emptyState">No approval requests are queued.</p>;
+  }
+
+  return (
+    <div className="approvalList">
+      {approvals.map((approval) => (
+        <div className="approvalRow" key={approval.id}>
+          <div>
+            <strong>{approval.environmentName}</strong>
+            <span>{approval.reason}</span>
+            {!compact && <small>{approval.owner} / {approval.template}</small>}
+          </div>
+          <span className={`status ${approval.status === "Pending" ? "approval" : approval.status === "Approved" ? "ready" : "failed"}`}>
+            {approval.status}
+          </span>
+          <div className="inlineActions">
+            <button className="iconTextButton" onClick={() => openEnvironmentDetail(approval.environmentName)}>
+              <ExternalLink size={15} />
+              Detail
+            </button>
+            {decideApproval && approval.status === "Pending" && (
+              <>
+                <button className="smallButton successButton" onClick={() => decideApproval(approval.id, "approve")}>
+                  Approve
+                </button>
+                <button className="smallButton dangerButton" onClick={() => decideApproval(approval.id, "reject")}>
+                  Reject
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EnvironmentDetailView({ detail, openCreate }: { detail: EnvironmentDetail | null; openCreate: () => void }) {
+  if (!detail) {
+    return (
+      <section className="screen">
+        <Panel title="No environment selected" action="Detail">
+          <p className="emptyState">Create or select an environment to inspect API-backed details.</p>
+          <button className="fullButton" onClick={openCreate}>
+            Create environment
+          </button>
+        </Panel>
+      </section>
+    );
+  }
+
+  const { environment } = detail;
+
+  return (
+    <section className="screen detailStack">
+      <div className="opsStatusStrip">
+        <div className="statusTile strong">
+          <span>Environment</span>
+          <strong>{environment.name}</strong>
+          <small>{environment.template}</small>
+        </div>
+        <div className="statusTile">
+          <span>Status</span>
+          <strong>{environment.status}</strong>
+          <small>{environment.region}</small>
+        </div>
+        <div className="statusTile">
+          <span>Owner</span>
+          <strong>{environment.owner}</strong>
+          <small>Requested {environment.createdAt}</small>
+        </div>
+        <div className="statusTile">
+          <span>Monthly estimate</span>
+          <strong>${environment.cost.toLocaleString()}</strong>
+          <small>Prototype estimate</small>
+        </div>
+      </div>
+
+      <div className="twoColumn">
+        <Panel title="Provisioning jobs" action={`${detail.jobs.length} recorded`}>
+          <div className="eventList">
+            {detail.jobs.map((job) => (
+              <div className="eventRow" key={job.id}>
+                <strong>{job.state}</strong>
+                <span>{job.message}</span>
+                <small>{formatDateTime(job.createdAt)}</small>
+              </div>
+            ))}
+          </div>
+        </Panel>
+        <Panel title="Approval history" action={`${detail.approvals.length} request`}>
+          <ApprovalQueue approvals={detail.approvals} compact openEnvironmentDetail={() => undefined} />
+        </Panel>
+      </div>
+
+      <Panel title="Audit trail" action={`${detail.auditEvents.length} events`}>
+        <div className="eventList">
+          {detail.auditEvents.map((event) => (
+            <div className="eventRow" key={event.id}>
+              <strong>{event.action}</strong>
+              <span>{event.actor} / {event.target}</span>
+              <small>{formatDateTime(event.createdAt)}</small>
             </div>
           ))}
         </div>
@@ -807,13 +1136,15 @@ function viewTitle(view: View) {
       return "Create environment";
     case "environment":
       return "Environment status";
+    case "environmentDetail":
+      return "Environment details";
     case "admin":
       return "Platform admin";
   }
 }
 
 function statusClass(status: Environment["status"]) {
-  return status === "Ready" ? "ready" : status === "Provisioning" ? "running" : "approval";
+  return status === "Ready" ? "ready" : status === "Provisioning" ? "running" : status === "Failed" ? "failed" : "approval";
 }
 
 function resourceDescription(target: Target) {
@@ -837,6 +1168,73 @@ function enrichTemplate(template: Template, governance: TemplateGovernance) {
     owner: governance[template.id]?.owner ?? template.owner,
     tier: governance[template.id]?.tier ?? template.tier,
   };
+}
+
+function deriveMockApprovals(environments: Environment[]): ApprovalRequest[] {
+  return environments
+    .filter((environment) => environment.status === "Needs approval")
+    .map((environment) => ({
+      id: `approval-${environment.name}`,
+      environmentName: environment.name,
+      template: environment.template,
+      owner: environment.owner,
+      reason: environment.template.includes("AI")
+        ? "AI endpoint requests require platform approval."
+        : "Regulated templates require platform approval.",
+      status: "Pending",
+      requestedAt: environment.createdAt,
+    }));
+}
+
+function createMockEnvironmentDetail(
+  environments: Environment[],
+  approvals: ApprovalRequest[],
+  environmentName: string
+): EnvironmentDetail | null {
+  const environment = environments.find((item) => item.name === environmentName) ?? environments[0];
+  if (!environment) {
+    return null;
+  }
+
+  return {
+    environment,
+    jobs: provisioningEvents.map((event, index) => ({
+      id: `${environment.name}-job-${index}`,
+      environmentName: environment.name,
+      state: index < 3 ? "completed" : environment.status.toLowerCase(),
+      message: event.detail,
+      createdAt: new Date(Date.now() - (provisioningEvents.length - index) * 60000).toISOString(),
+    })),
+    approvals: approvals.filter((approval) => approval.environmentName === environment.name),
+    auditEvents: [
+      {
+        id: `${environment.name}-audit-requested`,
+        action: "environment.requested",
+        actor: environment.owner,
+        target: environment.name,
+        createdAt: environment.createdAt,
+      },
+      {
+        id: `${environment.name}-audit-status`,
+        action: "environment.status.updated",
+        actor: "mock.platform",
+        target: environment.name,
+        createdAt: new Date().toISOString(),
+      },
+    ],
+  };
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
 
 function jobHeadline(jobState: JobState) {

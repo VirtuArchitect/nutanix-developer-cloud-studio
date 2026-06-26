@@ -4,7 +4,7 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
-Current release: `v0.1.0-mvp`
+Current release: `v0.2.0-hosted-starter`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -22,7 +22,7 @@ This repository is an independent clickable MVP prototype. All Nutanix integrati
 - Environment status page with simulated provisioning
 - Mock integrations for NCI, NKP, NDB, NUS, NCM, and NAI
 - Admin view for platform teams
-- Optional mock API layer for prototype provisioning jobs
+- Hosted/on-prem starter API for prototype provisioning jobs, approvals, environment details, and integration readiness
 
 ![Nutanix Developer Cloud Studio dashboard](docs/assets/dashboard-screenshot.png)
 

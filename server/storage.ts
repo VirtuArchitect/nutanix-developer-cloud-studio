@@ -4,6 +4,7 @@ import {
   initialEnvironments,
   integrations,
   templates,
+  type ApprovalRequest,
   type TemplateGovernance,
 } from "../src/data/cloudStudioDomain";
 import type { ApiState } from "./types";
@@ -19,6 +20,22 @@ function defaultGovernance(): TemplateGovernance {
   );
 }
 
+function defaultApprovals(): ApprovalRequest[] {
+  return initialEnvironments
+    .filter((environment) => environment.status === "Needs approval")
+    .map((environment) => ({
+      id: `approval-${environment.name}`,
+      environmentName: environment.name,
+      template: environment.template,
+      owner: environment.owner,
+      reason: environment.template.includes("AI")
+        ? "AI endpoint requests require platform approval."
+        : "Regulated templates require platform approval.",
+      status: "Pending",
+      requestedAt: environment.createdAt,
+    }));
+}
+
 export function createDefaultState(): ApiState {
   return {
     templates,
@@ -26,6 +43,7 @@ export function createDefaultState(): ApiState {
     integrations,
     governance: defaultGovernance(),
     jobs: [],
+    approvals: defaultApprovals(),
     auditEvents: [],
   };
 }

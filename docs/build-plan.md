@@ -95,13 +95,18 @@ The goal is to make the product thesis visible quickly: developers can request g
 - API mode launches environment requests through `POST /api/environments`.
 - Browser mock mode remains the fallback for GitHub Pages, plain Vite dev, and API failures.
 - Playwright can target either Vite dev or an API-hosted built app through `PLAYWRIGHT_BASE_URL`.
+- API-backed approval queue supports approve/reject decisions for hosted/on-prem starter demos.
+- API-backed environment detail view shows environment metadata, provisioning jobs, approvals, and audit events.
+- Dashboard layout now leans toward an operations/on-prem console with runtime, readiness, approvals, and environment drill-downs.
+- Admin integration readiness reads API data in hosted/on-prem mode.
+- Playwright smoke coverage exercises approval queue and environment detail.
 
 ## Next Hosted / On-Prem Slice
 
-- Add approval queue views backed by `/api/audit-events` and future approval endpoints.
-- Add environment detail pages backed by `/api/environments` and `/api/provisioning-jobs`.
 - Add OIDC-ready auth boundaries and role modeling.
 - Add a database-ready repository interface to replace JSON-file persistence.
+- Add template versioning states: draft, published, deprecated, and owner approval.
+- Add a real lab adapter spike once Prism Central/NKP/NDB/NUS/NCM/NAI access details are available.
 
 ## Suggested Tech Stack
 

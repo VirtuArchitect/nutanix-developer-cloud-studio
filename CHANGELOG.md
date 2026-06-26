@@ -2,16 +2,29 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current MVP release is `v0.1.0-mvp`.
+This project uses release tags for public milestones. The current release is `v0.2.0-hosted-starter`.
 
 ## [Unreleased]
+
+### Planned
+
+- Add OIDC-ready auth boundaries and role modeling.
+- Add a database-ready repository interface to replace JSON-file persistence.
+- Add template versioning states: draft, published, deprecated, and owner approval.
+- Add first real lab adapter spike once Prism Central/NKP/NDB/NUS/NCM/NAI access details are available.
+
+## [v0.2.0-hosted-starter] - 2026-06-26
 
 ### Added
 
 - Frontend API auto-detection through `/healthz` for hosted/on-prem mode.
 - API-backed environment loading and environment request submission.
+- API-backed approval queue with approve/reject decisions.
+- API-backed environment detail endpoint with environment, jobs, approvals, and audit events.
+- Dashboard layout refresh toward an ops/on-prem console with runtime, approval, environment, and readiness status.
+- Admin integration readiness panel connected to API data.
 - Browser mock fallback when the hosted API is unavailable.
-- Node HTTP API starter with health, readiness, catalog, environment, integration, job, and audit endpoints.
+- Node HTTP API starter with health, readiness, catalog, environment, integration, job, approval, and audit endpoints.
 - Memory and JSON-file persistence abstractions for hosted/on-prem mock API state.
 - Dockerfile and Docker Compose starter for private-network evaluation.
 - API and on-prem deployment documentation.
@@ -25,14 +38,13 @@ This project uses release tags for public milestones. The current MVP release is
 ### Changed
 
 - Playwright can target an API-hosted built app with `PLAYWRIGHT_BASE_URL`.
+- Playwright smoke now covers the approval queue and environment detail view.
 - Vite now emits relative asset paths for repository-path static hosting.
 - README now references the repo-owned dashboard screenshot instead of a GitHub attachment URL.
 
-### Planned
+### Notes
 
-- Add a lightweight approval queue interaction for AI endpoint and regulated data requests.
-- Add environment detail pages with owner, cost, resources, timeline, mock logs, and expiry state.
-- Add template versioning states: draft, published, deprecated, and owner approval.
+- This release is still a prototype milestone. Hosted/on-prem mode uses simulated integrations and mock persistence only.
 
 ## [v0.1.0-mvp] - 2026-06-26
 

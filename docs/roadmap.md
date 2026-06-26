@@ -24,17 +24,29 @@
 - Show integration health for NCI, NKP, NDB, NUS, NCM, and NAI
 - Show usage, cost, and compliance summaries
 
-## Phase 4 - Mock API Layer
+## Phase 4 - Mock API Layer (`v0.2.0-hosted-starter`)
 
 - Add fake provisioning jobs
 - Add job status transitions
 - Add event timeline and logs
 - Add realistic error and approval states
+- Add hosted/on-prem API starter
+- Add API-backed approval queue
+- Add API-backed environment detail
+- Refresh dashboard toward an operations/on-prem console
 
-## Phase 5 - Real Integration Readiness
+## Phase 5 - Real Integration Readiness (`v0.3.0-integration-readiness`)
 
 - Document API assumptions
 - Identify minimum Nutanix lab requirements
 - Define authentication and secret handling model
 - Evaluate Prism Central, NCM Self-Service, NKP, NDB, NUS, and NAI integration paths
+- Add OIDC-ready auth and role model
+- Replace JSON-file persistence behind a database-ready repository interface
 
+## Phase 6 - Lab Adapter Pilot (`v0.4.0-lab-adapter`)
+
+- Wire one read-only Prism Central inventory adapter
+- Add credential profile documentation and secret handling guardrails
+- Add adapter health checks and failure states
+- Keep provisioning disabled until lab authorization and scope are documented

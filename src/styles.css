@@ -202,6 +202,48 @@ button {
   gap: 18px;
 }
 
+.opsStatusStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.statusTile {
+  display: grid;
+  gap: 5px;
+  min-height: 96px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+}
+
+.statusTile.strong {
+  color: #fff;
+  background: #101820;
+  border-color: #101820;
+}
+
+.statusTile span,
+.statusTile small {
+  color: #60747c;
+}
+
+.statusTile.strong span,
+.statusTile.strong small {
+  color: #c7d6da;
+}
+
+.statusTile strong {
+  color: #111b22;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.statusTile.strong strong {
+  color: #fff;
+}
+
 .dashboardGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -290,6 +332,7 @@ button {
 }
 
 .twoColumn,
+.opsDashboardGrid,
 .createGrid,
 .statusGrid,
 .adminGrid,
@@ -306,6 +349,17 @@ button {
 
 .detailGrid {
   grid-template-columns: minmax(320px, 1.1fr) minmax(280px, 0.95fr);
+}
+
+.opsDashboardGrid {
+  grid-template-columns: minmax(520px, 1.35fr) minmax(320px, 0.65fr);
+}
+
+.opsMain,
+.opsSide,
+.detailStack {
+  display: grid;
+  gap: 16px;
 }
 
 .panel {
@@ -349,7 +403,9 @@ button {
 .controlGrid,
 .bulletList,
 .templateEditList,
-.readinessList {
+.readinessList,
+.approvalList,
+.eventList {
   display: grid;
   gap: 10px;
 }
@@ -360,7 +416,9 @@ button {
 .integrationRow,
 .checkLine,
 .templateEditRow,
-.readinessRow {
+.readinessRow,
+.approvalRow,
+.eventRow {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -377,6 +435,12 @@ button {
   text-align: left;
 }
 
+.buttonRowLike {
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+}
+
 .templateRow strong,
 .templateRow span,
 .envRow strong,
@@ -384,8 +448,125 @@ button {
 .resourceRow strong,
 .resourceRow span,
 .integrationRow strong,
-.integrationRow span {
+.integrationRow span,
+.approvalRow strong,
+.approvalRow span,
+.approvalRow small,
+.eventRow strong,
+.eventRow span,
+.eventRow small {
   display: block;
+}
+
+.opsTable {
+  display: grid;
+  gap: 8px;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(90px, 0.8fr) minmax(100px, 0.8fr) minmax(110px, 0.7fr) 96px;
+  gap: 12px;
+  align-items: center;
+}
+
+.tableHeader {
+  padding: 0 12px 6px;
+  color: #60747c;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tableRow {
+  min-height: 56px;
+  padding: 10px 12px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.tableRow span {
+  color: #60747c;
+}
+
+.iconTextButton,
+.smallButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  color: #17242b;
+  background: #fff;
+  border: 1px solid #cfd9dd;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.smallButton {
+  color: #fff;
+}
+
+.successButton {
+  background: #087345;
+  border-color: #087345;
+}
+
+.dangerButton {
+  background: #9f1d2e;
+  border-color: #9f1d2e;
+}
+
+.approvalRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.approvalRow .inlineActions {
+  grid-column: 1 / -1;
+}
+
+.approvalRow span,
+.approvalRow small,
+.eventRow span,
+.eventRow small {
+  color: #60747c;
+}
+
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.miniIntegrationGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.integrationTile {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.integrationTile span {
+  color: #60747c;
+  font-size: 13px;
+}
+
+.emptyState {
+  margin: 0;
+  color: #60747c;
+  line-height: 1.5;
 }
 
 .catalogGrid {
@@ -492,6 +673,11 @@ button {
 .status.approval {
   color: #8c4500;
   background: #fff0d9;
+}
+
+.status.failed {
+  color: #9f1d2e;
+  background: #ffe2e7;
 }
 
 .field {
@@ -688,6 +874,12 @@ button {
   gap: 5px;
 }
 
+.eventRow {
+  display: grid;
+  align-items: start;
+  gap: 4px;
+}
+
 .readinessRow strong,
 .readinessRow span,
 .readinessRow small {
@@ -741,6 +933,8 @@ meter {
 
   .heroPanel,
   .twoColumn,
+  .opsStatusStrip,
+  .opsDashboardGrid,
   .createGrid,
   .statusGrid,
   .adminGrid,
@@ -750,6 +944,14 @@ meter {
 
   .catalogGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tableHeader {
+    display: none;
+  }
+
+  .tableRow {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -792,6 +994,7 @@ meter {
 
   .dashboardGrid,
   .catalogGrid,
+  .miniIntegrationGrid,
   .targetGrid {
     grid-template-columns: 1fr;
   }

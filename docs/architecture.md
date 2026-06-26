@@ -25,6 +25,8 @@ flowchart LR
     Api --> Store["JSON File Store"]
     Api --> Provider["Mock Platform Provider"]
     Provider --> Adapters["Mock Nutanix Adapter Contracts"]
+    Api --> Approvals["Approval Queue"]
+    Api --> Details["Environment Detail"]
     Api --> Audit["Audit Events"]
 ```
 
@@ -38,6 +40,8 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Policies: approval, compliance, cost, region, ownership, and lifecycle rules
 - Integrations: NCI, NKP, NDB, NUS, NCM, and NAI
 - Jobs: simulated provisioning and operational events
+- Approvals: platform review records for AI endpoint and regulated-style requests
+- Audit events: request and decision records for hosted/on-prem workflow visibility
 
 ## Integration Boundary
 
@@ -64,6 +68,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Responsive console layout in `src/styles.css`
 - GitHub Actions CI and Pages deployment workflows in `.github/workflows`
 - Node HTTP API starter in `server/`
+- API-backed approval queue and environment detail views
 - JSON file persistence option through `NDC_DATA_FILE`
 - Containerized starter deployment through `Dockerfile` and `docker-compose.yml`
 - No live Nutanix API calls yet
@@ -71,11 +76,11 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 ## Current State Boundaries
 
 - The public GitHub Pages UI state remains local to the React app.
-- The on-prem starter API exposes templates, environments, integrations, provisioning jobs, and audit events over HTTP.
+- The on-prem starter API exposes templates, environments, integrations, approvals, provisioning jobs, and audit events over HTTP.
 - Environment requests persist across browser refreshes through local storage.
 - Admin template governance edits persist across browser refreshes through local storage.
 - Job transitions are simulated in the browser with timers.
-- Approval states are modeled for AI endpoint requests, but no identity or workflow engine is connected.
+- Approval states are modeled for AI endpoint requests, and hosted/on-prem mode can approve or reject mock requests through API endpoints.
 - Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
 - The frontend auto-detects the hosted/on-prem API through `/healthz` and falls back to browser mock mode when the API is unavailable.
 

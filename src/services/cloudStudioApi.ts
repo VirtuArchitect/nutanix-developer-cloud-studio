@@ -1,4 +1,4 @@
-import type { Environment, Target } from "../data/cloudStudioDomain";
+import type { ApprovalRequest, Environment, Integration, Target } from "../data/cloudStudioDomain";
 
 export type ApiMode = "api" | "mock";
 
@@ -22,6 +22,20 @@ export type CreateEnvironmentResult = {
     environmentName: string;
     state: string;
     message: string;
+    createdAt: string;
+  }>;
+  approval?: ApprovalRequest;
+};
+
+export type EnvironmentDetail = {
+  environment: Environment;
+  jobs: CreateEnvironmentResult["jobs"];
+  approvals: ApprovalRequest[];
+  auditEvents: Array<{
+    id: string;
+    action: string;
+    actor: string;
+    target: string;
     createdAt: string;
   }>;
 };
@@ -61,6 +75,24 @@ export async function checkApiHealth(): Promise<ApiHealth> {
 
 export async function fetchEnvironmentsFromApi() {
   return fetchJson<Environment[]>("/api/environments");
+}
+
+export async function fetchIntegrationsFromApi() {
+  return fetchJson<Integration[]>("/api/integrations");
+}
+
+export async function fetchApprovalsFromApi() {
+  return fetchJson<ApprovalRequest[]>("/api/approvals");
+}
+
+export async function fetchEnvironmentDetailFromApi(environmentName: string) {
+  return fetchJson<EnvironmentDetail>(`/api/environments/${encodeURIComponent(environmentName)}`);
+}
+
+export async function decideApprovalViaApi(approvalId: string, decision: "approve" | "reject") {
+  return fetchJson<ApprovalRequest>(`/api/approvals/${encodeURIComponent(approvalId)}/${decision}`, {
+    method: "POST",
+  });
 }
 
 export async function createEnvironmentViaApi(payload: CreateEnvironmentPayload) {

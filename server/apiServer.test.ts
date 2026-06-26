@@ -63,6 +63,37 @@ describe("api server", () => {
     expect(auditEvents.data[0]).toMatchObject({ action: "environment.requested" });
   });
 
+  it("creates and decides approval requests", async () => {
+    const created = await requestJson("/api/environments", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "ai-api-dev",
+        templateId: "ai-endpoint",
+        owner: "demo.user",
+        region: "Berlin Lab",
+        targets: ["AI Endpoint", "Storage"],
+      }),
+    });
+
+    expect(created.data.environment).toMatchObject({
+      name: "ai-api-dev",
+      status: "Needs approval",
+    });
+    expect(created.data.approval).toMatchObject({
+      environmentName: "ai-api-dev",
+      status: "Pending",
+    });
+
+    const approvals = await requestJson("/api/approvals");
+    const approvalId = approvals.data[0].id;
+    const approved = await requestJson(`/api/approvals/${approvalId}/approve`, { method: "POST" });
+    const detail = await requestJson("/api/environments/ai-api-dev");
+
+    expect(approved.data).toMatchObject({ status: "Approved" });
+    expect(detail.data.environment).toMatchObject({ status: "Provisioning" });
+    expect(detail.data.approvals[0]).toMatchObject({ status: "Approved" });
+  });
+
   it("rejects unknown templates", async () => {
     await expectJson(
       "/api/environments",

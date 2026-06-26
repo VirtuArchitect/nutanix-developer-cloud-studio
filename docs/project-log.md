@@ -55,6 +55,12 @@
 - Wired the frontend to auto-detect hosted/on-prem API mode through `/healthz`.
 - Added API-backed environment loading and request submission with browser mock fallback.
 - Verified Playwright smoke against the API-hosted built app using `PLAYWRIGHT_BASE_URL`.
+- Started `v0.2.0-hosted-starter`.
+- Added API-backed approval queue endpoints and approve/reject decisions.
+- Added API-backed environment detail endpoint with jobs, approvals, and audit events.
+- Refreshed the dashboard toward an operations/on-prem console layout.
+- Connected admin integration readiness and approval queue panels to API state.
+- Updated Playwright smoke coverage for approval queue and environment detail.
 
 ## Documentation Rule
 

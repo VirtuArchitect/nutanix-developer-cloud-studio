@@ -1,4 +1,4 @@
-import type { Environment, Integration, Template, TemplateGovernance } from "../src/data/cloudStudioDomain";
+import type { ApprovalRequest, Environment, Integration, Template, TemplateGovernance } from "../src/data/cloudStudioDomain";
 import type { ProvisioningJob } from "../src/services/nutanixAdapters";
 
 export type ApiState = {
@@ -7,6 +7,7 @@ export type ApiState = {
   integrations: Integration[];
   governance: TemplateGovernance;
   jobs: ProvisioningJob[];
+  approvals: ApprovalRequest[];
   auditEvents: AuditEvent[];
 };
 

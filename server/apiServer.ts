@@ -2,7 +2,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { extname, join, normalize, relative } from "node:path";
-import { createEnvironmentRequest, RequestValidationError } from "./mockPlatform";
+import { createEnvironmentRequest, decideApproval, RequestValidationError } from "./mockPlatform";
 import type { ApiStore } from "./storage";
 import type { ApiError, ApiResponse, CreateEnvironmentRequest } from "./types";
 
@@ -92,8 +92,38 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/approvals") {
+    sendJson(response, 200, { data: state.approvals });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/audit-events") {
     sendJson(response, 200, { data: state.auditEvents });
+    return;
+  }
+
+  const environmentMatch = url.pathname.match(/^\/api\/environments\/([^/]+)$/);
+  if (request.method === "GET" && environmentMatch) {
+    const environmentName = decodeURIComponent(environmentMatch[1]);
+    const environment = state.environments.find((item) => item.name === environmentName);
+    if (!environment) {
+      sendJson(response, 404, {
+        error: {
+          code: "environment_not_found",
+          message: `Environment not found: ${environmentName}`,
+        },
+      });
+      return;
+    }
+
+    sendJson(response, 200, {
+      data: {
+        environment,
+        jobs: state.jobs.filter((job) => job.environmentName === environmentName),
+        approvals: state.approvals.filter((approval) => approval.environmentName === environmentName),
+        auditEvents: state.auditEvents.filter((event) => event.target === environmentName),
+      },
+    });
     return;
   }
 
@@ -106,6 +136,32 @@ async function routeApi(
     } catch (error) {
       if (error instanceof RequestValidationError) {
         sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      throw error;
+    }
+    return;
+  }
+
+  const approvalMatch = url.pathname.match(/^\/api\/approvals\/([^/]+)\/(approve|reject)$/);
+  if (request.method === "POST" && approvalMatch) {
+    try {
+      const approval = decideApproval(
+        state,
+        decodeURIComponent(approvalMatch[1]),
+        approvalMatch[2] === "approve" ? "Approved" : "Rejected"
+      );
+      await store.save(state);
+      sendJson(response, 200, { data: approval });
+    } catch (error) {
+      if (error instanceof RequestValidationError) {
+        sendJson(response, 404, {
           error: {
             code: error.code,
             message: error.message,
