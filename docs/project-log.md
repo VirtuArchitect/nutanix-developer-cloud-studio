@@ -17,6 +17,8 @@
 - Started local dev server at `http://localhost:4180`.
 - Verified desktop render, create-environment flow, and mobile layout.
 - Replaced the app shell logo and browser favicon with the Veridian teal mark.
+- Confirmed `C:\Users\john\OneDrive\09 Profile\Documents\GitHub\nutanix-developer-cloud-studio` as the local source-of-truth checkout.
+- Marked the older duplicate project folder as archived/do-not-use. Renaming was blocked by the active Codex workspace file handle, so the GitHub checkout remains the documented source of truth.
 
 ## Documentation Rule
 

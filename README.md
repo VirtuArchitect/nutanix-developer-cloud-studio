@@ -18,6 +18,10 @@ Nutanix Developer Cloud Studio shows how developers could request, launch, and g
 
 ## Run The Prototype
 
+Use this local checkout as the source of truth:
+
+`C:\Users\john\OneDrive\09 Profile\Documents\GitHub\nutanix-developer-cloud-studio`
+
 Install dependencies:
 
 ```powershell
