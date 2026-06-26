@@ -2,7 +2,7 @@
 
 A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
-Nutanix Developer Cloud Studio is intended to show how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
+Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
 ## MVP Scope
 
@@ -54,8 +54,6 @@ Run:
 
 This repo also uses a tracked Git hook in `.githooks/post-commit` so the Obsidian vault is refreshed after each local commit.
 
-The Obsidian vault is intentionally outside the GitHub repo so notes, stakeholder context, and working product thinking remain easy to browse in Obsidian without depending on GitHub.
-
 ## Development Documentation Rule
 
 As the prototype develops, update `docs/` alongside the code. The key living notes are:
@@ -65,3 +63,17 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/architecture.md` for product and technical structure
 - `docs/roadmap.md` for phase planning
 - `docs/project-brief.md` for positioning and scope
+
+## Repository Standards
+
+This repository also includes project governance and delivery guidance:
+
+- `AGENTS.md`: Codex project instructions and definition of done
+- `TESTING_GUIDE.md`: testing strategy and smoke-test requirements
+- `SECURITY_REVIEW.md`: defensive security review checklist
+- `CODE_REVIEW.md`: review checklist and output format
+- `PENTEST_SCOPE_TEMPLATE.md`: authorization template for security testing
+- `CONTRIBUTING.md`: contribution workflow
+- `SECURITY.md`: vulnerability reporting policy
+
+Changes are complete only when implementation, tests, smoke testing, and any required security review are finished or explicitly documented as blocked.

@@ -1,4 +1,30 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+vite-dev.log
+
+# Dependencies and builds
 node_modules/
 dist/
-vite-dev.log
-.DS_Store
+build/
+coverage/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+__pycache__/
+target/
+bin/
+obj/
