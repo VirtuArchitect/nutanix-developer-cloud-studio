@@ -16,6 +16,7 @@
 - Verified production build with `npm run build`.
 - Started local dev server at `http://localhost:4180`.
 - Verified desktop render, create-environment flow, and mobile layout.
+- Replaced the app shell logo and browser favicon with the Veridian teal mark.
 
 ## Documentation Rule
 

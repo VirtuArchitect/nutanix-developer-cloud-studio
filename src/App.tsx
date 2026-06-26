@@ -8,7 +8,6 @@ import {
   Database,
   Gauge,
   HardDrive,
-  Hexagon,
   Layers3,
   LockKeyhole,
   Network,
@@ -20,6 +19,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import cloudVisual from "./assets/developer-cloud-visual.png";
+import veridianMark from "./assets/veridian-mark-teal.svg";
 
 type View = "dashboard" | "catalog" | "create" | "environment" | "admin";
 type Target = "VM" | "Kubernetes" | "Database" | "Storage" | "AI Endpoint";
@@ -193,7 +193,7 @@ export function App() {
       <aside className="sidebar">
         <div className="brand">
           <div className="brandMark">
-            <Hexagon size={22} />
+            <img src={veridianMark} alt="" />
           </div>
           <div>
             <strong>NDC Studio</strong>

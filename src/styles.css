@@ -57,8 +57,14 @@ button {
   height: 42px;
   place-items: center;
   border-radius: 8px;
-  background: #00a5ad;
-  color: #fff;
+  background: transparent;
+  overflow: hidden;
+}
+
+.brandMark img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .brand strong,
