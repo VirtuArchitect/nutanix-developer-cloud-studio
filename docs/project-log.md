@@ -30,6 +30,8 @@
 - Persisted admin template governance edits in browser local storage.
 - Added stakeholder demo script documentation.
 - Added hosting notes for static prototype sharing and future on-premises deployment.
+- Performed public-readiness checks for committed environment files, likely secrets, screenshots, and branding caveats.
+- Added README disclaimer that the project is an independent prototype with simulated Nutanix integrations and no endorsement unless explicitly stated.
 
 ## Documentation Rule
 
