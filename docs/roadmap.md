@@ -52,3 +52,5 @@
 - Add credential profile documentation and secret handling guardrails
 - Add adapter health checks and failure states
 - Keep provisioning disabled until lab authorization and scope are documented
+- Add system status endpoint for API, storage, session, integration, and provisioning guardrails
+- Add backup/restore validation for JSON prototype state

@@ -3,7 +3,10 @@ import {
   checkApiHealth,
   createEnvironmentViaApi,
   fetchEnvironmentsFromApi,
+  fetchLabAdaptersFromApi,
   fetchSessionFromApi,
+  fetchSystemStatusFromApi,
+  runLabDiscoveryViaApi,
   runIntegrationCheckViaApi,
   saveIntegrationConfigViaApi,
 } from "./cloudStudioApi";
@@ -85,6 +88,23 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/integrations/NCI/check",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches system status and runs lab discovery", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: { provisioningEnabled: false } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchSystemStatusFromApi();
+    await fetchLabAdaptersFromApi();
+    await runLabDiscoveryViaApi("NCI");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/system/status", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/lab-adapters", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "/api/lab-adapters/NCI/discover",
       expect.objectContaining({ method: "POST" })
     );
   });

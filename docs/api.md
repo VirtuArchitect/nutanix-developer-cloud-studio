@@ -33,6 +33,7 @@ The React frontend now checks `/healthz` on load:
 - Environment launches call `POST /api/environments` in API mode and fall back to browser mock behavior if the request fails.
 - Approval queue, environment detail, and admin integration readiness views read from API endpoints in hosted/on-prem API mode.
 - Session, role context, integration configuration, and integration readiness checks are API-backed mock records.
+- System status and lab adapter pilot state are API-backed so hosted/on-prem demos can show provisioning guardrails.
 
 ## Endpoints
 
@@ -45,9 +46,11 @@ The React frontend now checks `/healthz` on load:
 
 - `GET /api/templates`
 - `GET /api/session`
+- `GET /api/system/status`
 - `GET /api/environments`
 - `GET /api/integrations`
 - `GET /api/integration-config`
+- `GET /api/lab-adapters`
 - `GET /api/provisioning-jobs`
 - `GET /api/approvals`
 - `GET /api/audit-events`
@@ -94,6 +97,14 @@ Example request:
 
 The readiness check updates the mock integration configuration to `Reachable`, `Failed`, or `Not configured`. It does not call real Nutanix services.
 
+### Lab Adapter Pilot
+
+- `GET /api/system/status`
+- `GET /api/lab-adapters`
+- `POST /api/lab-adapters/:name/discover`
+
+The discovery endpoint simulates read-only inventory discovery for a configured adapter. For the current phase, NCI/Prism Central can become a `Read-only candidate` after its integration config is reachable. Provisioning remains disabled in the API response and UI.
+
 ## Current Limits
 
 - No real Nutanix API calls.
@@ -103,3 +114,4 @@ The readiness check updates the mock integration configuration to `Reachable`, `
 - No secret storage yet.
 - GitHub Pages uses browser mock mode because no backend is deployed with the static site.
 - Approval decisions are mock governance records only; they do not authorize real infrastructure changes.
+- Lab adapter discovery is simulated and read-only; no real Prism Central calls are made yet.

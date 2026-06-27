@@ -31,7 +31,9 @@ import {
   type Integration,
   type IntegrationConfig,
   type JobState,
+  type LabAdapterSnapshot,
   type PlatformSession,
+  type SystemStatus,
   type Target,
   type Template,
   type TemplateGovernance,
@@ -57,8 +59,11 @@ import {
   fetchApprovalsFromApi,
   fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
+  fetchLabAdaptersFromApi,
   fetchSessionFromApi,
+  fetchSystemStatusFromApi,
   runIntegrationCheckViaApi,
+  runLabDiscoveryViaApi,
   saveIntegrationConfigViaApi,
   type ApiHealth,
   type EnvironmentDetail,
@@ -78,6 +83,10 @@ export function App() {
     deriveMockIntegrationConfigs(integrations)
   );
   const [session, setSession] = useState<PlatformSession>(mockSession);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>(() =>
+    createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
+  );
+  const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -102,6 +111,12 @@ export function App() {
   }, [templateGovernance]);
 
   useEffect(() => {
+    if (apiHealth.mode === "mock") {
+      setSystemStatus(createMockSystemStatus(session, integrationConfigs, labAdapters));
+    }
+  }, [apiHealth.mode, integrationConfigs, labAdapters, session]);
+
+  useEffect(() => {
     let active = true;
 
     async function hydrateFromApi() {
@@ -114,12 +129,22 @@ export function App() {
 
       if (health.mode === "api") {
         try {
-          const [apiEnvironments, apiIntegrations, apiApprovals, apiIntegrationConfigs, apiSession] = await Promise.all([
+          const [
+            apiEnvironments,
+            apiIntegrations,
+            apiApprovals,
+            apiIntegrationConfigs,
+            apiSession,
+            apiSystemStatus,
+            apiLabAdapters,
+          ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
             fetchApprovalsFromApi(),
             fetchIntegrationConfigsFromApi(),
             fetchSessionFromApi(),
+            fetchSystemStatusFromApi(),
+            fetchLabAdaptersFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -127,6 +152,8 @@ export function App() {
             setApprovals(apiApprovals);
             setIntegrationConfigs(apiIntegrationConfigs);
             setSession(apiSession);
+            setSystemStatus(apiSystemStatus);
+            setLabAdapters(apiLabAdapters);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -238,18 +265,22 @@ export function App() {
       return;
     }
 
-    const [apiEnvironments, apiIntegrations, apiApprovals, apiIntegrationConfigs, apiSession] = await Promise.all([
+    const [apiEnvironments, apiIntegrations, apiApprovals, apiIntegrationConfigs, apiSession, apiSystemStatus, apiLabAdapters] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
       fetchApprovalsFromApi(),
       fetchIntegrationConfigsFromApi(),
       fetchSessionFromApi(),
+      fetchSystemStatusFromApi(),
+      fetchLabAdaptersFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
     setApprovals(apiApprovals);
     setIntegrationConfigs(apiIntegrationConfigs);
     setSession(apiSession);
+    setSystemStatus(apiSystemStatus);
+    setLabAdapters(apiLabAdapters);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -329,6 +360,7 @@ export function App() {
     if (apiHealth.mode === "api") {
       const updated = await runIntegrationCheckViaApi(integrationName);
       setIntegrationConfigs((current) => replaceIntegrationConfig(current, updated));
+      setSystemStatus(await fetchSystemStatusFromApi());
       return;
     }
 
@@ -343,6 +375,31 @@ export function App() {
           ? `${integrationName} mock readiness check passed.`
           : `${integrationName} needs endpoint and credential profile values.`,
       });
+    });
+  }
+
+  async function runLabDiscovery(adapterName: string) {
+    if (apiHealth.mode === "api") {
+      const updated = await runLabDiscoveryViaApi(adapterName);
+      setLabAdapters((current) => replaceLabAdapter(current, updated));
+      setSystemStatus(await fetchSystemStatusFromApi());
+      return;
+    }
+
+    setLabAdapters((current) => {
+      const adapter = current.find((item) => item.name === adapterName) ?? createEmptyLabAdapter(adapterName);
+      const config = integrationConfigs.find((item) => item.name === adapterName);
+      const readOnlyCandidate = adapterName === "NCI" && config?.status === "Reachable";
+      const updated: LabAdapterSnapshot = {
+        ...adapter,
+        mode: readOnlyCandidate ? "Read-only candidate" : "Configured",
+        inventoryCount: readOnlyCandidate ? 12 : 0,
+        lastDiscoveryAt: new Date().toISOString(),
+        message: readOnlyCandidate
+          ? "Read-only Prism Central discovery simulated successfully. Provisioning remains disabled."
+          : "Discovery requires a reachable integration config and documented lab scope.",
+      };
+      return replaceLabAdapter(current, updated);
     });
   }
 
@@ -408,6 +465,7 @@ export function App() {
             integrations={runtimeIntegrations}
             integrationConfigs={integrationConfigs}
             session={session}
+            systemStatus={systemStatus}
             apiHealth={apiHealth}
             openTemplate={openTemplate}
             openEnvironmentDetail={openEnvironmentDetail}
@@ -457,12 +515,15 @@ export function App() {
             integrations={runtimeIntegrations}
             integrationConfigs={integrationConfigs}
             session={session}
+            systemStatus={systemStatus}
+            labAdapters={labAdapters}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
             decideApproval={decideApproval}
             saveIntegrationConfig={saveIntegrationConfig}
             runIntegrationCheck={runIntegrationCheck}
+            runLabDiscovery={runLabDiscovery}
             openEnvironmentDetail={openEnvironmentDetail}
           />
         )}
@@ -477,6 +538,7 @@ function Dashboard({
   integrations,
   integrationConfigs,
   session,
+  systemStatus,
   apiHealth,
   openTemplate,
   openEnvironmentDetail,
@@ -487,6 +549,7 @@ function Dashboard({
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
   session: PlatformSession;
+  systemStatus: SystemStatus;
   apiHealth: ApiHealth;
   openTemplate: (id: string) => void;
   openEnvironmentDetail: (name: string) => void;
@@ -521,6 +584,11 @@ function Dashboard({
           <span>Integration readiness</span>
           <strong>{readinessAverage}%</strong>
           <small>NCI, NKP, NDB, NUS, NCM, NAI</small>
+        </div>
+        <div className="statusTile">
+          <span>Provisioning</span>
+          <strong>{systemStatus.provisioningEnabled ? "Enabled" : "Disabled"}</strong>
+          <small>{systemStatus.integrations.readOnlyCandidates} read-only candidates</small>
         </div>
       </div>
 
@@ -916,18 +984,23 @@ function AdminView({
   integrations,
   integrationConfigs,
   session,
+  systemStatus,
+  labAdapters,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
   decideApproval,
   saveIntegrationConfig,
   runIntegrationCheck,
+  runLabDiscovery,
   openEnvironmentDetail,
 }: {
   environments: Environment[];
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
   session: PlatformSession;
+  systemStatus: SystemStatus;
+  labAdapters: LabAdapterSnapshot[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -937,6 +1010,7 @@ function AdminView({
     payload: Pick<IntegrationConfig, "endpoint" | "credentialProfile">
   ) => void;
   runIntegrationCheck: (integrationName: string) => void;
+  runLabDiscovery: (adapterName: string) => void;
   openEnvironmentDetail: (name: string) => void;
 }) {
   const pendingApprovals = approvals.filter((approval) => approval.status === "Pending").length;
@@ -970,6 +1044,13 @@ function AdminView({
           configs={integrationConfigs}
           saveIntegrationConfig={saveIntegrationConfig}
           runIntegrationCheck={runIntegrationCheck}
+        />
+      </Panel>
+      <Panel title="Lab adapter pilot" action="Read-only">
+        <LabAdapterPanel
+          adapters={labAdapters}
+          systemStatus={systemStatus}
+          runLabDiscovery={runLabDiscovery}
         />
       </Panel>
       <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
@@ -1120,6 +1201,54 @@ function IntegrationConfigPanel({
           saveIntegrationConfig={saveIntegrationConfig}
           runIntegrationCheck={runIntegrationCheck}
         />
+      ))}
+    </div>
+  );
+}
+
+function LabAdapterPanel({
+  adapters,
+  systemStatus,
+  runLabDiscovery,
+}: {
+  adapters: LabAdapterSnapshot[];
+  systemStatus: SystemStatus;
+  runLabDiscovery: (adapterName: string) => void;
+}) {
+  return (
+    <div className="labAdapterList">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Provisioning disabled</strong>
+          <span>
+            Read-only discovery only. {systemStatus.integrations.readOnlyCandidates} adapter candidate
+            {systemStatus.integrations.readOnlyCandidates === 1 ? "" : "s"} ready for review.
+          </span>
+        </div>
+      </div>
+      {adapters.map((adapter) => (
+        <div className="labAdapterRow" key={adapter.name}>
+          <div className="integrationConfigHeader">
+            <div className="integrationLogo">{adapter.name}</div>
+            <div>
+              <strong>{adapter.product}</strong>
+              <span>{adapter.message}</span>
+            </div>
+            <span className={`status ${labAdapterClass(adapter.mode)}`}>{adapter.mode}</span>
+          </div>
+          <div className="labScope">
+            <span>{adapter.scope}</span>
+            <small>{adapter.inventoryCount} inventory records / provisioning disabled</small>
+          </div>
+          <div className="inlineActions">
+            <button className="iconTextButton" onClick={() => runLabDiscovery(adapter.name)}>
+              <RefreshCw size={15} />
+              Discover
+            </button>
+            {adapter.lastDiscoveryAt && <small>Last discovery {formatDateTime(adapter.lastDiscoveryAt)}</small>}
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -1369,6 +1498,16 @@ function integrationConfigClass(status: IntegrationConfig["status"]) {
         : "approval";
 }
 
+function labAdapterClass(mode: LabAdapterSnapshot["mode"]) {
+  return mode === "Read-only candidate"
+    ? "ready"
+    : mode === "Reachable" || mode === "Configured"
+      ? "running"
+      : mode === "Failed"
+        ? "failed"
+        : "approval";
+}
+
 function resourceDescription(target: Target) {
   switch (target) {
     case "VM":
@@ -1410,6 +1549,20 @@ function createEmptyIntegrationConfig(name: string): IntegrationConfig {
   };
 }
 
+function createEmptyLabAdapter(name: string): LabAdapterSnapshot {
+  return {
+    name,
+    product: name,
+    mode: "Mock",
+    readOnly: true,
+    provisioningEnabled: false,
+    inventoryCount: 0,
+    scope: "Mock adapter scope only until lab endpoint and authorization are documented.",
+    message: "Waiting for lab scope before read-only discovery.",
+    nextStep: "Document lab scope and read-only credential profile.",
+  };
+}
+
 function deriveMockIntegrationConfigs(sourceIntegrations: Integration[]): IntegrationConfig[] {
   return sourceIntegrations.map((integration) => ({
     ...createEmptyIntegrationConfig(integration.name),
@@ -1418,8 +1571,51 @@ function deriveMockIntegrationConfigs(sourceIntegrations: Integration[]): Integr
   }));
 }
 
+function deriveMockLabAdapters(sourceIntegrations: Integration[]): LabAdapterSnapshot[] {
+  return sourceIntegrations.map((integration) => ({
+    ...createEmptyLabAdapter(integration.name),
+    product: integration.product,
+    mode: integration.name === "NCI" ? "Configured" : "Mock",
+    scope:
+      integration.name === "NCI"
+        ? "Prism Central inventory discovery only. No VM, network, image, project, or policy changes."
+        : "Mock adapter scope only until lab endpoint and authorization are documented.",
+    message:
+      integration.name === "NCI"
+        ? "Ready for a read-only Prism Central inventory pilot after lab authorization."
+        : "Waiting for lab scope before read-only discovery.",
+    nextStep:
+      integration.name === "NCI"
+        ? "Document Prism Central URL, project scope, and read-only credential profile."
+        : integration.nextStep,
+  }));
+}
+
 function replaceIntegrationConfig(configs: IntegrationConfig[], updated: IntegrationConfig) {
   return [updated, ...configs.filter((item) => item.name !== updated.name)].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function replaceLabAdapter(adapters: LabAdapterSnapshot[], updated: LabAdapterSnapshot) {
+  return [updated, ...adapters.filter((item) => item.name !== updated.name)].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function createMockSystemStatus(
+  session: PlatformSession,
+  configs: IntegrationConfig[],
+  adapters: LabAdapterSnapshot[]
+): SystemStatus {
+  return {
+    api: "Healthy",
+    storage: "Ready",
+    session,
+    integrations: {
+      total: configs.length,
+      configured: configs.filter((item) => item.status === "Configured").length,
+      reachable: configs.filter((item) => item.status === "Reachable").length,
+      readOnlyCandidates: adapters.filter((item) => item.mode === "Read-only candidate").length,
+    },
+    provisioningEnabled: false,
+  };
 }
 
 function deriveMockApprovals(environments: Environment[]): ApprovalRequest[] {

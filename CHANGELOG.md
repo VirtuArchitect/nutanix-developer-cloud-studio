@@ -2,14 +2,33 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.3.0-integration-readiness`.
+This project uses release tags for public milestones. The current release is `v0.4.0-lab-adapter`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add template versioning states: draft, published, deprecated, and owner approval.
-- Add first real lab adapter spike once Prism Central/NKP/NDB/NUS/NCM/NAI access details are available.
+- Add first real Prism Central read-only API call once lab authorization, scope, endpoint, and credential handling are approved.
+
+## [v0.4.0-lab-adapter] - 2026-06-27
+
+### Added
+
+- Read-only lab adapter snapshot model with explicit `provisioningEnabled: false` guardrail.
+- API endpoints for `/api/system/status`, `/api/lab-adapters`, and read-only discovery simulation.
+- Admin Lab Adapter Pilot panel showing adapter scope, inventory count, discovery timestamp, and safe discovery action.
+- Dashboard provisioning status tile showing provisioning disabled and read-only candidate count.
+- Backup/restore unit coverage for JSON-file prototype state.
+- Hosted starter validation now checks system status, lab adapter availability, and provisioning guardrail.
+
+### Changed
+
+- Playwright smoke now covers integration configuration, readiness check, lab discovery, and provisioning-disabled guardrail.
+
+### Notes
+
+- The lab adapter pilot is deliberately read-only and simulated. It does not call Prism Central or any real Nutanix API yet.
 
 ## [v0.3.0-integration-readiness] - 2026-06-26
 

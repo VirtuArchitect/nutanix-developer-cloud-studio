@@ -3,7 +3,9 @@ import type {
   Environment,
   Integration,
   IntegrationConfig,
+  LabAdapterSnapshot,
   PlatformSession,
+  SystemStatus,
   Target,
 } from "../data/cloudStudioDomain";
 
@@ -88,6 +90,10 @@ export async function fetchSessionFromApi() {
   return fetchJson<PlatformSession>("/api/session");
 }
 
+export async function fetchSystemStatusFromApi() {
+  return fetchJson<SystemStatus>("/api/system/status");
+}
+
 export async function fetchIntegrationsFromApi() {
   return fetchJson<Integration[]>("/api/integrations");
 }
@@ -108,6 +114,16 @@ export async function saveIntegrationConfigViaApi(
 
 export async function runIntegrationCheckViaApi(integrationName: string) {
   return fetchJson<IntegrationConfig>(`/api/integrations/${encodeURIComponent(integrationName)}/check`, {
+    method: "POST",
+  });
+}
+
+export async function fetchLabAdaptersFromApi() {
+  return fetchJson<LabAdapterSnapshot[]>("/api/lab-adapters");
+}
+
+export async function runLabDiscoveryViaApi(adapterName: string) {
+  return fetchJson<LabAdapterSnapshot>(`/api/lab-adapters/${encodeURIComponent(adapterName)}/discover`, {
     method: "POST",
   });
 }

@@ -33,12 +33,16 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByRole("heading", { name: "Platform admin" })).toBeVisible();
   await expect(page.getByText("Access model")).toBeVisible();
   await expect(page.getByText("Integration configuration")).toBeVisible();
+  await expect(page.getByText("Lab adapter pilot")).toBeVisible();
   await page.getByLabel("Endpoint").first().fill("https://prism.lab.example");
   await page.getByLabel("Credential profile").first().fill("nci-readonly");
   await page.getByRole("button", { name: "Save" }).first().click();
   await expect(page.getByText("Configuration saved")).toBeVisible();
   await page.getByRole("button", { name: "Check" }).first().click();
   await expect(page.getByText("Reachable")).toBeVisible();
+  await page.getByRole("button", { name: "Discover" }).first().click();
+  await expect(page.getByText("Read-only candidate")).toBeVisible();
+  await expect(page.getByText("Provisioning disabled").first()).toBeVisible();
   await expect(page.getByText("Approval queue")).toBeVisible();
   await expect(page.getByText("ml-reco-lab").first()).toBeVisible();
   await page.getByRole("button", { name: "Approve" }).first().click();

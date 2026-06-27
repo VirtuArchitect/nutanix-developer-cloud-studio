@@ -68,6 +68,12 @@
 - Added admin access model and integration configuration panels.
 - Refined the dashboard to prioritize environment operations over the visual hero.
 - Added hosted starter validation script and expanded deployment configuration notes.
+- Started `v0.4.0-lab-adapter`.
+- Added API-backed system status with provisioning disabled by contract.
+- Added read-only lab adapter snapshots and simulated NCI/Prism Central discovery.
+- Added admin Lab Adapter Pilot panel and dashboard provisioning guardrail tile.
+- Added JSON-file state backup/restore unit coverage.
+- Updated hosted starter validation to check lab adapter state and provisioning guardrail.
 
 ## Documentation Rule
 

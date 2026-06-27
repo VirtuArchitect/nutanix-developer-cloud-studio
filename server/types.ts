@@ -3,6 +3,7 @@ import type {
   Environment,
   Integration,
   IntegrationConfig,
+  LabAdapterSnapshot,
   PlatformSession,
   Template,
   TemplateGovernance,
@@ -14,6 +15,7 @@ export type ApiState = {
   environments: Environment[];
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
+  labAdapters: LabAdapterSnapshot[];
   session: PlatformSession;
   governance: TemplateGovernance;
   jobs: ProvisioningJob[];

@@ -29,6 +29,7 @@ flowchart LR
     Api --> Approvals["Approval Queue"]
     Api --> Identity["Mock OIDC Session"]
     Api --> Config["Integration Config"]
+    Api --> LabAdapters["Read-only Lab Adapter Pilot"]
     Api --> Details["Environment Detail"]
     Api --> Audit["Audit Events"]
 ```
@@ -47,6 +48,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Audit events: request and decision records for hosted/on-prem workflow visibility
 - Session: mocked identity and role context for OIDC-ready UX
 - Integration config: endpoint/profile placeholders and readiness status for lab planning
+- Lab adapters: read-only discovery candidates with provisioning explicitly disabled
 
 ## Integration Boundary
 
@@ -74,6 +76,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - GitHub Actions CI and Pages deployment workflows in `.github/workflows`
 - Node HTTP API starter in `server/`
 - API-backed approval queue and environment detail views
+- API-backed system status and read-only lab adapter pilot state
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
 - Containerized starter deployment through `Dockerfile` and `docker-compose.yml`
@@ -84,6 +87,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The public GitHub Pages UI state remains local to the React app.
 - The on-prem starter API exposes templates, environments, integrations, approvals, provisioning jobs, and audit events over HTTP.
 - The API also exposes mock session, role, integration configuration, and readiness-check endpoints.
+- The lab adapter pilot simulates read-only Prism Central/NCI discovery only; provisioning remains disabled by contract.
 - Environment requests persist across browser refreshes through local storage.
 - Admin template governance edits persist across browser refreshes through local storage.
 - Job transitions are simulated in the browser with timers.
@@ -94,6 +98,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 ## Real Integration Readiness Questions
 
 - Prism Central / NCI: project IDs, image IDs, network targets, quota model, and credential profile.
+- First lab adapter pilot: read-only Prism Central inventory discovery after authorization and scope approval.
 - NKP: whether namespace creation is owned through NKP APIs or standard Kubernetes APIs.
 - NDB: database profile IDs, backup policy defaults, restore test expectations, and approval rules.
 - NUS: file/object service targets, quota rules, and storage class mapping.

@@ -4,7 +4,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { extname, join, normalize, relative } from "node:path";
 import { createEnvironmentRequest, decideApproval, RequestValidationError } from "./mockPlatform";
 import type { ApiStore } from "./storage";
-import type { IntegrationConfig } from "../src/data/cloudStudioDomain";
+import type { IntegrationConfig, LabAdapterSnapshot, SystemStatus } from "../src/data/cloudStudioDomain";
 import type { ApiError, ApiResponse, CreateEnvironmentRequest, UpdateIntegrationConfigRequest } from "./types";
 
 export type ApiServerOptions = {
@@ -83,6 +83,11 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/system/status") {
+    sendJson(response, 200, { data: createSystemStatus(state) });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/environments") {
     sendJson(response, 200, { data: state.environments });
     return;
@@ -95,6 +100,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/integration-config") {
     sendJson(response, 200, { data: state.integrationConfigs });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-adapters") {
+    sendJson(response, 200, { data: state.labAdapters });
     return;
   }
 
@@ -257,6 +267,54 @@ async function routeApi(
     return;
   }
 
+  const labDiscoveryMatch = url.pathname.match(/^\/api\/lab-adapters\/([^/]+)\/discover$/);
+  if (request.method === "POST" && labDiscoveryMatch) {
+    const adapterName = decodeURIComponent(labDiscoveryMatch[1]).toUpperCase();
+    const adapter = state.labAdapters.find((item) => item.name === adapterName);
+    const config = state.integrationConfigs.find((item) => item.name === adapterName);
+    if (!adapter || !config) {
+      sendJson(response, 404, {
+        error: {
+          code: "lab_adapter_not_found",
+          message: `Lab adapter not found: ${adapterName}`,
+        },
+      });
+      return;
+    }
+
+    const readOnlyCandidate = adapterName === "NCI" && config.status === "Reachable";
+    const updated: LabAdapterSnapshot = {
+      ...adapter,
+      mode: readOnlyCandidate ? "Read-only candidate" : config.status === "Failed" ? "Failed" : "Configured",
+      inventoryCount: readOnlyCandidate ? 12 : 0,
+      lastDiscoveryAt: new Date().toISOString(),
+      message: readOnlyCandidate
+        ? "Read-only Prism Central discovery simulated successfully. Provisioning remains disabled."
+        : "Discovery requires a reachable integration config and documented lab scope.",
+      nextStep: readOnlyCandidate
+        ? "Review discovered inventory model and confirm adapter authorization before any real API call."
+        : adapter.nextStep,
+    };
+    state.labAdapters = state.labAdapters.map((item) => (item.name === adapterName ? updated : item));
+    state.auditEvents = [
+      {
+        id: `audit-lab-discovery-${adapterName}-${Date.now()}`,
+        action: "lab.discovery.simulated",
+        actor: state.session.user,
+        target: adapterName,
+        createdAt: new Date().toISOString(),
+        metadata: {
+          readOnly: true,
+          provisioningEnabled: false,
+        },
+      },
+      ...state.auditEvents,
+    ];
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
+    return;
+  }
+
   const approvalMatch = url.pathname.match(/^\/api\/approvals\/([^/]+)\/(approve|reject)$/);
   if (request.method === "POST" && approvalMatch) {
     try {
@@ -289,6 +347,21 @@ async function routeApi(
       message: "API route not found.",
     },
   });
+}
+
+function createSystemStatus(state: Awaited<ReturnType<ApiStore["load"]>>): SystemStatus {
+  return {
+    api: "Healthy",
+    storage: "Ready",
+    session: state.session,
+    integrations: {
+      total: state.integrationConfigs.length,
+      configured: state.integrationConfigs.filter((item) => item.status === "Configured").length,
+      reachable: state.integrationConfigs.filter((item) => item.status === "Reachable").length,
+      readOnlyCandidates: state.labAdapters.filter((item) => item.mode === "Read-only candidate").length,
+    },
+    provisioningEnabled: false,
+  };
 }
 
 function sendJson<T>(response: ServerResponse, status: number, body: ApiResponse<T> | ApiError) {

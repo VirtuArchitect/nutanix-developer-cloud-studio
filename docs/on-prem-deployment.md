@@ -29,6 +29,8 @@ Hosted starter validation:
 .\scripts\validate-hosted-starter.ps1
 ```
 
+The validation script checks health, readiness, mock session/roles, integration configuration, lab adapter availability, and the `provisioningEnabled=false` guardrail.
+
 ## Runtime Configuration
 
 The container uses these environment variables:
@@ -62,6 +64,18 @@ For a future real deployment:
 - Keep Nutanix credentials out of the frontend.
 - Store secrets in an enterprise vault or platform secret manager.
 - Allow outbound access only to approved Nutanix management endpoints.
+
+## Lab Adapter Guardrail
+
+`v0.4.0-lab-adapter` is a read-only pilot phase. The app may simulate Prism Central inventory discovery, but it must not create, update, delete, clone, power on, power off, resize, or reconfigure any Nutanix resource.
+
+Before any real API call is added, document:
+
+- Authorized lab systems and endpoints.
+- Read-only credential profile owner and storage location.
+- Allowed request types.
+- Explicitly excluded provisioning or mutation actions.
+- Escalation contact for failed discovery.
 
 ## Future Production Requirements
 

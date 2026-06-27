@@ -29,7 +29,9 @@ try {
   $health = Invoke-RestMethod -Uri "$baseUrl/healthz"
   $ready = Invoke-RestMethod -Uri "$baseUrl/readyz"
   $session = Invoke-RestMethod -Uri "$baseUrl/api/session"
+  $systemStatus = Invoke-RestMethod -Uri "$baseUrl/api/system/status"
   $configs = Invoke-RestMethod -Uri "$baseUrl/api/integration-config"
+  $labAdapters = Invoke-RestMethod -Uri "$baseUrl/api/lab-adapters"
 
   if (-not $health.data.ok) {
     throw "Health check failed."
@@ -45,6 +47,14 @@ try {
 
   if (-not $configs.data -or $configs.data.Count -lt 1) {
     throw "Integration configuration check failed."
+  }
+
+  if ($systemStatus.data.provisioningEnabled -ne $false) {
+    throw "Provisioning guardrail check failed."
+  }
+
+  if (-not $labAdapters.data -or $labAdapters.data.Count -lt 1) {
+    throw "Lab adapter check failed."
   }
 
   Write-Output "Hosted starter validation passed at $baseUrl"

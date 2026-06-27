@@ -33,6 +33,7 @@ export type Environment = {
 export type ApprovalStatus = "Pending" | "Approved" | "Rejected";
 export type PlatformRole = "Developer" | "Approver" | "Platform Admin";
 export type IntegrationConfigStatus = "Not configured" | "Configured" | "Reachable" | "Failed";
+export type LabAdapterMode = "Mock" | "Configured" | "Reachable" | "Read-only candidate" | "Failed";
 
 export type ApprovalRequest = {
   id: string;
@@ -71,6 +72,32 @@ export type IntegrationConfig = {
   status: IntegrationConfigStatus;
   lastCheckedAt?: string;
   message: string;
+};
+
+export type LabAdapterSnapshot = {
+  name: string;
+  product: string;
+  mode: LabAdapterMode;
+  readOnly: boolean;
+  provisioningEnabled: false;
+  inventoryCount: number;
+  lastDiscoveryAt?: string;
+  scope: string;
+  message: string;
+  nextStep: string;
+};
+
+export type SystemStatus = {
+  api: "Healthy";
+  storage: "Ready";
+  session: PlatformSession;
+  integrations: {
+    total: number;
+    configured: number;
+    reachable: number;
+    readOnlyCandidates: number;
+  };
+  provisioningEnabled: false;
 };
 
 export type JobEvent = {

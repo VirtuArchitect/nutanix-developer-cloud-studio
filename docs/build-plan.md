@@ -108,7 +108,8 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Add integration configuration and readiness checks for lab planning - done.
 - Add hosted starter validation script - done.
 - Add template versioning states: draft, published, deprecated, and owner approval.
-- Add a real lab adapter spike once Prism Central/NKP/NDB/NUS/NCM/NAI access details are available.
+- Add a read-only lab adapter spike - done.
+- Add a real Prism Central read-only API call once authorization and scope are approved.
 
 ## Current Integration Readiness Slice
 
@@ -119,6 +120,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin view includes access model and integration configuration panels.
 - Dashboard first screen prioritizes environment operations and compact status rather than a large hero.
 - `scripts/validate-hosted-starter.ps1` validates health, readiness, session, and integration configuration endpoints.
+
+## Current Lab Adapter Slice
+
+- API exposes `/api/system/status` with provisioning explicitly disabled.
+- API exposes `/api/lab-adapters` for read-only adapter pilot state.
+- API exposes `/api/lab-adapters/:name/discover` to simulate read-only discovery.
+- Admin view includes a Lab Adapter Pilot panel with discovery action and guardrail messaging.
+- JSON-file prototype state backup/restore has unit coverage.
 
 ## Suggested Tech Stack
 

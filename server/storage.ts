@@ -6,6 +6,7 @@ import {
   templates,
   type ApprovalRequest,
   type IntegrationConfig,
+  type LabAdapterSnapshot,
   type PlatformSession,
   type TemplateGovernance,
 } from "../src/data/cloudStudioDomain";
@@ -63,12 +64,36 @@ function defaultIntegrationConfigs(): IntegrationConfig[] {
   }));
 }
 
+function defaultLabAdapters(): LabAdapterSnapshot[] {
+  return integrations.map((integration) => ({
+    name: integration.name,
+    product: integration.product,
+    mode: integration.name === "NCI" ? "Configured" : "Mock",
+    readOnly: true,
+    provisioningEnabled: false,
+    inventoryCount: 0,
+    scope:
+      integration.name === "NCI"
+        ? "Prism Central inventory discovery only. No VM, network, image, project, or policy changes."
+        : "Mock adapter scope only until lab endpoint and authorization are documented.",
+    message:
+      integration.name === "NCI"
+        ? "Ready for a read-only Prism Central inventory pilot after lab authorization."
+        : "Waiting for lab scope before read-only discovery.",
+    nextStep:
+      integration.name === "NCI"
+        ? "Document Prism Central URL, project scope, and read-only credential profile."
+        : integration.nextStep,
+  }));
+}
+
 export function createDefaultState(): ApiState {
   return {
     templates,
     environments: initialEnvironments,
     integrations,
     integrationConfigs: defaultIntegrationConfigs(),
+    labAdapters: defaultLabAdapters(),
     session: defaultSession(),
     governance: defaultGovernance(),
     jobs: [],

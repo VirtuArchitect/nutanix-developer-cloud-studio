@@ -62,6 +62,33 @@ describe("api server", () => {
     expect(configs.data).toEqual(expect.arrayContaining([expect.objectContaining({ name: "NCI", status: "Reachable" })]));
   });
 
+  it("reports system status and simulates read-only lab discovery", async () => {
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+
+    const discovered = await requestJson("/api/lab-adapters/NCI/discover", { method: "POST" });
+    const status = await requestJson("/api/system/status");
+
+    expect(discovered.data).toMatchObject({
+      name: "NCI",
+      mode: "Read-only candidate",
+      provisioningEnabled: false,
+      inventoryCount: 12,
+    });
+    expect(status.data).toMatchObject({
+      api: "Healthy",
+      storage: "Ready",
+      provisioningEnabled: false,
+      integrations: expect.objectContaining({ readOnlyCandidates: 1 }),
+    });
+  });
+
   it("creates an environment request and records jobs and audit events", async () => {
     const created = await requestJson("/api/environments", {
       method: "POST",
