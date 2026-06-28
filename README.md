@@ -24,7 +24,8 @@ This repository is an independent clickable MVP prototype. All Nutanix integrati
 - Admin view for platform teams
 - Hosted/on-prem starter API for prototype provisioning jobs, approvals, environment details, role context, integration configuration, readiness checks, system status, and read-only lab adapter pilots
 
-![Nutanix Developer Cloud Studio dashboard](docs/assets/dashboard-screenshot.png)
+<img width="1720" height="1260" alt="image" src="https://github.com/user-attachments/assets/355abe1b-c5d0-40b5-814f-89d051332836" />
+
 
 ## Run The Prototype
 
