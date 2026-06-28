@@ -63,12 +63,24 @@
 - Add audit evidence for each job transition - done
 - Keep real provisioning disabled until adapter-specific gates are approved - done
 
-## Phase 8 - Template And Image Registry (`v0.6.0-template-image-registry`)
+## Phase 8 - Provisioning Adapters And Image Registry (`v0.6.0-provisioning-adapters`)
 
-- Add AHV image registry
-- Add NKP, NDB, NUS, and NAI profile registries
-- Add draft, published, and deprecated template states
+- Add provisioning adapter interface - done
+- Add AHV image registry - done
+- Add NKP, NDB, NUS, and NAI profile registries - done
+- Add platform provider configuration references - done
+- Add environment destroy/teardown workflow - done
+- Add admin provider readiness and image/profile catalog panels - done
+- Add draft, published, and deprecated template states - planned
+- Add owner approval before publishing golden paths - planned
+
+## Phase 9 - Registry Governance (`v0.7.0-registry-governance`)
+
+- Add template versioning states: draft, published, deprecated
 - Add owner approval before publishing golden paths
+- Add resource profile approval and deprecation workflow
+- Add policy bundle selection per template version
+- Keep real provisioning disabled until lab authorization and adapter gates are approved
 
 ## Gated Promotion
 

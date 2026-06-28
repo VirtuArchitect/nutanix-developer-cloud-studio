@@ -81,6 +81,12 @@
 - Added API-backed control-plane queue, state machine, mock worker actions, and audit transitions.
 - Added dashboard/admin control-plane queue panels.
 - Added tests and smoke coverage for queue creation, advance, fail, retry, and approval release.
+- Started `v0.6.0-provisioning-adapters`.
+- Added provisioning adapter contract capabilities for validate, plan, provision, poll, and destroy.
+- Added API-backed provider readiness, platform config references, and image/profile catalog records.
+- Added admin Image and Template Catalog and Provider Readiness panels.
+- Added simulated environment destroy lifecycle with teardown control-plane jobs and audit evidence.
+- Added tests and smoke coverage for provider inventory and destroy workflow.
 
 ## Documentation Rule
 

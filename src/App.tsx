@@ -33,7 +33,12 @@ import {
   type IntegrationConfig,
   type JobState,
   type LabAdapterSnapshot,
+  platformConfig as defaultPlatformConfig,
   type PlatformSession,
+  type PlatformConfig,
+  type ProvisioningAdapterReadiness,
+  resourceProfiles as defaultResourceProfiles,
+  type ResourceProfile,
   type SystemStatus,
   type Target,
   type Template,
@@ -62,8 +67,12 @@ import {
   fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
   fetchLabAdaptersFromApi,
+  fetchPlatformConfigFromApi,
+  fetchProvisioningAdaptersFromApi,
+  fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
+  requestEnvironmentDestroyViaApi,
   runIntegrationCheckViaApi,
   runControlPlaneJobActionViaApi,
   runLabDiscoveryViaApi,
@@ -90,6 +99,11 @@ export function App() {
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
   );
   const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
+  const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
+  const [platformConfig, setPlatformConfig] = useState<PlatformConfig>(defaultPlatformConfig);
+  const [provisioningAdapters, setProvisioningAdapters] = useState<ProvisioningAdapterReadiness[]>(() =>
+    deriveMockProvisioningAdapters(integrations)
+  );
   const [controlPlaneJobs, setControlPlaneJobs] = useState<ControlPlaneJob[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
@@ -142,6 +156,9 @@ export function App() {
             apiSystemStatus,
             apiLabAdapters,
             apiControlPlaneJobs,
+            apiResourceProfiles,
+            apiPlatformConfig,
+            apiProvisioningAdapters,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -151,6 +168,9 @@ export function App() {
             fetchSystemStatusFromApi(),
             fetchLabAdaptersFromApi(),
             fetchControlPlaneJobsFromApi(),
+            fetchResourceProfilesFromApi(),
+            fetchPlatformConfigFromApi(),
+            fetchProvisioningAdaptersFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -161,6 +181,9 @@ export function App() {
             setSystemStatus(apiSystemStatus);
             setLabAdapters(apiLabAdapters);
             setControlPlaneJobs(apiControlPlaneJobs);
+            setResourceProfiles(apiResourceProfiles);
+            setPlatformConfig(apiPlatformConfig);
+            setProvisioningAdapters(apiProvisioningAdapters);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -292,6 +315,9 @@ export function App() {
       apiSystemStatus,
       apiLabAdapters,
       apiControlPlaneJobs,
+      apiResourceProfiles,
+      apiPlatformConfig,
+      apiProvisioningAdapters,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -301,6 +327,9 @@ export function App() {
       fetchSystemStatusFromApi(),
       fetchLabAdaptersFromApi(),
       fetchControlPlaneJobsFromApi(),
+      fetchResourceProfilesFromApi(),
+      fetchPlatformConfigFromApi(),
+      fetchProvisioningAdaptersFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -310,6 +339,9 @@ export function App() {
     setSystemStatus(apiSystemStatus);
     setLabAdapters(apiLabAdapters);
     setControlPlaneJobs(apiControlPlaneJobs);
+    setResourceProfiles(apiResourceProfiles);
+    setPlatformConfig(apiPlatformConfig);
+    setProvisioningAdapters(apiProvisioningAdapters);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -444,6 +476,24 @@ export function App() {
     );
   }
 
+  async function requestEnvironmentDestroy(name: string) {
+    if (apiHealth.mode === "api") {
+      await requestEnvironmentDestroyViaApi(name);
+      await refreshApiState(name);
+      return;
+    }
+
+    setEnvironments((current) =>
+      current.map((environment) =>
+        environment.name === name ? { ...environment, status: "Destroying" as const } : environment
+      )
+    );
+    const environment = environments.find((item) => item.name === name);
+    if (environment) {
+      setControlPlaneJobs((current) => [createMockDestroyControlPlaneJob(environment), ...current]);
+    }
+  }
+
   function updateTemplateGovernance(id: string, field: "owner" | "tier", value: string) {
     setTemplateGovernance((current) => {
       const currentTemplate = current[id] ?? { owner: "", tier: "Standard" };
@@ -559,6 +609,9 @@ export function App() {
             session={session}
             systemStatus={systemStatus}
             labAdapters={labAdapters}
+            resourceProfiles={resourceProfiles}
+            platformConfig={platformConfig}
+            provisioningAdapters={provisioningAdapters}
             controlPlaneJobs={controlPlaneJobs}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -568,6 +621,7 @@ export function App() {
             runIntegrationCheck={runIntegrationCheck}
             runLabDiscovery={runLabDiscovery}
             runControlPlaneJobAction={runControlPlaneJobAction}
+            requestEnvironmentDestroy={requestEnvironmentDestroy}
             openEnvironmentDetail={openEnvironmentDetail}
           />
         )}
@@ -1041,6 +1095,9 @@ function AdminView({
   session,
   systemStatus,
   labAdapters,
+  resourceProfiles,
+  platformConfig,
+  provisioningAdapters,
   controlPlaneJobs,
   approvals,
   templateGovernance,
@@ -1050,6 +1107,7 @@ function AdminView({
   runIntegrationCheck,
   runLabDiscovery,
   runControlPlaneJobAction,
+  requestEnvironmentDestroy,
   openEnvironmentDetail,
 }: {
   environments: Environment[];
@@ -1058,6 +1116,9 @@ function AdminView({
   session: PlatformSession;
   systemStatus: SystemStatus;
   labAdapters: LabAdapterSnapshot[];
+  resourceProfiles: ResourceProfile[];
+  platformConfig: PlatformConfig;
+  provisioningAdapters: ProvisioningAdapterReadiness[];
   controlPlaneJobs: ControlPlaneJob[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -1070,6 +1131,7 @@ function AdminView({
   runIntegrationCheck: (integrationName: string) => void;
   runLabDiscovery: (adapterName: string) => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
+  requestEnvironmentDestroy: (name: string) => void;
   openEnvironmentDetail: (name: string) => void;
 }) {
   const pendingApprovals = approvals.filter((approval) => approval.status === "Pending").length;
@@ -1114,6 +1176,12 @@ function AdminView({
       </Panel>
       <Panel title="Provisioning control plane" action={`${controlPlaneJobs.length} jobs`}>
         <ControlPlaneQueue jobs={controlPlaneJobs} runControlPlaneJobAction={runControlPlaneJobAction} />
+      </Panel>
+      <Panel title="Image and template catalog" action={`${resourceProfiles.length} profiles`}>
+        <ResourceProfileCatalog profiles={resourceProfiles} />
+      </Panel>
+      <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
+        <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
       </Panel>
       <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
         <ApprovalQueue
@@ -1174,15 +1242,20 @@ function AdminView({
       <Panel title="Governance queue" action={`${environments.filter((env) => env.status !== "Ready").length} open`}>
         <div className="envTable">
           {environments.map((env) => (
-            <button className="envRow buttonRowLike" key={env.name} onClick={() => openEnvironmentDetail(env.name)}>
-              <div>
-                <strong>{env.name}</strong>
-                <span>
-                  {env.owner} / {env.region}
-                </span>
-              </div>
-              <span className={`status ${statusClass(env.status)}`}>{env.status}</span>
-            </button>
+            <div className="envRow governanceRow" key={env.name}>
+              <button className="buttonRowLike ghostRowButton" onClick={() => openEnvironmentDetail(env.name)}>
+                <div>
+                  <strong>{env.name}</strong>
+                  <span>
+                    {env.owner} / {env.region}
+                  </span>
+                </div>
+                <span className={`status ${statusClass(env.status)}`}>{env.status}</span>
+              </button>
+              <button className="smallButton dangerButton" onClick={() => requestEnvironmentDestroy(env.name)}>
+                Destroy
+              </button>
+            </div>
           ))}
         </div>
       </Panel>
@@ -1259,7 +1332,9 @@ function ControlPlaneQueue({
           <div className="integrationConfigHeader">
             <div>
               <strong>{job.environmentName}</strong>
-              <span>{job.template}</span>
+              <span>
+                {job.operation} / {job.template}
+              </span>
             </div>
             <span className={`status ${controlPlaneClass(job.state)}`}>{job.state}</span>
           </div>
@@ -1362,6 +1437,75 @@ function LabAdapterPanel({
               Discover
             </button>
             {adapter.lastDiscoveryAt && <small>Last discovery {formatDateTime(adapter.lastDiscoveryAt)}</small>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ResourceProfileCatalog({ profiles }: { profiles: ResourceProfile[] }) {
+  return (
+    <div className="resourceProfileList">
+      {profiles.map((profile) => (
+        <div className="resourceProfileRow" key={profile.id}>
+          <div className="integrationConfigHeader">
+            <div className="integrationLogo">{profile.provider}</div>
+            <div>
+              <strong>{profile.name}</strong>
+              <span>
+                {profile.kind} / {profile.version} / {profile.region}
+              </span>
+            </div>
+            <span className={`status ${resourceProfileClass(profile.status)}`}>{profile.status}</span>
+          </div>
+          <div className="labScope">
+            <span>{profile.notes}</span>
+            <small>{profile.owner}</small>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProvisioningAdapterPanel({
+  adapters,
+  platformConfig,
+}: {
+  adapters: ProvisioningAdapterReadiness[];
+  platformConfig: PlatformConfig;
+}) {
+  return (
+    <div className="provisioningAdapterList">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Adapter contract only</strong>
+          <span>{platformConfig.message}</span>
+        </div>
+      </div>
+      <div className="platformConfigGrid">
+        <CheckLine icon={Network} label="Project" value={platformConfig.defaultProject} passed />
+        <CheckLine icon={Layers3} label="Cluster" value={platformConfig.defaultCluster} passed />
+        <CheckLine icon={Settings} label="Network profile" value={platformConfig.networkProfile} passed={false} />
+        <CheckLine icon={LockKeyhole} label="Credential ref" value={platformConfig.credentialReference} passed={false} />
+      </div>
+      {adapters.map((adapter) => (
+        <div className="provisioningAdapterRow" key={adapter.name}>
+          <div className="integrationConfigHeader">
+            <div className="integrationLogo">{adapter.name}</div>
+            <div>
+              <strong>{adapter.product}</strong>
+              <span>{adapter.capabilities.join(" / ")}</span>
+            </div>
+            <span className={`status ${adapter.configured ? "running" : "approval"}`}>
+              {adapter.configured ? "Configured" : "Needs config"}
+            </span>
+          </div>
+          <div className="labScope">
+            <span>{adapter.nextGate}</span>
+            <small>Provisioning disabled until adapter-specific gates are approved.</small>
           </div>
         </div>
       ))}
@@ -1490,6 +1634,10 @@ function EnvironmentDetailView({ detail, openCreate }: { detail: EnvironmentDeta
         </Panel>
       </div>
 
+      <Panel title="Control-plane lifecycle" action={`${detail.controlPlaneJobs?.length ?? 0} jobs`}>
+        <ControlPlaneQueue jobs={detail.controlPlaneJobs ?? []} />
+      </Panel>
+
       <Panel title="Audit trail" action={`${detail.auditEvents.length} events`}>
         <div className="eventList">
           {detail.auditEvents.map((event) => (
@@ -1600,7 +1748,13 @@ function viewTitle(view: View) {
 }
 
 function statusClass(status: Environment["status"]) {
-  return status === "Ready" ? "ready" : status === "Provisioning" ? "running" : status === "Failed" ? "failed" : "approval";
+  return status === "Ready" || status === "Destroyed"
+    ? "ready"
+    : status === "Provisioning" || status === "Destroying"
+      ? "running"
+      : status === "Failed"
+        ? "failed"
+        : "approval";
 }
 
 function integrationConfigClass(status: IntegrationConfig["status"]) {
@@ -1624,13 +1778,17 @@ function labAdapterClass(mode: LabAdapterSnapshot["mode"]) {
 }
 
 function controlPlaneClass(state: ControlPlaneJob["state"]) {
-  return state === "Ready"
+  return state === "Ready" || state === "Destroyed"
     ? "ready"
     : state === "Failed" || state === "Expired"
       ? "failed"
       : state === "AwaitingApproval"
         ? "approval"
         : "running";
+}
+
+function resourceProfileClass(status: ResourceProfile["status"]) {
+  return status === "Published" ? "ready" : status === "Deprecated" ? "failed" : "approval";
 }
 
 function resourceDescription(target: Target) {
@@ -1716,6 +1874,21 @@ function deriveMockLabAdapters(sourceIntegrations: Integration[]): LabAdapterSna
   }));
 }
 
+function deriveMockProvisioningAdapters(sourceIntegrations: Integration[]): ProvisioningAdapterReadiness[] {
+  return sourceIntegrations.map((integration) => ({
+    name: integration.name as ProvisioningAdapterReadiness["name"],
+    product: integration.product,
+    mode: "Mock",
+    capabilities: ["validateRequest", "plan", "provision", "pollStatus", "destroy"],
+    configured: integration.state === "Healthy",
+    provisioningEnabled: false,
+    nextGate:
+      integration.name === "NCI"
+        ? "Map Prism Central image, project, subnet, category, and credential references."
+        : integration.nextStep,
+  }));
+}
+
 function replaceIntegrationConfig(configs: IntegrationConfig[], updated: IntegrationConfig) {
   return [updated, ...configs.filter((item) => item.name !== updated.name)].sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -1756,6 +1929,7 @@ function createMockControlPlaneJob(
     template: template.name,
     owner: environment.owner,
     targets,
+    operation: "Provision",
     state: approvalRequired ? "AwaitingApproval" : "Queued",
     attempts: 0,
     maxAttempts: 3,
@@ -1768,6 +1942,33 @@ function createMockControlPlaneJob(
         state: approvalRequired ? "AwaitingApproval" : "Queued",
         actor: "browser.mock",
         message: approvalRequired ? "Job paused for approval." : "Job queued for mock validation.",
+        createdAt: now,
+      },
+    ],
+  };
+}
+
+function createMockDestroyControlPlaneJob(environment: Environment): ControlPlaneJob {
+  const now = new Date().toISOString();
+  return {
+    id: `cp-destroy-${environment.name}`,
+    environmentName: environment.name,
+    template: environment.template,
+    owner: environment.owner,
+    targets: ["VM", "Storage"],
+    operation: "Destroy",
+    state: "Destroying",
+    attempts: 0,
+    maxAttempts: 3,
+    worker: "MockOrchestrator",
+    provisioningEnabled: false,
+    queuedAt: now,
+    updatedAt: now,
+    transitions: [
+      {
+        state: "Destroying",
+        actor: "browser.mock",
+        message: "Destroy job queued. Teardown is simulated and real infrastructure mutation is disabled.",
         createdAt: now,
       },
     ],
@@ -1790,6 +1991,8 @@ function transitionMockControlPlaneJob(
             ? "Provisioning"
             : job.state === "Provisioning"
               ? "Ready"
+              : job.state === "Destroying"
+                ? "Destroyed"
               : job.state;
   const message =
     action === "retry"

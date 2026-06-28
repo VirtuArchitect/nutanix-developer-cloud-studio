@@ -35,14 +35,14 @@ flowchart LR
 Run locally:
 
 ```powershell
-.\scripts\run-phase-gate.ps1 -TargetPhase v0.5.0-control-plane
+.\scripts\run-phase-gate.ps1 -TargetPhase v0.6.0-provisioning-adapters
 ```
 
 With an explicitly authorized security scope:
 
 ```powershell
 .\scripts\run-phase-gate.ps1 `
-  -TargetPhase v0.5.0-control-plane `
+  -TargetPhase v0.6.0-provisioning-adapters `
   -PentestScopePath .\PENTEST_SCOPE_TEMPLATE.md `
   -IncludeAuthorizedPentest
 ```
@@ -72,26 +72,44 @@ Exit gate:
 - Job queue tests cover success, failure, retry, and approval pause.
 - Security review confirms no untrusted shell execution or unsafe path handling.
 
-### v0.6.0-template-image-registry
+### v0.6.0-provisioning-adapters
 
-Goal: define what the platform is allowed to create.
+Goal: define adapter contracts and what the platform is allowed to create.
 
 Build:
 
+- Provisioning adapter contract for validate, plan, provision, poll, and destroy.
 - AHV image registry records.
 - NKP namespace/profile registry records.
 - NDB profile registry records.
 - NUS storage class registry records.
 - NAI/GPU endpoint profile records.
+- Platform configuration references.
+- Simulated destroy lifecycle with teardown queue evidence.
+
+Exit gate:
+
+- Adapter and provider inventory endpoints are covered by tests.
+- Destroy lifecycle queues a simulated teardown job.
+- Smoke test covers provider readiness and destroy lifecycle.
+- Security review covers configuration and sensitive endpoint handling.
+
+### v0.7.0-registry-governance
+
+Goal: govern template and profile publication before real integration.
+
+Build:
+
 - Template version states: draft, published, deprecated.
+- Resource profile states and deprecation controls.
 - Owner approval before publishing.
+- Policy bundle selection per version.
 
 Exit gate:
 
 - Registry cannot publish incomplete profiles.
 - Deprecated profiles cannot be selected for new requests.
 - Smoke test covers selecting a published profile.
-- Security review covers configuration and sensitive endpoint handling.
 
 ### v0.7.0-prism-readonly-inventory
 

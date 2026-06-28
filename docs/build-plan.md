@@ -144,6 +144,16 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Audit events record queueing, transitions, failures, retries, and approval release.
 - Dashboard and admin views expose control-plane queue health.
 
+## Current Provisioning Adapter Slice
+
+- Provisioning adapters now expose validate, plan, provision, poll, and destroy capabilities.
+- API exposes provider readiness records for NCI, NKP, NDB, NUS, NCM, and NAI.
+- API exposes image/profile inventory for AHV images, Kubernetes versions, database engines, storage classes, and AI profiles.
+- API exposes platform configuration references for project, cluster, network, and credential profile.
+- Admin view includes Image and Template Catalog and Provider Readiness panels.
+- Environment destroy requests queue simulated teardown jobs and audit evidence.
+- Real provisioning and teardown remain disabled.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

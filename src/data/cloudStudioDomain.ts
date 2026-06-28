@@ -1,7 +1,7 @@
 export type View = "dashboard" | "catalog" | "template" | "create" | "environment" | "environmentDetail" | "admin";
 export type Target = "VM" | "Kubernetes" | "Database" | "Storage" | "AI Endpoint";
 export type TemplateTier = "Standard" | "Regulated" | "Accelerated";
-export type EnvironmentStatus = "Ready" | "Provisioning" | "Needs approval" | "Failed";
+export type EnvironmentStatus = "Ready" | "Provisioning" | "Needs approval" | "Failed" | "Destroying" | "Destroyed";
 export type JobState = "Idle" | "Queued" | "Running" | "Approval" | "Complete" | "Failed";
 export type ControlPlaneJobState =
   | "Queued"
@@ -10,8 +10,14 @@ export type ControlPlaneJobState =
   | "Provisioning"
   | "Ready"
   | "Failed"
-  | "Expired";
+  | "Expired"
+  | "Destroying"
+  | "Destroyed";
 export type TemplateGovernance = Record<string, { owner: string; tier: TemplateTier }>;
+export type ResourceProfileKind = "AHV Image" | "Kubernetes Version" | "Database Engine" | "Storage Class" | "AI Profile";
+export type ResourceProfileStatus = "Published" | "Draft" | "Deprecated";
+export type ProvisioningAdapterName = "NCI" | "NKP" | "NDB" | "NUS" | "NCM" | "NAI";
+export type ProvisioningAdapterCapability = "validateRequest" | "plan" | "provision" | "pollStatus" | "destroy";
 
 export type Template = {
   id: string;
@@ -108,6 +114,38 @@ export type SystemStatus = {
   provisioningEnabled: false;
 };
 
+export type ResourceProfile = {
+  id: string;
+  kind: ResourceProfileKind;
+  name: string;
+  provider: ProvisioningAdapterName;
+  version: string;
+  status: ResourceProfileStatus;
+  owner: string;
+  region: string;
+  notes: string;
+};
+
+export type PlatformConfig = {
+  prismCentralUrl: string;
+  defaultProject: string;
+  defaultCluster: string;
+  networkProfile: string;
+  credentialReference: string;
+  provisioningEnabled: false;
+  message: string;
+};
+
+export type ProvisioningAdapterReadiness = {
+  name: ProvisioningAdapterName;
+  product: string;
+  mode: "Mock";
+  capabilities: ProvisioningAdapterCapability[];
+  configured: boolean;
+  provisioningEnabled: false;
+  nextGate: string;
+};
+
 export type ControlPlaneJobTransition = {
   state: ControlPlaneJobState;
   actor: string;
@@ -121,6 +159,7 @@ export type ControlPlaneJob = {
   template: string;
   owner: string;
   targets: Target[];
+  operation: "Provision" | "Destroy";
   state: ControlPlaneJobState;
   attempts: number;
   maxAttempts: number;
@@ -321,6 +360,74 @@ export const integrations: Integration[] = [
 ];
 
 export const allTargets: Target[] = ["VM", "Kubernetes", "Database", "Storage", "AI Endpoint"];
+
+export const resourceProfiles: ResourceProfile[] = [
+  {
+    id: "ahv-rocky-9-hardened",
+    kind: "AHV Image",
+    name: "Rocky Linux 9 Hardened",
+    provider: "NCI",
+    version: "9.4",
+    status: "Published",
+    owner: "Cloud Infrastructure",
+    region: "Berlin Lab",
+    notes: "Default VM sandbox image candidate. Image UUID must be mapped during lab onboarding.",
+  },
+  {
+    id: "nkp-1-30-standard",
+    kind: "Kubernetes Version",
+    name: "NKP Kubernetes Standard",
+    provider: "NKP",
+    version: "1.30",
+    status: "Published",
+    owner: "App Platform",
+    region: "Berlin Lab",
+    notes: "Namespace and quota profile for standard app teams.",
+  },
+  {
+    id: "ndb-postgres-16-dev",
+    kind: "Database Engine",
+    name: "PostgreSQL Developer",
+    provider: "NDB",
+    version: "16",
+    status: "Published",
+    owner: "Data Platform",
+    region: "Berlin Lab",
+    notes: "Developer database profile with backup policy placeholder.",
+  },
+  {
+    id: "nus-object-dev",
+    kind: "Storage Class",
+    name: "NUS Object Developer",
+    provider: "NUS",
+    version: "standard",
+    status: "Draft",
+    owner: "Storage Platform",
+    region: "Berlin Lab",
+    notes: "Object bucket profile awaiting quota and retention approval.",
+  },
+  {
+    id: "nai-gpu-small",
+    kind: "AI Profile",
+    name: "NAI GPU Small Endpoint",
+    provider: "NAI",
+    version: "gpu-small",
+    status: "Draft",
+    owner: "AI Platform",
+    region: "London Edge",
+    notes: "Requires GPU quota, PII policy, and model registry mapping.",
+  },
+];
+
+export const platformConfig: PlatformConfig = {
+  prismCentralUrl: "",
+  defaultProject: "developer-cloud-lab",
+  defaultCluster: "berlin-ahv-lab",
+  networkProfile: "dev-segment-placeholder",
+  credentialReference: "nci-lab-readonly",
+  provisioningEnabled: false,
+  message: "Provider configuration stores references only. Sensitive credential values live outside this prototype.",
+};
 
 export const provisioningEvents: JobEvent[] = [
   {

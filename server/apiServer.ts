@@ -8,7 +8,12 @@ import {
   failControlPlaneJob,
   retryControlPlaneJob,
 } from "./controlPlane";
-import { createEnvironmentRequest, decideApproval, RequestValidationError } from "./mockPlatform";
+import {
+  createEnvironmentRequest,
+  decideApproval,
+  requestEnvironmentDestroy,
+  RequestValidationError,
+} from "./mockPlatform";
 import type { ApiStore } from "./storage";
 import type { IntegrationConfig, LabAdapterSnapshot, SystemStatus } from "../src/data/cloudStudioDomain";
 import type { ApiError, ApiResponse, CreateEnvironmentRequest, UpdateIntegrationConfigRequest } from "./types";
@@ -114,6 +119,21 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/resource-profiles") {
+    sendJson(response, 200, { data: state.resourceProfiles });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/platform/config") {
+    sendJson(response, 200, { data: state.platformConfig });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/provisioning/adapters") {
+    sendJson(response, 200, { data: state.provisioningAdapters });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/provisioning-jobs") {
     sendJson(response, 200, { data: state.jobs });
     return;
@@ -152,10 +172,33 @@ async function routeApi(
       data: {
         environment,
         jobs: state.jobs.filter((job) => job.environmentName === environmentName),
+        controlPlaneJobs: state.controlPlaneJobs.filter((job) => job.environmentName === environmentName),
         approvals: state.approvals.filter((approval) => approval.environmentName === environmentName),
         auditEvents: state.auditEvents.filter((event) => event.target === environmentName),
       },
     });
+    return;
+  }
+
+  const environmentDestroyMatch = url.pathname.match(/^\/api\/environments\/([^/]+)\/destroy$/);
+  if (request.method === "POST" && environmentDestroyMatch) {
+    try {
+      const environment = requestEnvironmentDestroy(state, decodeURIComponent(environmentDestroyMatch[1]));
+      await store.save(state);
+      sendJson(response, 200, { data: environment });
+    } catch (error) {
+      if (error instanceof RequestValidationError) {
+        sendJson(response, 404, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      throw error;
+    }
     return;
   }
 

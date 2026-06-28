@@ -5,7 +5,10 @@ import type {
   Integration,
   IntegrationConfig,
   LabAdapterSnapshot,
+  PlatformConfig,
   PlatformSession,
+  ProvisioningAdapterReadiness,
+  ResourceProfile,
   Template,
   TemplateGovernance,
 } from "../src/data/cloudStudioDomain";
@@ -17,6 +20,9 @@ export type ApiState = {
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
   labAdapters: LabAdapterSnapshot[];
+  resourceProfiles: ResourceProfile[];
+  platformConfig: PlatformConfig;
+  provisioningAdapters: ProvisioningAdapterReadiness[];
   session: PlatformSession;
   governance: TemplateGovernance;
   jobs: ProvisioningJob[];

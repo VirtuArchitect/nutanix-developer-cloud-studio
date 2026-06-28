@@ -3,10 +3,13 @@ import { dirname } from "node:path";
 import {
   initialEnvironments,
   integrations,
+  platformConfig,
+  resourceProfiles,
   templates,
   type ApprovalRequest,
   type IntegrationConfig,
   type LabAdapterSnapshot,
+  type ProvisioningAdapterReadiness,
   type PlatformSession,
   type TemplateGovernance,
 } from "../src/data/cloudStudioDomain";
@@ -87,6 +90,21 @@ function defaultLabAdapters(): LabAdapterSnapshot[] {
   }));
 }
 
+function defaultProvisioningAdapters(): ProvisioningAdapterReadiness[] {
+  return integrations.map((integration) => ({
+    name: integration.name as ProvisioningAdapterReadiness["name"],
+    product: integration.product,
+    mode: "Mock",
+    capabilities: ["validateRequest", "plan", "provision", "pollStatus", "destroy"],
+    configured: integration.state === "Healthy",
+    provisioningEnabled: false,
+    nextGate:
+      integration.name === "NCI"
+        ? "Map Prism Central image, project, subnet, category, and credential references."
+        : integration.nextStep,
+  }));
+}
+
 export function createDefaultState(): ApiState {
   return {
     templates,
@@ -94,6 +112,9 @@ export function createDefaultState(): ApiState {
     integrations,
     integrationConfigs: defaultIntegrationConfigs(),
     labAdapters: defaultLabAdapters(),
+    resourceProfiles,
+    platformConfig,
+    provisioningAdapters: defaultProvisioningAdapters(),
     session: defaultSession(),
     governance: defaultGovernance(),
     jobs: [],

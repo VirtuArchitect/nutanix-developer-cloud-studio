@@ -14,6 +14,10 @@ export type EnqueueControlPlaneJobRequest = {
   approvalRequired: boolean;
 };
 
+export type EnqueueDestroyJobRequest = {
+  environment: Environment;
+};
+
 export function enqueueControlPlaneJob(
   state: ApiState,
   { environment, template, targets, approvalRequired }: EnqueueControlPlaneJobRequest
@@ -25,6 +29,7 @@ export function enqueueControlPlaneJob(
     template: template.name,
     owner: environment.owner,
     targets,
+    operation: "Provision",
     state: approvalRequired ? "AwaitingApproval" : "Queued",
     attempts: 0,
     maxAttempts: 3,
@@ -57,6 +62,53 @@ export function enqueueControlPlaneJob(
   return job;
 }
 
+export function enqueueDestroyControlPlaneJob(
+  state: ApiState,
+  { environment }: EnqueueDestroyJobRequest
+): ControlPlaneJob {
+  const now = new Date().toISOString();
+  const job = {
+    id: `cp-destroy-${environment.name}`,
+    environmentName: environment.name,
+    template: environment.template,
+    owner: environment.owner,
+    targets: ["VM", "Kubernetes", "Database", "Storage", "AI Endpoint"].filter((target) =>
+      environment.template.includes("AI")
+        ? true
+        : environment.template.includes("Postgres")
+          ? target !== "AI Endpoint"
+          : target === "VM" || target === "Storage"
+    ) as Target[],
+    operation: "Destroy",
+    state: "Destroying",
+    attempts: 0,
+    maxAttempts: 3,
+    worker: "MockOrchestrator",
+    provisioningEnabled: false,
+    queuedAt: now,
+    updatedAt: now,
+    transitions: [
+      {
+        state: "Destroying",
+        actor: "control-plane",
+        message: "Destroy job queued. Teardown is simulated and real infrastructure mutation is disabled.",
+        createdAt: now,
+      },
+    ],
+  } satisfies ControlPlaneJob;
+
+  state.controlPlaneJobs = [job, ...state.controlPlaneJobs.filter((item) => item.id !== job.id)];
+  state.auditEvents = [
+    createAuditEvent("control-plane.destroy.queued", "control-plane", environment.name, {
+      jobId: job.id,
+      provisioningEnabled: false,
+    }),
+    ...state.auditEvents,
+  ];
+
+  return job;
+}
+
 export function advanceControlPlaneJob(
   state: ApiState,
   jobId: string,
@@ -75,6 +127,10 @@ export function advanceControlPlaneJob(
 
     if (updated.state === "Ready") {
       return { ...environment, status: "Ready" };
+    }
+
+    if (updated.state === "Destroyed") {
+      return { ...environment, status: "Destroyed" };
     }
 
     if (updated.state === "Failed" || updated.state === "Expired") {
@@ -196,11 +252,14 @@ function nextControlPlaneState(state: ControlPlaneJobState): ControlPlaneJobStat
       return "Provisioning";
     case "Provisioning":
       return "Ready";
+    case "Destroying":
+      return "Destroyed";
     case "AwaitingApproval":
       return "AwaitingApproval";
     case "Ready":
     case "Failed":
     case "Expired":
+    case "Destroyed":
       return state;
   }
 }
@@ -242,6 +301,10 @@ function transitionMessage(state: ControlPlaneJobState) {
       return "Mock orchestrator entered provisioning. Real infrastructure mutation remains disabled.";
     case "Ready":
       return "Mock orchestration completed and environment is marked ready.";
+    case "Destroying":
+      return "Mock teardown entered destroy workflow. Real infrastructure mutation remains disabled.";
+    case "Destroyed":
+      return "Mock teardown completed and environment is marked destroyed.";
     case "AwaitingApproval":
       return "Job is waiting for approval.";
     case "Failed":

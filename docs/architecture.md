@@ -31,6 +31,9 @@ flowchart LR
     Api --> Identity["Mock OIDC Session"]
     Api --> Config["Integration Config"]
     Api --> LabAdapters["Read-only Lab Adapter Pilot"]
+    Api --> Inventory["Image And Profile Catalog"]
+    Api --> ProviderConfig["Provider Config References"]
+    Api --> AdapterReadiness["Provisioning Adapter Readiness"]
     Api --> Details["Environment Detail"]
     Api --> Audit["Audit Events"]
 ```
@@ -46,6 +49,9 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Integrations: NCI, NKP, NDB, NUS, NCM, and NAI
 - Jobs: simulated provisioning and operational events
 - Control plane jobs: queued orchestration records with worker transitions, retries, failures, and audit evidence
+- Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
+- Platform config: provider project, cluster, network, and credential-reference placeholders
+- Provisioning adapters: validate, plan, provision, poll, and destroy contract readiness records
 - Approvals: platform review records for AI endpoint and regulated-style requests
 - Audit events: request and decision records for hosted/on-prem workflow visibility
 - Session: mocked identity and role context for OIDC-ready UX
@@ -80,6 +86,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - API-backed approval queue and environment detail views
 - API-backed system status and read-only lab adapter pilot state
 - API-backed control-plane queue and mock orchestrator worker actions
+- API-backed resource profile catalog, platform config references, and provisioning adapter readiness
+- Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
 - Containerized starter deployment through `Dockerfile` and `docker-compose.yml`
@@ -92,6 +100,9 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The API also exposes mock session, role, integration configuration, and readiness-check endpoints.
 - The lab adapter pilot simulates read-only Prism Central/NCI discovery only; provisioning remains disabled by contract.
 - The control plane models job orchestration but does not mutate infrastructure.
+- The destroy lifecycle is simulated and does not delete infrastructure.
+- Provider configuration stores references only and does not store secrets.
+- Image/profile catalog records are planning metadata until a lab registry source is authorized.
 - Environment requests persist across browser refreshes through local storage.
 - Admin template governance edits persist across browser refreshes through local storage.
 - Job transitions are simulated in the browser with timers.

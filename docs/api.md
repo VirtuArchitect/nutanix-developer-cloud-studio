@@ -35,6 +35,8 @@ The React frontend now checks `/healthz` on load:
 - Session, role context, integration configuration, and integration readiness checks are API-backed mock records.
 - System status and lab adapter pilot state are API-backed so hosted/on-prem demos can show provisioning guardrails.
 - Control-plane job state is API-backed so the hosted starter can model queue, worker, retry, and failure behavior.
+- Provider readiness, platform configuration references, and image/profile inventory are API-backed for adapter planning.
+- Environment destroy requests queue simulated teardown lifecycle jobs; no real infrastructure is deleted.
 
 ## Endpoints
 
@@ -52,6 +54,9 @@ The React frontend now checks `/healthz` on load:
 - `GET /api/integrations`
 - `GET /api/integration-config`
 - `GET /api/lab-adapters`
+- `GET /api/resource-profiles`
+- `GET /api/platform/config`
+- `GET /api/provisioning/adapters`
 - `GET /api/provisioning-jobs`
 - `GET /api/control-plane/jobs`
 - `GET /api/approvals`
@@ -75,6 +80,30 @@ Example request:
 ```
 
 The API returns a mock environment, mock provisioning jobs, an audit event, and an approval request when the target/template requires platform review.
+
+### Environment Lifecycle
+
+- `POST /api/environments/:name/destroy`
+
+The destroy endpoint marks the mock environment as `Destroying`, queues a control-plane teardown job, and writes audit evidence. It does not call real Nutanix APIs and does not delete infrastructure.
+
+### Provider Inventory And Adapter Readiness
+
+- `GET /api/resource-profiles`
+- `GET /api/platform/config`
+- `GET /api/provisioning/adapters`
+
+These endpoints expose the starter inventory and adapter-planning model:
+
+- AHV image candidates
+- NKP Kubernetes version profiles
+- NDB database engine profiles
+- NUS storage class profiles
+- NAI AI endpoint profiles
+- Project, cluster, network, and credential-reference placeholders
+- Adapter capabilities for validate, plan, provision, poll, and destroy
+
+Secrets are not stored in the API state. Credential fields are references only.
 
 ### Approval Decisions
 
@@ -127,3 +156,5 @@ Control-plane jobs model queue and worker execution states. Worker actions updat
 - Approval decisions are mock governance records only; they do not authorize real infrastructure changes.
 - Lab adapter discovery is simulated and read-only; no real Prism Central calls are made yet.
 - Control-plane worker actions are simulated; provisioning remains disabled.
+- Destroy lifecycle actions are simulated; teardown remains disabled.
+- Resource profiles and adapter readiness are planning records only.

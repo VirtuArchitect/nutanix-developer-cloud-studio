@@ -5,7 +5,10 @@ import type {
   Integration,
   IntegrationConfig,
   LabAdapterSnapshot,
+  PlatformConfig,
   PlatformSession,
+  ProvisioningAdapterReadiness,
+  ResourceProfile,
   SystemStatus,
   Target,
 } from "../data/cloudStudioDomain";
@@ -40,6 +43,7 @@ export type CreateEnvironmentResult = {
 export type EnvironmentDetail = {
   environment: Environment;
   jobs: CreateEnvironmentResult["jobs"];
+  controlPlaneJobs?: ControlPlaneJob[];
   approvals: ApprovalRequest[];
   auditEvents: Array<{
     id: string;
@@ -123,6 +127,18 @@ export async function fetchLabAdaptersFromApi() {
   return fetchJson<LabAdapterSnapshot[]>("/api/lab-adapters");
 }
 
+export async function fetchResourceProfilesFromApi() {
+  return fetchJson<ResourceProfile[]>("/api/resource-profiles");
+}
+
+export async function fetchPlatformConfigFromApi() {
+  return fetchJson<PlatformConfig>("/api/platform/config");
+}
+
+export async function fetchProvisioningAdaptersFromApi() {
+  return fetchJson<ProvisioningAdapterReadiness[]>("/api/provisioning/adapters");
+}
+
 export async function fetchControlPlaneJobsFromApi() {
   return fetchJson<ControlPlaneJob[]>("/api/control-plane/jobs");
 }
@@ -150,6 +166,12 @@ export async function fetchApprovalsFromApi() {
 
 export async function fetchEnvironmentDetailFromApi(environmentName: string) {
   return fetchJson<EnvironmentDetail>(`/api/environments/${encodeURIComponent(environmentName)}`);
+}
+
+export async function requestEnvironmentDestroyViaApi(environmentName: string) {
+  return fetchJson<Environment>(`/api/environments/${encodeURIComponent(environmentName)}/destroy`, {
+    method: "POST",
+  });
 }
 
 export async function decideApprovalViaApi(approvalId: string, decision: "approve" | "reject") {

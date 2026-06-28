@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.5.0-control-plane`.
+This project uses release tags for public milestones. The current release is `v0.6.0-provisioning-adapters`.
 
 ## [Unreleased]
 
@@ -10,6 +10,23 @@ This project uses release tags for public milestones. The current release is `v0
 
 - Add template versioning states: draft, published, deprecated, and owner approval.
 - Add first real Prism Central read-only API call once lab authorization, scope, endpoint, and credential handling are approved.
+
+## [v0.6.0-provisioning-adapters] - 2026-06-28
+
+### Added
+
+- Provisioning adapter contract with validate, plan, provision, poll, and destroy capabilities.
+- API-backed provider readiness endpoint for NCI, NKP, NDB, NUS, NCM, and NAI adapter placeholders.
+- API-backed image and profile catalog for AHV images, NKP versions, NDB engines, NUS storage classes, and NAI profiles.
+- Platform configuration model for project, cluster, network, and credential-reference planning without storing real secrets.
+- Simulated environment destroy lifecycle that queues a control-plane teardown job and audit evidence.
+- Admin Image and Template Catalog panel and Provider Readiness panel.
+- Environment detail control-plane lifecycle panel.
+- Unit/API/client/E2E coverage for provider inventory and destroy lifecycle behavior.
+
+### Notes
+
+- Adapter contracts are mock-only. Real provisioning and real teardown remain disabled.
 
 ## [v0.5.0-control-plane] - 2026-06-28
 

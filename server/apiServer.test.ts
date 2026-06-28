@@ -89,6 +89,31 @@ describe("api server", () => {
     });
   });
 
+  it("lists provider inventory, platform config, and provisioning adapters", async () => {
+    const profiles = await requestJson("/api/resource-profiles");
+    const config = await requestJson("/api/platform/config");
+    const adapters = await requestJson("/api/provisioning/adapters");
+
+    expect(profiles.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "ahv-rocky-9-hardened", kind: "AHV Image", provider: "NCI" }),
+      ])
+    );
+    expect(config.data).toMatchObject({
+      defaultProject: "developer-cloud-lab",
+      provisioningEnabled: false,
+    });
+    expect(adapters.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "NCI",
+          capabilities: expect.arrayContaining(["validateRequest", "plan", "destroy"]),
+          provisioningEnabled: false,
+        }),
+      ])
+    );
+  });
+
   it("creates an environment request and records jobs and audit events", async () => {
     const created = await requestJson("/api/environments", {
       method: "POST",
@@ -144,6 +169,29 @@ describe("api server", () => {
     expect(provisioning.data).toMatchObject({ state: "Provisioning", attempts: 1 });
     expect(failed.data).toMatchObject({ state: "Failed", lastError: "simulated failure" });
     expect(retried.data).toMatchObject({ state: "Queued" });
+  });
+
+  it("queues simulated destroy lifecycle jobs", async () => {
+    await requestJson("/api/environments", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "destroy-dev",
+        templateId: "vm-app",
+        owner: "demo.user",
+        region: "Berlin Lab",
+      }),
+    });
+
+    const destroyed = await requestJson("/api/environments/destroy-dev/destroy", { method: "POST" });
+    const jobs = await requestJson("/api/control-plane/jobs");
+    const destroyJob = jobs.data.find((job: { id: string }) => job.id === "cp-destroy-destroy-dev");
+
+    expect(destroyed.data).toMatchObject({ name: "destroy-dev", status: "Destroying" });
+    expect(destroyJob).toMatchObject({
+      operation: "Destroy",
+      state: "Destroying",
+      provisioningEnabled: false,
+    });
   });
 
   it("creates and decides approval requests", async () => {

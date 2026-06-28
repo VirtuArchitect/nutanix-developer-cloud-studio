@@ -1,7 +1,7 @@
 import { allTargets, type ApprovalRequest, type Environment, type Target, type Template } from "../src/data/cloudStudioDomain";
 import { createMockNutanixAdapters, type ProvisioningJob } from "../src/services/nutanixAdapters";
 import { estimateMonthlyCost, upsertRequestedEnvironment } from "../src/services/provisioningService";
-import { enqueueControlPlaneJob, releaseApprovalPausedJobs } from "./controlPlane";
+import { enqueueControlPlaneJob, enqueueDestroyControlPlaneJob, releaseApprovalPausedJobs } from "./controlPlane";
 import type { ApiState, AuditEvent, CreateEnvironmentRequest } from "./types";
 
 export type CreateEnvironmentResult = {
@@ -152,6 +152,40 @@ export function decideApproval(
   }
 
   return updatedApproval;
+}
+
+export function requestEnvironmentDestroy(
+  state: ApiState,
+  environmentName: string,
+  actor = "platform.admin"
+): Environment {
+  const environment = state.environments.find((item) => item.name === environmentName);
+  if (!environment) {
+    throw new RequestValidationError("environment_not_found", `Environment not found: ${environmentName}`);
+  }
+
+  const updated = {
+    ...environment,
+    status: "Destroying",
+  } satisfies Environment;
+
+  state.environments = state.environments.map((item) => (item.name === environmentName ? updated : item));
+  enqueueDestroyControlPlaneJob(state, { environment: updated });
+  state.auditEvents = [
+    {
+      id: `audit-destroy-${Date.now()}`,
+      action: "environment.destroy.requested",
+      actor,
+      target: environmentName,
+      createdAt: new Date().toISOString(),
+      metadata: {
+        provisioningEnabled: false,
+      },
+    },
+    ...state.auditEvents,
+  ];
+
+  return updated;
 }
 
 export class RequestValidationError extends Error {

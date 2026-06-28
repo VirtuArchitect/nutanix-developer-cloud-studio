@@ -5,8 +5,12 @@ import {
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
+  fetchPlatformConfigFromApi,
+  fetchProvisioningAdaptersFromApi,
+  fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
+  requestEnvironmentDestroyViaApi,
   runLabDiscoveryViaApi,
   runControlPlaneJobActionViaApi,
   runIntegrationCheckViaApi,
@@ -122,6 +126,25 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/control-plane/jobs/cp-api-dev/advance",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches provider inventory and requests environment destroy", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchResourceProfilesFromApi();
+    await fetchPlatformConfigFromApi();
+    await fetchProvisioningAdaptersFromApi();
+    await requestEnvironmentDestroyViaApi("api-dev");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/resource-profiles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/platform/config", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/provisioning/adapters", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/environments/api-dev/destroy",
       expect.objectContaining({ method: "POST" })
     );
   });
