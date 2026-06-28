@@ -129,6 +129,13 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin view includes a Lab Adapter Pilot panel with discovery action and guardrail messaging.
 - JSON-file prototype state backup/restore has unit coverage.
 
+## Phase Automation Slice
+
+- `docs/upgrade-path.md` defines the gated phase sequence from `v0.5.0-control-plane` through `v1.0.0-private-cloud-developer-platform`.
+- `scripts/run-phase-gate.ps1` runs local phase promotion checks.
+- `.github/workflows/phase-gate.yml` provides a manual GitHub Actions phase gate.
+- Active penetration testing remains blocked unless authorization and scope are documented first.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

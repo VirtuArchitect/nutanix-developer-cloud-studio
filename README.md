@@ -128,6 +128,7 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/api.md` for the backend API starter
 - `docs/on-prem-deployment.md` for the containerized deployment starter
 - `docs/release-notes/` for GitHub Release copy
+- `docs/upgrade-path.md` for gated phase sequencing and promotion rules
 
 ## Repository Standards
 
@@ -145,6 +146,7 @@ This repository also includes project governance and delivery guidance:
 ## Automation
 
 - `.github/workflows/ci.yml`: runs unit tests, build, and Playwright smoke tests.
+- `.github/workflows/phase-gate.yml`: manually validates a target phase before promotion.
 - `.github/workflows/pages.yml`: builds and deploys the static prototype to GitHub Pages when Pages is enabled for the repository.
 
 Changes are complete only when implementation, tests, smoke testing, and any required security review are finished or explicitly documented as blocked.

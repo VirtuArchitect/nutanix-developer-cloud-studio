@@ -74,6 +74,9 @@
 - Added admin Lab Adapter Pilot panel and dashboard provisioning guardrail tile.
 - Added JSON-file state backup/restore unit coverage.
 - Updated hosted starter validation to check lab adapter state and provisioning guardrail.
+- Added gated upgrade path from `v0.5.0-control-plane` through `v1.0.0-private-cloud-developer-platform`.
+- Added local phase gate script for tests, smoke, audit, secret scan, and authorized pentest scope validation.
+- Added manual GitHub Actions phase gate workflow.
 
 ## Documentation Rule
 

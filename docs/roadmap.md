@@ -54,3 +54,22 @@
 - Keep provisioning disabled until lab authorization and scope are documented
 - Add system status endpoint for API, storage, session, integration, and provisioning guardrails
 - Add backup/restore validation for JSON prototype state
+
+## Phase 7 - Control Plane (`v0.5.0-control-plane`)
+
+- Add provisioning job queue domain
+- Add worker/orchestrator abstraction
+- Add job state machine and retry/failure model
+- Add audit evidence for each job transition
+- Keep real provisioning disabled until adapter-specific gates are approved
+
+## Phase 8 - Template And Image Registry (`v0.6.0-template-image-registry`)
+
+- Add AHV image registry
+- Add NKP, NDB, NUS, and NAI profile registries
+- Add draft, published, and deprecated template states
+- Add owner approval before publishing golden paths
+
+## Gated Promotion
+
+Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

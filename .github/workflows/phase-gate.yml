@@ -1,0 +1,94 @@
+name: Phase Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_phase:
+        description: "Target phase or release version"
+        required: true
+        default: "v0.5.0-control-plane"
+      include_authorized_pentest:
+        description: "Require a completed pentest scope file before promotion"
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  phase-gate:
+    name: Phase promotion gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate
+
+      - name: Secret scan
+        shell: pwsh
+        run: |
+          $matches = rg -n --hidden -S "(api[_-]?key|secret|token|password|BEGIN (RSA|OPENSSH|PRIVATE)|AKIA|NUTANIX_PASSWORD|NUTANIX_TOKEN)" -g "!node_modules" -g "!dist" -g "!.git"
+          $unexpected = $matches | Where-Object {
+            $_ -notmatch "\.env\.example" -and
+            $_ -notmatch "\.gitignore" -and
+            $_ -notmatch "SECURITY_REVIEW\.md" -and
+            $_ -notmatch "PENTEST_SCOPE_TEMPLATE\.md" -and
+            $_ -notmatch "CODE_REVIEW\.md" -and
+            $_ -notmatch "PULL_REQUEST_TEMPLATE" -and
+            $_ -notmatch "ISSUE_TEMPLATE" -and
+            $_ -notmatch "CHANGELOG\.md" -and
+            $_ -notmatch "docs/" -and
+            $_ -notmatch "AGENTS\.md" -and
+            $_ -notmatch "package-lock\.json" -and
+            $_ -notmatch "src/App\.tsx" -and
+            $_ -notmatch "\.github/workflows/pages\.yml" -and
+            $_ -notmatch "\.github/workflows/phase-gate\.yml" -and
+            $_ -notmatch "scripts/run-phase-gate\.ps1" -and
+            $_ -notmatch "scripts/README\.md"
+          }
+          if ($unexpected) {
+            $unexpected
+            throw "Potential secret-like content found outside the allowlist."
+          }
+          "Secret scan passed."
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Build web and API
+        run: npm run build:all
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run end-to-end smoke test
+        run: npm run test:e2e
+
+      - name: Hosted starter validation
+        shell: pwsh
+        run: ./scripts/validate-hosted-starter.ps1
+
+      - name: Pentest scope check
+        if: ${{ inputs.include_authorized_pentest }}
+        shell: pwsh
+        run: |
+          $scope = Get-Content -Raw ./PENTEST_SCOPE_TEMPLATE.md
+          foreach ($field in @("Owner:", "Approver:", "Date approved:", "Contact during testing:", "Applications:", "APIs:", "Allowed Test Types", "Restrictions")) {
+            if ($scope -notmatch [regex]::Escape($field)) {
+              throw "Pentest scope is missing required field: $field"
+            }
+          }
+          "Pentest scope structure verified for ${{ inputs.target_phase }}."
+
+      - name: Gate summary
+        run: echo "Phase gate passed for ${{ inputs.target_phase }}"
