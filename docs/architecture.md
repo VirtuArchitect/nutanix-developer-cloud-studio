@@ -27,6 +27,7 @@ flowchart LR
     Api --> Provider["Mock Platform Provider"]
     Provider --> Adapters["Mock Nutanix Adapter Contracts"]
     Api --> Approvals["Approval Queue"]
+    Api --> Queue["Control Plane Queue"]
     Api --> Identity["Mock OIDC Session"]
     Api --> Config["Integration Config"]
     Api --> LabAdapters["Read-only Lab Adapter Pilot"]
@@ -44,6 +45,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Policies: approval, compliance, cost, region, ownership, and lifecycle rules
 - Integrations: NCI, NKP, NDB, NUS, NCM, and NAI
 - Jobs: simulated provisioning and operational events
+- Control plane jobs: queued orchestration records with worker transitions, retries, failures, and audit evidence
 - Approvals: platform review records for AI endpoint and regulated-style requests
 - Audit events: request and decision records for hosted/on-prem workflow visibility
 - Session: mocked identity and role context for OIDC-ready UX
@@ -77,6 +79,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Node HTTP API starter in `server/`
 - API-backed approval queue and environment detail views
 - API-backed system status and read-only lab adapter pilot state
+- API-backed control-plane queue and mock orchestrator worker actions
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
 - Containerized starter deployment through `Dockerfile` and `docker-compose.yml`
@@ -88,6 +91,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The on-prem starter API exposes templates, environments, integrations, approvals, provisioning jobs, and audit events over HTTP.
 - The API also exposes mock session, role, integration configuration, and readiness-check endpoints.
 - The lab adapter pilot simulates read-only Prism Central/NCI discovery only; provisioning remains disabled by contract.
+- The control plane models job orchestration but does not mutate infrastructure.
 - Environment requests persist across browser refreshes through local storage.
 - Admin template governance edits persist across browser refreshes through local storage.
 - Job transitions are simulated in the browser with timers.

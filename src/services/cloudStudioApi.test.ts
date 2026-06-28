@@ -2,11 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkApiHealth,
   createEnvironmentViaApi,
+  fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
   runLabDiscoveryViaApi,
+  runControlPlaneJobActionViaApi,
   runIntegrationCheckViaApi,
   saveIntegrationConfigViaApi,
 } from "./cloudStudioApi";
@@ -105,6 +107,21 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
       "/api/lab-adapters/NCI/discover",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and advances control-plane jobs", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [{ id: "cp-api-dev" }] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchControlPlaneJobsFromApi();
+    await runControlPlaneJobActionViaApi("cp-api-dev", "advance");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/control-plane/jobs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/control-plane/jobs/cp-api-dev/advance",
       expect.objectContaining({ method: "POST" })
     );
   });

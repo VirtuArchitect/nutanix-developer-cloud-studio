@@ -108,9 +108,42 @@ describe("api server", () => {
 
     const environments = await requestJson("/api/environments");
     const auditEvents = await requestJson("/api/audit-events");
+    const controlPlaneJobs = await requestJson("/api/control-plane/jobs");
 
     expect(environments.data[0]).toMatchObject({ name: "api-created-dev" });
     expect(auditEvents.data[0]).toMatchObject({ action: "environment.requested" });
+    expect(controlPlaneJobs.data[0]).toMatchObject({
+      environmentName: "api-created-dev",
+      state: "Queued",
+      provisioningEnabled: false,
+    });
+  });
+
+  it("advances, fails, and retries control-plane jobs", async () => {
+    await requestJson("/api/environments", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "queue-dev",
+        templateId: "spring-postgres",
+        owner: "demo.user",
+        region: "Berlin Lab",
+      }),
+    });
+    const jobs = await requestJson("/api/control-plane/jobs");
+    const jobId = jobs.data[0].id;
+
+    const validating = await requestJson(`/api/control-plane/jobs/${jobId}/advance`, { method: "POST" });
+    const provisioning = await requestJson(`/api/control-plane/jobs/${jobId}/advance`, { method: "POST" });
+    const failed = await requestJson(`/api/control-plane/jobs/${jobId}/fail`, {
+      method: "POST",
+      body: JSON.stringify({ reason: "simulated failure" }),
+    });
+    const retried = await requestJson(`/api/control-plane/jobs/${jobId}/retry`, { method: "POST" });
+
+    expect(validating.data).toMatchObject({ state: "Validating" });
+    expect(provisioning.data).toMatchObject({ state: "Provisioning", attempts: 1 });
+    expect(failed.data).toMatchObject({ state: "Failed", lastError: "simulated failure" });
+    expect(retried.data).toMatchObject({ state: "Queued" });
   });
 
   it("creates and decides approval requests", async () => {

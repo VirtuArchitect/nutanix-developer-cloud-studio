@@ -444,6 +444,7 @@ button {
 .integrationList,
 .integrationConfigList,
 .labAdapterList,
+.controlPlaneList,
 .resourceList,
 .controlGrid,
 .bulletList,
@@ -465,7 +466,8 @@ button {
 .approvalRow,
 .eventRow,
 .integrationConfigRow,
-.labAdapterRow {
+.labAdapterRow,
+.controlPlaneRow {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -637,7 +639,8 @@ button {
 }
 
 .integrationConfigRow,
-.labAdapterRow {
+.labAdapterRow,
+.controlPlaneRow {
   display: grid;
   align-items: stretch;
   gap: 12px;

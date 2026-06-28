@@ -98,6 +98,7 @@ export function createDefaultState(): ApiState {
     governance: defaultGovernance(),
     jobs: [],
     approvals: defaultApprovals(),
+    controlPlaneJobs: [],
     auditEvents: [],
   };
 }

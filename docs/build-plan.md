@@ -136,6 +136,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - `.github/workflows/phase-gate.yml` provides a manual GitHub Actions phase gate.
 - Active penetration testing remains blocked unless authorization and scope are documented first.
 
+## Current Control Plane Slice
+
+- Control-plane jobs are created for environment requests.
+- Approval-required jobs pause in `AwaitingApproval` and return to `Queued` after approval.
+- Mock worker actions advance, retry, or fail jobs.
+- Audit events record queueing, transitions, failures, retries, and approval release.
+- Dashboard and admin views expose control-plane queue health.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

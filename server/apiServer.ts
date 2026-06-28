@@ -2,6 +2,12 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { extname, join, normalize, relative } from "node:path";
+import {
+  advanceControlPlaneJob,
+  ControlPlaneError,
+  failControlPlaneJob,
+  retryControlPlaneJob,
+} from "./controlPlane";
 import { createEnvironmentRequest, decideApproval, RequestValidationError } from "./mockPlatform";
 import type { ApiStore } from "./storage";
 import type { IntegrationConfig, LabAdapterSnapshot, SystemStatus } from "../src/data/cloudStudioDomain";
@@ -110,6 +116,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/provisioning-jobs") {
     sendJson(response, 200, { data: state.jobs });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/control-plane/jobs") {
+    sendJson(response, 200, { data: state.controlPlaneJobs });
     return;
   }
 
@@ -312,6 +323,36 @@ async function routeApi(
     ];
     await store.save(state);
     sendJson(response, 200, { data: updated });
+    return;
+  }
+
+  const controlPlaneJobMatch = url.pathname.match(/^\/api\/control-plane\/jobs\/([^/]+)\/(advance|retry|fail)$/);
+  if (request.method === "POST" && controlPlaneJobMatch) {
+    try {
+      const jobId = decodeURIComponent(controlPlaneJobMatch[1]);
+      const action = controlPlaneJobMatch[2];
+      const body = await readJson<{ reason?: string }>(request);
+      const job =
+        action === "advance"
+          ? advanceControlPlaneJob(state, jobId)
+          : action === "retry"
+            ? retryControlPlaneJob(state, jobId)
+            : failControlPlaneJob(state, jobId, body.reason);
+      await store.save(state);
+      sendJson(response, 200, { data: job });
+    } catch (error) {
+      if (error instanceof ControlPlaneError) {
+        sendJson(response, 404, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      throw error;
+    }
     return;
   }
 

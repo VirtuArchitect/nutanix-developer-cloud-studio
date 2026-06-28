@@ -28,6 +28,7 @@ import {
   templates,
   type Environment,
   type ApprovalRequest,
+  type ControlPlaneJob,
   type Integration,
   type IntegrationConfig,
   type JobState,
@@ -54,6 +55,7 @@ import {
   checkApiHealth,
   createEnvironmentViaApi,
   decideApprovalViaApi,
+  fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchApprovalsFromApi,
@@ -63,6 +65,7 @@ import {
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
   runIntegrationCheckViaApi,
+  runControlPlaneJobActionViaApi,
   runLabDiscoveryViaApi,
   saveIntegrationConfigViaApi,
   type ApiHealth,
@@ -87,6 +90,7 @@ export function App() {
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
   );
   const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
+  const [controlPlaneJobs, setControlPlaneJobs] = useState<ControlPlaneJob[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -137,6 +141,7 @@ export function App() {
             apiSession,
             apiSystemStatus,
             apiLabAdapters,
+            apiControlPlaneJobs,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -145,6 +150,7 @@ export function App() {
             fetchSessionFromApi(),
             fetchSystemStatusFromApi(),
             fetchLabAdaptersFromApi(),
+            fetchControlPlaneJobsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -154,6 +160,7 @@ export function App() {
             setSession(apiSession);
             setSystemStatus(apiSystemStatus);
             setLabAdapters(apiLabAdapters);
+            setControlPlaneJobs(apiControlPlaneJobs);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -232,6 +239,7 @@ export function App() {
           ...current.filter((environment) => environment.name !== result.environment.name),
         ]);
         setSelectedEnvironmentName(result.environment.name);
+        setControlPlaneJobs(await fetchControlPlaneJobsFromApi());
         if (result.approval) {
           setApprovals((current) => [result.approval as ApprovalRequest, ...current]);
         }
@@ -244,7 +252,17 @@ export function App() {
         setEnvironments((current) => createMockEnvironment(current));
       }
     } else {
-      setEnvironments((current) => createMockEnvironment(current));
+      setEnvironments((current) => {
+        const next = createMockEnvironment(current);
+        const created = next.find((environment) => environment.name === environmentName);
+        if (created) {
+          setControlPlaneJobs((jobs) => [
+            createMockControlPlaneJob(created, selectedTemplate, selectedTargets),
+            ...jobs.filter((job) => job.environmentName !== created.name),
+          ]);
+        }
+        return next;
+      });
     }
 
     setView("environment");
@@ -265,7 +283,16 @@ export function App() {
       return;
     }
 
-    const [apiEnvironments, apiIntegrations, apiApprovals, apiIntegrationConfigs, apiSession, apiSystemStatus, apiLabAdapters] = await Promise.all([
+    const [
+      apiEnvironments,
+      apiIntegrations,
+      apiApprovals,
+      apiIntegrationConfigs,
+      apiSession,
+      apiSystemStatus,
+      apiLabAdapters,
+      apiControlPlaneJobs,
+    ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
       fetchApprovalsFromApi(),
@@ -273,6 +300,7 @@ export function App() {
       fetchSessionFromApi(),
       fetchSystemStatusFromApi(),
       fetchLabAdaptersFromApi(),
+      fetchControlPlaneJobsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -281,6 +309,7 @@ export function App() {
     setSession(apiSession);
     setSystemStatus(apiSystemStatus);
     setLabAdapters(apiLabAdapters);
+    setControlPlaneJobs(apiControlPlaneJobs);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -403,6 +432,18 @@ export function App() {
     });
   }
 
+  async function runControlPlaneJobAction(jobId: string, action: "advance" | "retry" | "fail") {
+    if (apiHealth.mode === "api") {
+      await runControlPlaneJobActionViaApi(jobId, action, "Manual failure simulation from admin console.");
+      await refreshApiState();
+      return;
+    }
+
+    setControlPlaneJobs((current) =>
+      current.map((job) => (job.id === jobId ? transitionMockControlPlaneJob(job, action) : job))
+    );
+  }
+
   function updateTemplateGovernance(id: string, field: "owner" | "tier", value: string) {
     setTemplateGovernance((current) => {
       const currentTemplate = current[id] ?? { owner: "", tier: "Standard" };
@@ -466,6 +507,7 @@ export function App() {
             integrationConfigs={integrationConfigs}
             session={session}
             systemStatus={systemStatus}
+            controlPlaneJobs={controlPlaneJobs}
             apiHealth={apiHealth}
             openTemplate={openTemplate}
             openEnvironmentDetail={openEnvironmentDetail}
@@ -517,6 +559,7 @@ export function App() {
             session={session}
             systemStatus={systemStatus}
             labAdapters={labAdapters}
+            controlPlaneJobs={controlPlaneJobs}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -524,6 +567,7 @@ export function App() {
             saveIntegrationConfig={saveIntegrationConfig}
             runIntegrationCheck={runIntegrationCheck}
             runLabDiscovery={runLabDiscovery}
+            runControlPlaneJobAction={runControlPlaneJobAction}
             openEnvironmentDetail={openEnvironmentDetail}
           />
         )}
@@ -539,6 +583,7 @@ function Dashboard({
   integrationConfigs,
   session,
   systemStatus,
+  controlPlaneJobs,
   apiHealth,
   openTemplate,
   openEnvironmentDetail,
@@ -550,6 +595,7 @@ function Dashboard({
   integrationConfigs: IntegrationConfig[];
   session: PlatformSession;
   systemStatus: SystemStatus;
+  controlPlaneJobs: ControlPlaneJob[];
   apiHealth: ApiHealth;
   openTemplate: (id: string) => void;
   openEnvironmentDetail: (name: string) => void;
@@ -561,6 +607,7 @@ function Dashboard({
     integrations.reduce((total, integration) => total + integration.score, 0) / Math.max(integrations.length, 1)
   );
   const reachableIntegrations = integrationConfigs.filter((config) => config.status === "Reachable").length;
+  const activeControlPlaneJobs = controlPlaneJobs.filter((job) => !["Ready", "Failed", "Expired"].includes(job.state));
 
   return (
     <section className="screen">
@@ -589,6 +636,11 @@ function Dashboard({
           <span>Provisioning</span>
           <strong>{systemStatus.provisioningEnabled ? "Enabled" : "Disabled"}</strong>
           <small>{systemStatus.integrations.readOnlyCandidates} read-only candidates</small>
+        </div>
+        <div className="statusTile">
+          <span>Control plane</span>
+          <strong>{activeControlPlaneJobs.length}</strong>
+          <small>Active queued or running jobs</small>
         </div>
       </div>
 
@@ -633,6 +685,9 @@ function Dashboard({
           </Panel>
           <Panel title="Approval queue" action={`${openApprovals.length} pending`}>
             <ApprovalQueue approvals={approvals} compact openEnvironmentDetail={openEnvironmentDetail} />
+          </Panel>
+          <Panel title="Control plane queue" action={`${activeControlPlaneJobs.length} active`}>
+            <ControlPlaneQueue jobs={controlPlaneJobs.slice(0, 4)} compact />
           </Panel>
           <Panel title="Integration readiness" action={`${readinessAverage}%`}>
             <div className="miniIntegrationGrid">
@@ -986,6 +1041,7 @@ function AdminView({
   session,
   systemStatus,
   labAdapters,
+  controlPlaneJobs,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -993,6 +1049,7 @@ function AdminView({
   saveIntegrationConfig,
   runIntegrationCheck,
   runLabDiscovery,
+  runControlPlaneJobAction,
   openEnvironmentDetail,
 }: {
   environments: Environment[];
@@ -1001,6 +1058,7 @@ function AdminView({
   session: PlatformSession;
   systemStatus: SystemStatus;
   labAdapters: LabAdapterSnapshot[];
+  controlPlaneJobs: ControlPlaneJob[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1011,6 +1069,7 @@ function AdminView({
   ) => void;
   runIntegrationCheck: (integrationName: string) => void;
   runLabDiscovery: (adapterName: string) => void;
+  runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   openEnvironmentDetail: (name: string) => void;
 }) {
   const pendingApprovals = approvals.filter((approval) => approval.status === "Pending").length;
@@ -1052,6 +1111,9 @@ function AdminView({
           systemStatus={systemStatus}
           runLabDiscovery={runLabDiscovery}
         />
+      </Panel>
+      <Panel title="Provisioning control plane" action={`${controlPlaneJobs.length} jobs`}>
+        <ControlPlaneQueue jobs={controlPlaneJobs} runControlPlaneJobAction={runControlPlaneJobAction} />
       </Panel>
       <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
         <ApprovalQueue
@@ -1171,6 +1233,59 @@ function ApprovalQueue({
               </>
             )}
           </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ControlPlaneQueue({
+  jobs,
+  compact = false,
+  runControlPlaneJobAction,
+}: {
+  jobs: ControlPlaneJob[];
+  compact?: boolean;
+  runControlPlaneJobAction?: (jobId: string, action: "advance" | "retry" | "fail") => void;
+}) {
+  if (jobs.length === 0) {
+    return <p className="emptyState">No control-plane jobs are queued.</p>;
+  }
+
+  return (
+    <div className="controlPlaneList">
+      {jobs.map((job) => (
+        <div className="controlPlaneRow" key={job.id}>
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{job.environmentName}</strong>
+              <span>{job.template}</span>
+            </div>
+            <span className={`status ${controlPlaneClass(job.state)}`}>{job.state}</span>
+          </div>
+          {!compact && (
+            <div className="labScope">
+              <span>{job.transitions[0]?.message ?? "Waiting for worker."}</span>
+              <small>
+                {job.worker} / attempts {job.attempts}/{job.maxAttempts} / provisioning disabled
+              </small>
+            </div>
+          )}
+          {runControlPlaneJobAction && (
+            <div className="inlineActions">
+              <button className="iconTextButton" onClick={() => runControlPlaneJobAction(job.id, "advance")}>
+                <Play size={15} />
+                Advance
+              </button>
+              <button className="iconTextButton" onClick={() => runControlPlaneJobAction(job.id, "retry")}>
+                <RefreshCw size={15} />
+                Retry
+              </button>
+              <button className="smallButton dangerButton" onClick={() => runControlPlaneJobAction(job.id, "fail")}>
+                Fail
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -1508,6 +1623,16 @@ function labAdapterClass(mode: LabAdapterSnapshot["mode"]) {
         : "approval";
 }
 
+function controlPlaneClass(state: ControlPlaneJob["state"]) {
+  return state === "Ready"
+    ? "ready"
+    : state === "Failed" || state === "Expired"
+      ? "failed"
+      : state === "AwaitingApproval"
+        ? "approval"
+        : "running";
+}
+
 function resourceDescription(target: Target) {
   switch (target) {
     case "VM":
@@ -1615,6 +1740,79 @@ function createMockSystemStatus(
       readOnlyCandidates: adapters.filter((item) => item.mode === "Read-only candidate").length,
     },
     provisioningEnabled: false,
+  };
+}
+
+function createMockControlPlaneJob(
+  environment: Environment,
+  template: Template,
+  targets: Target[]
+): ControlPlaneJob {
+  const now = new Date().toISOString();
+  const approvalRequired = environment.status === "Needs approval";
+  return {
+    id: `cp-${environment.name}`,
+    environmentName: environment.name,
+    template: template.name,
+    owner: environment.owner,
+    targets,
+    state: approvalRequired ? "AwaitingApproval" : "Queued",
+    attempts: 0,
+    maxAttempts: 3,
+    worker: "MockOrchestrator",
+    provisioningEnabled: false,
+    queuedAt: now,
+    updatedAt: now,
+    transitions: [
+      {
+        state: approvalRequired ? "AwaitingApproval" : "Queued",
+        actor: "browser.mock",
+        message: approvalRequired ? "Job paused for approval." : "Job queued for mock validation.",
+        createdAt: now,
+      },
+    ],
+  };
+}
+
+function transitionMockControlPlaneJob(
+  job: ControlPlaneJob,
+  action: "advance" | "retry" | "fail"
+): ControlPlaneJob {
+  const now = new Date().toISOString();
+  const nextState =
+    action === "retry"
+      ? "Queued"
+      : action === "fail"
+        ? "Failed"
+        : job.state === "Queued"
+          ? "Validating"
+          : job.state === "Validating"
+            ? "Provisioning"
+            : job.state === "Provisioning"
+              ? "Ready"
+              : job.state;
+  const message =
+    action === "retry"
+      ? "Retry requested. Job returned to queue."
+      : action === "fail"
+        ? "Manual failure simulation from admin console."
+        : "Mock worker advanced the job state.";
+
+  return {
+    ...job,
+    state: nextState,
+    attempts: nextState === "Provisioning" ? job.attempts + 1 : job.attempts,
+    updatedAt: now,
+    lastError: action === "fail" ? message : undefined,
+    transitions: [
+      {
+        state: nextState,
+        actor: "browser.mock",
+        message,
+        createdAt: now,
+      },
+      ...job.transitions,
+    ],
   };
 }
 

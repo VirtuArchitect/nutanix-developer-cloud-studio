@@ -7,6 +7,7 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Environment operations")).toBeVisible();
   await expect(page.getByText("Access context")).toBeVisible();
   await expect(page.getByText("Approval queue")).toBeVisible();
+  await expect(page.getByText("Control plane queue")).toBeVisible();
 
   await page.getByRole("button", { name: "Details" }).first().click();
   await expect(page.getByRole("heading", { name: "Environment details" })).toBeVisible();
@@ -34,6 +35,7 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Access model")).toBeVisible();
   await expect(page.getByText("Integration configuration")).toBeVisible();
   await expect(page.getByText("Lab adapter pilot")).toBeVisible();
+  await expect(page.getByText("Provisioning control plane")).toBeVisible();
   await page.getByLabel("Endpoint").first().fill("https://prism.lab.example");
   await page.getByLabel("Credential profile").first().fill("nci-readonly");
   await page.getByRole("button", { name: "Save" }).first().click();
@@ -43,6 +45,9 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Discover" }).first().click();
   await expect(page.getByText("Read-only candidate")).toBeVisible();
   await expect(page.getByText("Provisioning disabled").first()).toBeVisible();
+  await expect(page.getByText("smoke-api-dev").first()).toBeVisible();
+  await page.getByRole("button", { name: "Advance" }).first().click();
+  await expect(page.getByText("Validating")).toBeVisible();
   await expect(page.getByText("Approval queue")).toBeVisible();
   await expect(page.getByText("ml-reco-lab").first()).toBeVisible();
   await page.getByRole("button", { name: "Approve" }).first().click();

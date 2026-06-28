@@ -57,11 +57,11 @@
 
 ## Phase 7 - Control Plane (`v0.5.0-control-plane`)
 
-- Add provisioning job queue domain
-- Add worker/orchestrator abstraction
-- Add job state machine and retry/failure model
-- Add audit evidence for each job transition
-- Keep real provisioning disabled until adapter-specific gates are approved
+- Add provisioning job queue domain - done
+- Add worker/orchestrator abstraction - done
+- Add job state machine and retry/failure model - done
+- Add audit evidence for each job transition - done
+- Keep real provisioning disabled until adapter-specific gates are approved - done
 
 ## Phase 8 - Template And Image Registry (`v0.6.0-template-image-registry`)
 

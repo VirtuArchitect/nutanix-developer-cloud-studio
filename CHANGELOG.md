@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.4.0-lab-adapter`.
+This project uses release tags for public milestones. The current release is `v0.5.0-control-plane`.
 
 ## [Unreleased]
 
@@ -10,6 +10,23 @@ This project uses release tags for public milestones. The current release is `v0
 
 - Add template versioning states: draft, published, deprecated, and owner approval.
 - Add first real Prism Central read-only API call once lab authorization, scope, endpoint, and credential handling are approved.
+
+## [v0.5.0-control-plane] - 2026-06-28
+
+### Added
+
+- Provisioning control-plane job domain with queued, validating, awaiting approval, provisioning, ready, failed, and expired states.
+- Mock orchestrator worker actions for advancing, retrying, and failing jobs.
+- API endpoints for `/api/control-plane/jobs` and job actions.
+- Control-plane audit events for queueing, transitions, retries, failures, and approval release.
+- Admin Provisioning Control Plane panel with worker controls.
+- Dashboard Control Plane Queue panel and active job status tile.
+- Browser mock control-plane state machine for static GitHub Pages mode.
+- Unit/API/client/E2E coverage for control-plane queue behavior.
+
+### Notes
+
+- The control plane is structurally ready for future adapters, but real infrastructure provisioning remains disabled.
 
 ## [v0.4.0-lab-adapter] - 2026-06-27
 

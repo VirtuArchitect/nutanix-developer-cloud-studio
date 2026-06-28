@@ -34,6 +34,7 @@ The React frontend now checks `/healthz` on load:
 - Approval queue, environment detail, and admin integration readiness views read from API endpoints in hosted/on-prem API mode.
 - Session, role context, integration configuration, and integration readiness checks are API-backed mock records.
 - System status and lab adapter pilot state are API-backed so hosted/on-prem demos can show provisioning guardrails.
+- Control-plane job state is API-backed so the hosted starter can model queue, worker, retry, and failure behavior.
 
 ## Endpoints
 
@@ -52,6 +53,7 @@ The React frontend now checks `/healthz` on load:
 - `GET /api/integration-config`
 - `GET /api/lab-adapters`
 - `GET /api/provisioning-jobs`
+- `GET /api/control-plane/jobs`
 - `GET /api/approvals`
 - `GET /api/audit-events`
 - `GET /api/environments/:name`
@@ -105,6 +107,15 @@ The readiness check updates the mock integration configuration to `Reachable`, `
 
 The discovery endpoint simulates read-only inventory discovery for a configured adapter. For the current phase, NCI/Prism Central can become a `Read-only candidate` after its integration config is reachable. Provisioning remains disabled in the API response and UI.
 
+### Control Plane Jobs
+
+- `GET /api/control-plane/jobs`
+- `POST /api/control-plane/jobs/:id/advance`
+- `POST /api/control-plane/jobs/:id/retry`
+- `POST /api/control-plane/jobs/:id/fail`
+
+Control-plane jobs model queue and worker execution states. Worker actions update transition history and audit events. They do not call real infrastructure APIs.
+
 ## Current Limits
 
 - No real Nutanix API calls.
@@ -115,3 +126,4 @@ The discovery endpoint simulates read-only inventory discovery for a configured 
 - GitHub Pages uses browser mock mode because no backend is deployed with the static site.
 - Approval decisions are mock governance records only; they do not authorize real infrastructure changes.
 - Lab adapter discovery is simulated and read-only; no real Prism Central calls are made yet.
+- Control-plane worker actions are simulated; provisioning remains disabled.

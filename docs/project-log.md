@@ -77,6 +77,10 @@
 - Added gated upgrade path from `v0.5.0-control-plane` through `v1.0.0-private-cloud-developer-platform`.
 - Added local phase gate script for tests, smoke, audit, secret scan, and authorized pentest scope validation.
 - Added manual GitHub Actions phase gate workflow.
+- Started `v0.5.0-control-plane`.
+- Added API-backed control-plane queue, state machine, mock worker actions, and audit transitions.
+- Added dashboard/admin control-plane queue panels.
+- Added tests and smoke coverage for queue creation, advance, fail, retry, and approval release.
 
 ## Documentation Rule
 

@@ -3,6 +3,14 @@ export type Target = "VM" | "Kubernetes" | "Database" | "Storage" | "AI Endpoint
 export type TemplateTier = "Standard" | "Regulated" | "Accelerated";
 export type EnvironmentStatus = "Ready" | "Provisioning" | "Needs approval" | "Failed";
 export type JobState = "Idle" | "Queued" | "Running" | "Approval" | "Complete" | "Failed";
+export type ControlPlaneJobState =
+  | "Queued"
+  | "Validating"
+  | "AwaitingApproval"
+  | "Provisioning"
+  | "Ready"
+  | "Failed"
+  | "Expired";
 export type TemplateGovernance = Record<string, { owner: string; tier: TemplateTier }>;
 
 export type Template = {
@@ -98,6 +106,30 @@ export type SystemStatus = {
     readOnlyCandidates: number;
   };
   provisioningEnabled: false;
+};
+
+export type ControlPlaneJobTransition = {
+  state: ControlPlaneJobState;
+  actor: string;
+  message: string;
+  createdAt: string;
+};
+
+export type ControlPlaneJob = {
+  id: string;
+  environmentName: string;
+  template: string;
+  owner: string;
+  targets: Target[];
+  state: ControlPlaneJobState;
+  attempts: number;
+  maxAttempts: number;
+  worker: "MockOrchestrator";
+  provisioningEnabled: false;
+  queuedAt: string;
+  updatedAt: string;
+  lastError?: string;
+  transitions: ControlPlaneJobTransition[];
 };
 
 export type JobEvent = {

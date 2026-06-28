@@ -1,6 +1,7 @@
 import { allTargets, type ApprovalRequest, type Environment, type Target, type Template } from "../src/data/cloudStudioDomain";
 import { createMockNutanixAdapters, type ProvisioningJob } from "../src/services/nutanixAdapters";
 import { estimateMonthlyCost, upsertRequestedEnvironment } from "../src/services/provisioningService";
+import { enqueueControlPlaneJob, releaseApprovalPausedJobs } from "./controlPlane";
 import type { ApiState, AuditEvent, CreateEnvironmentRequest } from "./types";
 
 export type CreateEnvironmentResult = {
@@ -84,6 +85,12 @@ export function createEnvironmentRequest(state: ApiState, request: CreateEnviron
     item.name === environment.name ? environment : item
   );
   state.jobs = [...jobs, ...state.jobs.filter((job) => job.environmentName !== environment.name)];
+  enqueueControlPlaneJob(state, {
+    environment,
+    template,
+    targets,
+    approvalRequired,
+  });
   if (approval) {
     state.approvals = [approval, ...state.approvals.filter((item) => item.environmentName !== environment.name)];
   }
@@ -139,6 +146,10 @@ export function decideApproval(
     },
     ...state.auditEvents,
   ];
+
+  if (decision === "Approved") {
+    releaseApprovalPausedJobs(state, approval.environmentName, actor);
+  }
 
   return updatedApproval;
 }

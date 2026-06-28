@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  ControlPlaneJob,
   Environment,
   Integration,
   IntegrationConfig,
@@ -120,6 +121,21 @@ export async function runIntegrationCheckViaApi(integrationName: string) {
 
 export async function fetchLabAdaptersFromApi() {
   return fetchJson<LabAdapterSnapshot[]>("/api/lab-adapters");
+}
+
+export async function fetchControlPlaneJobsFromApi() {
+  return fetchJson<ControlPlaneJob[]>("/api/control-plane/jobs");
+}
+
+export async function runControlPlaneJobActionViaApi(
+  jobId: string,
+  action: "advance" | "retry" | "fail",
+  reason?: string
+) {
+  return fetchJson<ControlPlaneJob>(`/api/control-plane/jobs/${encodeURIComponent(jobId)}/${action}`, {
+    method: "POST",
+    body: JSON.stringify(reason ? { reason } : {}),
+  });
 }
 
 export async function runLabDiscoveryViaApi(adapterName: string) {

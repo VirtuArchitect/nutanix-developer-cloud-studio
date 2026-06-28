@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  ControlPlaneJob,
   Environment,
   Integration,
   IntegrationConfig,
@@ -20,6 +21,7 @@ export type ApiState = {
   governance: TemplateGovernance;
   jobs: ProvisioningJob[];
   approvals: ApprovalRequest[];
+  controlPlaneJobs: ControlPlaneJob[];
   auditEvents: AuditEvent[];
 };
 
