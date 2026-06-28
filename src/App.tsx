@@ -81,6 +81,8 @@ import {
   type EnvironmentDetail,
 } from "./services/cloudStudioApi";
 
+type AdminTab = "overview" | "providers" | "control" | "governance" | "templates";
+
 export function App() {
   const [view, setView] = useState<View>("dashboard");
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0].id);
@@ -1135,130 +1137,178 @@ function AdminView({
   openEnvironmentDetail: (name: string) => void;
 }) {
   const pendingApprovals = approvals.filter((approval) => approval.status === "Pending").length;
+  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const adminTabs: Array<{ id: AdminTab; label: string; detail: string }> = [
+    { id: "overview", label: "Overview", detail: "Access and readiness" },
+    { id: "providers", label: "Providers", detail: "Config and adapters" },
+    { id: "control", label: "Control plane", detail: "Jobs and approvals" },
+    { id: "governance", label: "Governance", detail: "Queues and controls" },
+    { id: "templates", label: "Templates", detail: "Catalog and ownership" },
+  ];
 
   return (
-    <section className="screen adminGrid">
-      <Panel title="Access model" action={session.authMode}>
-        <div className="controlGrid">
-          <CheckLine icon={UserRound} label="Current identity" value={`${session.displayName} (${session.user})`} passed />
-          <CheckLine icon={ShieldCheck} label="Roles" value={session.roles.join(", ")} passed />
-          <CheckLine icon={LockKeyhole} label="Authorization" value="Mock role boundaries, ready for OIDC mapping" passed={false} />
-        </div>
-      </Panel>
-      <Panel title="Integration readiness" action="API connected">
-        <div className="integrationList">
-          {integrations.map(({ name, label, state, score }) => (
-            <div className="integrationRow" key={name}>
-              <div className="integrationLogo">{name}</div>
-              <div>
-                <strong>{label}</strong>
-                <span>{state}</span>
-              </div>
-              <meter min="0" max="100" value={Number(score)} />
+    <section className="screen">
+      <div className="adminTabs" role="tablist" aria-label="Admin sections">
+        {adminTabs.map((tab) => (
+          <button
+            aria-selected={activeTab === tab.id}
+            className={`adminTab ${activeTab === tab.id ? "active" : ""}`}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            role="tab"
+            type="button"
+          >
+            <strong>{tab.label}</strong>
+            <span>{tab.detail}</span>
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "overview" && (
+        <div className="adminTabPanel">
+          <Panel title="Access model" action={session.authMode}>
+            <div className="controlGrid">
+              <CheckLine icon={UserRound} label="Current identity" value={`${session.displayName} (${session.user})`} passed />
+              <CheckLine icon={ShieldCheck} label="Roles" value={session.roles.join(", ")} passed />
+              <CheckLine icon={LockKeyhole} label="Authorization" value="Mock role boundaries, ready for OIDC mapping" passed={false} />
             </div>
-          ))}
-        </div>
-      </Panel>
-      <Panel title="Integration configuration" action="Lab readiness">
-        <IntegrationConfigPanel
-          integrations={integrations}
-          configs={integrationConfigs}
-          saveIntegrationConfig={saveIntegrationConfig}
-          runIntegrationCheck={runIntegrationCheck}
-        />
-      </Panel>
-      <Panel title="Lab adapter pilot" action="Read-only">
-        <LabAdapterPanel
-          adapters={labAdapters}
-          systemStatus={systemStatus}
-          runLabDiscovery={runLabDiscovery}
-        />
-      </Panel>
-      <Panel title="Provisioning control plane" action={`${controlPlaneJobs.length} jobs`}>
-        <ControlPlaneQueue jobs={controlPlaneJobs} runControlPlaneJobAction={runControlPlaneJobAction} />
-      </Panel>
-      <Panel title="Image and template catalog" action={`${resourceProfiles.length} profiles`}>
-        <ResourceProfileCatalog profiles={resourceProfiles} />
-      </Panel>
-      <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
-        <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
-      </Panel>
-      <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
-        <ApprovalQueue
-          approvals={approvals}
-          decideApproval={decideApproval}
-          openEnvironmentDetail={openEnvironmentDetail}
-        />
-      </Panel>
-      <Panel title="Platform controls" action="Admin">
-        <div className="controlGrid">
-          <CheckLine icon={ShieldCheck} label="Policy packs" value="12 active, 3 draft" passed />
-          <CheckLine icon={Layers3} label="Templates" value={`${templates.length} published golden paths`} passed />
-          <CheckLine icon={CircleDollarSign} label="Budgets" value="$25k monthly sandbox limit" passed />
-          <CheckLine icon={LockKeyhole} label="Approvals" value="AI and regulated data require review" passed={false} />
-        </div>
-      </Panel>
-      <Panel title="Template governance" action="Editable">
-        <div className="templateEditList">
-          {templates.map((template) => (
-            <div className="templateEditRow" key={template.id}>
-              <div className="editRowHeader">
-                <strong>{template.name}</strong>
-                <Pencil size={15} />
-              </div>
-              <label className="field compact">
-                Owner
-                <input
-                  value={templateGovernance[template.id]?.owner ?? template.owner}
-                  onChange={(event) => updateTemplateGovernance(template.id, "owner", event.target.value)}
-                />
-              </label>
-              <label className="field compact">
-                Tier
-                <select
-                  value={templateGovernance[template.id]?.tier ?? template.tier}
-                  onChange={(event) => updateTemplateGovernance(template.id, "tier", event.target.value)}
-                >
-                  <option>Standard</option>
-                  <option>Regulated</option>
-                  <option>Accelerated</option>
-                </select>
-              </label>
-            </div>
-          ))}
-        </div>
-      </Panel>
-      <Panel title="Hosted integration path" action="Real API path">
-        <div className="readinessList">
-          {integrations.map((integration) => (
-            <div className="readinessRow" key={integration.name}>
-              <strong>{integration.product}</strong>
-              <span>{integration.readiness}</span>
-              <small>{integration.nextStep}</small>
-            </div>
-          ))}
-        </div>
-      </Panel>
-      <Panel title="Governance queue" action={`${environments.filter((env) => env.status !== "Ready").length} open`}>
-        <div className="envTable">
-          {environments.map((env) => (
-            <div className="envRow governanceRow" key={env.name}>
-              <button className="buttonRowLike ghostRowButton" onClick={() => openEnvironmentDetail(env.name)}>
-                <div>
-                  <strong>{env.name}</strong>
-                  <span>
-                    {env.owner} / {env.region}
-                  </span>
+          </Panel>
+          <Panel title="Integration readiness" action="API connected">
+            <div className="integrationList">
+              {integrations.map(({ name, label, state, score }) => (
+                <div className="integrationRow" key={name}>
+                  <div className="integrationLogo">{name}</div>
+                  <div>
+                    <strong>{label}</strong>
+                    <span>{state}</span>
+                  </div>
+                  <meter min="0" max="100" value={Number(score)} />
                 </div>
-                <span className={`status ${statusClass(env.status)}`}>{env.status}</span>
-              </button>
-              <button className="smallButton dangerButton" onClick={() => requestEnvironmentDestroy(env.name)}>
-                Destroy
-              </button>
+              ))}
             </div>
-          ))}
+          </Panel>
+          <Panel title="Platform controls" action="Admin">
+            <div className="controlGrid">
+              <CheckLine icon={ShieldCheck} label="Policy packs" value="12 active, 3 draft" passed />
+              <CheckLine icon={Layers3} label="Templates" value={`${templates.length} published golden paths`} passed />
+              <CheckLine icon={CircleDollarSign} label="Budgets" value="$25k monthly sandbox limit" passed />
+              <CheckLine icon={LockKeyhole} label="Approvals" value="AI and regulated data require review" passed={false} />
+            </div>
+          </Panel>
         </div>
-      </Panel>
+      )}
+
+      {activeTab === "providers" && (
+        <div className="adminTabPanel">
+          <Panel title="Integration configuration" action="Lab readiness">
+            <IntegrationConfigPanel
+              integrations={integrations}
+              configs={integrationConfigs}
+              saveIntegrationConfig={saveIntegrationConfig}
+              runIntegrationCheck={runIntegrationCheck}
+            />
+          </Panel>
+          <Panel title="Lab adapter pilot" action="Read-only">
+            <LabAdapterPanel
+              adapters={labAdapters}
+              systemStatus={systemStatus}
+              runLabDiscovery={runLabDiscovery}
+            />
+          </Panel>
+          <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
+            <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
+          </Panel>
+        </div>
+      )}
+
+      {activeTab === "control" && (
+        <div className="adminTabPanel">
+          <Panel title="Provisioning control plane" action={`${controlPlaneJobs.length} jobs`}>
+            <ControlPlaneQueue jobs={controlPlaneJobs} runControlPlaneJobAction={runControlPlaneJobAction} />
+          </Panel>
+          <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
+            <ApprovalQueue
+              approvals={approvals}
+              decideApproval={decideApproval}
+              openEnvironmentDetail={openEnvironmentDetail}
+            />
+          </Panel>
+        </div>
+      )}
+
+      {activeTab === "governance" && (
+        <div className="adminTabPanel">
+          <Panel title="Governance queue" action={`${environments.filter((env) => env.status !== "Ready").length} open`}>
+            <div className="envTable">
+              {environments.map((env) => (
+                <div className="envRow governanceRow" key={env.name}>
+                  <button className="buttonRowLike ghostRowButton" onClick={() => openEnvironmentDetail(env.name)}>
+                    <div>
+                      <strong>{env.name}</strong>
+                      <span>
+                        {env.owner} / {env.region}
+                      </span>
+                    </div>
+                    <span className={`status ${statusClass(env.status)}`}>{env.status}</span>
+                  </button>
+                  <button className="smallButton dangerButton" onClick={() => requestEnvironmentDestroy(env.name)}>
+                    Destroy
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Panel>
+          <Panel title="Hosted integration path" action="Real API path">
+            <div className="readinessList">
+              {integrations.map((integration) => (
+                <div className="readinessRow" key={integration.name}>
+                  <strong>{integration.product}</strong>
+                  <span>{integration.readiness}</span>
+                  <small>{integration.nextStep}</small>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
+      )}
+
+      {activeTab === "templates" && (
+        <div className="adminTabPanel">
+          <Panel title="Image and template catalog" action={`${resourceProfiles.length} profiles`}>
+            <ResourceProfileCatalog profiles={resourceProfiles} />
+          </Panel>
+          <Panel title="Template governance" action="Editable">
+            <div className="templateEditList">
+              {templates.map((template) => (
+                <div className="templateEditRow" key={template.id}>
+                  <div className="editRowHeader">
+                    <strong>{template.name}</strong>
+                    <Pencil size={15} />
+                  </div>
+                  <label className="field compact">
+                    Owner
+                    <input
+                      value={templateGovernance[template.id]?.owner ?? template.owner}
+                      onChange={(event) => updateTemplateGovernance(template.id, "owner", event.target.value)}
+                    />
+                  </label>
+                  <label className="field compact">
+                    Tier
+                    <select
+                      value={templateGovernance[template.id]?.tier ?? template.tier}
+                      onChange={(event) => updateTemplateGovernance(template.id, "tier", event.target.value)}
+                    >
+                      <option>Standard</option>
+                      <option>Regulated</option>
+                      <option>Accelerated</option>
+                    </select>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        </div>
+      )}
     </section>
   );
 }

@@ -410,6 +410,52 @@ button {
   padding: 18px;
 }
 
+.adminTabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+}
+
+.adminTab {
+  display: grid;
+  gap: 3px;
+  min-height: 58px;
+  padding: 10px 12px;
+  text-align: left;
+  color: #304750;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 7px;
+}
+
+.adminTab:hover,
+.adminTab.active {
+  color: #0f1b22;
+  background: #e7f8f6;
+  border-color: #00a5ad;
+}
+
+.adminTab strong,
+.adminTab span {
+  display: block;
+}
+
+.adminTab span {
+  color: #60747c;
+  font-size: 12px;
+}
+
+.adminTabPanel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
 .panelHeader {
   display: flex;
   align-items: center;
@@ -1093,6 +1139,8 @@ meter {
   .opsStatusStrip,
   .opsDashboardGrid,
   .opsCommandGrid,
+  .adminTabs,
+  .adminTabPanel,
   .createGrid,
   .statusGrid,
   .adminGrid,

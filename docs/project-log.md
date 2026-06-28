@@ -87,6 +87,7 @@
 - Added admin Image and Template Catalog and Provider Readiness panels.
 - Added simulated environment destroy lifecycle with teardown control-plane jobs and audit evidence.
 - Added tests and smoke coverage for provider inventory and destroy workflow.
+- Refined the Admin view into tabbed sections so platform teams can move between overview, providers, control plane, governance, and templates without scanning one long page.
 
 ## Documentation Rule
 

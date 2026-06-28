@@ -6,6 +6,10 @@ This project uses release tags for public milestones. The current release is `v0
 
 ## [Unreleased]
 
+### Changed
+
+- Changed the Admin view from a long stacked panel list to tabbed sections for overview, providers, control plane, governance, and templates.
+
 ### Planned
 
 - Add template versioning states: draft, published, deprecated, and owner approval.
