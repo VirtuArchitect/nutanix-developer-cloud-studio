@@ -114,6 +114,37 @@ describe("api server", () => {
     );
   });
 
+  it("governs template registry and resource profile lifecycle", async () => {
+    const registry = await requestJson("/api/registry/templates");
+    const bundles = await requestJson("/api/policy-bundles");
+    const submittedTemplate = await requestJson("/api/registry/templates/regulated-db/submit", { method: "POST" });
+    const approvedTemplate = await requestJson("/api/registry/templates/regulated-db/approve", { method: "POST" });
+    const submittedProfile = await requestJson("/api/resource-profiles/nus-object-dev/submit", { method: "POST" });
+    const approvedProfile = await requestJson("/api/resource-profiles/nus-object-dev/approve", { method: "POST" });
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(registry.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ templateId: "regulated-db", status: "Draft" }),
+      ])
+    );
+    expect(bundles.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "regulated-audit", controls: expect.arrayContaining(["Audit export"]) }),
+      ])
+    );
+    expect(submittedTemplate.data).toMatchObject({ templateId: "regulated-db", status: "Pending approval" });
+    expect(approvedTemplate.data).toMatchObject({ templateId: "regulated-db", status: "Published" });
+    expect(submittedProfile.data).toMatchObject({ id: "nus-object-dev", status: "Pending approval" });
+    expect(approvedProfile.data).toMatchObject({ id: "nus-object-dev", status: "Published" });
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "registry.profile.approve", target: "nus-object-dev" }),
+        expect.objectContaining({ action: "registry.template.approve", target: "regulated-db" }),
+      ])
+    );
+  });
+
   it("creates an environment request and records jobs and audit events", async () => {
     const created = await requestJson("/api/environments", {
       method: "POST",

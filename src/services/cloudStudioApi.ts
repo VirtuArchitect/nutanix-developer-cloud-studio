@@ -7,8 +7,10 @@ import type {
   LabAdapterSnapshot,
   PlatformConfig,
   PlatformSession,
+  PolicyBundle,
   ProvisioningAdapterReadiness,
   ResourceProfile,
+  TemplateRegistryEntry,
   SystemStatus,
   Target,
 } from "../data/cloudStudioDomain";
@@ -129,6 +131,33 @@ export async function fetchLabAdaptersFromApi() {
 
 export async function fetchResourceProfilesFromApi() {
   return fetchJson<ResourceProfile[]>("/api/resource-profiles");
+}
+
+export async function fetchPolicyBundlesFromApi() {
+  return fetchJson<PolicyBundle[]>("/api/policy-bundles");
+}
+
+export async function fetchTemplateRegistryFromApi() {
+  return fetchJson<TemplateRegistryEntry[]>("/api/registry/templates");
+}
+
+export async function runTemplateRegistryActionViaApi(
+  templateId: string,
+  action: "submit" | "approve" | "deprecate" | "restore"
+) {
+  return fetchJson<TemplateRegistryEntry>(
+    `/api/registry/templates/${encodeURIComponent(templateId)}/${action}`,
+    { method: "POST" }
+  );
+}
+
+export async function runResourceProfileActionViaApi(
+  profileId: string,
+  action: "submit" | "approve" | "deprecate" | "restore"
+) {
+  return fetchJson<ResourceProfile>(`/api/resource-profiles/${encodeURIComponent(profileId)}/${action}`, {
+    method: "POST",
+  });
 }
 
 export async function fetchPlatformConfigFromApi() {

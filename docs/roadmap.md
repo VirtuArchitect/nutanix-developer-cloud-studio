@@ -76,11 +76,19 @@
 
 ## Phase 9 - Registry Governance (`v0.7.0-registry-governance`)
 
-- Add template versioning states: draft, published, deprecated
-- Add owner approval before publishing golden paths
-- Add resource profile approval and deprecation workflow
-- Add policy bundle selection per template version
-- Keep real provisioning disabled until lab authorization and adapter gates are approved
+- Add template versioning states: draft, published, deprecated - done
+- Add owner approval before publishing golden paths - done
+- Add resource profile approval and deprecation workflow - done
+- Add policy bundle selection per template version - done
+- Keep real provisioning disabled until lab authorization and adapter gates are approved - done
+
+## Phase 10 - Prism Read-Only Inventory (`v0.8.0-prism-readonly-inventory`)
+
+- Add Prism Central inventory adapter interface
+- Add disabled-by-default real adapter configuration
+- Import read-only cluster, project, image, network, category, and VM metadata
+- Map imported inventory into approved registry candidates
+- Require authorized lab scope before any live endpoint testing
 
 ## Gated Promotion
 

@@ -15,7 +15,8 @@ export type ControlPlaneJobState =
   | "Destroyed";
 export type TemplateGovernance = Record<string, { owner: string; tier: TemplateTier }>;
 export type ResourceProfileKind = "AHV Image" | "Kubernetes Version" | "Database Engine" | "Storage Class" | "AI Profile";
-export type ResourceProfileStatus = "Published" | "Draft" | "Deprecated";
+export type RegistryStatus = "Draft" | "Pending approval" | "Published" | "Deprecated";
+export type ResourceProfileStatus = RegistryStatus;
 export type ProvisioningAdapterName = "NCI" | "NKP" | "NDB" | "NUS" | "NCM" | "NAI";
 export type ProvisioningAdapterCapability = "validateRequest" | "plan" | "provision" | "pollStatus" | "destroy";
 
@@ -123,6 +124,28 @@ export type ResourceProfile = {
   status: ResourceProfileStatus;
   owner: string;
   region: string;
+  notes: string;
+  approvedBy?: string;
+  approvedAt?: string;
+};
+
+export type PolicyBundle = {
+  id: string;
+  name: string;
+  owner: string;
+  controls: string[];
+  evidence: string;
+};
+
+export type TemplateRegistryEntry = {
+  templateId: string;
+  templateName: string;
+  version: string;
+  owner: string;
+  status: RegistryStatus;
+  policyBundleIds: string[];
+  lastChangedAt: string;
+  approvalEvidence: string;
   notes: string;
 };
 
@@ -361,6 +384,84 @@ export const integrations: Integration[] = [
 
 export const allTargets: Target[] = ["VM", "Kubernetes", "Database", "Storage", "AI Endpoint"];
 
+export const policyBundles: PolicyBundle[] = [
+  {
+    id: "sandbox-standard",
+    name: "Sandbox Standard Guardrails",
+    owner: "Platform Governance",
+    controls: ["30 day expiry", "Cost attribution", "Owner metadata", "Basic audit trail"],
+    evidence: "Default developer sandbox controls for non-regulated paths.",
+  },
+  {
+    id: "data-protection",
+    name: "Data Protection Baseline",
+    owner: "Data Platform",
+    controls: ["Backup policy", "Restore test evidence", "Encryption required", "Retention metadata"],
+    evidence: "Required for database-backed golden paths.",
+  },
+  {
+    id: "ai-safety",
+    name: "AI Safety Review",
+    owner: "AI Platform",
+    controls: ["GPU quota", "PII scan", "Model registry reference", "Prompt artifact retention"],
+    evidence: "Required before AI endpoint profiles can be published.",
+  },
+  {
+    id: "regulated-audit",
+    name: "Regulated Audit Export",
+    owner: "Security Governance",
+    controls: ["Approval evidence", "Audit export", "Change review", "Encryption"],
+    evidence: "Required for regulated data service templates.",
+  },
+];
+
+export const templateRegistry: TemplateRegistryEntry[] = [
+  {
+    templateId: "spring-postgres",
+    templateName: "Spring API with NDB Postgres",
+    version: "1.2.0",
+    owner: "App Platform",
+    status: "Published",
+    policyBundleIds: ["sandbox-standard", "data-protection"],
+    lastChangedAt: "2026-06-28",
+    approvalEvidence: "Approved by Platform Governance for developer API paths.",
+    notes: "Default API golden path for standard app teams.",
+  },
+  {
+    templateId: "vm-app",
+    templateName: "Linux VM App Sandbox",
+    version: "1.1.0",
+    owner: "Cloud Infrastructure",
+    status: "Published",
+    policyBundleIds: ["sandbox-standard"],
+    lastChangedAt: "2026-06-28",
+    approvalEvidence: "Approved for simulated VM sandbox flow.",
+    notes: "Awaiting real Prism Central image and subnet mapping.",
+  },
+  {
+    templateId: "ai-endpoint",
+    templateName: "AI Endpoint Lab",
+    version: "0.8.0",
+    owner: "AI Platform",
+    status: "Pending approval",
+    policyBundleIds: ["sandbox-standard", "ai-safety"],
+    lastChangedAt: "2026-07-02",
+    approvalEvidence: "Pending GPU quota and PII policy sign-off.",
+    notes: "Can be demonstrated, but should not be published for real use yet.",
+  },
+  {
+    templateId: "regulated-db",
+    templateName: "Regulated Data Service",
+    version: "0.5.0",
+    owner: "Data Platform",
+    status: "Draft",
+    policyBundleIds: ["data-protection", "regulated-audit"],
+    lastChangedAt: "2026-07-02",
+    approvalEvidence: "Draft requires data-owner and security approval.",
+    notes: "Registry governance work item for the regulated service path.",
+  },
+];
+
 export const resourceProfiles: ResourceProfile[] = [
   {
     id: "ahv-rocky-9-hardened",
@@ -372,6 +473,8 @@ export const resourceProfiles: ResourceProfile[] = [
     owner: "Cloud Infrastructure",
     region: "Berlin Lab",
     notes: "Default VM sandbox image candidate. Image UUID must be mapped during lab onboarding.",
+    approvedBy: "Cloud Infrastructure",
+    approvedAt: "2026-06-28",
   },
   {
     id: "nkp-1-30-standard",
@@ -383,6 +486,8 @@ export const resourceProfiles: ResourceProfile[] = [
     owner: "App Platform",
     region: "Berlin Lab",
     notes: "Namespace and quota profile for standard app teams.",
+    approvedBy: "App Platform",
+    approvedAt: "2026-06-28",
   },
   {
     id: "ndb-postgres-16-dev",
@@ -394,6 +499,8 @@ export const resourceProfiles: ResourceProfile[] = [
     owner: "Data Platform",
     region: "Berlin Lab",
     notes: "Developer database profile with backup policy placeholder.",
+    approvedBy: "Data Platform",
+    approvedAt: "2026-06-28",
   },
   {
     id: "nus-object-dev",

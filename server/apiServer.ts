@@ -15,8 +15,15 @@ import {
   RequestValidationError,
 } from "./mockPlatform";
 import type { ApiStore } from "./storage";
-import type { IntegrationConfig, LabAdapterSnapshot, SystemStatus } from "../src/data/cloudStudioDomain";
-import type { ApiError, ApiResponse, CreateEnvironmentRequest, UpdateIntegrationConfigRequest } from "./types";
+import type { IntegrationConfig, LabAdapterSnapshot, RegistryStatus, SystemStatus } from "../src/data/cloudStudioDomain";
+import type {
+  ApiError,
+  ApiResponse,
+  ApiState,
+  CreateEnvironmentRequest,
+  RegistryAction,
+  UpdateIntegrationConfigRequest,
+} from "./types";
 
 export type ApiServerOptions = {
   store: ApiStore;
@@ -124,6 +131,16 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/policy-bundles") {
+    sendJson(response, 200, { data: state.policyBundles });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/registry/templates") {
+    sendJson(response, 200, { data: state.templateRegistry });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/platform/config") {
     sendJson(response, 200, { data: state.platformConfig });
     return;
@@ -199,6 +216,70 @@ async function routeApi(
 
       throw error;
     }
+    return;
+  }
+
+  const templateRegistryActionMatch = url.pathname.match(/^\/api\/registry\/templates\/([^/]+)\/(submit|approve|deprecate|restore)$/);
+  if (request.method === "POST" && templateRegistryActionMatch) {
+    const templateId = decodeURIComponent(templateRegistryActionMatch[1]);
+    const action = templateRegistryActionMatch[2] as RegistryAction;
+    const entry = state.templateRegistry.find((item) => item.templateId === templateId);
+    if (!entry) {
+      sendJson(response, 404, {
+        error: {
+          code: "template_registry_entry_not_found",
+          message: `Template registry entry not found: ${templateId}`,
+        },
+      });
+      return;
+    }
+
+    const updated = {
+      ...entry,
+      status: nextRegistryStatus(action),
+      lastChangedAt: new Date().toISOString().slice(0, 10),
+      approvalEvidence: registryEvidence(action, state.session.user),
+    };
+    state.templateRegistry = state.templateRegistry.map((item) => (item.templateId === templateId ? updated : item));
+    addAuditEvent(state, `registry.template.${action}`, state.session.user, templateId, {
+      status: updated.status,
+      version: updated.version,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
+    return;
+  }
+
+  const resourceProfileActionMatch = url.pathname.match(/^\/api\/resource-profiles\/([^/]+)\/(submit|approve|deprecate|restore)$/);
+  if (request.method === "POST" && resourceProfileActionMatch) {
+    const profileId = decodeURIComponent(resourceProfileActionMatch[1]);
+    const action = resourceProfileActionMatch[2] as RegistryAction;
+    const profile = state.resourceProfiles.find((item) => item.id === profileId);
+    if (!profile) {
+      sendJson(response, 404, {
+        error: {
+          code: "resource_profile_not_found",
+          message: `Resource profile not found: ${profileId}`,
+        },
+      });
+      return;
+    }
+
+    const status = nextRegistryStatus(action);
+    const updated = {
+      ...profile,
+      status,
+      approvedBy: status === "Published" ? state.session.user : profile.approvedBy,
+      approvedAt: status === "Published" ? new Date().toISOString() : profile.approvedAt,
+      notes: `${profile.notes} Registry action ${action} recorded.`,
+    };
+    state.resourceProfiles = state.resourceProfiles.map((item) => (item.id === profileId ? updated : item));
+    addAuditEvent(state, `registry.profile.${action}`, state.session.user, profileId, {
+      status,
+      provider: updated.provider,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
     return;
   }
 
@@ -446,6 +527,52 @@ function createSystemStatus(state: Awaited<ReturnType<ApiStore["load"]>>): Syste
     },
     provisioningEnabled: false,
   };
+}
+
+function nextRegistryStatus(action: RegistryAction): RegistryStatus {
+  switch (action) {
+    case "submit":
+      return "Pending approval";
+    case "approve":
+      return "Published";
+    case "deprecate":
+      return "Deprecated";
+    case "restore":
+      return "Draft";
+  }
+}
+
+function registryEvidence(action: RegistryAction, actor: string) {
+  switch (action) {
+    case "submit":
+      return `Submitted for owner approval by ${actor}.`;
+    case "approve":
+      return `Published by ${actor} after simulated owner approval.`;
+    case "deprecate":
+      return `Deprecated by ${actor}; blocked for future real provisioning selection.`;
+    case "restore":
+      return `Restored to draft by ${actor} for revision.`;
+  }
+}
+
+function addAuditEvent(
+  state: ApiState,
+  action: string,
+  actor: string,
+  target: string,
+  metadata?: Record<string, unknown>
+) {
+  state.auditEvents = [
+    {
+      id: `audit-${action}-${Date.now()}`,
+      action,
+      actor,
+      target,
+      createdAt: new Date().toISOString(),
+      metadata,
+    },
+    ...state.auditEvents,
+  ];
 }
 
 function sendJson<T>(response: ServerResponse, status: number, body: ApiResponse<T> | ApiError) {

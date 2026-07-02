@@ -2,19 +2,35 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.6.0-provisioning-adapters`.
+This project uses release tags for public milestones. The current release is `v0.7.0-registry-governance`.
 
 ## [Unreleased]
+
+### Planned
+
+- Add first real Prism Central read-only API call once lab authorization, scope, endpoint, and credential handling are approved.
+- Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v0.7.0-registry-governance] - 2026-07-02
+
+### Added
+
+- API-backed template registry with draft, pending approval, published, and deprecated states.
+- API-backed policy bundle catalog for standard sandbox, data protection, AI safety, and regulated audit controls.
+- Registry lifecycle actions for template versions: submit, approve, deprecate, and restore.
+- Resource profile governance actions for image, Kubernetes, database, storage, and AI profile records.
+- Audit evidence for template and resource profile governance transitions.
+- Admin Templates tab sections for image/profile catalog, template registry, policy bundles, and template governance.
+- Unit/API/client/E2E coverage for registry governance and policy bundle behavior.
 
 ### Changed
 
 - Changed the Admin view from a long stacked panel list to tabbed sections for overview, providers, control plane, governance, and templates.
 - Replaced the app badge, sidebar logo, and favicon with the primary Nutanix Developer Cloud Studio SVG logo.
 
-### Planned
+### Notes
 
-- Add template versioning states: draft, published, deprecated, and owner approval.
-- Add first real Prism Central read-only API call once lab authorization, scope, endpoint, and credential handling are approved.
+- Registry governance remains simulated. Publishing a template or resource profile does not enable real provisioning.
 
 ## [v0.6.0-provisioning-adapters] - 2026-06-28
 

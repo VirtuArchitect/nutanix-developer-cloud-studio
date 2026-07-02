@@ -34,12 +34,17 @@ import {
   type JobState,
   type LabAdapterSnapshot,
   platformConfig as defaultPlatformConfig,
+  policyBundles as defaultPolicyBundles,
+  templateRegistry as defaultTemplateRegistry,
   type PlatformSession,
   type PlatformConfig,
+  type PolicyBundle,
   type ProvisioningAdapterReadiness,
+  type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
   type SystemStatus,
+  type TemplateRegistryEntry,
   type Target,
   type Template,
   type TemplateGovernance,
@@ -68,14 +73,18 @@ import {
   fetchIntegrationsFromApi,
   fetchLabAdaptersFromApi,
   fetchPlatformConfigFromApi,
+  fetchPolicyBundlesFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
+  fetchTemplateRegistryFromApi,
   requestEnvironmentDestroyViaApi,
+  runResourceProfileActionViaApi,
   runIntegrationCheckViaApi,
   runControlPlaneJobActionViaApi,
   runLabDiscoveryViaApi,
+  runTemplateRegistryActionViaApi,
   saveIntegrationConfigViaApi,
   type ApiHealth,
   type EnvironmentDetail,
@@ -102,6 +111,8 @@ export function App() {
   );
   const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
   const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
+  const [policyBundles, setPolicyBundles] = useState<PolicyBundle[]>(defaultPolicyBundles);
+  const [templateRegistry, setTemplateRegistry] = useState<TemplateRegistryEntry[]>(defaultTemplateRegistry);
   const [platformConfig, setPlatformConfig] = useState<PlatformConfig>(defaultPlatformConfig);
   const [provisioningAdapters, setProvisioningAdapters] = useState<ProvisioningAdapterReadiness[]>(() =>
     deriveMockProvisioningAdapters(integrations)
@@ -159,6 +170,8 @@ export function App() {
             apiLabAdapters,
             apiControlPlaneJobs,
             apiResourceProfiles,
+            apiPolicyBundles,
+            apiTemplateRegistry,
             apiPlatformConfig,
             apiProvisioningAdapters,
           ] = await Promise.all([
@@ -171,6 +184,8 @@ export function App() {
             fetchLabAdaptersFromApi(),
             fetchControlPlaneJobsFromApi(),
             fetchResourceProfilesFromApi(),
+            fetchPolicyBundlesFromApi(),
+            fetchTemplateRegistryFromApi(),
             fetchPlatformConfigFromApi(),
             fetchProvisioningAdaptersFromApi(),
           ]);
@@ -184,6 +199,8 @@ export function App() {
             setLabAdapters(apiLabAdapters);
             setControlPlaneJobs(apiControlPlaneJobs);
             setResourceProfiles(apiResourceProfiles);
+            setPolicyBundles(apiPolicyBundles);
+            setTemplateRegistry(apiTemplateRegistry);
             setPlatformConfig(apiPlatformConfig);
             setProvisioningAdapters(apiProvisioningAdapters);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
@@ -318,6 +335,8 @@ export function App() {
       apiLabAdapters,
       apiControlPlaneJobs,
       apiResourceProfiles,
+      apiPolicyBundles,
+      apiTemplateRegistry,
       apiPlatformConfig,
       apiProvisioningAdapters,
     ] = await Promise.all([
@@ -330,6 +349,8 @@ export function App() {
       fetchLabAdaptersFromApi(),
       fetchControlPlaneJobsFromApi(),
       fetchResourceProfilesFromApi(),
+      fetchPolicyBundlesFromApi(),
+      fetchTemplateRegistryFromApi(),
       fetchPlatformConfigFromApi(),
       fetchProvisioningAdaptersFromApi(),
     ]);
@@ -342,6 +363,8 @@ export function App() {
     setLabAdapters(apiLabAdapters);
     setControlPlaneJobs(apiControlPlaneJobs);
     setResourceProfiles(apiResourceProfiles);
+    setPolicyBundles(apiPolicyBundles);
+    setTemplateRegistry(apiTemplateRegistry);
     setPlatformConfig(apiPlatformConfig);
     setProvisioningAdapters(apiProvisioningAdapters);
 
@@ -496,6 +519,42 @@ export function App() {
     }
   }
 
+  async function runTemplateRegistryAction(
+    templateId: string,
+    action: "submit" | "approve" | "deprecate" | "restore"
+  ) {
+    if (apiHealth.mode === "api") {
+      const updated = await runTemplateRegistryActionViaApi(templateId, action);
+      setTemplateRegistry((current) =>
+        current.map((entry) => (entry.templateId === templateId ? updated : entry))
+      );
+      return;
+    }
+
+    setTemplateRegistry((current) =>
+      current.map((entry) =>
+        entry.templateId === templateId ? transitionTemplateRegistryEntry(entry, action, session.user) : entry
+      )
+    );
+  }
+
+  async function runResourceProfileAction(
+    profileId: string,
+    action: "submit" | "approve" | "deprecate" | "restore"
+  ) {
+    if (apiHealth.mode === "api") {
+      const updated = await runResourceProfileActionViaApi(profileId, action);
+      setResourceProfiles((current) => current.map((profile) => (profile.id === profileId ? updated : profile)));
+      return;
+    }
+
+    setResourceProfiles((current) =>
+      current.map((profile) =>
+        profile.id === profileId ? transitionResourceProfile(profile, action, session.user) : profile
+      )
+    );
+  }
+
   function updateTemplateGovernance(id: string, field: "owner" | "tier", value: string) {
     setTemplateGovernance((current) => {
       const currentTemplate = current[id] ?? { owner: "", tier: "Standard" };
@@ -606,6 +665,8 @@ export function App() {
             systemStatus={systemStatus}
             labAdapters={labAdapters}
             resourceProfiles={resourceProfiles}
+            policyBundles={policyBundles}
+            templateRegistry={templateRegistry}
             platformConfig={platformConfig}
             provisioningAdapters={provisioningAdapters}
             controlPlaneJobs={controlPlaneJobs}
@@ -618,6 +679,8 @@ export function App() {
             runLabDiscovery={runLabDiscovery}
             runControlPlaneJobAction={runControlPlaneJobAction}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
+            runTemplateRegistryAction={runTemplateRegistryAction}
+            runResourceProfileAction={runResourceProfileAction}
             openEnvironmentDetail={openEnvironmentDetail}
           />
         )}
@@ -1092,6 +1155,8 @@ function AdminView({
   systemStatus,
   labAdapters,
   resourceProfiles,
+  policyBundles,
+  templateRegistry,
   platformConfig,
   provisioningAdapters,
   controlPlaneJobs,
@@ -1104,6 +1169,8 @@ function AdminView({
   runLabDiscovery,
   runControlPlaneJobAction,
   requestEnvironmentDestroy,
+  runTemplateRegistryAction,
+  runResourceProfileAction,
   openEnvironmentDetail,
 }: {
   environments: Environment[];
@@ -1113,6 +1180,8 @@ function AdminView({
   systemStatus: SystemStatus;
   labAdapters: LabAdapterSnapshot[];
   resourceProfiles: ResourceProfile[];
+  policyBundles: PolicyBundle[];
+  templateRegistry: TemplateRegistryEntry[];
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
   controlPlaneJobs: ControlPlaneJob[];
@@ -1128,6 +1197,14 @@ function AdminView({
   runLabDiscovery: (adapterName: string) => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   requestEnvironmentDestroy: (name: string) => void;
+  runTemplateRegistryAction: (
+    templateId: string,
+    action: "submit" | "approve" | "deprecate" | "restore"
+  ) => void;
+  runResourceProfileAction: (
+    profileId: string,
+    action: "submit" | "approve" | "deprecate" | "restore"
+  ) => void;
   openEnvironmentDetail: (name: string) => void;
 }) {
   const pendingApprovals = approvals.filter((approval) => approval.status === "Pending").length;
@@ -1269,7 +1346,17 @@ function AdminView({
       {activeTab === "templates" && (
         <div className="adminTabPanel">
           <Panel title="Image and template catalog" action={`${resourceProfiles.length} profiles`}>
-            <ResourceProfileCatalog profiles={resourceProfiles} />
+            <ResourceProfileCatalog profiles={resourceProfiles} runResourceProfileAction={runResourceProfileAction} />
+          </Panel>
+          <Panel title="Template registry" action={`${templateRegistry.length} versions`}>
+            <TemplateRegistryPanel
+              entries={templateRegistry}
+              policyBundles={policyBundles}
+              runTemplateRegistryAction={runTemplateRegistryAction}
+            />
+          </Panel>
+          <Panel title="Policy bundles" action={`${policyBundles.length} bundles`}>
+            <PolicyBundlePanel bundles={policyBundles} />
           </Panel>
           <Panel title="Template governance" action="Editable">
             <div className="templateEditList">
@@ -1488,7 +1575,16 @@ function LabAdapterPanel({
   );
 }
 
-function ResourceProfileCatalog({ profiles }: { profiles: ResourceProfile[] }) {
+function ResourceProfileCatalog({
+  profiles,
+  runResourceProfileAction,
+}: {
+  profiles: ResourceProfile[];
+  runResourceProfileAction?: (
+    profileId: string,
+    action: "submit" | "approve" | "deprecate" | "restore"
+  ) => void;
+}) {
   return (
     <div className="resourceProfileList">
       {profiles.map((profile) => (
@@ -1505,10 +1601,126 @@ function ResourceProfileCatalog({ profiles }: { profiles: ResourceProfile[] }) {
           </div>
           <div className="labScope">
             <span>{profile.notes}</span>
-            <small>{profile.owner}</small>
+            <small>
+              {profile.owner}
+              {profile.approvedBy ? ` / approved by ${profile.approvedBy}` : ""}
+            </small>
           </div>
+          {runResourceProfileAction && (
+            <RegistryActions
+              id={profile.id}
+              status={profile.status}
+              runAction={runResourceProfileAction}
+            />
+          )}
         </div>
       ))}
+    </div>
+  );
+}
+
+function TemplateRegistryPanel({
+  entries,
+  policyBundles,
+  runTemplateRegistryAction,
+}: {
+  entries: TemplateRegistryEntry[];
+  policyBundles: PolicyBundle[];
+  runTemplateRegistryAction: (
+    templateId: string,
+    action: "submit" | "approve" | "deprecate" | "restore"
+  ) => void;
+}) {
+  return (
+    <div className="templateRegistryList">
+      {entries.map((entry) => (
+        <div className="templateRegistryRow" key={entry.templateId}>
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{entry.templateName}</strong>
+              <span>
+                v{entry.version} / {entry.owner}
+              </span>
+            </div>
+            <span className={`status ${registryStatusClass(entry.status)}`}>{entry.status}</span>
+          </div>
+          <div className="policyChipRow">
+            {entry.policyBundleIds.map((bundleId) => {
+              const bundle = policyBundles.find((item) => item.id === bundleId);
+              return (
+                <span className="policyChip" key={bundleId}>
+                  {bundle?.name ?? bundleId}
+                </span>
+              );
+            })}
+          </div>
+          <div className="labScope">
+            <span>{entry.approvalEvidence}</span>
+            <small>{entry.notes}</small>
+          </div>
+          <RegistryActions id={entry.templateId} status={entry.status} runAction={runTemplateRegistryAction} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PolicyBundlePanel({ bundles }: { bundles: PolicyBundle[] }) {
+  return (
+    <div className="policyBundleList">
+      {bundles.map((bundle) => (
+        <div className="policyBundleRow" key={bundle.id}>
+          <div>
+            <strong>{bundle.name}</strong>
+            <span>{bundle.owner}</span>
+          </div>
+          <div className="policyChipRow">
+            {bundle.controls.map((control) => (
+              <span className="policyChip" key={control}>
+                {control}
+              </span>
+            ))}
+          </div>
+          <small>{bundle.evidence}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RegistryActions({
+  id,
+  status,
+  runAction,
+}: {
+  id: string;
+  status: RegistryStatus;
+  runAction: (id: string, action: "submit" | "approve" | "deprecate" | "restore") => void;
+}) {
+  return (
+    <div className="inlineActions">
+      {status === "Draft" && (
+        <button className="iconTextButton" onClick={() => runAction(id, "submit")}>
+          <Play size={15} />
+          Submit review
+        </button>
+      )}
+      {status === "Pending approval" && (
+        <button className="smallButton successButton" onClick={() => runAction(id, "approve")}>
+          Approve publish
+        </button>
+      )}
+      {status === "Published" && (
+        <button className="smallButton dangerButton" onClick={() => runAction(id, "deprecate")}>
+          Deprecate
+        </button>
+      )}
+      {status === "Deprecated" && (
+        <button className="iconTextButton" onClick={() => runAction(id, "restore")}>
+          <RefreshCw size={15} />
+          Restore draft
+        </button>
+      )}
     </div>
   );
 }
@@ -1835,6 +2047,10 @@ function resourceProfileClass(status: ResourceProfile["status"]) {
   return status === "Published" ? "ready" : status === "Deprecated" ? "failed" : "approval";
 }
 
+function registryStatusClass(status: RegistryStatus) {
+  return status === "Published" ? "ready" : status === "Deprecated" ? "failed" : "approval";
+}
+
 function resourceDescription(target: Target) {
   switch (target) {
     case "VM":
@@ -1931,6 +2147,60 @@ function deriveMockProvisioningAdapters(sourceIntegrations: Integration[]): Prov
         ? "Map Prism Central image, project, subnet, category, and credential references."
         : integration.nextStep,
   }));
+}
+
+function nextRegistryStatus(action: "submit" | "approve" | "deprecate" | "restore"): RegistryStatus {
+  switch (action) {
+    case "submit":
+      return "Pending approval";
+    case "approve":
+      return "Published";
+    case "deprecate":
+      return "Deprecated";
+    case "restore":
+      return "Draft";
+  }
+}
+
+function transitionTemplateRegistryEntry(
+  entry: TemplateRegistryEntry,
+  action: "submit" | "approve" | "deprecate" | "restore",
+  actor: string
+): TemplateRegistryEntry {
+  const status = nextRegistryStatus(action);
+  return {
+    ...entry,
+    status,
+    lastChangedAt: new Date().toISOString().slice(0, 10),
+    approvalEvidence: registryActionEvidence(action, actor),
+  };
+}
+
+function transitionResourceProfile(
+  profile: ResourceProfile,
+  action: "submit" | "approve" | "deprecate" | "restore",
+  actor: string
+): ResourceProfile {
+  const status = nextRegistryStatus(action);
+  return {
+    ...profile,
+    status,
+    approvedBy: status === "Published" ? actor : profile.approvedBy,
+    approvedAt: status === "Published" ? new Date().toISOString() : profile.approvedAt,
+  };
+}
+
+function registryActionEvidence(action: "submit" | "approve" | "deprecate" | "restore", actor: string) {
+  switch (action) {
+    case "submit":
+      return `Submitted for owner approval by ${actor}.`;
+    case "approve":
+      return `Published by ${actor} after simulated owner approval.`;
+    case "deprecate":
+      return `Deprecated by ${actor}; blocked for future real provisioning selection.`;
+    case "restore":
+      return `Restored to draft by ${actor} for revision.`;
+  }
 }
 
 function replaceIntegrationConfig(configs: IntegrationConfig[], updated: IntegrationConfig) {

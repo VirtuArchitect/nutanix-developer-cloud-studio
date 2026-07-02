@@ -7,10 +7,13 @@ import type {
   LabAdapterSnapshot,
   PlatformConfig,
   PlatformSession,
+  PolicyBundle,
   ProvisioningAdapterReadiness,
+  RegistryStatus,
   ResourceProfile,
   Template,
   TemplateGovernance,
+  TemplateRegistryEntry,
 } from "../src/data/cloudStudioDomain";
 import type { ProvisioningJob } from "../src/services/nutanixAdapters";
 
@@ -21,6 +24,8 @@ export type ApiState = {
   integrationConfigs: IntegrationConfig[];
   labAdapters: LabAdapterSnapshot[];
   resourceProfiles: ResourceProfile[];
+  policyBundles: PolicyBundle[];
+  templateRegistry: TemplateRegistryEntry[];
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
   session: PlatformSession;
@@ -52,6 +57,13 @@ export type UpdateIntegrationConfigRequest = {
   endpoint?: string;
   credentialProfile?: string;
   status?: IntegrationConfig["status"];
+};
+
+export type RegistryAction = "submit" | "approve" | "deprecate" | "restore";
+
+export type RegistryActionResult = {
+  status: RegistryStatus;
+  actor: string;
 };
 
 export type ApiResponse<T> = {

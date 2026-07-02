@@ -35,14 +35,14 @@ flowchart LR
 Run locally:
 
 ```powershell
-.\scripts\run-phase-gate.ps1 -TargetPhase v0.6.0-provisioning-adapters
+.\scripts\run-phase-gate.ps1 -TargetPhase v0.7.0-registry-governance
 ```
 
 With an explicitly authorized security scope:
 
 ```powershell
 .\scripts\run-phase-gate.ps1 `
-  -TargetPhase v0.6.0-provisioning-adapters `
+  -TargetPhase v0.7.0-registry-governance `
   -PentestScopePath .\PENTEST_SCOPE_TEMPLATE.md `
   -IncludeAuthorizedPentest
 ```
@@ -107,11 +107,12 @@ Build:
 
 Exit gate:
 
-- Registry cannot publish incomplete profiles.
-- Deprecated profiles cannot be selected for new requests.
-- Smoke test covers selecting a published profile.
+- Registry governance APIs are covered by unit/API/client tests.
+- Admin smoke test covers registry and profile status transitions.
+- Audit evidence is written for governance actions.
+- Published status remains a planning record and does not enable real provisioning.
 
-### v0.7.0-prism-readonly-inventory
+### v0.8.0-prism-readonly-inventory
 
 Goal: move from simulated discovery toward real read-only Prism Central inventory.
 
@@ -130,7 +131,7 @@ Exit gate:
 - Authorized scope file exists before any live endpoint testing.
 - Smoke test proves imported inventory appears in registry/admin views.
 
-### v0.8.0-vm-sandbox-provisioning
+### v0.9.0-vm-sandbox-provisioning
 
 Goal: first tightly controlled real provisioning path.
 
@@ -148,7 +149,7 @@ Exit gate:
 - Dry-run mode passes.
 - Manual approval gate is required before real provisioning is enabled.
 
-### v0.9.0-kubernetes-and-data-services
+### v1.0.0-kubernetes-and-data-services
 
 Goal: add platform services after VM sandbox proves the control plane.
 
@@ -166,7 +167,7 @@ Exit gate:
 - Stateful services require approval.
 - Smoke tests cover failure and approval paths.
 
-### v1.0.0-private-cloud-developer-platform
+### v1.1.0-private-cloud-developer-platform
 
 Goal: release as an operational internal developer platform candidate.
 

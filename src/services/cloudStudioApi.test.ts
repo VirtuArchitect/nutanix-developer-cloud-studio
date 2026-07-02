@@ -5,15 +5,19 @@ import {
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
+  fetchPolicyBundlesFromApi,
   fetchPlatformConfigFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
+  fetchTemplateRegistryFromApi,
   requestEnvironmentDestroyViaApi,
+  runResourceProfileActionViaApi,
   runLabDiscoveryViaApi,
   runControlPlaneJobActionViaApi,
   runIntegrationCheckViaApi,
+  runTemplateRegistryActionViaApi,
   saveIntegrationConfigViaApi,
 } from "./cloudStudioApi";
 
@@ -145,6 +149,29 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       4,
       "/api/environments/api-dev/destroy",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and updates registry governance records", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchPolicyBundlesFromApi();
+    await fetchTemplateRegistryFromApi();
+    await runTemplateRegistryActionViaApi("regulated-db", "submit");
+    await runResourceProfileActionViaApi("nus-object-dev", "approve");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/policy-bundles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/registry/templates", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "/api/registry/templates/regulated-db/submit",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/resource-profiles/nus-object-dev/approve",
       expect.objectContaining({ method: "POST" })
     );
   });

@@ -32,6 +32,8 @@ flowchart LR
     Api --> Config["Integration Config"]
     Api --> LabAdapters["Read-only Lab Adapter Pilot"]
     Api --> Inventory["Image And Profile Catalog"]
+    Api --> Registry["Template Registry Governance"]
+    Api --> Bundles["Policy Bundles"]
     Api --> ProviderConfig["Provider Config References"]
     Api --> AdapterReadiness["Provisioning Adapter Readiness"]
     Api --> Details["Environment Detail"]
@@ -50,6 +52,8 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Jobs: simulated provisioning and operational events
 - Control plane jobs: queued orchestration records with worker transitions, retries, failures, and audit evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
+- Template registry: versioned golden-path publication state and approval evidence
+- Policy bundles: reusable governance control groups mapped to template versions
 - Platform config: provider project, cluster, network, and credential-reference placeholders
 - Provisioning adapters: validate, plan, provision, poll, and destroy contract readiness records
 - Approvals: platform review records for AI endpoint and regulated-style requests
@@ -87,6 +91,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - API-backed system status and read-only lab adapter pilot state
 - API-backed control-plane queue and mock orchestrator worker actions
 - API-backed resource profile catalog, platform config references, and provisioning adapter readiness
+- API-backed template registry governance, policy bundles, and resource profile publication actions
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
@@ -103,6 +108,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The destroy lifecycle is simulated and does not delete infrastructure.
 - Provider configuration stores references only and does not store secrets.
 - Image/profile catalog records are planning metadata until a lab registry source is authorized.
+- Template registry and policy bundle records are governance planning metadata until real approval and publishing controls are wired to identity and provisioning gates.
 - Environment requests persist across browser refreshes through local storage.
 - Admin template governance edits persist across browser refreshes through local storage.
 - Job transitions are simulated in the browser with timers.

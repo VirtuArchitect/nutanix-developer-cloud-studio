@@ -131,7 +131,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Phase Automation Slice
 
-- `docs/upgrade-path.md` defines the gated phase sequence from `v0.5.0-control-plane` through `v1.0.0-private-cloud-developer-platform`.
+- `docs/upgrade-path.md` defines the gated phase sequence from `v0.5.0-control-plane` through `v1.1.0-private-cloud-developer-platform`.
 - `scripts/run-phase-gate.ps1` runs local phase promotion checks.
 - `.github/workflows/phase-gate.yml` provides a manual GitHub Actions phase gate.
 - Active penetration testing remains blocked unless authorization and scope are documented first.
@@ -153,6 +153,15 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin view includes Image and Template Catalog and Provider Readiness panels.
 - Environment destroy requests queue simulated teardown jobs and audit evidence.
 - Real provisioning and teardown remain disabled.
+
+## Current Registry Governance Slice
+
+- API exposes policy bundles and template registry versions.
+- Template registry versions can move through draft, pending approval, published, deprecated, and restored states.
+- Resource profiles can be submitted, approved, deprecated, and restored through API-backed governance actions.
+- Admin Templates tab groups image/profile catalog, template registry, policy bundles, and editable template governance.
+- Audit events capture template and resource profile governance transitions.
+- Real provisioning remains disabled even when a template or profile is marked published.
 
 ## Suggested Tech Stack
 

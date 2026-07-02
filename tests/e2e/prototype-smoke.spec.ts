@@ -64,5 +64,12 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Destroying").first()).toBeVisible();
   await page.getByRole("tab", { name: "Templates Catalog and ownership" }).click();
   await expect(page.getByText("Image and template catalog")).toBeVisible();
+  await expect(page.getByText("Template registry")).toBeVisible();
+  await expect(page.getByText("Policy bundles")).toBeVisible();
+  await expect(page.getByText("Regulated Data Service").first()).toBeVisible();
+  await page.getByRole("button", { name: "Submit review" }).first().click();
+  await expect(page.getByText("Pending approval").first()).toBeVisible();
+  await page.getByRole("button", { name: "Approve publish" }).first().click();
+  await expect(page.getByText("Published").first()).toBeVisible();
   await expect(page.getByText("Template governance")).toBeVisible();
 });

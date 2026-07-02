@@ -74,7 +74,7 @@
 - Added admin Lab Adapter Pilot panel and dashboard provisioning guardrail tile.
 - Added JSON-file state backup/restore unit coverage.
 - Updated hosted starter validation to check lab adapter state and provisioning guardrail.
-- Added gated upgrade path from `v0.5.0-control-plane` through `v1.0.0-private-cloud-developer-platform`.
+- Added gated upgrade path from `v0.5.0-control-plane` through `v1.1.0-private-cloud-developer-platform`.
 - Added local phase gate script for tests, smoke, audit, secret scan, and authorized pentest scope validation.
 - Added manual GitHub Actions phase gate workflow.
 - Started `v0.5.0-control-plane`.
@@ -89,6 +89,11 @@
 - Added tests and smoke coverage for provider inventory and destroy workflow.
 - Refined the Admin view into tabbed sections so platform teams can move between overview, providers, control plane, governance, and templates without scanning one long page.
 - Replaced the app badge, sidebar logo, and favicon with the primary Nutanix Developer Cloud Studio SVG logo.
+- Started `v0.7.0-registry-governance`.
+- Added API-backed policy bundles and template registry version states.
+- Added submit, approve, deprecate, and restore actions for template registry entries and resource profiles.
+- Added Admin Templates tab sections for image/profile catalog, template registry, policy bundles, and template governance.
+- Added audit evidence and tests for registry governance transitions.
 
 ## Documentation Rule
 

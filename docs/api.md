@@ -37,6 +37,7 @@ The React frontend now checks `/healthz` on load:
 - Control-plane job state is API-backed so the hosted starter can model queue, worker, retry, and failure behavior.
 - Provider readiness, platform configuration references, and image/profile inventory are API-backed for adapter planning.
 - Environment destroy requests queue simulated teardown lifecycle jobs; no real infrastructure is deleted.
+- Template registry, resource profile governance, and policy bundles are API-backed so platform teams can model publication controls before real provisioning is enabled.
 
 ## Endpoints
 
@@ -55,6 +56,8 @@ The React frontend now checks `/healthz` on load:
 - `GET /api/integration-config`
 - `GET /api/lab-adapters`
 - `GET /api/resource-profiles`
+- `GET /api/policy-bundles`
+- `GET /api/registry/templates`
 - `GET /api/platform/config`
 - `GET /api/provisioning/adapters`
 - `GET /api/provisioning-jobs`
@@ -90,6 +93,10 @@ The destroy endpoint marks the mock environment as `Destroying`, queues a contro
 ### Provider Inventory And Adapter Readiness
 
 - `GET /api/resource-profiles`
+- `POST /api/resource-profiles/:id/submit`
+- `POST /api/resource-profiles/:id/approve`
+- `POST /api/resource-profiles/:id/deprecate`
+- `POST /api/resource-profiles/:id/restore`
 - `GET /api/platform/config`
 - `GET /api/provisioning/adapters`
 
@@ -104,6 +111,17 @@ These endpoints expose the starter inventory and adapter-planning model:
 - Adapter capabilities for validate, plan, provision, poll, and destroy
 
 Secrets are not stored in the API state. Credential fields are references only.
+
+### Registry Governance
+
+- `GET /api/policy-bundles`
+- `GET /api/registry/templates`
+- `POST /api/registry/templates/:id/submit`
+- `POST /api/registry/templates/:id/approve`
+- `POST /api/registry/templates/:id/deprecate`
+- `POST /api/registry/templates/:id/restore`
+
+Template registry actions update mock publication state and audit evidence. Resource profile actions use the same lifecycle so platform teams can model approval and deprecation of AHV, NKP, NDB, NUS, and NAI catalog records. These actions do not enable real provisioning.
 
 ### Approval Decisions
 
@@ -158,3 +176,4 @@ Control-plane jobs model queue and worker execution states. Worker actions updat
 - Control-plane worker actions are simulated; provisioning remains disabled.
 - Destroy lifecycle actions are simulated; teardown remains disabled.
 - Resource profiles and adapter readiness are planning records only.
+- Template registry and policy bundles are governance planning records only.
