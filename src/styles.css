@@ -47,39 +47,15 @@ button {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: 44px;
+  min-height: 58px;
 }
 
-.brandMark {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 8px;
-  background: transparent;
-  overflow: hidden;
-}
-
-.brandMark img {
+.brandLogo {
   display: block;
   width: 100%;
-  height: 100%;
-}
-
-.brand strong,
-.brand span {
-  display: block;
-}
-
-.brand strong {
-  font-size: 15px;
-}
-
-.brand span {
-  color: #9eb2bb;
-  font-size: 12px;
-  margin-top: 2px;
+  max-width: 204px;
+  height: auto;
+  border-radius: 8px;
 }
 
 .nav {
@@ -1120,6 +1096,7 @@ meter {
   }
 
   .brand div:last-child,
+  .brandLogo,
   .navButton span,
   .sidebarStatus {
     display: none;
@@ -1127,6 +1104,17 @@ meter {
 
   .sidebar {
     align-items: center;
+  }
+
+  .brand {
+    width: 44px;
+    min-height: 44px;
+    background: #fff;
+    background-image: url("./assets/logo-primary.svg");
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: auto 44px;
+    border-radius: 8px;
   }
 
   .navButton {

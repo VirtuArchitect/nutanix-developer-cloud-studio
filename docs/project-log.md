@@ -16,7 +16,7 @@
 - Verified production build with `npm run build`.
 - Started local dev server at `http://localhost:4180`.
 - Verified desktop render, create-environment flow, and mobile layout.
-- Replaced the app shell logo and browser favicon with the Veridian teal mark.
+- Replaced the app shell logo and browser favicon with the primary Nutanix Developer Cloud Studio SVG logo.
 - Extracted prototype domain data into `src/data/cloudStudioData.ts`.
 - Added local browser persistence for requested environments.
 - Added timed mock provisioning transitions with an approval pause for AI endpoint requests.
@@ -88,6 +88,7 @@
 - Added simulated environment destroy lifecycle with teardown control-plane jobs and audit evidence.
 - Added tests and smoke coverage for provider inventory and destroy workflow.
 - Refined the Admin view into tabbed sections so platform teams can move between overview, providers, control plane, governance, and templates without scanning one long page.
+- Replaced the app badge, sidebar logo, and favicon with the primary Nutanix Developer Cloud Studio SVG logo.
 
 ## Documentation Rule
 

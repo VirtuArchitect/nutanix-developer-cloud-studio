@@ -9,6 +9,7 @@ This project uses release tags for public milestones. The current release is `v0
 ### Changed
 
 - Changed the Admin view from a long stacked panel list to tabbed sections for overview, providers, control plane, governance, and templates.
+- Replaced the app badge, sidebar logo, and favicon with the primary Nutanix Developer Cloud Studio SVG logo.
 
 ### Planned
 
@@ -139,7 +140,7 @@ This project uses release tags for public milestones. The current release is `v0
 - Browser local storage persistence for requested environments and template governance edits.
 - Mock provisioning service for cost estimates, persistence, request upserts, status updates, and job transitions.
 - Vitest unit coverage for provisioning service behavior.
-- Veridian mark app logo and browser favicon.
+- Primary SVG app logo and browser favicon.
 - Dashboard visual and public README screenshot.
 - Project documentation for architecture, build plan, roadmap, product brief, demo script, hosting notes, testing, security, contribution, and code review.
 - Configurable Obsidian documentation sync using `NDC_STUDIO_OBSIDIAN_VAULT`.

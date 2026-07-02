@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ElementType, type ReactNode } from "react";
 import cloudVisual from "./assets/developer-cloud-visual.png";
-import veridianMark from "./assets/veridian-mark-teal.svg";
+import primaryLogo from "./assets/logo-primary.svg";
 import {
   allTargets,
   integrations,
@@ -513,13 +513,7 @@ export function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brandMark">
-            <img src={veridianMark} alt="" />
-          </div>
-          <div>
-            <strong>NDC Studio</strong>
-            <span>Developer Cloud</span>
-          </div>
+          <img className="brandLogo" src={primaryLogo} alt="Nutanix Developer Cloud Studio" />
         </div>
         <nav className="nav">
           <NavButton icon={Gauge} label="Dashboard" active={view === "dashboard"} onClick={() => setView("dashboard")} />
