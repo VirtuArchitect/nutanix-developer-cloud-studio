@@ -84,11 +84,20 @@
 
 ## Phase 10 - Prism Read-Only Inventory (`v0.8.0-prism-readonly-inventory`)
 
-- Add Prism Central inventory adapter interface
-- Add disabled-by-default real adapter configuration
-- Import read-only cluster, project, image, network, category, and VM metadata
-- Map imported inventory into approved registry candidates
-- Require authorized lab scope before any live endpoint testing
+- Add Prism Central inventory adapter interface - done
+- Add disabled-by-default real adapter configuration - done
+- Import read-only cluster, project, image, network, category, and VM metadata - done
+- Map imported inventory into registry profile candidates - done
+- Require authorized lab scope before any live endpoint testing - done
+
+## Phase 11 - Production Foundation (`v0.9.0-production-foundation`)
+
+- Add OIDC session validation
+- Add role-based access control around admin and provisioning actions
+- Add Postgres repository implementation and migrations
+- Add audit retention controls
+- Add request logging, correlation IDs, rate limits, and security headers
+- Add branch/release security gates for production deployment
 
 ## Gated Promotion
 

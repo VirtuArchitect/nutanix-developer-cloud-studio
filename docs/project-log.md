@@ -74,7 +74,7 @@
 - Added admin Lab Adapter Pilot panel and dashboard provisioning guardrail tile.
 - Added JSON-file state backup/restore unit coverage.
 - Updated hosted starter validation to check lab adapter state and provisioning guardrail.
-- Added gated upgrade path from `v0.5.0-control-plane` through `v1.1.0-private-cloud-developer-platform`.
+- Added gated upgrade path from `v0.5.0-control-plane` through `v1.3.0-private-cloud-developer-platform`.
 - Added local phase gate script for tests, smoke, audit, secret scan, and authorized pentest scope validation.
 - Added manual GitHub Actions phase gate workflow.
 - Started `v0.5.0-control-plane`.
@@ -94,6 +94,12 @@
 - Added submit, approve, deprecate, and restore actions for template registry entries and resource profiles.
 - Added Admin Templates tab sections for image/profile catalog, template registry, policy bundles, and template governance.
 - Added audit evidence and tests for registry governance transitions.
+- Started `v0.8.0-prism-readonly-inventory`.
+- Added a Prism read-only inventory adapter contract with mock and disabled-real implementations.
+- Added API-backed Prism inventory import for cluster, project, image, network, category, and VM metadata.
+- Added draft AHV image profile candidate mapping from imported Prism image records.
+- Added Admin Providers view for Prism inventory import evidence and blocked mutation operations.
+- Added tests and smoke coverage for the Prism inventory import path.
 
 ## Documentation Rule
 

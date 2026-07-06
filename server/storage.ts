@@ -117,6 +117,7 @@ export function createDefaultState(): ApiState {
     resourceProfiles,
     policyBundles,
     templateRegistry,
+    prismInventory: [],
     platformConfig,
     provisioningAdapters: defaultProvisioningAdapters(),
     session: defaultSession(),

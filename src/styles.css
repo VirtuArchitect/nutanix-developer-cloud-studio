@@ -466,6 +466,8 @@ button {
 .integrationList,
 .integrationConfigList,
 .labAdapterList,
+.prismInventoryPanel,
+.prismInventoryList,
 .controlPlaneList,
 .resourceProfileList,
 .provisioningAdapterList,
@@ -493,6 +495,7 @@ button {
 .eventRow,
 .integrationConfigRow,
 .labAdapterRow,
+.prismInventoryRow,
 .resourceProfileRow,
 .provisioningAdapterRow,
 .templateRegistryRow,
@@ -670,6 +673,7 @@ button {
 
 .integrationConfigRow,
 .labAdapterRow,
+.prismInventoryRow,
 .resourceProfileRow,
 .provisioningAdapterRow,
 .templateRegistryRow,
@@ -689,6 +693,32 @@ button {
 .policyBundleRow span,
 .policyBundleRow small {
   color: #60747c;
+}
+
+.inventoryEvidence {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.inventoryEvidence span,
+.inventoryEvidence small,
+.prismInventoryRow span,
+.prismInventoryRow small {
+  color: #60747c;
+}
+
+.prismInventoryRow {
+  justify-content: space-between;
+}
+
+.prismInventoryRow strong,
+.prismInventoryRow span,
+.prismInventoryRow small {
+  display: block;
 }
 
 .policyChipRow {

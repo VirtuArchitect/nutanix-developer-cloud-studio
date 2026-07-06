@@ -38,6 +38,7 @@ The React frontend now checks `/healthz` on load:
 - Provider readiness, platform configuration references, and image/profile inventory are API-backed for adapter planning.
 - Environment destroy requests queue simulated teardown lifecycle jobs; no real infrastructure is deleted.
 - Template registry, resource profile governance, and policy bundles are API-backed so platform teams can model publication controls before real provisioning is enabled.
+- Prism Central read-only inventory import is API-backed and remains mock-only until lab authorization enables live discovery.
 
 ## Endpoints
 
@@ -55,6 +56,7 @@ The React frontend now checks `/healthz` on load:
 - `GET /api/integrations`
 - `GET /api/integration-config`
 - `GET /api/lab-adapters`
+- `GET /api/prism/inventory`
 - `GET /api/resource-profiles`
 - `GET /api/policy-bundles`
 - `GET /api/registry/templates`
@@ -151,8 +153,10 @@ The readiness check updates the mock integration configuration to `Reachable`, `
 - `GET /api/system/status`
 - `GET /api/lab-adapters`
 - `POST /api/lab-adapters/:name/discover`
+- `GET /api/prism/inventory`
+- `POST /api/prism/inventory/import`
 
-The discovery endpoint simulates read-only inventory discovery for a configured adapter. For the current phase, NCI/Prism Central can become a `Read-only candidate` after its integration config is reachable. Provisioning remains disabled in the API response and UI.
+The discovery endpoint simulates read-only adapter readiness. The Prism inventory import endpoint imports mock read-only cluster, project, image, network, category, and VM records after NCI integration config is reachable. Imported image records are mapped into draft AHV image profile candidates for registry review. Provisioning remains disabled in the API response and UI.
 
 ### Control Plane Jobs
 
@@ -172,7 +176,7 @@ Control-plane jobs model queue and worker execution states. Worker actions updat
 - No secret storage yet.
 - GitHub Pages uses browser mock mode because no backend is deployed with the static site.
 - Approval decisions are mock governance records only; they do not authorize real infrastructure changes.
-- Lab adapter discovery is simulated and read-only; no real Prism Central calls are made yet.
+- Prism inventory import is simulated and read-only; no real Prism Central calls are made yet.
 - Control-plane worker actions are simulated; provisioning remains disabled.
 - Destroy lifecycle actions are simulated; teardown remains disabled.
 - Resource profiles and adapter readiness are planning records only.

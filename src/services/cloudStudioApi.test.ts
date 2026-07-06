@@ -7,12 +7,14 @@ import {
   fetchLabAdaptersFromApi,
   fetchPolicyBundlesFromApi,
   fetchPlatformConfigFromApi,
+  fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   requestEnvironmentDestroyViaApi,
+  importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
   runLabDiscoveryViaApi,
   runControlPlaneJobActionViaApi,
@@ -115,6 +117,21 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
       "/api/lab-adapters/NCI/discover",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and imports Prism read-only inventory", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: { records: [], recordsImported: 0 } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchPrismInventoryFromApi();
+    await importPrismInventoryViaApi();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/inventory", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/prism/inventory/import",
       expect.objectContaining({ method: "POST" })
     );
   });

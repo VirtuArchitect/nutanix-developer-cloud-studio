@@ -4,7 +4,7 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
-Current release: `v0.7.0-registry-governance`
+Current release: `v0.8.0-prism-readonly-inventory`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -22,7 +22,7 @@ This repository is an independent clickable MVP prototype. All Nutanix integrati
 - Environment status page with simulated provisioning
 - Mock integrations for NCI, NKP, NDB, NUS, NCM, and NAI
 - Admin view for platform teams
-- Hosted/on-prem starter API for prototype provisioning jobs, control-plane queue orchestration, lifecycle destroy simulation, approvals, environment details, role context, integration configuration, provider readiness, image/profile catalog, template registry governance, policy bundles, system status, and read-only lab adapter pilots
+- Hosted/on-prem starter API for prototype provisioning jobs, control-plane queue orchestration, lifecycle destroy simulation, approvals, environment details, role context, integration configuration, provider readiness, image/profile catalog, template registry governance, policy bundles, Prism read-only inventory import, system status, and read-only lab adapter pilots
 
 <img width="1720" height="1260" alt="image" src="https://github.com/user-attachments/assets/355abe1b-c5d0-40b5-814f-89d051332836" />
 

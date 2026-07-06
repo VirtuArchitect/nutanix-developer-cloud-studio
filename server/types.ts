@@ -8,6 +8,8 @@ import type {
   PlatformConfig,
   PlatformSession,
   PolicyBundle,
+  PrismInventoryImportResult,
+  PrismInventoryRecord,
   ProvisioningAdapterReadiness,
   RegistryStatus,
   ResourceProfile,
@@ -26,6 +28,8 @@ export type ApiState = {
   resourceProfiles: ResourceProfile[];
   policyBundles: PolicyBundle[];
   templateRegistry: TemplateRegistryEntry[];
+  prismInventory: PrismInventoryRecord[];
+  prismInventoryImport?: PrismInventoryImportResult;
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
   session: PlatformSession;

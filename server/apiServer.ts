@@ -14,8 +14,21 @@ import {
   requestEnvironmentDestroy,
   RequestValidationError,
 } from "./mockPlatform";
+import {
+  createDisabledRealPrismInventoryAdapter,
+  createMockPrismInventoryAdapter,
+  createPrismReadOnlyScope,
+} from "./prismInventoryAdapter";
 import type { ApiStore } from "./storage";
-import type { IntegrationConfig, LabAdapterSnapshot, RegistryStatus, SystemStatus } from "../src/data/cloudStudioDomain";
+import type {
+  IntegrationConfig,
+  LabAdapterSnapshot,
+  PrismInventoryImportResult,
+  PrismInventoryRecord,
+  RegistryStatus,
+  ResourceProfile,
+  SystemStatus,
+} from "../src/data/cloudStudioDomain";
 import type {
   ApiError,
   ApiResponse,
@@ -123,6 +136,16 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/lab-adapters") {
     sendJson(response, 200, { data: state.labAdapters });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/inventory") {
+    sendJson(response, 200, {
+      data: {
+        records: state.prismInventory,
+        lastImport: state.prismInventoryImport,
+      },
+    });
     return;
   }
 
@@ -450,6 +473,50 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "POST" && url.pathname === "/api/prism/inventory/import") {
+    const integrationConfig = state.integrationConfigs.find((item) => item.name === "NCI");
+    if (!integrationConfig || integrationConfig.status !== "Reachable") {
+      sendJson(response, 409, {
+        error: {
+          code: "prism_inventory_not_ready",
+          message: "Prism inventory import requires a reachable NCI integration configuration.",
+        },
+      });
+      return;
+    }
+
+    const scope = createPrismReadOnlyScope(integrationConfig, state.platformConfig);
+    const inventoryAdapter =
+      process.env.NDC_PRISM_REAL_ADAPTER === "enabled"
+        ? createDisabledRealPrismInventoryAdapter()
+        : createMockPrismInventoryAdapter();
+    const importResult = await inventoryAdapter.discover(scope);
+    state.prismInventory = importResult.records;
+    state.prismInventoryImport = stripInventoryRecords(importResult);
+    state.resourceProfiles = mergePrismImageProfileCandidates(state.resourceProfiles, importResult.records);
+    state.labAdapters = state.labAdapters.map((item) =>
+      item.name === "NCI"
+        ? {
+            ...item,
+            mode: importResult.mode === "Mock read-only" ? "Read-only candidate" : "Configured",
+            inventoryCount: importResult.recordsImported,
+            lastDiscoveryAt: importResult.importedAt,
+            message: importResult.evidence,
+            nextStep: "Review imported inventory candidates and approve registry mappings before dry-run planning.",
+          }
+        : item
+    );
+    addAuditEvent(state, "prism.inventory.imported", state.session.user, "NCI", {
+      recordsImported: importResult.recordsImported,
+      profileCandidates: importResult.profileCandidates,
+      readOnly: true,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: state.prismInventoryImport });
+    return;
+  }
+
   const controlPlaneJobMatch = url.pathname.match(/^\/api\/control-plane\/jobs\/([^/]+)\/(advance|retry|fail)$/);
   if (request.method === "POST" && controlPlaneJobMatch) {
     try {
@@ -573,6 +640,38 @@ function addAuditEvent(
     },
     ...state.auditEvents,
   ];
+}
+
+function stripInventoryRecords(
+  result: PrismInventoryImportResult & { records: PrismInventoryRecord[] }
+): PrismInventoryImportResult {
+  const { records: _records, ...summary } = result;
+  return summary;
+}
+
+function mergePrismImageProfileCandidates(
+  profiles: ResourceProfile[],
+  records: PrismInventoryRecord[]
+): ResourceProfile[] {
+  const existingIds = new Set(profiles.map((profile) => profile.id));
+  const importedProfiles = records
+    .filter((record) => record.kind === "Image" && record.profileCandidate)
+    .map((record) => {
+      const id = `prism-${record.id}`;
+      return {
+        id,
+        kind: "AHV Image",
+        name: record.name,
+        provider: "NCI",
+        version: "imported",
+        status: "Draft",
+        owner: "Cloud Infrastructure",
+        region: record.cluster ?? "Prism inventory",
+        notes: `Imported from read-only Prism inventory ${record.rawRef}. Approve before any dry-run planning uses it.`,
+      } satisfies ResourceProfile;
+    });
+
+  return [...profiles, ...importedProfiles.filter((profile) => !existingIds.has(profile.id))];
 }
 
 function sendJson<T>(response: ServerResponse, status: number, body: ApiResponse<T> | ApiError) {

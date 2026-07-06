@@ -131,7 +131,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Phase Automation Slice
 
-- `docs/upgrade-path.md` defines the gated phase sequence from `v0.5.0-control-plane` through `v1.1.0-private-cloud-developer-platform`.
+- `docs/upgrade-path.md` defines the gated phase sequence from `v0.5.0-control-plane` through `v1.3.0-private-cloud-developer-platform`.
 - `scripts/run-phase-gate.ps1` runs local phase promotion checks.
 - `.github/workflows/phase-gate.yml` provides a manual GitHub Actions phase gate.
 - Active penetration testing remains blocked unless authorization and scope are documented first.
@@ -162,6 +162,15 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Templates tab groups image/profile catalog, template registry, policy bundles, and editable template governance.
 - Audit events capture template and resource profile governance transitions.
 - Real provisioning remains disabled even when a template or profile is marked published.
+
+## Current Prism Read-Only Inventory Slice
+
+- Added a Prism inventory adapter contract with mock and disabled-real implementations.
+- API imports read-only Prism inventory only after NCI configuration is reachable.
+- Imported records cover cluster, project, image, network, category, and VM metadata.
+- Imported image records become draft AHV image profile candidates for registry review.
+- Admin Providers tab includes Prism inventory import evidence and blocked mutation operations.
+- Real Prism Central calls and all mutation operations remain disabled.
 
 ## Suggested Tech Stack
 

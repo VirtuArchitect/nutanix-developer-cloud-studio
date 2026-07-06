@@ -19,6 +19,7 @@ export type RegistryStatus = "Draft" | "Pending approval" | "Published" | "Depre
 export type ResourceProfileStatus = RegistryStatus;
 export type ProvisioningAdapterName = "NCI" | "NKP" | "NDB" | "NUS" | "NCM" | "NAI";
 export type ProvisioningAdapterCapability = "validateRequest" | "plan" | "provision" | "pollStatus" | "destroy";
+export type PrismInventoryKind = "Cluster" | "Project" | "Image" | "Network" | "Category" | "VM";
 
 export type Template = {
   id: string;
@@ -167,6 +168,44 @@ export type ProvisioningAdapterReadiness = {
   configured: boolean;
   provisioningEnabled: false;
   nextGate: string;
+};
+
+export type PrismReadOnlyScope = {
+  endpoint: string;
+  credentialProfile: string;
+  project: string;
+  cluster: string;
+  network: string;
+  authorizedScopeRef: string;
+  realAdapterEnabled: false;
+};
+
+export type PrismInventoryRecord = {
+  id: string;
+  kind: PrismInventoryKind;
+  name: string;
+  source: "Mock Prism Central" | "Prism Central";
+  cluster?: string;
+  project?: string;
+  network?: string;
+  powerState?: "On" | "Off" | "Unknown";
+  categories: string[];
+  importedAt: string;
+  rawRef: string;
+  profileCandidate?: boolean;
+};
+
+export type PrismInventoryImportResult = {
+  adapter: "NCI";
+  mode: "Mock read-only" | "Real adapter disabled";
+  readOnly: true;
+  provisioningEnabled: false;
+  importedAt: string;
+  recordsImported: number;
+  profileCandidates: number;
+  scope: PrismReadOnlyScope;
+  evidence: string;
+  mutationOperationsBlocked: string[];
 };
 
 export type ControlPlaneJobTransition = {

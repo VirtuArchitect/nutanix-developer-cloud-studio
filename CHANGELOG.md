@@ -2,14 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.7.0-registry-governance`.
+This project uses release tags for public milestones. The current release is `v0.8.0-prism-readonly-inventory`.
 
 ## [Unreleased]
 
 ### Planned
 
-- Add first real Prism Central read-only API call once lab authorization, scope, endpoint, and credential handling are approved.
+- Add production foundation controls: OIDC, RBAC, Postgres repository, migrations, audit retention, request logging, rate limits, and security headers.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v0.8.0-prism-readonly-inventory] - 2026-07-06
+
+### Added
+
+- Prism Central read-only inventory adapter contract with mock and disabled-real implementations.
+- API-backed Prism inventory import endpoint guarded by reachable NCI integration configuration.
+- Prism inventory records for clusters, projects, images, networks, categories, and VMs.
+- Import summary evidence showing read-only mode, blocked mutation operations, scope, and provisioning disabled.
+- Draft AHV image resource profile candidates generated from imported Prism image inventory.
+- Admin Providers panel for Prism read-only inventory import and imported record review.
+- Unit/API/client/E2E coverage for Prism inventory import and profile candidate mapping.
+
+### Notes
+
+- No live Prism Central API call is made in this release. The real adapter path remains disabled by code.
+- Imported inventory is read-only planning evidence and does not enable create, update, delete, power, clone, or resize operations.
 
 ## [v0.7.0-registry-governance] - 2026-07-02
 

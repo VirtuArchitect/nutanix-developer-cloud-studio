@@ -39,6 +39,8 @@ import {
   type PlatformSession,
   type PlatformConfig,
   type PolicyBundle,
+  type PrismInventoryImportResult,
+  type PrismInventoryRecord,
   type ProvisioningAdapterReadiness,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
@@ -74,12 +76,14 @@ import {
   fetchLabAdaptersFromApi,
   fetchPlatformConfigFromApi,
   fetchPolicyBundlesFromApi,
+  fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   requestEnvironmentDestroyViaApi,
+  importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
   runIntegrationCheckViaApi,
   runControlPlaneJobActionViaApi,
@@ -110,6 +114,8 @@ export function App() {
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
   );
   const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
+  const [prismInventory, setPrismInventory] = useState<PrismInventoryRecord[]>([]);
+  const [prismInventoryImport, setPrismInventoryImport] = useState<PrismInventoryImportResult | undefined>();
   const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
   const [policyBundles, setPolicyBundles] = useState<PolicyBundle[]>(defaultPolicyBundles);
   const [templateRegistry, setTemplateRegistry] = useState<TemplateRegistryEntry[]>(defaultTemplateRegistry);
@@ -168,6 +174,7 @@ export function App() {
             apiSession,
             apiSystemStatus,
             apiLabAdapters,
+            apiPrismInventory,
             apiControlPlaneJobs,
             apiResourceProfiles,
             apiPolicyBundles,
@@ -182,6 +189,7 @@ export function App() {
             fetchSessionFromApi(),
             fetchSystemStatusFromApi(),
             fetchLabAdaptersFromApi(),
+            fetchPrismInventoryFromApi(),
             fetchControlPlaneJobsFromApi(),
             fetchResourceProfilesFromApi(),
             fetchPolicyBundlesFromApi(),
@@ -197,6 +205,8 @@ export function App() {
             setSession(apiSession);
             setSystemStatus(apiSystemStatus);
             setLabAdapters(apiLabAdapters);
+            setPrismInventory(apiPrismInventory.records);
+            setPrismInventoryImport(apiPrismInventory.lastImport);
             setControlPlaneJobs(apiControlPlaneJobs);
             setResourceProfiles(apiResourceProfiles);
             setPolicyBundles(apiPolicyBundles);
@@ -333,6 +343,7 @@ export function App() {
       apiSession,
       apiSystemStatus,
       apiLabAdapters,
+      apiPrismInventory,
       apiControlPlaneJobs,
       apiResourceProfiles,
       apiPolicyBundles,
@@ -347,6 +358,7 @@ export function App() {
       fetchSessionFromApi(),
       fetchSystemStatusFromApi(),
       fetchLabAdaptersFromApi(),
+      fetchPrismInventoryFromApi(),
       fetchControlPlaneJobsFromApi(),
       fetchResourceProfilesFromApi(),
       fetchPolicyBundlesFromApi(),
@@ -361,6 +373,8 @@ export function App() {
     setSession(apiSession);
     setSystemStatus(apiSystemStatus);
     setLabAdapters(apiLabAdapters);
+    setPrismInventory(apiPrismInventory.records);
+    setPrismInventoryImport(apiPrismInventory.lastImport);
     setControlPlaneJobs(apiControlPlaneJobs);
     setResourceProfiles(apiResourceProfiles);
     setPolicyBundles(apiPolicyBundles);
@@ -487,6 +501,47 @@ export function App() {
       };
       return replaceLabAdapter(current, updated);
     });
+  }
+
+  async function importPrismInventory() {
+    if (apiHealth.mode === "api") {
+      await importPrismInventoryViaApi();
+      await refreshApiState();
+      return;
+    }
+
+    const importedAt = new Date().toISOString();
+    const records = createMockPrismInventoryRecords(platformConfig, importedAt);
+    setPrismInventory(records);
+    setPrismInventoryImport({
+      adapter: "NCI",
+      mode: "Mock read-only",
+      readOnly: true,
+      provisioningEnabled: false,
+      importedAt,
+      recordsImported: records.length,
+      profileCandidates: records.filter((record) => record.profileCandidate).length,
+      scope: {
+        endpoint: platformConfig.prismCentralUrl || "mock://prism-central",
+        credentialProfile: platformConfig.credentialReference,
+        project: platformConfig.defaultProject,
+        cluster: platformConfig.defaultCluster,
+        network: platformConfig.networkProfile,
+        authorizedScopeRef: "Browser mock mode / lab authorization pending",
+        realAdapterEnabled: false,
+      },
+      evidence: "Browser mock Prism inventory import completed. No live endpoint was called.",
+      mutationOperationsBlocked: ["create_vm", "clone_vm", "delete_vm", "power_on", "power_off", "update_network"],
+    });
+    setLabAdapters((current) =>
+      replaceLabAdapter(current, {
+        ...(current.find((item) => item.name === "NCI") ?? createEmptyLabAdapter("NCI")),
+        mode: "Read-only candidate",
+        inventoryCount: records.length,
+        lastDiscoveryAt: importedAt,
+        message: "Browser mock Prism inventory imported. Provisioning remains disabled.",
+      })
+    );
   }
 
   async function runControlPlaneJobAction(jobId: string, action: "advance" | "retry" | "fail") {
@@ -664,6 +719,8 @@ export function App() {
             session={session}
             systemStatus={systemStatus}
             labAdapters={labAdapters}
+            prismInventory={prismInventory}
+            prismInventoryImport={prismInventoryImport}
             resourceProfiles={resourceProfiles}
             policyBundles={policyBundles}
             templateRegistry={templateRegistry}
@@ -677,6 +734,7 @@ export function App() {
             saveIntegrationConfig={saveIntegrationConfig}
             runIntegrationCheck={runIntegrationCheck}
             runLabDiscovery={runLabDiscovery}
+            importPrismInventory={importPrismInventory}
             runControlPlaneJobAction={runControlPlaneJobAction}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -1154,6 +1212,8 @@ function AdminView({
   session,
   systemStatus,
   labAdapters,
+  prismInventory,
+  prismInventoryImport,
   resourceProfiles,
   policyBundles,
   templateRegistry,
@@ -1167,6 +1227,7 @@ function AdminView({
   saveIntegrationConfig,
   runIntegrationCheck,
   runLabDiscovery,
+  importPrismInventory,
   runControlPlaneJobAction,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -1179,6 +1240,8 @@ function AdminView({
   session: PlatformSession;
   systemStatus: SystemStatus;
   labAdapters: LabAdapterSnapshot[];
+  prismInventory: PrismInventoryRecord[];
+  prismInventoryImport?: PrismInventoryImportResult;
   resourceProfiles: ResourceProfile[];
   policyBundles: PolicyBundle[];
   templateRegistry: TemplateRegistryEntry[];
@@ -1195,6 +1258,7 @@ function AdminView({
   ) => void;
   runIntegrationCheck: (integrationName: string) => void;
   runLabDiscovery: (adapterName: string) => void;
+  importPrismInventory: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -1284,6 +1348,13 @@ function AdminView({
               adapters={labAdapters}
               systemStatus={systemStatus}
               runLabDiscovery={runLabDiscovery}
+            />
+          </Panel>
+          <Panel title="Prism read-only inventory" action={`${prismInventory.length} records`}>
+            <PrismInventoryPanel
+              records={prismInventory}
+              lastImport={prismInventoryImport}
+              importPrismInventory={importPrismInventory}
             />
           </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
@@ -1571,6 +1642,70 @@ function LabAdapterPanel({
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function PrismInventoryPanel({
+  records,
+  lastImport,
+  importPrismInventory,
+}: {
+  records: PrismInventoryRecord[];
+  lastImport?: PrismInventoryImportResult;
+  importPrismInventory: () => void;
+}) {
+  const imageCandidates = records.filter((record) => record.kind === "Image" && record.profileCandidate).length;
+
+  return (
+    <div className="prismInventoryPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Read-only Prism Central import</strong>
+          <span>
+            {lastImport
+              ? `${lastImport.mode} imported ${lastImport.recordsImported} records with ${imageCandidates} image candidates.`
+              : "Import requires reachable NCI config. Real adapter calls remain disabled."}
+          </span>
+        </div>
+      </div>
+      {lastImport && (
+        <div className="inventoryEvidence">
+          <strong>{lastImport.evidence}</strong>
+          <span>
+            {lastImport.scope.project} / {lastImport.scope.cluster} / {lastImport.scope.network}
+          </span>
+          <small>{lastImport.mutationOperationsBlocked.join(", ")} blocked</small>
+        </div>
+      )}
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={importPrismInventory}>
+          <RefreshCw size={15} />
+          Import inventory
+        </button>
+        {lastImport && <small>Last import {formatDateTime(lastImport.importedAt)}</small>}
+      </div>
+      {records.length === 0 ? (
+        <p className="emptyState">No Prism inventory has been imported yet.</p>
+      ) : (
+        <div className="prismInventoryList">
+          {records.map((record) => (
+            <div className="prismInventoryRow" key={record.id}>
+              <div>
+                <strong>{record.name}</strong>
+                <span>
+                  {record.kind} / {record.cluster ?? "No cluster"} / {record.project ?? "No project"}
+                </span>
+                <small>{record.rawRef}</small>
+              </div>
+              <span className={`status ${record.profileCandidate ? "approval" : "ready"}`}>
+                {record.profileCandidate ? "Profile candidate" : record.kind}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2147,6 +2282,87 @@ function deriveMockProvisioningAdapters(sourceIntegrations: Integration[]): Prov
         ? "Map Prism Central image, project, subnet, category, and credential references."
         : integration.nextStep,
   }));
+}
+
+function createMockPrismInventoryRecords(
+  config: PlatformConfig,
+  importedAt: string
+): PrismInventoryRecord[] {
+  const cluster = config.defaultCluster;
+  const project = config.defaultProject;
+  const network = config.networkProfile;
+  return [
+    {
+      id: "pc-cluster-berlin-01",
+      kind: "Cluster",
+      name: cluster,
+      source: "Mock Prism Central",
+      cluster,
+      categories: ["Environment:Lab", "Platform:NCI"],
+      importedAt,
+      rawRef: "mock://prism/clusters/berlin-01",
+    },
+    {
+      id: "pc-project-devcloud",
+      kind: "Project",
+      name: project,
+      source: "Mock Prism Central",
+      cluster,
+      project,
+      categories: ["Owner:DeveloperCloud", "CostCenter:Sandbox"],
+      importedAt,
+      rawRef: "mock://prism/projects/developer-cloud-lab",
+    },
+    {
+      id: "pc-image-rocky-9-hardened",
+      kind: "Image",
+      name: "Rocky Linux 9 Hardened",
+      source: "Mock Prism Central",
+      cluster,
+      project,
+      categories: ["OS:Linux", "Baseline:Hardened"],
+      importedAt,
+      rawRef: "mock://prism/images/rocky-9-hardened",
+      profileCandidate: true,
+    },
+    {
+      id: "pc-image-ubuntu-2404-lts",
+      kind: "Image",
+      name: "Ubuntu 24.04 LTS Developer",
+      source: "Mock Prism Central",
+      cluster,
+      project,
+      categories: ["OS:Linux", "Baseline:Developer"],
+      importedAt,
+      rawRef: "mock://prism/images/ubuntu-2404-lts",
+      profileCandidate: true,
+    },
+    {
+      id: "pc-network-dev-segment",
+      kind: "Network",
+      name: network,
+      source: "Mock Prism Central",
+      cluster,
+      project,
+      network,
+      categories: ["Network:Developer", "Exposure:Internal"],
+      importedAt,
+      rawRef: "mock://prism/networks/dev-segment",
+    },
+    {
+      id: "pc-vm-billing-sandbox",
+      kind: "VM",
+      name: "billing-sandbox",
+      source: "Mock Prism Central",
+      cluster,
+      project,
+      network,
+      powerState: "Unknown",
+      categories: ["Owner:jordan.lee", "Template:VMSandbox"],
+      importedAt,
+      rawRef: "mock://prism/vms/billing-sandbox",
+    },
+  ];
 }
 
 function nextRegistryStatus(action: "submit" | "approve" | "deprecate" | "restore"): RegistryStatus {

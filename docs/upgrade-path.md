@@ -35,14 +35,14 @@ flowchart LR
 Run locally:
 
 ```powershell
-.\scripts\run-phase-gate.ps1 -TargetPhase v0.7.0-registry-governance
+.\scripts\run-phase-gate.ps1 -TargetPhase v0.8.0-prism-readonly-inventory
 ```
 
 With an explicitly authorized security scope:
 
 ```powershell
 .\scripts\run-phase-gate.ps1 `
-  -TargetPhase v0.7.0-registry-governance `
+  -TargetPhase v0.8.0-prism-readonly-inventory `
   -PentestScopePath .\PENTEST_SCOPE_TEMPLATE.md `
   -IncludeAuthorizedPentest
 ```
@@ -131,16 +131,37 @@ Exit gate:
 - Authorized scope file exists before any live endpoint testing.
 - Smoke test proves imported inventory appears in registry/admin views.
 
-### v0.9.0-vm-sandbox-provisioning
+### v0.9.0-production-foundation
 
-Goal: first tightly controlled real provisioning path.
+Goal: turn the starter into a production-shaped control plane before enabling real provisioning.
 
 Build:
 
-- Linux VM App Sandbox provisioning adapter.
+- OIDC session validation.
+- Role-based access control for admin, approval, registry, integration, and provisioning actions.
+- Postgres repository implementation and migrations.
+- Audit retention model and export boundary.
+- Request logging, correlation IDs, rate limits, and security headers.
+- CI gates for dependency review, CodeQL, SBOM, and container image scanning.
+
+Exit gate:
+
+- Auth and authorization tests cover permitted and denied access.
+- Migration and repository tests pass against a disposable database.
+- Security review confirms request logging redacts sensitive values.
+- Production deployment remains provisioning-disabled by default.
+
+### v1.0.0-vm-sandbox-dry-run
+
+Goal: design the first VM sandbox path as dry-run only.
+
+Build:
+
+- Linux VM App Sandbox dry-run planning adapter.
 - Fixed image/profile/subnet choices from approved registry.
 - Owner, cost, expiry, and environment tags.
-- Destroy/expiry workflow design, initially disabled until separately approved.
+- Quota, category, image, subnet, project, and expiry validation.
+- Approval evidence and rollback/destroy plan preview.
 
 Exit gate:
 
@@ -149,7 +170,26 @@ Exit gate:
 - Dry-run mode passes.
 - Manual approval gate is required before real provisioning is enabled.
 
-### v1.0.0-kubernetes-and-data-services
+### v1.1.0-controlled-provisioning
+
+Goal: enable one narrowly scoped VM provisioning path after dry-run and authorization gates pass.
+
+Build:
+
+- One approved AHV VM sandbox create path.
+- Manual approval required for every real create request.
+- Rollback and destroy workflow with operator confirmation.
+- Runtime kill switch that disables all mutation calls.
+- Audit evidence for request, approval, create, rollback, and destroy operations.
+
+Exit gate:
+
+- Authorized lab scope and test window are documented.
+- Pentest gate is complete for the scoped lab target.
+- Real provisioning is limited to approved image, project, subnet, category, and quota.
+- Cleanup/destroy is tested before broader use.
+
+### v1.2.0-platform-services
 
 Goal: add platform services after VM sandbox proves the control plane.
 
@@ -167,7 +207,7 @@ Exit gate:
 - Stateful services require approval.
 - Smoke tests cover failure and approval paths.
 
-### v1.1.0-private-cloud-developer-platform
+### v1.3.0-private-cloud-developer-platform
 
 Goal: release as an operational internal developer platform candidate.
 

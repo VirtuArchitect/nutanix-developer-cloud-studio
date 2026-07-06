@@ -31,6 +31,7 @@ flowchart LR
     Api --> Identity["Mock OIDC Session"]
     Api --> Config["Integration Config"]
     Api --> LabAdapters["Read-only Lab Adapter Pilot"]
+    Api --> PrismInventory["Prism Read-only Inventory"]
     Api --> Inventory["Image And Profile Catalog"]
     Api --> Registry["Template Registry Governance"]
     Api --> Bundles["Policy Bundles"]
@@ -61,6 +62,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Session: mocked identity and role context for OIDC-ready UX
 - Integration config: endpoint/profile placeholders and readiness status for lab planning
 - Lab adapters: read-only discovery candidates with provisioning explicitly disabled
+- Prism inventory: read-only cluster, project, image, network, category, and VM metadata imported for registry planning
 
 ## Integration Boundary
 
@@ -92,6 +94,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - API-backed control-plane queue and mock orchestrator worker actions
 - API-backed resource profile catalog, platform config references, and provisioning adapter readiness
 - API-backed template registry governance, policy bundles, and resource profile publication actions
+- API-backed Prism read-only inventory import with mock and disabled-real adapter implementations
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
@@ -103,7 +106,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The public GitHub Pages UI state remains local to the React app.
 - The on-prem starter API exposes templates, environments, integrations, approvals, provisioning jobs, and audit events over HTTP.
 - The API also exposes mock session, role, integration configuration, and readiness-check endpoints.
-- The lab adapter pilot simulates read-only Prism Central/NCI discovery only; provisioning remains disabled by contract.
+- The lab adapter pilot and Prism inventory import simulate read-only Prism Central/NCI discovery only; provisioning remains disabled by contract.
+- Prism imported image records become draft AHV image profile candidates until approved through registry governance.
 - The control plane models job orchestration but does not mutate infrastructure.
 - The destroy lifecycle is simulated and does not delete infrastructure.
 - Provider configuration stores references only and does not store secrets.
@@ -119,7 +123,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 ## Real Integration Readiness Questions
 
 - Prism Central / NCI: project IDs, image IDs, network targets, quota model, and credential profile.
-- First lab adapter pilot: read-only Prism Central inventory discovery after authorization and scope approval.
+- First lab adapter pilot: read-only Prism Central inventory discovery after authorization and scope approval; current implementation keeps live calls disabled.
 - NKP: whether namespace creation is owned through NKP APIs or standard Kubernetes APIs.
 - NDB: database profile IDs, backup policy defaults, restore test expectations, and approval rules.
 - NUS: file/object service targets, quota rules, and storage class mapping.

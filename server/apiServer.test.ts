@@ -89,6 +89,61 @@ describe("api server", () => {
     });
   });
 
+  it("imports Prism read-only inventory and maps image profile candidates", async () => {
+    await expectJson(
+      "/api/prism/inventory/import",
+      409,
+      {
+        error: {
+          code: "prism_inventory_not_ready",
+          message: "Prism inventory import requires a reachable NCI integration configuration.",
+        },
+      },
+      { method: "POST" }
+    );
+
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+
+    const imported = await requestJson("/api/prism/inventory/import", { method: "POST" });
+    const inventory = await requestJson("/api/prism/inventory");
+    const profiles = await requestJson("/api/resource-profiles");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(imported.data).toMatchObject({
+      adapter: "NCI",
+      mode: "Mock read-only",
+      readOnly: true,
+      provisioningEnabled: false,
+      recordsImported: 8,
+      profileCandidates: 2,
+    });
+    expect(imported.data.mutationOperationsBlocked).toEqual(expect.arrayContaining(["create_vm", "delete_vm"]));
+    expect(inventory.data.records).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "Image", name: "Rocky Linux 9 Hardened", profileCandidate: true }),
+      ])
+    );
+    expect(profiles.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "prism-pc-image-ubuntu-2404-lts",
+          kind: "AHV Image",
+          status: "Draft",
+        }),
+      ])
+    );
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "prism.inventory.imported", target: "NCI" })])
+    );
+  });
+
   it("lists provider inventory, platform config, and provisioning adapters", async () => {
     const profiles = await requestJson("/api/resource-profiles");
     const config = await requestJson("/api/platform/config");

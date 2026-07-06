@@ -8,6 +8,8 @@ import type {
   PlatformConfig,
   PlatformSession,
   PolicyBundle,
+  PrismInventoryImportResult,
+  PrismInventoryRecord,
   ProvisioningAdapterReadiness,
   ResourceProfile,
   TemplateRegistryEntry,
@@ -54,6 +56,11 @@ export type EnvironmentDetail = {
     target: string;
     createdAt: string;
   }>;
+};
+
+export type PrismInventoryEnvelope = {
+  records: PrismInventoryRecord[];
+  lastImport?: PrismInventoryImportResult;
 };
 
 type ApiEnvelope<T> = {
@@ -127,6 +134,16 @@ export async function runIntegrationCheckViaApi(integrationName: string) {
 
 export async function fetchLabAdaptersFromApi() {
   return fetchJson<LabAdapterSnapshot[]>("/api/lab-adapters");
+}
+
+export async function fetchPrismInventoryFromApi() {
+  return fetchJson<PrismInventoryEnvelope>("/api/prism/inventory");
+}
+
+export async function importPrismInventoryViaApi() {
+  return fetchJson<PrismInventoryImportResult>("/api/prism/inventory/import", {
+    method: "POST",
+  });
 }
 
 export async function fetchResourceProfilesFromApi() {
