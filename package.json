@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "1.8.0-on-prem-packaging-hardening",
+  "version": "1.9.0-oidc-rbac-hardening",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

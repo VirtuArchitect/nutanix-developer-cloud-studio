@@ -170,6 +170,14 @@
 - Expand Compose guardrails for repository, audit retention, rate limits, and disabled real adapters - done
 - Expand on-prem deployment runbook and security checklist - done
 
+## Phase 21 - OIDC RBAC Hardening (`v1.9.0-oidc-rbac-hardening`)
+
+- Add optional strict trusted-header mode - done
+- Fail API routes closed when required identity headers are missing - done
+- Keep health/readiness probes public for orchestrators - done
+- Add session diagnostics API and Admin UI role/action matrix - done
+- Add tests for strict identity and diagnostics behavior - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

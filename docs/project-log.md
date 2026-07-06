@@ -153,6 +153,10 @@
 - Added JSON state backup, restore, and backup/restore smoke scripts.
 - Added on-prem validation and backup/restore smoke to the phase gate.
 - Expanded Compose guardrails and on-prem deployment documentation.
+- Started `v1.9.0-oidc-rbac-hardening`.
+- Added optional strict trusted-header mode for API routes.
+- Added session diagnostics API and Admin Overview identity boundary panel.
+- Added role/action matrix visibility and tests for fail-closed identity behavior.
 
 ## Documentation Rule
 

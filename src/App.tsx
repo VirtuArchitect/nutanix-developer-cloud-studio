@@ -57,6 +57,7 @@ import {
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
+  type SessionDiagnostics,
   type SystemStatus,
   type TemplateRegistryEntry,
   type Target,
@@ -114,6 +115,7 @@ import {
   fetchProductionReadinessReviewsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
+  fetchSessionDiagnosticsFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   fetchVmSandboxDryRunsFromApi,
@@ -146,6 +148,9 @@ export function App() {
     deriveMockIntegrationConfigs(integrations)
   );
   const [session, setSession] = useState<PlatformSession>(mockSession);
+  const [sessionDiagnostics, setSessionDiagnostics] = useState<SessionDiagnostics>(() =>
+    createMockSessionDiagnostics(mockSession)
+  );
   const [systemStatus, setSystemStatus] = useState<SystemStatus>(() =>
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
   );
@@ -218,6 +223,7 @@ export function App() {
             apiApprovals,
             apiIntegrationConfigs,
             apiSession,
+            apiSessionDiagnostics,
             apiSystemStatus,
             apiLabAdapters,
             apiLabAuthorizationScopes,
@@ -243,6 +249,7 @@ export function App() {
             fetchApprovalsFromApi(),
             fetchIntegrationConfigsFromApi(),
             fetchSessionFromApi(),
+            fetchSessionDiagnosticsFromApi(),
             fetchSystemStatusFromApi(),
             fetchLabAdaptersFromApi(),
             fetchLabAuthorizationScopesFromApi(),
@@ -269,6 +276,7 @@ export function App() {
             setApprovals(apiApprovals);
             setIntegrationConfigs(apiIntegrationConfigs);
             setSession(apiSession);
+            setSessionDiagnostics(apiSessionDiagnostics);
             setSystemStatus(apiSystemStatus);
             setLabAdapters(apiLabAdapters);
             setLabAuthorizationScopes(apiLabAuthorizationScopes);
@@ -417,6 +425,7 @@ export function App() {
       apiApprovals,
       apiIntegrationConfigs,
       apiSession,
+      apiSessionDiagnostics,
       apiSystemStatus,
       apiLabAdapters,
       apiLabAuthorizationScopes,
@@ -442,6 +451,7 @@ export function App() {
       fetchApprovalsFromApi(),
       fetchIntegrationConfigsFromApi(),
       fetchSessionFromApi(),
+      fetchSessionDiagnosticsFromApi(),
       fetchSystemStatusFromApi(),
       fetchLabAdaptersFromApi(),
       fetchLabAuthorizationScopesFromApi(),
@@ -467,6 +477,7 @@ export function App() {
     setApprovals(apiApprovals);
     setIntegrationConfigs(apiIntegrationConfigs);
     setSession(apiSession);
+    setSessionDiagnostics(apiSessionDiagnostics);
     setSystemStatus(apiSystemStatus);
     setLabAdapters(apiLabAdapters);
     setLabAuthorizationScopes(apiLabAuthorizationScopes);
@@ -1009,6 +1020,7 @@ export function App() {
             integrations={runtimeIntegrations}
             integrationConfigs={integrationConfigs}
             session={session}
+            sessionDiagnostics={sessionDiagnostics}
             systemStatus={systemStatus}
             controlPlaneJobs={controlPlaneJobs}
             apiHealth={apiHealth}
@@ -1060,6 +1072,7 @@ export function App() {
             integrations={runtimeIntegrations}
             integrationConfigs={integrationConfigs}
             session={session}
+            sessionDiagnostics={sessionDiagnostics}
             systemStatus={systemStatus}
             labAdapters={labAdapters}
             labAuthorizationScopes={labAuthorizationScopes}
@@ -1117,6 +1130,7 @@ function Dashboard({
   integrations,
   integrationConfigs,
   session,
+  sessionDiagnostics,
   systemStatus,
   controlPlaneJobs,
   apiHealth,
@@ -1129,6 +1143,7 @@ function Dashboard({
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
   session: PlatformSession;
+  sessionDiagnostics: SessionDiagnostics;
   systemStatus: SystemStatus;
   controlPlaneJobs: ControlPlaneJob[];
   apiHealth: ApiHealth;
@@ -1574,6 +1589,7 @@ function AdminView({
   integrations,
   integrationConfigs,
   session,
+  sessionDiagnostics,
   systemStatus,
   labAdapters,
   labAuthorizationScopes,
@@ -1623,6 +1639,7 @@ function AdminView({
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
   session: PlatformSession;
+  sessionDiagnostics: SessionDiagnostics;
   systemStatus: SystemStatus;
   labAdapters: LabAdapterSnapshot[];
   labAuthorizationScopes: LabAuthorizationScope[];
@@ -1712,8 +1729,9 @@ function AdminView({
             <div className="controlGrid">
               <CheckLine icon={UserRound} label="Current identity" value={`${session.displayName} (${session.user})`} passed />
               <CheckLine icon={ShieldCheck} label="Roles" value={session.roles.join(", ")} passed />
-              <CheckLine icon={LockKeyhole} label="Authorization" value="Mock role boundaries, ready for OIDC mapping" passed={false} />
+              <CheckLine icon={LockKeyhole} label="Trusted headers" value={`${sessionDiagnostics.trustedHeaderMode} mode`} passed={sessionDiagnostics.missingRequiredHeaders.length === 0} />
             </div>
+            <SessionDiagnosticsPanel diagnostics={sessionDiagnostics} />
           </Panel>
           <Panel title="Integration readiness" action="API connected">
             <div className="integrationList">
@@ -2162,6 +2180,29 @@ function VmSandboxDryRunPanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function SessionDiagnosticsPanel({ diagnostics }: { diagnostics: SessionDiagnostics }) {
+  return (
+    <div className="readinessList">
+      <div className="readinessRow">
+        <strong>Identity boundary</strong>
+        <span>{diagnostics.identityProvider}</span>
+        <small>
+          {diagnostics.missingRequiredHeaders.length === 0
+            ? "Required identity headers are present or optional for this deployment."
+            : `Missing required headers: ${diagnostics.missingRequiredHeaders.join(", ")}`}
+        </small>
+      </div>
+      {diagnostics.authorizationMatrix.map((entry) => (
+        <div className="readinessRow" key={entry.action}>
+          <strong>{entry.action}</strong>
+          <span>{entry.roles.join(", ")}</span>
+          <small>{entry.boundary}</small>
+        </div>
+      ))}
     </div>
   );
 }
@@ -3275,6 +3316,34 @@ const mockSession: PlatformSession = {
   authMode: "Mock OIDC",
   identityProvider: "Browser mock identity stub",
 };
+
+function createMockSessionDiagnostics(session: PlatformSession): SessionDiagnostics {
+  return {
+    authMode: session.authMode,
+    identityProvider: session.identityProvider,
+    user: session.user,
+    roles: session.roles,
+    trustedHeaderMode: "Optional",
+    missingRequiredHeaders: [],
+    authorizationMatrix: [
+      {
+        action: "Create developer environment",
+        roles: ["Developer", "Platform Admin"],
+        boundary: "Creates a simulated request and queues control-plane evidence.",
+      },
+      {
+        action: "Approve requests and controlled gates",
+        roles: ["Approver", "Platform Admin"],
+        boundary: "Records approval evidence; does not enable real infrastructure mutation.",
+      },
+      {
+        action: "Manage providers, registry, preflight, lifecycle, and audit export",
+        roles: ["Platform Admin"],
+        boundary: "Administrative control-plane records only; real adapters remain disabled.",
+      },
+    ],
+  };
+}
 
 function createEmptyIntegrationConfig(name: string): IntegrationConfig {
   return {

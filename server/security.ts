@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { PlatformRole, PlatformSession } from "../src/data/cloudStudioDomain";
+import type { AuthorizationMatrixEntry, PlatformRole, PlatformSession, SessionDiagnostics } from "../src/data/cloudStudioDomain";
 
 export type RequestContext = {
   requestId: string;
@@ -8,8 +8,35 @@ export type RequestContext = {
 };
 
 const defaultRoles: PlatformRole[] = ["Developer", "Approver", "Platform Admin"];
+const trustedIdentityHeaders = ["x-ndc-user", "x-ndc-roles", "x-ndc-issuer"];
+
+export const authorizationMatrix: AuthorizationMatrixEntry[] = [
+  {
+    action: "Create developer environment",
+    roles: ["Developer", "Platform Admin"],
+    boundary: "Creates a simulated request and queues control-plane evidence.",
+  },
+  {
+    action: "Approve requests and controlled gates",
+    roles: ["Approver", "Platform Admin"],
+    boundary: "Records approval evidence; does not enable real infrastructure mutation.",
+  },
+  {
+    action: "Manage providers, registry, preflight, lifecycle, and audit export",
+    roles: ["Platform Admin"],
+    boundary: "Administrative control-plane records only; real adapters remain disabled.",
+  },
+];
 
 export function createRequestContext(request: IncomingMessage): RequestContext {
+  const missingRequiredHeaders = missingTrustedHeaders(request);
+  if (trustedHeaderModeRequired() && !isPublicHealthPath(request) && missingRequiredHeaders.length > 0) {
+    throw new AuthorizationError(
+      "unauthenticated",
+      `Trusted identity headers are required: ${missingRequiredHeaders.join(", ")}.`
+    );
+  }
+
   const requestId = headerValue(request, "x-request-id") || `req-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const user = headerValue(request, "x-ndc-user") || "platform.admin";
   const displayName = headerValue(request, "x-ndc-display-name") || titleizeUser(user);
@@ -29,6 +56,18 @@ export function createRequestContext(request: IncomingMessage): RequestContext {
   };
 }
 
+export function createSessionDiagnostics(context: RequestContext, request: IncomingMessage): SessionDiagnostics {
+  return {
+    authMode: context.session.authMode,
+    identityProvider: context.session.identityProvider,
+    user: context.session.user,
+    roles: context.session.roles,
+    trustedHeaderMode: trustedHeaderModeRequired() ? "Required" : "Optional",
+    missingRequiredHeaders: missingTrustedHeaders(request),
+    authorizationMatrix,
+  };
+}
+
 export function requireRole(context: RequestContext, allowedRoles: PlatformRole[]) {
   if (!allowedRoles.some((role) => context.session.roles.includes(role))) {
     throw new AuthorizationError("forbidden", "The current session does not have permission for this action.");
@@ -37,7 +76,7 @@ export function requireRole(context: RequestContext, allowedRoles: PlatformRole[
 
 export class AuthorizationError extends Error {
   constructor(
-    readonly code: "forbidden",
+    readonly code: "forbidden" | "unauthenticated",
     message: string
   ) {
     super(message);
@@ -107,6 +146,19 @@ export function logRequest(request: IncomingMessage, response: ServerResponse, c
 function headerValue(request: IncomingMessage, name: string) {
   const value = request.headers[name];
   return Array.isArray(value) ? value[0] : value;
+}
+
+function trustedHeaderModeRequired() {
+  return process.env.NDC_REQUIRE_TRUSTED_IDENTITY === "true";
+}
+
+function isPublicHealthPath(request: IncomingMessage) {
+  const pathname = (request.url ?? "/").split("?")[0];
+  return pathname === "/healthz" || pathname === "/readyz";
+}
+
+function missingTrustedHeaders(request: IncomingMessage) {
+  return trustedIdentityHeaders.filter((name) => !headerValue(request, name));
 }
 
 function parseRoles(value: string | undefined): PlatformRole[] {

@@ -33,6 +33,8 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Admin", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Platform admin" })).toBeVisible();
   await expect(page.getByText("Access model")).toBeVisible();
+  await expect(page.getByText("Identity boundary")).toBeVisible();
+  await expect(page.getByText("Manage providers, registry, preflight, lifecycle, and audit export")).toBeVisible();
   await expect(page.getByRole("tab", { name: "Providers Config and adapters" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Control plane Jobs and approvals" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Operations Lifecycle and audit" })).toBeVisible();

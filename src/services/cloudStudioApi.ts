@@ -22,6 +22,7 @@ import type {
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
   ResourceProfile,
+  SessionDiagnostics,
   TemplateRegistryEntry,
   SystemStatus,
   Target,
@@ -115,6 +116,10 @@ export async function fetchEnvironmentsFromApi() {
 
 export async function fetchSessionFromApi() {
   return fetchJson<PlatformSession>("/api/session");
+}
+
+export async function fetchSessionDiagnosticsFromApi() {
+  return fetchJson<SessionDiagnostics>("/api/session/diagnostics");
 }
 
 export async function fetchSystemStatusFromApi() {

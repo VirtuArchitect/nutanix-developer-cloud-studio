@@ -334,6 +334,25 @@ Exit gate:
 - Security review confirms identity headers are documented as trusted-ingress only.
 - Real provisioning remains disabled.
 
+### v2.0.0-postgres-repository-hardening
+
+Goal: replace scaffold-only persistence with a tested production repository boundary.
+
+Build:
+
+- Repository contract tests shared by memory, JSON, and Postgres implementations.
+- Migration apply/check script for the existing SQL schema.
+- Postgres connection configuration validation without logging sensitive values.
+- Backup/restore runbook for database mode.
+- Fail-closed startup behavior when `NDC_REPOSITORY=postgres` is selected without required configuration.
+
+Exit gate:
+
+- Repository contract tests pass for non-Postgres stores and Postgres validation paths.
+- Migration check runs in CI/local phase gate without requiring production credentials.
+- Security review confirms database connection values are not logged.
+- Real provisioning remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

@@ -4,6 +4,7 @@ param(
   [int]$RateLimitPerMinute = 120,
   [string]$Repository = "json",
   [string]$PrismRealAdapter = "disabled",
+  [string]$RequireTrustedIdentity = "false",
   [switch]$AllowPostgresScaffold
 )
 
@@ -56,9 +57,14 @@ if ($PrismRealAdapter -ne "disabled") {
   throw "NDC_PRISM_REAL_ADAPTER must remain disabled until an authorized adapter release."
 }
 
+if ($RequireTrustedIdentity -notin @("true", "false")) {
+  throw "NDC_REQUIRE_TRUSTED_IDENTITY must be true or false."
+}
+
 Write-Output "On-prem configuration validation passed."
 Write-Output "Repository: $Repository"
 Write-Output "Data file: $DataFile"
 Write-Output "Audit retention events: $AuditRetentionEvents"
 Write-Output "Rate limit per minute: $RateLimitPerMinute"
 Write-Output "Prism real adapter: $PrismRealAdapter"
+Write-Output "Require trusted identity: $RequireTrustedIdentity"

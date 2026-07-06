@@ -49,10 +49,13 @@ The React frontend now checks `/healthz` on load:
 - `GET /healthz`: process health
 - `GET /readyz`: storage readiness
 
+Health and readiness endpoints remain public when strict trusted identity mode is enabled so load balancers and orchestrators can probe the service.
+
 ### Catalog And Runtime Data
 
 - `GET /api/templates`
 - `GET /api/session`
+- `GET /api/session/diagnostics`
 - `GET /api/system/status`
 - `GET /api/environments`
 - `GET /api/integrations`
@@ -70,6 +73,10 @@ The React frontend now checks `/healthz` on load:
 - `GET /api/approvals`
 - `GET /api/audit-events`
 - `GET /api/environments/:name`
+
+`GET /api/session/diagnostics` returns trusted-header mode, missing required identity headers, and the role/action matrix surfaced in the Admin Overview.
+
+When `NDC_REQUIRE_TRUSTED_IDENTITY=true`, API routes fail closed with `401 unauthenticated` unless `x-ndc-user`, `x-ndc-roles`, and `x-ndc-issuer` are present. Health endpoints remain public.
 
 ### Environment Requests
 

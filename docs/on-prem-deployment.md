@@ -52,6 +52,7 @@ The container uses these environment variables:
 - `NDC_AUDIT_RETENTION_EVENTS=500`
 - `NDC_RATE_LIMIT_PER_MINUTE=120`
 - `NDC_PRISM_REAL_ADAPTER=disabled`
+- `NDC_REQUIRE_TRUSTED_IDENTITY=false`
 
 `NDC_DATA_FILE` stores mock API state in the `ndc-studio-data` Docker volume.
 
@@ -72,6 +73,7 @@ Use `.env.example` as the local template for OIDC and Nutanix lab placeholders. 
 | Audit | `NDC_AUDIT_RETENTION_EVENTS=500` | Retention aligned to policy and export destination |
 | Rate limit | `NDC_RATE_LIMIT_PER_MINUTE=120` | Tuned per ingress and expected operator traffic |
 | Prism adapter | `NDC_PRISM_REAL_ADAPTER=disabled` | Enabled only in a future authorized adapter release |
+| Trusted identity | `NDC_REQUIRE_TRUSTED_IDENTITY=false` | Set to `true` only behind an OIDC-validating ingress that forwards required identity headers |
 
 ## Prototype State Backup
 
@@ -106,6 +108,7 @@ For a future real deployment:
 
 - Terminate TLS before exposing the API to users.
 - Validate OIDC tokens at the API or ingress before trusting identity headers.
+- Use `NDC_REQUIRE_TRUSTED_IDENTITY=true` after the ingress reliably forwards `x-ndc-user`, `x-ndc-roles`, and `x-ndc-issuer`.
 - Keep credential references separate from credential values.
 - Keep `NDC_PRISM_REAL_ADAPTER=disabled` until an authorized adapter release.
 - Review logs for sensitive values before production rollout.

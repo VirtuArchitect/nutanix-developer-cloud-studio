@@ -47,6 +47,7 @@ import {
 import {
   AuthorizationError,
   createRequestContext,
+  createSessionDiagnostics,
   logRequest,
   MemoryRateLimiter,
   RateLimitError,
@@ -91,14 +92,15 @@ export type ApiServerOptions = {
 
 export function createApiServer({ store, staticDir, rateLimiter = new MemoryRateLimiter() }: ApiServerOptions) {
   return createServer(async (request, response) => {
-    const context = createRequestContext(request);
-    response.setHeader("X-Request-Id", context.requestId);
+    let context: RequestContext | undefined;
     try {
+      context = createRequestContext(request);
+      response.setHeader("X-Request-Id", context.requestId);
       rateLimiter.check(request, context);
       await routeRequest(request, response, store, staticDir, context);
     } catch (error) {
       if (error instanceof AuthorizationError) {
-        sendJson(response, 403, {
+        sendJson(response, error.code === "unauthenticated" ? 401 : 403, {
           error: {
             code: error.code,
             message: error.message,
@@ -136,7 +138,9 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
         },
       });
     } finally {
-      logRequest(request, response, context);
+      if (context) {
+        logRequest(request, response, context);
+      }
     }
   });
 }
@@ -196,6 +200,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/session") {
     sendJson(response, 200, { data: context.session });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/session/diagnostics") {
+    sendJson(response, 200, { data: createSessionDiagnostics(context, request) });
     return;
   }
 

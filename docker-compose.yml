@@ -18,6 +18,7 @@ services:
       OIDC_ISSUER_URL: ""
       OIDC_CLIENT_ID: ""
       NDC_DEFAULT_ROLE: "Platform Admin"
+      NDC_REQUIRE_TRUSTED_IDENTITY: "false"
       NUTANIX_CREDENTIAL_PROFILE: "lab-readonly"
     volumes:
       - ndc-studio-data:/data

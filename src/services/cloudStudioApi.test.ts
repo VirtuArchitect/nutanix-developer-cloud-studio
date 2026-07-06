@@ -30,6 +30,7 @@ import {
   fetchProductionReadinessReviewsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
+  fetchSessionDiagnosticsFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   fetchVmSandboxDryRunsFromApi,
@@ -98,6 +99,25 @@ describe("cloudStudioApi", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(okResponse({ data: { user: "platform.admin" } })));
 
     await expect(fetchSessionFromApi()).resolves.toEqual({ user: "platform.admin" });
+  });
+
+  it("fetches session diagnostics", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        okResponse({
+          data: {
+            trustedHeaderMode: "Required",
+            authorizationMatrix: [{ action: "Manage providers", roles: ["Platform Admin"] }],
+          },
+        })
+      )
+    );
+
+    await expect(fetchSessionDiagnosticsFromApi()).resolves.toMatchObject({
+      trustedHeaderMode: "Required",
+      authorizationMatrix: expect.arrayContaining([expect.objectContaining({ action: "Manage providers" })]),
+    });
   });
 
   it("saves and checks integration configuration", async () => {

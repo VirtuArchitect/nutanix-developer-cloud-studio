@@ -108,6 +108,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - API-backed template registry governance, policy bundles, and resource profile publication actions
 - API-backed Prism read-only inventory import with mock and disabled-real adapter implementations
 - OIDC-shaped request context, RBAC guardrails, request IDs, structured logs, rate limits, and security headers
+- Optional strict trusted-header mode and session diagnostics
 - Postgres repository scaffold and SQL migration files for production persistence planning
 - AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
 - Controlled provisioning gate review API and Admin Control Plane UI
@@ -144,6 +145,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
 - The frontend auto-detects the hosted/on-prem API through `/healthz` and falls back to browser mock mode when the API is unavailable.
 - Production-foundation controls are starter guardrails. Trusted identity headers must be backed by real OIDC validation before production use.
+- Strict trusted identity mode can fail API routes closed when required ingress identity headers are missing; health probes remain public.
 - VM sandbox dry-run planning validates candidate inputs but does not create, clone, power, resize, tag, or delete VMs.
 - Controlled provisioning gate reviews can be approved or rejected, but approval does not enable real AHV mutation in this release.
 - Lab authorization and lifecycle proof records are evidence records only; they do not execute AHV operations.

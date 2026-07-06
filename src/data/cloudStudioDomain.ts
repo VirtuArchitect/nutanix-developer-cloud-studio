@@ -51,6 +51,22 @@ export type PlatformRole = "Developer" | "Approver" | "Platform Admin";
 export type IntegrationConfigStatus = "Not configured" | "Configured" | "Reachable" | "Failed";
 export type LabAdapterMode = "Mock" | "Configured" | "Reachable" | "Read-only candidate" | "Failed";
 
+export type AuthorizationMatrixEntry = {
+  action: string;
+  roles: PlatformRole[];
+  boundary: string;
+};
+
+export type SessionDiagnostics = {
+  authMode: PlatformSession["authMode"];
+  identityProvider: string;
+  user: string;
+  roles: PlatformRole[];
+  trustedHeaderMode: "Optional" | "Required";
+  missingRequiredHeaders: string[];
+  authorizationMatrix: AuthorizationMatrixEntry[];
+};
+
 export type ApprovalRequest = {
   id: string;
   environmentName: string;

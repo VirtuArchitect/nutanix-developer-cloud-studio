@@ -252,6 +252,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Backup/restore smoke is part of the phase gate.
 - On-prem runbook includes deployment matrix, backup/restore commands, and security checklist.
 
+## Current OIDC RBAC Hardening Slice
+
+- API supports optional strict trusted-header mode with `NDC_REQUIRE_TRUSTED_IDENTITY=true`.
+- Strict mode returns `401 unauthenticated` for API routes missing required ingress identity headers.
+- Health and readiness probes remain public for load balancers and orchestrators.
+- Session diagnostics expose trusted-header mode, missing headers, and role/action matrix.
+- Admin Overview surfaces identity boundary and RBAC matrix for operators.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

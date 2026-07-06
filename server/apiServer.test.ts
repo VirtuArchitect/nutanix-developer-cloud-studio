@@ -11,6 +11,7 @@ describe("api server", () => {
   let baseUrl: string;
 
   beforeEach(async () => {
+    delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
     server = createApiServer({ store: new MemoryStore() });
     await new Promise<void>((resolve) => {
       server.listen(0, "127.0.0.1", resolve);
@@ -23,6 +24,7 @@ describe("api server", () => {
   });
 
   afterEach(async () => {
+    delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
     });
@@ -60,6 +62,69 @@ describe("api server", () => {
       identityProvider: "https://idp.example",
       roles: ["Developer", "Approver"],
     });
+  });
+
+  it("reports session diagnostics and authorization matrix", async () => {
+    const diagnostics = await requestJson("/api/session/diagnostics", {
+      headers: {
+        "x-ndc-user": "ops.admin",
+        "x-ndc-display-name": "Ops Admin",
+        "x-ndc-roles": "Platform Admin",
+        "x-ndc-issuer": "https://idp.example",
+      },
+    });
+
+    expect(diagnostics.data).toMatchObject({
+      authMode: "OIDC",
+      trustedHeaderMode: "Optional",
+      missingRequiredHeaders: [],
+      roles: ["Platform Admin"],
+    });
+    expect(diagnostics.data.authorizationMatrix).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "Manage providers, registry, preflight, lifecycle, and audit export",
+          roles: ["Platform Admin"],
+        }),
+      ])
+    );
+  });
+
+  it("fails closed for API routes when trusted identity headers are required", async () => {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+    process.env.NDC_REQUIRE_TRUSTED_IDENTITY = "true";
+    server = createApiServer({ store: new MemoryStore() });
+    await new Promise<void>((resolve) => {
+      server.listen(0, "127.0.0.1", resolve);
+    });
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected TCP server address.");
+    }
+    baseUrl = `http://127.0.0.1:${address.port}`;
+
+    await expectJson("/healthz", 200, { data: { ok: true } });
+    await expectJson(
+      "/api/session",
+      401,
+      {
+        error: {
+          code: "unauthenticated",
+          message: "Trusted identity headers are required: x-ndc-user, x-ndc-roles, x-ndc-issuer.",
+        },
+      }
+    );
+
+    const session = await requestJson("/api/session", {
+      headers: {
+        "x-ndc-user": "ops.admin",
+        "x-ndc-roles": "Platform Admin",
+        "x-ndc-issuer": "https://idp.example",
+      },
+    });
+    expect(session.data).toMatchObject({ user: "ops.admin", authMode: "OIDC" });
   });
 
   it("applies security headers and rate limits requests", async () => {

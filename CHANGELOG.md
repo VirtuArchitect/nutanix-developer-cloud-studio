@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.8.0-on-prem-packaging-hardening`.
+This project uses release tags for public milestones. The current release is `v1.9.0-oidc-rbac-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,23 @@ This project uses release tags for public milestones. The current release is `v1
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.9.0-oidc-rbac-hardening] - 2026-07-06
+
+### Added
+
+- Optional strict trusted-header mode through `NDC_REQUIRE_TRUSTED_IDENTITY=true`.
+- Fail-closed `401` behavior for API routes when required trusted identity headers are missing.
+- Public health/readiness probe exemption for strict identity deployments.
+- Session diagnostics API with trusted-header mode, missing header list, and role/action matrix.
+- Admin Overview identity boundary and authorization matrix panel.
+- Tests for diagnostics, strict trusted-header denial, and client coverage.
+
+### Notes
+
+- Trusted-header mode expects a reverse proxy or ingress to validate OIDC before forwarding identity headers.
+- Real provisioning remains disabled.
+- `provisioningEnabled` remains `false`.
 
 ## [v1.8.0-on-prem-packaging-hardening] - 2026-07-06
 
