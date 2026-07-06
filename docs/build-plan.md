@@ -205,6 +205,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Platform-service planning depends on recorded VM lifecycle proof.
 - No AHV create, rollback, or destroy calls are made.
 
+## Current AHV Preflight Boundary Slice
+
+- API records AHV controlled-provisioning preflight runs.
+- Preflight checks controlled gate approval, active lab scope, verified lifecycle proof, controlled create switch, and AHV adapter enablement.
+- Disabled real-adapter boundary records blocked mutation operations.
+- Admin Control Plane tab can run the preflight.
+- No Prism Central mutation calls are made.
+
 ## Current Platform Services Slice
 
 - API creates and lists NKP namespace, NDB PostgreSQL, NUS storage, and NAI endpoint request plans.

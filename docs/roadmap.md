@@ -132,6 +132,14 @@
 - Connect platform-service planning to recorded VM lifecycle proof - done
 - Keep all live provisioning disabled until authorized adapter work - done
 
+## Phase 16 - AHV Preflight Boundary (`v1.4.0-ahv-preflight-boundary`)
+
+- Add fail-closed AHV controlled-provisioning adapter interface - done
+- Add API-backed AHV preflight run records - done
+- Check gate approval, lab scope, lifecycle proof, controlled create switch, and adapter enablement - done
+- Add Admin Control Plane AHV preflight UI - done
+- Keep Prism Central mutation operations blocked - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

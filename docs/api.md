@@ -213,6 +213,15 @@ Lab authorization scopes record the approved project, cluster, network, test win
 
 Required role: `Platform Admin` to record evidence.
 
+### AHV Controlled Provisioning Preflight
+
+- `GET /api/ahv/controlled-provisioning/runs`
+- `POST /api/ahv/controlled-provisioning/runs`
+
+The AHV controlled provisioning preflight endpoint evaluates the controlled VM create boundary against gate approval, active lab scope, lifecycle proof, controlled create switch, and AHV adapter enablement. It records the checks and blocked mutation operations. It does not call Prism Central and returns `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Platform Service Requests
 
 - `GET /api/platform-services/requests`

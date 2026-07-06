@@ -26,6 +26,7 @@ import {
   provisioningEvents,
   targetIcons,
   templates,
+  type AhvControlledProvisioningRun,
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
@@ -72,6 +73,7 @@ import {
 } from "./services/provisioningService";
 import {
   checkApiHealth,
+  createAhvControlledProvisioningRunViaApi,
   createLabAuthorizationScopeViaApi,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
@@ -80,6 +82,7 @@ import {
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
+  fetchAhvControlledProvisioningRunsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchEnvironmentsFromApi,
@@ -147,6 +150,7 @@ export function App() {
   const [controlledProvisioningGates, setControlledProvisioningGates] = useState<ControlledProvisioningGate[]>([]);
   const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
+  const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -209,6 +213,7 @@ export function App() {
             apiControlledProvisioningGates,
             apiPlatformServiceRequests,
             apiVmLifecycleProofs,
+            apiAhvControlledProvisioningRuns,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -229,6 +234,7 @@ export function App() {
             fetchControlledProvisioningGatesFromApi(),
             fetchPlatformServiceRequestsFromApi(),
             fetchVmLifecycleProofsFromApi(),
+            fetchAhvControlledProvisioningRunsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -251,6 +257,7 @@ export function App() {
             setControlledProvisioningGates(apiControlledProvisioningGates);
             setPlatformServiceRequests(apiPlatformServiceRequests);
             setVmLifecycleProofs(apiVmLifecycleProofs);
+            setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -393,6 +400,7 @@ export function App() {
       apiControlledProvisioningGates,
       apiPlatformServiceRequests,
       apiVmLifecycleProofs,
+      apiAhvControlledProvisioningRuns,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -413,6 +421,7 @@ export function App() {
       fetchControlledProvisioningGatesFromApi(),
       fetchPlatformServiceRequestsFromApi(),
       fetchVmLifecycleProofsFromApi(),
+      fetchAhvControlledProvisioningRunsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -434,6 +443,7 @@ export function App() {
     setControlledProvisioningGates(apiControlledProvisioningGates);
     setPlatformServiceRequests(apiPlatformServiceRequests);
     setVmLifecycleProofs(apiVmLifecycleProofs);
+    setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -726,6 +736,25 @@ export function App() {
     setVmLifecycleProofs((current) => [createMockVmLifecycleProof(gate, session.user), ...current]);
   }
 
+  async function runAhvControlledProvisioningPreflight() {
+    const gate = controlledProvisioningGates[0];
+    if (!gate) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const run = await createAhvControlledProvisioningRunViaApi({ gateId: gate.id, action: "Create VM" });
+      await refreshApiState();
+      setAhvControlledProvisioningRuns((current) => [run, ...current.filter((item) => item.id !== run.id)]);
+      return;
+    }
+
+    setAhvControlledProvisioningRuns((current) => [
+      createMockAhvControlledProvisioningRun(gate, vmSandboxDryRuns, labAuthorizationScopes, vmLifecycleProofs, session.user),
+      ...current,
+    ]);
+  }
+
   async function createPlatformServiceRequest(kind: PlatformServiceKind) {
     const payload = {
       kind,
@@ -922,6 +951,7 @@ export function App() {
             controlledProvisioningGates={controlledProvisioningGates}
             platformServiceRequests={platformServiceRequests}
             vmLifecycleProofs={vmLifecycleProofs}
+            ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -936,6 +966,7 @@ export function App() {
             requestControlledProvisioningGate={requestControlledProvisioningGate}
             decideControlledProvisioningGate={decideControlledProvisioningGate}
             recordVmLifecycleProof={recordVmLifecycleProof}
+            runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             createPlatformServiceRequest={createPlatformServiceRequest}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -1426,6 +1457,7 @@ function AdminView({
   controlledProvisioningGates,
   platformServiceRequests,
   vmLifecycleProofs,
+  ahvControlledProvisioningRuns,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1440,6 +1472,7 @@ function AdminView({
   requestControlledProvisioningGate,
   decideControlledProvisioningGate,
   recordVmLifecycleProof,
+  runAhvControlledProvisioningPreflight,
   createPlatformServiceRequest,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -1465,6 +1498,7 @@ function AdminView({
   controlledProvisioningGates: ControlledProvisioningGate[];
   platformServiceRequests: PlatformServiceRequest[];
   vmLifecycleProofs: VmLifecycleProof[];
+  ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1482,6 +1516,7 @@ function AdminView({
   requestControlledProvisioningGate: () => void;
   decideControlledProvisioningGate: (gateId: string, decision: "approve" | "reject") => void;
   recordVmLifecycleProof: () => void;
+  runAhvControlledProvisioningPreflight: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -1607,6 +1642,12 @@ function AdminView({
               gates={controlledProvisioningGates}
               requestControlledProvisioningGate={requestControlledProvisioningGate}
               decideControlledProvisioningGate={decideControlledProvisioningGate}
+            />
+          </Panel>
+          <Panel title="AHV controlled preflight" action={`${ahvControlledProvisioningRuns.length} runs`}>
+            <AhvControlledPreflightPanel
+              runs={ahvControlledProvisioningRuns}
+              runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             />
           </Panel>
           <Panel title="Platform service flows" action={`${platformServiceRequests.length} planned`}>
@@ -2334,6 +2375,66 @@ function ControlledProvisioningGatePanel({
             <strong>Destroy plan</strong>
             {latest.destroyPlan.map((item) => (
               <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AhvControlledPreflightPanel({
+  runs,
+  runAhvControlledProvisioningPreflight,
+}: {
+  runs: AhvControlledProvisioningRun[];
+  runAhvControlledProvisioningPreflight: () => void;
+}) {
+  const latest = runs[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Fail-closed AHV boundary</strong>
+          <span>Evaluates the controlled create chain through a disabled real-adapter preflight without mutating Prism Central.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={runAhvControlledProvisioningPreflight}>
+          <Play size={15} />
+          Run AHV preflight
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No AHV controlled provisioning preflight runs have been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.environmentName}</strong>
+              <span>
+                {latest.action} / {latest.adapterMode}
+              </span>
+            </div>
+            <span className={`status ${latest.status === "Ready but disabled" ? "approval" : "failed"}`}>{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Adapter" value={latest.adapterMode} passed={false} />
+            <CheckLine icon={Activity} label="Action" value={latest.action} passed />
+            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={false} />
+            <CheckLine icon={Gauge} label="Blocked ops" value={`${latest.mutationOperationsBlocked.length}`} passed={false} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -3090,6 +3191,64 @@ function createMockVmLifecycleProof(gate: ControlledProvisioningGate, actor: str
     destroyVerified: true,
     checks,
     evidence: [`Lifecycle proof recorded by ${actor}; live provisioning remains disabled in this prototype.`],
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAhvControlledProvisioningRun(
+  gate: ControlledProvisioningGate,
+  dryRuns: VmSandboxDryRunPlan[],
+  scopes: LabAuthorizationScope[],
+  proofs: VmLifecycleProof[],
+  actor: string
+): AhvControlledProvisioningRun {
+  const dryRun = dryRuns.find((item) => item.id === gate.dryRunPlanId) ?? dryRuns[0];
+  const activeScope = scopes.find((scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid);
+  const lifecycleProof = proofs.find((proof) => proof.gateId === gate.id && proof.status === "Verified");
+  const checks = [
+    {
+      name: "Controlled gate approved",
+      passed: gate.status === "Approved for controlled create",
+      detail: gate.status === "Approved for controlled create" ? "Controlled gate is approved." : `Gate status is ${gate.status}.`,
+    },
+    {
+      name: "Lab scope active",
+      passed: Boolean(activeScope),
+      detail: activeScope
+        ? `${activeScope.project} / ${activeScope.cluster} / ${activeScope.network}`
+        : "Active lab authorization scope is required.",
+    },
+    {
+      name: "Lifecycle proof verified",
+      passed: Boolean(lifecycleProof),
+      detail: lifecycleProof ? "Rollback and destroy proof is verified." : "Verified lifecycle proof is required.",
+    },
+    {
+      name: "Create switch enabled",
+      passed: false,
+      detail: "Controlled create switch is disabled.",
+    },
+    {
+      name: "AHV adapter enabled",
+      passed: false,
+      detail: "AHV real adapter remains disabled.",
+    },
+  ];
+
+  return {
+    id: `ahv-run-${gate.environmentName}-${Date.now()}`,
+    gateId: gate.id,
+    dryRunPlanId: dryRun?.id ?? gate.dryRunPlanId,
+    environmentName: gate.environmentName,
+    action: "Create VM",
+    adapterMode: "Disabled real adapter",
+    status: checks.every((check) => check.passed) ? "Ready but disabled" : "Preflight blocked",
+    checks,
+    requestedBy: actor,
+    labScopeId: activeScope?.id,
+    lifecycleProofId: lifecycleProof?.id,
+    mutationOperationsBlocked: ["create_vm", "clone_vm", "power_on", "power_off", "delete_vm", "update_network", "update_category"],
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

@@ -73,6 +73,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Mutation disabled")).toBeVisible();
   await page.getByRole("button", { name: "Record lifecycle proof" }).click();
   await expect(page.getByText("Controlled gate approved")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AHV controlled preflight" })).toBeVisible();
+  await page.getByRole("button", { name: "Run AHV preflight" }).click();
+  await expect(page.getByText("Fail-closed AHV boundary")).toBeVisible();
+  await expect(page.getByText("Preflight blocked")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Platform service flows" })).toBeVisible();
   await page.getByRole("button", { name: "Plan NDB PostgreSQL" }).click();
   await expect(page.getByText("VM lifecycle proven")).toBeVisible();

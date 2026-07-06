@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  AhvControlledProvisioningRun,
   ControlledProvisioningDecision,
   ControlledProvisioningGate,
   ControlPlaneJob,
@@ -50,6 +51,7 @@ export type ApiState = {
   controlledProvisioningGates: ControlledProvisioningGate[];
   platformServiceRequests: PlatformServiceRequest[];
   vmLifecycleProofs: VmLifecycleProof[];
+  ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   auditEvents: AuditEvent[];
 };
 
@@ -110,6 +112,11 @@ export type CreateVmLifecycleProofRequest = {
   rollbackVerified?: boolean;
   destroyVerified?: boolean;
   evidence?: string[];
+};
+
+export type CreateAhvControlledProvisioningRunRequest = {
+  gateId?: string;
+  action?: AhvControlledProvisioningRun["action"];
 };
 
 export type CreatePlatformServiceRequest = {

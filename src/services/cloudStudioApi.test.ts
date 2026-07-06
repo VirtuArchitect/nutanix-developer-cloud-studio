@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkApiHealth,
+  createAhvControlledProvisioningRunViaApi,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
   createLabAuthorizationScopeViaApi,
@@ -8,6 +9,7 @@ import {
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
+  fetchAhvControlledProvisioningRunsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
@@ -217,6 +219,21 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       4,
       "/api/vm-lifecycle/proofs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("vm-controlled-1") })
+    );
+  });
+
+  it("fetches and creates AHV controlled provisioning preflight runs", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchAhvControlledProvisioningRunsFromApi();
+    await createAhvControlledProvisioningRunViaApi({ gateId: "vm-controlled-1", action: "Create VM" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/ahv/controlled-provisioning/runs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/ahv/controlled-provisioning/runs",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("vm-controlled-1") })
     );
   });

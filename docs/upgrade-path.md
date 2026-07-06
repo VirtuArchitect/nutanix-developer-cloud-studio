@@ -209,7 +209,7 @@ Exit gate:
 - Stateful services require approval.
 - Smoke tests cover blocked planning paths.
 
-### v1.3.0-private-cloud-developer-platform
+### v1.3.0-lifecycle-evidence
 
 Goal: record the evidence required before private-cloud developer platform promotion.
 
@@ -227,7 +227,24 @@ Exit gate:
 - Lifecycle proof remains blocked until controlled create gate is truly approved.
 - Real provisioning remains disabled until authorized adapter work.
 
-### v1.4.0-private-cloud-developer-platform
+### v1.4.0-ahv-preflight-boundary
+
+Goal: add the fail-closed AHV execution boundary before any real adapter work.
+
+Build:
+
+- AHV controlled-provisioning adapter interface.
+- Disabled real-adapter preflight run records.
+- Checks for controlled gate, active lab scope, lifecycle proof, controlled create switch, and adapter enablement.
+- Blocked mutation operation evidence.
+
+Exit gate:
+
+- Preflight APIs and UI are tested.
+- Prism Central mutation calls remain disabled.
+- Real provisioning remains disabled until authorized adapter work.
+
+### v1.5.0-private-cloud-developer-platform
 
 Goal: release as an operational internal developer platform candidate.
 

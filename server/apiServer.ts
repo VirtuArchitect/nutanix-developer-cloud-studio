@@ -3,6 +3,10 @@ import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { extname, join, normalize, relative } from "node:path";
 import {
+  AhvControlledProvisioningError,
+  createDisabledAhvControlledProvisioningAdapter,
+} from "./ahvControlledProvisioning";
+import {
   AuthorizationEvidenceError,
   createLabAuthorizationScope,
   createVmLifecycleProof,
@@ -55,6 +59,7 @@ import type {
   ApiError,
   ApiResponse,
   ApiState,
+  CreateAhvControlledProvisioningRunRequest,
   ControlledProvisioningDecisionRequest,
   CreateLabAuthorizationScopeRequest,
   CreateEnvironmentRequest,
@@ -269,6 +274,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/vm-lifecycle/proofs") {
     sendJson(response, 200, { data: state.vmLifecycleProofs });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/ahv/controlled-provisioning/runs") {
+    sendJson(response, 200, { data: state.ahvControlledProvisioningRuns });
     return;
   }
 
@@ -722,6 +732,36 @@ async function routeApi(
       sendJson(response, 201, { data: proof });
     } catch (error) {
       if (error instanceof AuthorizationEvidenceError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/ahv/controlled-provisioning/runs") {
+    requireRole(context, ["Platform Admin"]);
+    try {
+      const body = await readJson<CreateAhvControlledProvisioningRunRequest>(request);
+      const adapter = createDisabledAhvControlledProvisioningAdapter();
+      const run = adapter.preflight(state, body, context.session.user);
+      state.ahvControlledProvisioningRuns = [run, ...state.ahvControlledProvisioningRuns];
+      addAuditEvent(state, "ahv.controlled.preflight.recorded", context.session.user, run.environmentName, {
+        gateId: run.gateId,
+        status: run.status,
+        adapterMode: run.adapterMode,
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 201, { data: run });
+    } catch (error) {
+      if (error instanceof AhvControlledProvisioningError) {
         sendJson(response, 400, {
           error: {
             code: error.code,

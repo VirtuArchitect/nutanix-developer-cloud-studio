@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  AhvControlledProvisioningRun,
   ControlledProvisioningGate,
   ControlPlaneJob,
   Environment,
@@ -212,6 +213,10 @@ export async function fetchVmLifecycleProofsFromApi() {
   return fetchJson<VmLifecycleProof[]>("/api/vm-lifecycle/proofs");
 }
 
+export async function fetchAhvControlledProvisioningRunsFromApi() {
+  return fetchJson<AhvControlledProvisioningRun[]>("/api/ahv/controlled-provisioning/runs");
+}
+
 export async function fetchPlatformServiceRequestsFromApi() {
   return fetchJson<PlatformServiceRequest[]>("/api/platform-services/requests");
 }
@@ -279,6 +284,16 @@ export async function createVmLifecycleProofViaApi(payload: {
   evidence?: string[];
 }) {
   return fetchJson<VmLifecycleProof>("/api/vm-lifecycle/proofs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createAhvControlledProvisioningRunViaApi(payload: {
+  gateId?: string;
+  action?: AhvControlledProvisioningRun["action"];
+}) {
+  return fetchJson<AhvControlledProvisioningRun>("/api/ahv/controlled-provisioning/runs", {
     method: "POST",
     body: JSON.stringify(payload),
   });

@@ -329,6 +329,27 @@ export type VmLifecycleProof = {
   createdAt: string;
 };
 
+export type AhvControlledProvisioningRun = {
+  id: string;
+  gateId: string;
+  dryRunPlanId: string;
+  environmentName: string;
+  action: "Create VM" | "Destroy VM";
+  adapterMode: "Disabled real adapter";
+  status: "Preflight blocked" | "Ready but disabled";
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  requestedBy: string;
+  labScopeId?: string;
+  lifecycleProofId?: string;
+  mutationOperationsBlocked: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type PlatformServiceKind = "NKP Namespace" | "NDB PostgreSQL" | "NUS Storage" | "NAI Endpoint";
 
 export type PlatformServiceRequest = {

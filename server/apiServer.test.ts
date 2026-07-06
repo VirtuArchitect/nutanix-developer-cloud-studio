@@ -467,6 +467,43 @@ describe("api server", () => {
     expect(proofs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: proof.data.id })]));
   });
 
+  it("records fail-closed AHV controlled provisioning preflight runs", async () => {
+    const plan = await requestJson("/api/vm-sandbox/dry-runs", {
+      method: "POST",
+      body: JSON.stringify({ environmentName: "ahv-preflight-plan" }),
+    });
+    const gate = await requestJson("/api/vm-sandbox/controlled-provisioning", {
+      method: "POST",
+      body: JSON.stringify({ dryRunPlanId: plan.data.id }),
+    });
+    const run = await requestJson("/api/ahv/controlled-provisioning/runs", {
+      method: "POST",
+      body: JSON.stringify({ gateId: gate.data.id, action: "Create VM" }),
+    });
+    const runs = await requestJson("/api/ahv/controlled-provisioning/runs");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(run.data).toMatchObject({
+      gateId: gate.data.id,
+      dryRunPlanId: plan.data.id,
+      action: "Create VM",
+      adapterMode: "Disabled real adapter",
+      status: "Preflight blocked",
+      provisioningEnabled: false,
+    });
+    expect(run.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Controlled gate approved", passed: false }),
+        expect.objectContaining({ name: "AHV adapter enabled", passed: false }),
+      ])
+    );
+    expect(run.data.mutationOperationsBlocked).toContain("create_vm");
+    expect(runs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: run.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "ahv.controlled.preflight.recorded", target: "ahv-preflight-plan" })])
+    );
+  });
+
   it("plans platform service requests after checking VM lifecycle proof", async () => {
     const serviceRequest = await requestJson("/api/platform-services/requests", {
       method: "POST",

@@ -128,6 +128,11 @@
 - Connected controlled provisioning gates to active lab authorization scope evidence.
 - Connected platform-service planning to recorded VM lifecycle proof.
 - Added Admin Control Plane evidence UI and tests while keeping real provisioning disabled.
+- Started `v1.4.0-ahv-preflight-boundary`.
+- Added a fail-closed AHV controlled-provisioning adapter interface.
+- Added API-backed AHV preflight run records with checks for gate approval, lab scope, lifecycle proof, controlled create switch, and adapter enablement.
+- Added Admin Control Plane AHV preflight UI and audit events.
+- Added tests and smoke coverage while keeping Prism Central mutation operations blocked.
 
 ## Documentation Rule
 
