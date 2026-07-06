@@ -61,6 +61,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - VM lifecycle proofs: controlled gate, rollback, and destroy verification records
 - AHV controlled-provisioning runs: fail-closed preflight records for controlled create/destroy readiness
 - Platform-service requests: NKP, NDB, NUS, and NAI planning records gated by VM lifecycle proof
+- Platform-service preflight runs: fail-closed adapter readiness records for NKP, NDB, NUS, and NAI
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
 - Policy bundles: reusable governance control groups mapped to template versions
@@ -112,6 +113,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Lab authorization and VM lifecycle proof APIs plus Admin Control Plane evidence UI
 - AHV controlled-provisioning preflight adapter boundary and Admin Control Plane UI
 - Platform-service planning API and Admin Control Plane UI for NKP, NDB, NUS, and NAI flows
+- Platform-service preflight adapter boundary and Admin Control Plane UI for service readiness checks
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
@@ -142,6 +144,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Lab authorization and lifecycle proof records are evidence records only; they do not execute AHV operations.
 - AHV controlled-provisioning preflight records checks only; Prism Central mutation calls remain disabled.
 - Platform-service requests validate catalog and dependency readiness but do not call NKP, NDB, NUS, or NAI APIs.
+- Platform-service preflight records check readiness only; NKP, NDB, NUS, and NAI mutation calls remain disabled.
 
 ## Real Integration Readiness Questions
 

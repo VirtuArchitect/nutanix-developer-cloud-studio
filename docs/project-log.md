@@ -133,6 +133,11 @@
 - Added API-backed AHV preflight run records with checks for gate approval, lab scope, lifecycle proof, controlled create switch, and adapter enablement.
 - Added Admin Control Plane AHV preflight UI and audit events.
 - Added tests and smoke coverage while keeping Prism Central mutation operations blocked.
+- Started `v1.5.0-platform-service-preflight`.
+- Added fail-closed platform-service preflight adapter interface for NKP, NDB, NUS, and NAI.
+- Added API-backed service preflight run records with checks for request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state.
+- Added Admin Control Plane platform-service preflight UI and audit events.
+- Added tests and smoke coverage while keeping platform-service mutation operations blocked.
 
 ## Documentation Rule
 

@@ -42,6 +42,7 @@ import {
   type PlatformSession,
   type PlatformConfig,
   type PlatformServiceKind,
+  type PlatformServicePreflightRun,
   type PlatformServiceRequest,
   type PolicyBundle,
   type PrismInventoryImportResult,
@@ -78,6 +79,7 @@ import {
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
   createPlatformServiceRequestViaApi,
+  createPlatformServicePreflightRunViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
@@ -93,6 +95,7 @@ import {
   fetchLabAuthorizationScopesFromApi,
   fetchLabAdaptersFromApi,
   fetchPlatformConfigFromApi,
+  fetchPlatformServicePreflightRunsFromApi,
   fetchPlatformServiceRequestsFromApi,
   fetchPolicyBundlesFromApi,
   fetchPrismInventoryFromApi,
@@ -149,6 +152,7 @@ export function App() {
   const [vmSandboxDryRuns, setVmSandboxDryRuns] = useState<VmSandboxDryRunPlan[]>([]);
   const [controlledProvisioningGates, setControlledProvisioningGates] = useState<ControlledProvisioningGate[]>([]);
   const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
+  const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
@@ -212,6 +216,7 @@ export function App() {
             apiVmSandboxDryRuns,
             apiControlledProvisioningGates,
             apiPlatformServiceRequests,
+            apiPlatformServicePreflightRuns,
             apiVmLifecycleProofs,
             apiAhvControlledProvisioningRuns,
           ] = await Promise.all([
@@ -233,6 +238,7 @@ export function App() {
             fetchVmSandboxDryRunsFromApi(),
             fetchControlledProvisioningGatesFromApi(),
             fetchPlatformServiceRequestsFromApi(),
+            fetchPlatformServicePreflightRunsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchAhvControlledProvisioningRunsFromApi(),
           ]);
@@ -256,6 +262,7 @@ export function App() {
             setVmSandboxDryRuns(apiVmSandboxDryRuns);
             setControlledProvisioningGates(apiControlledProvisioningGates);
             setPlatformServiceRequests(apiPlatformServiceRequests);
+            setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
@@ -399,6 +406,7 @@ export function App() {
       apiVmSandboxDryRuns,
       apiControlledProvisioningGates,
       apiPlatformServiceRequests,
+      apiPlatformServicePreflightRuns,
       apiVmLifecycleProofs,
       apiAhvControlledProvisioningRuns,
     ] = await Promise.all([
@@ -420,6 +428,7 @@ export function App() {
       fetchVmSandboxDryRunsFromApi(),
       fetchControlledProvisioningGatesFromApi(),
       fetchPlatformServiceRequestsFromApi(),
+      fetchPlatformServicePreflightRunsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchAhvControlledProvisioningRunsFromApi(),
     ]);
@@ -442,6 +451,7 @@ export function App() {
     setVmSandboxDryRuns(apiVmSandboxDryRuns);
     setControlledProvisioningGates(apiControlledProvisioningGates);
     setPlatformServiceRequests(apiPlatformServiceRequests);
+    setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
 
@@ -775,6 +785,25 @@ export function App() {
     ]);
   }
 
+  async function runPlatformServicePreflight() {
+    const serviceRequest = platformServiceRequests[0];
+    if (!serviceRequest) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const run = await createPlatformServicePreflightRunViaApi({ requestId: serviceRequest.id });
+      await refreshApiState();
+      setPlatformServicePreflightRuns((current) => [run, ...current.filter((item) => item.id !== run.id)]);
+      return;
+    }
+
+    setPlatformServicePreflightRuns((current) => [
+      createMockPlatformServicePreflightRun(serviceRequest, integrationConfigs, provisioningAdapters, session.user),
+      ...current,
+    ]);
+  }
+
   async function requestEnvironmentDestroy(name: string) {
     if (apiHealth.mode === "api") {
       await requestEnvironmentDestroyViaApi(name);
@@ -950,6 +979,7 @@ export function App() {
             vmSandboxDryRuns={vmSandboxDryRuns}
             controlledProvisioningGates={controlledProvisioningGates}
             platformServiceRequests={platformServiceRequests}
+            platformServicePreflightRuns={platformServicePreflightRuns}
             vmLifecycleProofs={vmLifecycleProofs}
             ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
             approvals={approvals}
@@ -968,6 +998,7 @@ export function App() {
             recordVmLifecycleProof={recordVmLifecycleProof}
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             createPlatformServiceRequest={createPlatformServiceRequest}
+            runPlatformServicePreflight={runPlatformServicePreflight}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
             runResourceProfileAction={runResourceProfileAction}
@@ -1456,6 +1487,7 @@ function AdminView({
   vmSandboxDryRuns,
   controlledProvisioningGates,
   platformServiceRequests,
+  platformServicePreflightRuns,
   vmLifecycleProofs,
   ahvControlledProvisioningRuns,
   approvals,
@@ -1474,6 +1506,7 @@ function AdminView({
   recordVmLifecycleProof,
   runAhvControlledProvisioningPreflight,
   createPlatformServiceRequest,
+  runPlatformServicePreflight,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
   runResourceProfileAction,
@@ -1497,6 +1530,7 @@ function AdminView({
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
   controlledProvisioningGates: ControlledProvisioningGate[];
   platformServiceRequests: PlatformServiceRequest[];
+  platformServicePreflightRuns: PlatformServicePreflightRun[];
   vmLifecycleProofs: VmLifecycleProof[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   approvals: ApprovalRequest[];
@@ -1518,6 +1552,7 @@ function AdminView({
   recordVmLifecycleProof: () => void;
   runAhvControlledProvisioningPreflight: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
+  runPlatformServicePreflight: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
     templateId: string,
@@ -1654,6 +1689,12 @@ function AdminView({
             <PlatformServiceRequestPanel
               requests={platformServiceRequests}
               createPlatformServiceRequest={createPlatformServiceRequest}
+            />
+          </Panel>
+          <Panel title="Platform service preflight" action={`${platformServicePreflightRuns.length} runs`}>
+            <PlatformServicePreflightPanel
+              runs={platformServicePreflightRuns}
+              runPlatformServicePreflight={runPlatformServicePreflight}
             />
           </Panel>
           <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
@@ -2506,6 +2547,66 @@ function PlatformServiceRequestPanel({
             <strong>Cleanup plan</strong>
             {latest.cleanupPlan.map((item) => (
               <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlatformServicePreflightPanel({
+  runs,
+  runPlatformServicePreflight,
+}: {
+  runs: PlatformServicePreflightRun[];
+  runPlatformServicePreflight: () => void;
+}) {
+  const latest = runs[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Fail-closed service boundary</strong>
+          <span>Evaluates NKP, NDB, NUS, and NAI adapter readiness without calling real service APIs.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={runPlatformServicePreflight}>
+          <Play size={15} />
+          Run service preflight
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No platform service preflight runs have been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.serviceName}</strong>
+              <span>
+                {latest.kind} / {latest.provider} / {latest.adapterMode}
+              </span>
+            </div>
+            <span className={`status ${latest.status === "Ready but disabled" ? "approval" : "failed"}`}>{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Layers3} label="Provider" value={latest.provider} passed />
+            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={false} />
+            <CheckLine icon={Gauge} label="Blocked ops" value={`${latest.mutationOperationsBlocked.length}`} passed={false} />
+            <CheckLine icon={ShieldCheck} label="Adapter" value={latest.adapterMode} passed={false} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -3381,6 +3482,72 @@ function createMockPlatformServiceRequest(
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };
+}
+
+function createMockPlatformServicePreflightRun(
+  serviceRequest: PlatformServiceRequest,
+  configs: IntegrationConfig[],
+  adapters: ProvisioningAdapterReadiness[],
+  actor: string
+): PlatformServicePreflightRun {
+  const providerReady = configs.find((item) => item.name === serviceRequest.provider)?.status === "Reachable";
+  const adapterReady = adapters.find((item) => item.name === serviceRequest.provider)?.configured === true;
+  const validationsPassed = serviceRequest.validations.every((validation) => validation.passed);
+  const checks = [
+    {
+      name: "Request validations passed",
+      passed: validationsPassed,
+      detail: validationsPassed ? "Platform-service request validations passed." : "Request validations are still blocked.",
+    },
+    {
+      name: "VM lifecycle proven",
+      passed: serviceRequest.vmLifecycleProven,
+      detail: serviceRequest.vmLifecycleProven ? "VM lifecycle proof is present." : "VM lifecycle proof is required.",
+    },
+    {
+      name: "Provider readiness checked",
+      passed: providerReady,
+      detail: providerReady ? `${serviceRequest.provider} integration is reachable.` : `${serviceRequest.provider} integration is not reachable.`,
+    },
+    {
+      name: "Adapter configured",
+      passed: adapterReady,
+      detail: adapterReady ? `${serviceRequest.provider} adapter is configured.` : `${serviceRequest.provider} adapter is not configured.`,
+    },
+    {
+      name: "Real adapter switch enabled",
+      passed: false,
+      detail: `${serviceRequest.provider} real adapter switch is disabled.`,
+    },
+  ];
+
+  return {
+    id: `platform-preflight-${serviceRequest.provider.toLowerCase()}-${Date.now()}`,
+    requestId: serviceRequest.id,
+    kind: serviceRequest.kind,
+    serviceName: serviceRequest.serviceName,
+    provider: serviceRequest.provider,
+    adapterMode: "Disabled real adapter",
+    status: checks.every((check) => check.passed) ? "Ready but disabled" : "Preflight blocked",
+    checks,
+    requestedBy: actor,
+    mutationOperationsBlocked: blockedPlatformServiceOperations(serviceRequest.kind),
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function blockedPlatformServiceOperations(kind: PlatformServiceKind) {
+  switch (kind) {
+    case "NKP Namespace":
+      return ["create_namespace", "apply_quota", "apply_network_policy", "delete_namespace"];
+    case "NDB PostgreSQL":
+      return ["create_database", "restore_database", "delete_database", "rotate_database_access"];
+    case "NUS Storage":
+      return ["create_bucket", "create_share", "update_lifecycle_rule", "delete_storage_target"];
+    case "NAI Endpoint":
+      return ["create_endpoint", "allocate_gpu", "publish_route", "delete_endpoint"];
+  }
 }
 
 function nextRegistryStatus(action: "submit" | "approve" | "deprecate" | "restore"): RegistryStatus {

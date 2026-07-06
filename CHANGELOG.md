@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.4.0-ahv-preflight-boundary`.
+This project uses release tags for public milestones. The current release is `v1.5.0-platform-service-preflight`.
 
 ## [Unreleased]
 
@@ -11,6 +11,23 @@ This project uses release tags for public milestones. The current release is `v1
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.5.0-platform-service-preflight] - 2026-07-06
+
+### Added
+
+- Fail-closed platform-service preflight adapter interface for NKP, NDB, NUS, and NAI.
+- API endpoints for listing and recording platform-service preflight runs.
+- Admin Control Plane panel for service preflight checks.
+- Checks for request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state.
+- Provider-specific blocked operation evidence for namespace, database, storage, and AI endpoint flows.
+- Audit evidence and automated coverage for platform-service preflight behavior.
+
+### Notes
+
+- No NKP, NDB, NUS, or NAI API calls are made.
+- Platform service preflight remains a disabled-adapter boundary.
+- `provisioningEnabled` remains `false`.
 
 ## [v1.4.0-ahv-preflight-boundary] - 2026-07-06
 

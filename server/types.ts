@@ -11,6 +11,7 @@ import type {
   LabAuthorizationScope,
   PlatformConfig,
   PlatformServiceKind,
+  PlatformServicePreflightRun,
   PlatformServiceRequest,
   PlatformSession,
   PolicyBundle,
@@ -52,6 +53,7 @@ export type ApiState = {
   platformServiceRequests: PlatformServiceRequest[];
   vmLifecycleProofs: VmLifecycleProof[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
+  platformServicePreflightRuns: PlatformServicePreflightRun[];
   auditEvents: AuditEvent[];
 };
 
@@ -125,6 +127,11 @@ export type CreatePlatformServiceRequest = {
   environmentName?: string;
   owner?: string;
   profileId?: string;
+};
+
+export type CreatePlatformServicePreflightRunRequest = {
+  requestId?: string;
+  kind?: PlatformServiceKind;
 };
 
 export type RegistryAction = "submit" | "approve" | "deprecate" | "restore";

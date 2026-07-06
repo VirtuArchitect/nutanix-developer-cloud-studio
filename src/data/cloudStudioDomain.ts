@@ -378,6 +378,25 @@ export type PlatformServiceRequest = {
   createdAt: string;
 };
 
+export type PlatformServicePreflightRun = {
+  id: string;
+  requestId: string;
+  kind: PlatformServiceKind;
+  serviceName: string;
+  provider: ProvisioningAdapterName;
+  adapterMode: "Disabled real adapter";
+  status: "Preflight blocked" | "Ready but disabled";
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  requestedBy: string;
+  mutationOperationsBlocked: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ControlPlaneJobTransition = {
   state: ControlPlaneJobState;
   actor: string;

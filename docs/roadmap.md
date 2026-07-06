@@ -140,6 +140,14 @@
 - Add Admin Control Plane AHV preflight UI - done
 - Keep Prism Central mutation operations blocked - done
 
+## Phase 17 - Platform Service Preflight (`v1.5.0-platform-service-preflight`)
+
+- Add fail-closed platform-service preflight adapter interface - done
+- Add API-backed preflight run records for NKP, NDB, NUS, and NAI - done
+- Check request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state - done
+- Add Admin Control Plane platform-service preflight UI - done
+- Keep NKP, NDB, NUS, and NAI mutation operations blocked - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

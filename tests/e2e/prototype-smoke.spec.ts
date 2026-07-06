@@ -81,6 +81,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Plan NDB PostgreSQL" }).click();
   await expect(page.getByText("VM lifecycle proven")).toBeVisible();
   await expect(page.getByText("Complete controlled VM create, verify, rollback, and destroy proof before platform services are enabled.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Platform service preflight" })).toBeVisible();
+  await page.getByRole("button", { name: "Run service preflight" }).click();
+  await expect(page.getByText("Fail-closed service boundary")).toBeVisible();
+  await expect(page.getByText("NDB real adapter switch is disabled.")).toBeVisible();
   await expect(page.getByText("smoke-api-dev").first()).toBeVisible();
   await page.getByRole("button", { name: "Advance" }).first().click();
   await expect(page.getByText("Validating")).toBeVisible();

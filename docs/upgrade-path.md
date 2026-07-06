@@ -244,7 +244,24 @@ Exit gate:
 - Prism Central mutation calls remain disabled.
 - Real provisioning remains disabled until authorized adapter work.
 
-### v1.5.0-private-cloud-developer-platform
+### v1.5.0-platform-service-preflight
+
+Goal: add fail-closed service adapter boundaries before any real NKP, NDB, NUS, or NAI adapter work.
+
+Build:
+
+- Platform-service preflight adapter interface.
+- Disabled real-adapter preflight records for NKP, NDB, NUS, and NAI.
+- Checks for request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state.
+- Provider-specific blocked operation evidence.
+
+Exit gate:
+
+- Preflight APIs and UI are tested.
+- NKP, NDB, NUS, and NAI mutation calls remain disabled.
+- Real service provisioning remains disabled until authorized adapter work.
+
+### v1.6.0-private-cloud-developer-platform
 
 Goal: release as an operational internal developer platform candidate.
 

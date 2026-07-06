@@ -6,6 +6,7 @@ import {
   createEnvironmentViaApi,
   createLabAuthorizationScopeViaApi,
   createPlatformServiceRequestViaApi,
+  createPlatformServicePreflightRunViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
@@ -18,6 +19,7 @@ import {
   fetchPolicyBundlesFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServiceRequestsFromApi,
+  fetchPlatformServicePreflightRunsFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchResourceProfilesFromApi,
@@ -250,6 +252,21 @@ describe("cloudStudioApi", () => {
       2,
       "/api/platform-services/requests",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("NDB PostgreSQL") })
+    );
+  });
+
+  it("fetches and creates platform service preflight runs", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchPlatformServicePreflightRunsFromApi();
+    await createPlatformServicePreflightRunViaApi({ requestId: "platform-service-1" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/platform-services/preflight-runs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/platform-services/preflight-runs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("platform-service-1") })
     );
   });
 

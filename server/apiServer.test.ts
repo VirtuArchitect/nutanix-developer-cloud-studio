@@ -535,6 +535,42 @@ describe("api server", () => {
     );
   });
 
+  it("records fail-closed platform service preflight runs", async () => {
+    const serviceRequest = await requestJson("/api/platform-services/requests", {
+      method: "POST",
+      body: JSON.stringify({
+        kind: "NDB PostgreSQL",
+        environmentName: "payments-dev",
+      }),
+    });
+    const run = await requestJson("/api/platform-services/preflight-runs", {
+      method: "POST",
+      body: JSON.stringify({ requestId: serviceRequest.data.id }),
+    });
+    const runs = await requestJson("/api/platform-services/preflight-runs");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(run.data).toMatchObject({
+      requestId: serviceRequest.data.id,
+      kind: "NDB PostgreSQL",
+      provider: "NDB",
+      adapterMode: "Disabled real adapter",
+      status: "Preflight blocked",
+      provisioningEnabled: false,
+    });
+    expect(run.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Request validations passed", passed: false }),
+        expect.objectContaining({ name: "Real adapter switch enabled", passed: false }),
+      ])
+    );
+    expect(run.data.mutationOperationsBlocked).toContain("create_database");
+    expect(runs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: run.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" })])
+    );
+  });
+
   it("advances, fails, and retries control-plane jobs", async () => {
     await requestJson("/api/environments", {
       method: "POST",

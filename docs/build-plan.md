@@ -221,6 +221,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Control Plane tab can plan the four platform-service flows.
 - No NKP, NDB, NUS, or NAI API calls are made.
 
+## Current Platform Service Preflight Slice
+
+- API records platform-service preflight runs for NKP, NDB, NUS, and NAI.
+- Preflight checks request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state.
+- Disabled real-adapter boundary records provider-specific blocked operations.
+- Admin Control Plane tab can run service preflight checks.
+- No NKP, NDB, NUS, or NAI mutation calls are made.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

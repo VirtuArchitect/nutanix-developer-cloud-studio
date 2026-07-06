@@ -10,6 +10,7 @@ import type {
   LabAuthorizationScope,
   PlatformConfig,
   PlatformServiceKind,
+  PlatformServicePreflightRun,
   PlatformServiceRequest,
   PlatformSession,
   PolicyBundle,
@@ -221,6 +222,10 @@ export async function fetchPlatformServiceRequestsFromApi() {
   return fetchJson<PlatformServiceRequest[]>("/api/platform-services/requests");
 }
 
+export async function fetchPlatformServicePreflightRunsFromApi() {
+  return fetchJson<PlatformServicePreflightRun[]>("/api/platform-services/preflight-runs");
+}
+
 export async function createLabAuthorizationScopeViaApi(payload: {
   pentestScopeReference?: string;
   pentestScopeStructurallyValid?: boolean;
@@ -272,6 +277,16 @@ export async function createPlatformServiceRequestViaApi(payload: {
   profileId?: string;
 }) {
   return fetchJson<PlatformServiceRequest>("/api/platform-services/requests", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createPlatformServicePreflightRunViaApi(payload: {
+  requestId?: string;
+  kind?: PlatformServiceKind;
+}) {
+  return fetchJson<PlatformServicePreflightRun>("/api/platform-services/preflight-runs", {
     method: "POST",
     body: JSON.stringify(payload),
   });

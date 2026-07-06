@@ -30,6 +30,10 @@ import {
 } from "./mockPlatform";
 import { createPlatformServiceRequest, PlatformServiceError } from "./platformServices";
 import {
+  createDisabledPlatformServicePreflightAdapter,
+  PlatformServicePreflightError,
+} from "./platformServicePreflight";
+import {
   createDisabledRealPrismInventoryAdapter,
   createMockPrismInventoryAdapter,
   createPrismReadOnlyScope,
@@ -65,6 +69,7 @@ import type {
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
   CreatePlatformServiceRequest,
+  CreatePlatformServicePreflightRunRequest,
   CreateVmLifecycleProofRequest,
   CreateVmSandboxDryRunRequest,
   RegistryAction,
@@ -284,6 +289,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/platform-services/requests") {
     sendJson(response, 200, { data: state.platformServiceRequests });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/platform-services/preflight-runs") {
+    sendJson(response, 200, { data: state.platformServicePreflightRuns });
     return;
   }
 
@@ -795,6 +805,38 @@ async function routeApi(
       sendJson(response, 201, { data: serviceRequest });
     } catch (error) {
       if (error instanceof PlatformServiceError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/platform-services/preflight-runs") {
+    requireRole(context, ["Platform Admin"]);
+    try {
+      const body = await readJson<CreatePlatformServicePreflightRunRequest>(request);
+      const adapter = createDisabledPlatformServicePreflightAdapter();
+      const run = adapter.preflight(state, body, context.session.user);
+      state.platformServicePreflightRuns = [run, ...state.platformServicePreflightRuns];
+      addAuditEvent(state, "platform-service.preflight.recorded", context.session.user, run.serviceName, {
+        requestId: run.requestId,
+        kind: run.kind,
+        provider: run.provider,
+        status: run.status,
+        adapterMode: run.adapterMode,
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 201, { data: run });
+    } catch (error) {
+      if (error instanceof PlatformServicePreflightError) {
         sendJson(response, 400, {
           error: {
             code: error.code,

@@ -231,6 +231,15 @@ The platform-service request endpoint plans NKP namespace, NDB PostgreSQL, NUS s
 
 Required role: `Developer` or `Platform Admin`.
 
+### Platform Service Preflight
+
+- `GET /api/platform-services/preflight-runs`
+- `POST /api/platform-services/preflight-runs`
+
+The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter readiness against request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state. It records provider-specific blocked mutation operations and returns `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ## Production Foundation Controls
 
 The hosted starter now adds:
