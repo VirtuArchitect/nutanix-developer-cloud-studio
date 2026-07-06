@@ -17,6 +17,7 @@ import type {
   PrismInventoryImportResult,
   PrismInventoryRecord,
   ProvisioningAdapterReadiness,
+  ProductionReadinessReview,
   ResourceProfile,
   TemplateRegistryEntry,
   SystemStatus,
@@ -226,6 +227,10 @@ export async function fetchPlatformServicePreflightRunsFromApi() {
   return fetchJson<PlatformServicePreflightRun[]>("/api/platform-services/preflight-runs");
 }
 
+export async function fetchProductionReadinessReviewsFromApi() {
+  return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
+}
+
 export async function createLabAuthorizationScopeViaApi(payload: {
   pentestScopeReference?: string;
   pentestScopeStructurallyValid?: boolean;
@@ -289,6 +294,12 @@ export async function createPlatformServicePreflightRunViaApi(payload: {
   return fetchJson<PlatformServicePreflightRun>("/api/platform-services/preflight-runs", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionReadinessReviewViaApi() {
+  return fetchJson<ProductionReadinessReview>("/api/production-readiness/reviews", {
+    method: "POST",
   });
 }
 

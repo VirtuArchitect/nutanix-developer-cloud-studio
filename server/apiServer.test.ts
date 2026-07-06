@@ -571,6 +571,29 @@ describe("api server", () => {
     );
   });
 
+  it("records production readiness reviews", async () => {
+    const review = await requestJson("/api/production-readiness/reviews", { method: "POST" });
+    const reviews = await requestJson("/api/production-readiness/reviews");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(review.data).toMatchObject({
+      status: "Blocked",
+      reviewer: "platform.admin",
+      provisioningEnabled: false,
+    });
+    expect(review.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "OIDC boundary", passed: false }),
+        expect.objectContaining({ name: "Provisioning guardrail", passed: true }),
+      ])
+    );
+    expect(review.data.evidence).toEqual(expect.arrayContaining([expect.stringContaining("Real provisioning remains disabled")]));
+    expect(reviews.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: review.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "production-readiness.review.recorded", target: review.data.id })])
+    );
+  });
+
   it("advances, fails, and retries control-plane jobs", async () => {
     await requestJson("/api/environments", {
       method: "POST",

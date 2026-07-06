@@ -7,6 +7,7 @@ import {
   createLabAuthorizationScopeViaApi,
   createPlatformServiceRequestViaApi,
   createPlatformServicePreflightRunViaApi,
+  createProductionReadinessReviewViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
@@ -22,6 +23,7 @@ import {
   fetchPlatformServicePreflightRunsFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
+  fetchProductionReadinessReviewsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
@@ -267,6 +269,21 @@ describe("cloudStudioApi", () => {
       2,
       "/api/platform-services/preflight-runs",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("platform-service-1") })
+    );
+  });
+
+  it("fetches and creates production readiness reviews", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchProductionReadinessReviewsFromApi();
+    await createProductionReadinessReviewViaApi();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/production-readiness/reviews", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/production-readiness/reviews",
+      expect.objectContaining({ method: "POST" })
     );
   });
 

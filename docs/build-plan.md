@@ -229,6 +229,13 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Control Plane tab can run service preflight checks.
 - No NKP, NDB, NUS, or NAI mutation calls are made.
 
+## Current Production Readiness Review Slice
+
+- API records production readiness reviews.
+- Reviews check OIDC boundary, durable state, audit retention, lab authorization, VM lifecycle proof, AHV preflight, platform-service preflight coverage, and provisioning guardrail.
+- Admin Overview tab can run readiness reviews.
+- Reviews remain evidence records and do not enable real provisioning.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

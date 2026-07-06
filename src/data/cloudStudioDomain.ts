@@ -397,6 +397,20 @@ export type PlatformServicePreflightRun = {
   createdAt: string;
 };
 
+export type ProductionReadinessReview = {
+  id: string;
+  status: "Blocked" | "Ready for review";
+  reviewer: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ControlPlaneJobTransition = {
   state: ControlPlaneJobState;
   actor: string;

@@ -18,6 +18,7 @@ import type {
   PrismInventoryImportResult,
   PrismInventoryRecord,
   ProvisioningAdapterReadiness,
+  ProductionReadinessReview,
   RegistryStatus,
   ResourceProfile,
   Template,
@@ -54,6 +55,7 @@ export type ApiState = {
   vmLifecycleProofs: VmLifecycleProof[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
+  productionReadinessReviews: ProductionReadinessReview[];
   auditEvents: AuditEvent[];
 };
 

@@ -33,6 +33,7 @@ import {
   createDisabledPlatformServicePreflightAdapter,
   PlatformServicePreflightError,
 } from "./platformServicePreflight";
+import { createProductionReadinessReview } from "./productionReadiness";
 import {
   createDisabledRealPrismInventoryAdapter,
   createMockPrismInventoryAdapter,
@@ -294,6 +295,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/platform-services/preflight-runs") {
     sendJson(response, 200, { data: state.platformServicePreflightRuns });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/production-readiness/reviews") {
+    sendJson(response, 200, { data: state.productionReadinessReviews });
     return;
   }
 
@@ -847,6 +853,20 @@ async function routeApi(
       }
       throw error;
     }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/production-readiness/reviews") {
+    requireRole(context, ["Platform Admin"]);
+    const review = createProductionReadinessReview(state, context.session.user);
+    state.productionReadinessReviews = [review, ...state.productionReadinessReviews];
+    addAuditEvent(state, "production-readiness.review.recorded", context.session.user, review.id, {
+      status: review.status,
+      checksPassed: review.checks.every((check) => check.passed),
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: review });
     return;
   }
 

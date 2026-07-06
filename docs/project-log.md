@@ -138,6 +138,11 @@
 - Added API-backed service preflight run records with checks for request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state.
 - Added Admin Control Plane platform-service preflight UI and audit events.
 - Added tests and smoke coverage while keeping platform-service mutation operations blocked.
+- Started `v1.6.0-production-readiness-review`.
+- Added API-backed production readiness review records.
+- Added checks for OIDC boundary, durable state, audit retention, lab authorization, VM lifecycle proof, AHV preflight, platform-service preflight coverage, and provisioning guardrail.
+- Added Admin Overview readiness review UI and audit events.
+- Added tests and smoke coverage while keeping readiness reviews evidence-only.
 
 ## Documentation Rule
 

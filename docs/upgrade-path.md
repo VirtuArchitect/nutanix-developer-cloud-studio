@@ -261,7 +261,23 @@ Exit gate:
 - NKP, NDB, NUS, and NAI mutation calls remain disabled.
 - Real service provisioning remains disabled until authorized adapter work.
 
-### v1.6.0-private-cloud-developer-platform
+### v1.6.0-production-readiness-review
+
+Goal: record release-gate readiness before any private-cloud platform candidate.
+
+Build:
+
+- Production readiness review records.
+- Checks for OIDC boundary, durable state, audit retention, lab authorization, VM lifecycle proof, AHV preflight, platform-service preflight coverage, and provisioning guardrail.
+- Admin Overview readiness review UI.
+
+Exit gate:
+
+- Readiness review APIs and UI are tested.
+- Review remains evidence-only and does not enable provisioning.
+- Blocked checks are visible before private-cloud promotion.
+
+### v1.7.0-private-cloud-developer-platform
 
 Goal: release as an operational internal developer platform candidate.
 

@@ -48,6 +48,7 @@ import {
   type PrismInventoryImportResult,
   type PrismInventoryRecord,
   type ProvisioningAdapterReadiness,
+  type ProductionReadinessReview,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
@@ -80,6 +81,7 @@ import {
   createEnvironmentViaApi,
   createPlatformServiceRequestViaApi,
   createPlatformServicePreflightRunViaApi,
+  createProductionReadinessReviewViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
@@ -100,6 +102,7 @@ import {
   fetchPolicyBundlesFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
+  fetchProductionReadinessReviewsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
@@ -155,6 +158,7 @@ export function App() {
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
+  const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -219,6 +223,7 @@ export function App() {
             apiPlatformServicePreflightRuns,
             apiVmLifecycleProofs,
             apiAhvControlledProvisioningRuns,
+            apiProductionReadinessReviews,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -241,6 +246,7 @@ export function App() {
             fetchPlatformServicePreflightRunsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchAhvControlledProvisioningRunsFromApi(),
+            fetchProductionReadinessReviewsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -265,6 +271,7 @@ export function App() {
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
+            setProductionReadinessReviews(apiProductionReadinessReviews);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -409,6 +416,7 @@ export function App() {
       apiPlatformServicePreflightRuns,
       apiVmLifecycleProofs,
       apiAhvControlledProvisioningRuns,
+      apiProductionReadinessReviews,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -431,6 +439,7 @@ export function App() {
       fetchPlatformServicePreflightRunsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchAhvControlledProvisioningRunsFromApi(),
+      fetchProductionReadinessReviewsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -454,6 +463,7 @@ export function App() {
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
+    setProductionReadinessReviews(apiProductionReadinessReviews);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -804,6 +814,28 @@ export function App() {
     ]);
   }
 
+  async function createProductionReadinessReview() {
+    if (apiHealth.mode === "api") {
+      const review = await createProductionReadinessReviewViaApi();
+      await refreshApiState();
+      setProductionReadinessReviews((current) => [review, ...current.filter((item) => item.id !== review.id)]);
+      return;
+    }
+
+    setProductionReadinessReviews((current) => [
+      createMockProductionReadinessReview({
+        session,
+        platformConfig,
+        labAuthorizationScopes,
+        vmLifecycleProofs,
+        ahvControlledProvisioningRuns,
+        platformServicePreflightRuns,
+        auditEventsCount: 0,
+      }),
+      ...current,
+    ]);
+  }
+
   async function requestEnvironmentDestroy(name: string) {
     if (apiHealth.mode === "api") {
       await requestEnvironmentDestroyViaApi(name);
@@ -982,6 +1014,7 @@ export function App() {
             platformServicePreflightRuns={platformServicePreflightRuns}
             vmLifecycleProofs={vmLifecycleProofs}
             ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
+            productionReadinessReviews={productionReadinessReviews}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -999,6 +1032,7 @@ export function App() {
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
+            createProductionReadinessReview={createProductionReadinessReview}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
             runResourceProfileAction={runResourceProfileAction}
@@ -1490,6 +1524,7 @@ function AdminView({
   platformServicePreflightRuns,
   vmLifecycleProofs,
   ahvControlledProvisioningRuns,
+  productionReadinessReviews,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1507,6 +1542,7 @@ function AdminView({
   runAhvControlledProvisioningPreflight,
   createPlatformServiceRequest,
   runPlatformServicePreflight,
+  createProductionReadinessReview,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
   runResourceProfileAction,
@@ -1533,6 +1569,7 @@ function AdminView({
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   vmLifecycleProofs: VmLifecycleProof[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
+  productionReadinessReviews: ProductionReadinessReview[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1553,6 +1590,7 @@ function AdminView({
   runAhvControlledProvisioningPreflight: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
+  createProductionReadinessReview: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
     templateId: string,
@@ -1622,6 +1660,12 @@ function AdminView({
               <CheckLine icon={CircleDollarSign} label="Budgets" value="$25k monthly sandbox limit" passed />
               <CheckLine icon={LockKeyhole} label="Approvals" value="AI and regulated data require review" passed={false} />
             </div>
+          </Panel>
+          <Panel title="Production readiness review" action={`${productionReadinessReviews.length} reviews`}>
+            <ProductionReadinessPanel
+              reviews={productionReadinessReviews}
+              createProductionReadinessReview={createProductionReadinessReview}
+            />
           </Panel>
         </div>
       )}
@@ -1839,6 +1883,64 @@ function ApprovalQueue({
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ProductionReadinessPanel({
+  reviews,
+  createProductionReadinessReview,
+}: {
+  reviews: ProductionReadinessReview[];
+  createProductionReadinessReview: () => void;
+}) {
+  const latest = reviews[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Release readiness gate</strong>
+          <span>Rolls up identity, persistence, audit, lab scope, lifecycle proof, and preflight evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createProductionReadinessReview}>
+          <Play size={15} />
+          Run readiness review
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production readiness reviews have been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.id}</strong>
+              <span>{latest.reviewer}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for review" ? "approval" : "failed"}`}>{latest.status}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Evidence</strong>
+            {latest.evidence.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3548,6 +3650,89 @@ function blockedPlatformServiceOperations(kind: PlatformServiceKind) {
     case "NAI Endpoint":
       return ["create_endpoint", "allocate_gpu", "publish_route", "delete_endpoint"];
   }
+}
+
+function createMockProductionReadinessReview({
+  session,
+  platformConfig,
+  labAuthorizationScopes,
+  vmLifecycleProofs,
+  ahvControlledProvisioningRuns,
+  platformServicePreflightRuns,
+  auditEventsCount,
+}: {
+  session: PlatformSession;
+  platformConfig: PlatformConfig;
+  labAuthorizationScopes: LabAuthorizationScope[];
+  vmLifecycleProofs: VmLifecycleProof[];
+  ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
+  platformServicePreflightRuns: PlatformServicePreflightRun[];
+  auditEventsCount: number;
+}): ProductionReadinessReview {
+  const providers = ["NKP", "NDB", "NUS", "NAI"];
+  const preflightCoverage = providers.every((provider) =>
+    platformServicePreflightRuns.some((run) => run.provider === provider)
+  );
+  const checks = [
+    {
+      name: "OIDC boundary",
+      passed: session.authMode === "OIDC",
+      detail:
+        session.authMode === "OIDC"
+          ? `Identity provider ${session.identityProvider} is active.`
+          : "Current session uses mock OIDC headers; production ingress validation is still required.",
+    },
+    {
+      name: "Durable state boundary",
+      passed: false,
+      detail: "Browser mode has no server-side JSON data file.",
+    },
+    {
+      name: "Audit retention configured",
+      passed: true,
+      detail: "Audit retention keeps 500 events.",
+    },
+    {
+      name: "Lab authorization active",
+      passed: labAuthorizationScopes.some((scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid),
+      detail: "Approved lab authorization is required.",
+    },
+    {
+      name: "VM lifecycle proof verified",
+      passed: vmLifecycleProofs.some((proof) => proof.status === "Verified"),
+      detail: "Verified lifecycle proof is required.",
+    },
+    {
+      name: "AHV preflight recorded",
+      passed: ahvControlledProvisioningRuns.length > 0,
+      detail: ahvControlledProvisioningRuns[0]?.status ?? "AHV preflight run is required.",
+    },
+    {
+      name: "Platform service preflight coverage",
+      passed: preflightCoverage,
+      detail: preflightCoverage ? "NKP, NDB, NUS, and NAI preflight records exist." : "NKP, NDB, NUS, and NAI preflight records are required.",
+    },
+    {
+      name: "Provisioning guardrail",
+      passed: platformConfig.provisioningEnabled === false,
+      detail: "Global platform config keeps provisioning disabled.",
+    },
+  ];
+
+  return {
+    id: `production-readiness-${Date.now()}`,
+    status: checks.every((check) => check.passed) ? "Ready for review" : "Blocked",
+    reviewer: session.user,
+    checks,
+    evidence: [
+      `Audit events available: ${auditEventsCount}.`,
+      `AHV preflight runs recorded: ${ahvControlledProvisioningRuns.length}.`,
+      `Platform-service preflight runs recorded: ${platformServicePreflightRuns.length}.`,
+      "Real provisioning remains disabled until a separate authorized adapter release.",
+    ],
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
 }
 
 function nextRegistryStatus(action: "submit" | "approve" | "deprecate" | "restore"): RegistryStatus {

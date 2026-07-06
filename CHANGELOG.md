@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.5.0-platform-service-preflight`.
+This project uses release tags for public milestones. The current release is `v1.6.0-production-readiness-review`.
 
 ## [Unreleased]
 
@@ -11,6 +11,22 @@ This project uses release tags for public milestones. The current release is `v1
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.6.0-production-readiness-review] - 2026-07-06
+
+### Added
+
+- Production readiness review records.
+- API endpoints for listing and creating production readiness reviews.
+- Admin Overview panel for running readiness review checks.
+- Readiness checks for OIDC boundary, durable state, audit retention, lab authorization, VM lifecycle proof, AHV preflight, platform-service preflight coverage, and provisioning guardrail.
+- Audit evidence and automated coverage for production readiness behavior.
+
+### Notes
+
+- Reviews are gate evidence only and do not enable live provisioning.
+- Current reviews remain blocked until real OIDC ingress, durable state, lab authorization, lifecycle proof, and full preflight evidence are present.
+- `provisioningEnabled` remains `false`.
 
 ## [v1.5.0-platform-service-preflight] - 2026-07-06
 

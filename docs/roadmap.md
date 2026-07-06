@@ -148,6 +148,13 @@
 - Add Admin Control Plane platform-service preflight UI - done
 - Keep NKP, NDB, NUS, and NAI mutation operations blocked - done
 
+## Phase 18 - Production Readiness Review (`v1.6.0-production-readiness-review`)
+
+- Add API-backed production readiness review records - done
+- Check identity, durable state, audit retention, lab authorization, VM lifecycle proof, AHV preflight, service preflight coverage, and provisioning guardrail - done
+- Add Admin Overview readiness review UI - done
+- Keep readiness reviews as evidence-only records - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

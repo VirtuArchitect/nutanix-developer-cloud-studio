@@ -240,6 +240,15 @@ The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter
 
 Required role: `Platform Admin`.
 
+### Production Readiness Reviews
+
+- `GET /api/production-readiness/reviews`
+- `POST /api/production-readiness/reviews`
+
+The production readiness endpoint records a release-gate review across identity, durable state, audit retention, lab authorization, VM lifecycle proof, AHV preflight, platform-service preflight coverage, and the global provisioning-disabled guardrail. It does not enable real provisioning.
+
+Required role: `Platform Admin`.
+
 ## Production Foundation Controls
 
 The hosted starter now adds:

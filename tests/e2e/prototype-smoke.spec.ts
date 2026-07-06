@@ -37,6 +37,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByRole("tab", { name: "Control plane Jobs and approvals" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Governance Queues and controls" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Templates Catalog and ownership" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production readiness review" })).toBeVisible();
+  await page.getByRole("button", { name: "Run readiness review" }).click();
+  await expect(page.getByText("Release readiness gate")).toBeVisible();
+  await expect(page.getByText("OIDC boundary")).toBeVisible();
   await page.getByRole("tab", { name: "Providers Config and adapters" }).click();
   await expect(page.getByText("Integration configuration")).toBeVisible();
   await expect(page.getByText("Lab adapter pilot")).toBeVisible();
