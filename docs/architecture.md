@@ -56,6 +56,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Jobs: simulated provisioning and operational events
 - Control plane jobs: queued orchestration records with worker transitions, retries, failures, and audit evidence
 - VM sandbox dry-run plans: AHV VM planning records with validation, quota, cost, expiry, approval evidence, and rollback evidence
+- Controlled provisioning gates: operator review records attached to dry-run plans with manual approval, scope, rollback, destroy, and kill-switch evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
 - Policy bundles: reusable governance control groups mapped to template versions
@@ -103,6 +104,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - OIDC-shaped request context, RBAC guardrails, request IDs, structured logs, rate limits, and security headers
 - Postgres repository scaffold and SQL migration files for production persistence planning
 - AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
+- Controlled provisioning gate review API and Admin Control Plane UI
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
@@ -129,6 +131,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The frontend auto-detects the hosted/on-prem API through `/healthz` and falls back to browser mock mode when the API is unavailable.
 - Production-foundation controls are starter guardrails. Trusted identity headers must be backed by real OIDC validation before production use.
 - VM sandbox dry-run planning validates candidate inputs but does not create, clone, power, resize, tag, or delete VMs.
+- Controlled provisioning gate reviews can be approved or rejected, but approval does not enable real AHV mutation in this release.
 
 ## Real Integration Readiness Questions
 

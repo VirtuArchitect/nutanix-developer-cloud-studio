@@ -112,6 +112,11 @@
 - Added validation for approved image, published template, project, cluster, network, category, quota, expiry, cost, and approval evidence.
 - Added rollback-plan evidence while keeping real provisioning disabled.
 - Added tests and smoke coverage for VM sandbox dry-run planning.
+- Started `v1.1.0-controlled-provisioning`.
+- Added API-backed controlled provisioning gate reviews attached to VM sandbox dry-run plans.
+- Added manual approval, rollback readiness, destroy readiness, authorized scope, and mutation kill switch checks.
+- Added Admin Control Plane gate review UI and audit events for request and approval decisions.
+- Added tests and smoke coverage while keeping real AHV provisioning disabled.
 
 ## Documentation Rule
 

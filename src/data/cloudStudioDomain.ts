@@ -254,6 +254,46 @@ export type VmSandboxDryRunPlan = {
   createdAt: string;
 };
 
+export type ControlledProvisioningGateStatus =
+  | "Blocked"
+  | "Manual approval required"
+  | "Approved for controlled create"
+  | "Mutation disabled";
+
+export type ControlledProvisioningDecision = "approve" | "reject";
+
+export type ControlledProvisioningGate = {
+  id: string;
+  dryRunPlanId: string;
+  environmentName: string;
+  owner: string;
+  requestedBy: string;
+  status: ControlledProvisioningGateStatus;
+  approval: {
+    status: "Pending" | "Approved" | "Rejected";
+    decidedBy?: string;
+    decidedAt?: string;
+    evidence: string;
+  };
+  pentestScope: {
+    required: true;
+    present: boolean;
+    reference: string;
+    structurallyValid: boolean;
+  };
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  rollbackPlan: string[];
+  destroyPlan: string[];
+  mutationKillSwitch: boolean;
+  provisioningEnabled: false;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ControlPlaneJobTransition = {
   state: ControlPlaneJobState;
   actor: string;

@@ -1,5 +1,7 @@
 import type {
   ApprovalRequest,
+  ControlledProvisioningDecision,
+  ControlledProvisioningGate,
   ControlPlaneJob,
   Environment,
   Integration,
@@ -40,6 +42,7 @@ export type ApiState = {
   approvals: ApprovalRequest[];
   controlPlaneJobs: ControlPlaneJob[];
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
+  controlledProvisioningGates: ControlledProvisioningGate[];
   auditEvents: AuditEvent[];
 };
 
@@ -67,6 +70,18 @@ export type UpdateIntegrationConfigRequest = {
 };
 
 export type CreateVmSandboxDryRunRequest = Partial<VmSandboxDryRunRequest>;
+
+export type CreateControlledProvisioningGateRequest = {
+  dryRunPlanId?: string;
+  environmentName?: string;
+  pentestScopeReference?: string;
+  pentestScopeStructurallyValid?: boolean;
+};
+
+export type ControlledProvisioningDecisionRequest = {
+  decision: ControlledProvisioningDecision;
+  evidence?: string;
+};
 
 export type RegistryAction = "submit" | "approve" | "deprecate" | "restore";
 

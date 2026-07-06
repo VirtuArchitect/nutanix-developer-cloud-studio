@@ -107,6 +107,13 @@
 - Add approval evidence and rollback/destroy plan preview - done
 - Keep real provisioning disabled until controlled provisioning phase - done
 
+## Phase 13 - Controlled Provisioning Gate (`v1.1.0-controlled-provisioning`)
+
+- Add API-backed controlled provisioning gate reviews for VM sandbox dry-run plans - done
+- Require manual approval, rollback readiness, destroy readiness, authorized scope evidence, and mutation kill switch evidence - done
+- Add Admin Control Plane gate review and approval UI - done
+- Keep real AHV provisioning disabled until a future authorized adapter phase - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

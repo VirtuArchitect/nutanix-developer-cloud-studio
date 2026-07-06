@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  ControlledProvisioningGate,
   ControlPlaneJob,
   Environment,
   Integration,
@@ -195,11 +196,41 @@ export async function fetchVmSandboxDryRunsFromApi() {
   return fetchJson<VmSandboxDryRunPlan[]>("/api/vm-sandbox/dry-runs");
 }
 
+export async function fetchControlledProvisioningGatesFromApi() {
+  return fetchJson<ControlledProvisioningGate[]>("/api/vm-sandbox/controlled-provisioning");
+}
+
 export async function createVmSandboxDryRunViaApi(payload: Partial<VmSandboxDryRunRequest>) {
   return fetchJson<VmSandboxDryRunPlan>("/api/vm-sandbox/dry-runs", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export async function createControlledProvisioningGateViaApi(payload: {
+  dryRunPlanId?: string;
+  environmentName?: string;
+  pentestScopeReference?: string;
+  pentestScopeStructurallyValid?: boolean;
+}) {
+  return fetchJson<ControlledProvisioningGate>("/api/vm-sandbox/controlled-provisioning", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function decideControlledProvisioningGateViaApi(
+  gateId: string,
+  decision: "approve" | "reject",
+  evidence?: string
+) {
+  return fetchJson<ControlledProvisioningGate>(
+    `/api/vm-sandbox/controlled-provisioning/${encodeURIComponent(gateId)}/${decision}`,
+    {
+      method: "POST",
+      body: JSON.stringify(evidence ? { decision, evidence } : { decision }),
+    }
+  );
 }
 
 export async function runControlPlaneJobActionViaApi(

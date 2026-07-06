@@ -2,14 +2,30 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.0.0-vm-sandbox-dry-run`.
+This project uses release tags for public milestones. The current release is `v1.1.0-controlled-provisioning`.
 
 ## [Unreleased]
 
 ### Planned
 
-- Add controlled provisioning only after authorized lab scope, manual approval, rollback/destroy plan, and pentest gate.
+- Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.1.0-controlled-provisioning] - 2026-07-06
+
+### Added
+
+- Controlled provisioning gate model for AHV VM sandbox dry-run plans.
+- API endpoints for listing, requesting, approving, and rejecting controlled provisioning gate reviews.
+- Gate checks for dry-run validation, rollback readiness, destroy readiness, manual approval, authorized scope evidence, and disabled-by-default mutation kill switch.
+- Admin Control Plane panel for requesting and deciding controlled provisioning gate reviews.
+- Audit events for controlled provisioning gate request and approval decisions.
+- Unit/API/client/E2E coverage for controlled provisioning gate behavior.
+
+### Notes
+
+- This release still does not create, clone, power on, resize, tag, or delete AHV VMs.
+- Approval records gate intent only. `provisioningEnabled` remains `false` until a future authorized real adapter phase.
 
 ## [v1.0.0-vm-sandbox-dry-run] - 2026-07-06
 

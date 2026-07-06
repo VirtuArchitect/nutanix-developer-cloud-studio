@@ -190,6 +190,13 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Control Plane tab can generate and review dry-run plans.
 - No Prism Central mutation calls are made.
 
+## Current Controlled Provisioning Gate Slice
+
+- API creates and lists controlled provisioning gate reviews attached to VM sandbox dry-run plans.
+- Gate checks cover dry-run validation, rollback readiness, destroy readiness, manual approval, authorized lab scope evidence, and mutation kill switch state.
+- Admin Control Plane tab can request, approve, and reject gate reviews.
+- Gate approval records operator intent only; `provisioningEnabled=false` remains enforced.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

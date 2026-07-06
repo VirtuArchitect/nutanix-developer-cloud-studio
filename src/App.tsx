@@ -28,6 +28,7 @@ import {
   templates,
   type Environment,
   type ApprovalRequest,
+  type ControlledProvisioningGate,
   type ControlPlaneJob,
   type Integration,
   type IntegrationConfig,
@@ -67,10 +68,13 @@ import {
 } from "./services/provisioningService";
 import {
   checkApiHealth,
+  createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
   createVmSandboxDryRunViaApi,
+  decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
   fetchControlPlaneJobsFromApi,
+  fetchControlledProvisioningGatesFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchApprovalsFromApi,
@@ -129,6 +133,7 @@ export function App() {
   );
   const [controlPlaneJobs, setControlPlaneJobs] = useState<ControlPlaneJob[]>([]);
   const [vmSandboxDryRuns, setVmSandboxDryRuns] = useState<VmSandboxDryRunPlan[]>([]);
+  const [controlledProvisioningGates, setControlledProvisioningGates] = useState<ControlledProvisioningGate[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -187,6 +192,7 @@ export function App() {
             apiPlatformConfig,
             apiProvisioningAdapters,
             apiVmSandboxDryRuns,
+            apiControlledProvisioningGates,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -203,6 +209,7 @@ export function App() {
             fetchPlatformConfigFromApi(),
             fetchProvisioningAdaptersFromApi(),
             fetchVmSandboxDryRunsFromApi(),
+            fetchControlledProvisioningGatesFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -221,6 +228,7 @@ export function App() {
             setPlatformConfig(apiPlatformConfig);
             setProvisioningAdapters(apiProvisioningAdapters);
             setVmSandboxDryRuns(apiVmSandboxDryRuns);
+            setControlledProvisioningGates(apiControlledProvisioningGates);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -359,6 +367,7 @@ export function App() {
       apiPlatformConfig,
       apiProvisioningAdapters,
       apiVmSandboxDryRuns,
+      apiControlledProvisioningGates,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -375,6 +384,7 @@ export function App() {
       fetchPlatformConfigFromApi(),
       fetchProvisioningAdaptersFromApi(),
       fetchVmSandboxDryRunsFromApi(),
+      fetchControlledProvisioningGatesFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -392,6 +402,7 @@ export function App() {
     setPlatformConfig(apiPlatformConfig);
     setProvisioningAdapters(apiProvisioningAdapters);
     setVmSandboxDryRuns(apiVmSandboxDryRuns);
+    setControlledProvisioningGates(apiControlledProvisioningGates);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -592,6 +603,59 @@ export function App() {
     setVmSandboxDryRuns((current) => [createMockVmSandboxDryRun(payload, resourceProfiles, platformConfig, templateRegistry, session.user), ...current]);
   }
 
+  async function requestControlledProvisioningGate() {
+    const latest = vmSandboxDryRuns[0];
+    if (!latest) {
+      await createVmSandboxDryRun();
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const gate = await createControlledProvisioningGateViaApi({ dryRunPlanId: latest.id });
+      await refreshApiState();
+      setControlledProvisioningGates((current) => [gate, ...current.filter((item) => item.id !== gate.id)]);
+      return;
+    }
+
+    setControlledProvisioningGates((current) => [
+      createMockControlledProvisioningGate(latest, session.user),
+      ...current.filter((item) => item.dryRunPlanId !== latest.id),
+    ]);
+  }
+
+  async function decideControlledProvisioningGate(gateId: string, decision: "approve" | "reject") {
+    if (apiHealth.mode === "api") {
+      const gate = await decideControlledProvisioningGateViaApi(
+        gateId,
+        decision,
+        decision === "approve" ? "Operator approval recorded from Admin Control Plane." : "Operator rejected controlled create."
+      );
+      await refreshApiState();
+      setControlledProvisioningGates((current) => current.map((item) => (item.id === gate.id ? gate : item)));
+      return;
+    }
+
+    setControlledProvisioningGates((current) =>
+      current.map((gate) =>
+        gate.id === gateId
+          ? evaluateMockControlledProvisioningGate({
+              ...gate,
+              approval: {
+                status: decision === "approve" ? "Approved" : "Rejected",
+                decidedBy: session.user,
+                decidedAt: new Date().toISOString(),
+                evidence:
+                  decision === "approve"
+                    ? "Operator approval recorded from Admin Control Plane."
+                    : "Operator rejected controlled create.",
+              },
+              updatedAt: new Date().toISOString(),
+            })
+          : gate
+      )
+    );
+  }
+
   async function requestEnvironmentDestroy(name: string) {
     if (apiHealth.mode === "api") {
       await requestEnvironmentDestroyViaApi(name);
@@ -764,6 +828,7 @@ export function App() {
             provisioningAdapters={provisioningAdapters}
             controlPlaneJobs={controlPlaneJobs}
             vmSandboxDryRuns={vmSandboxDryRuns}
+            controlledProvisioningGates={controlledProvisioningGates}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -774,6 +839,8 @@ export function App() {
             importPrismInventory={importPrismInventory}
             runControlPlaneJobAction={runControlPlaneJobAction}
             createVmSandboxDryRun={createVmSandboxDryRun}
+            requestControlledProvisioningGate={requestControlledProvisioningGate}
+            decideControlledProvisioningGate={decideControlledProvisioningGate}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
             runResourceProfileAction={runResourceProfileAction}
@@ -1259,6 +1326,7 @@ function AdminView({
   provisioningAdapters,
   controlPlaneJobs,
   vmSandboxDryRuns,
+  controlledProvisioningGates,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1269,6 +1337,8 @@ function AdminView({
   importPrismInventory,
   runControlPlaneJobAction,
   createVmSandboxDryRun,
+  requestControlledProvisioningGate,
+  decideControlledProvisioningGate,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
   runResourceProfileAction,
@@ -1289,6 +1359,7 @@ function AdminView({
   provisioningAdapters: ProvisioningAdapterReadiness[];
   controlPlaneJobs: ControlPlaneJob[];
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
+  controlledProvisioningGates: ControlledProvisioningGate[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1302,6 +1373,8 @@ function AdminView({
   importPrismInventory: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   createVmSandboxDryRun: () => void;
+  requestControlledProvisioningGate: () => void;
+  decideControlledProvisioningGate: (gateId: string, decision: "approve" | "reject") => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
     templateId: string,
@@ -1412,6 +1485,13 @@ function AdminView({
           </Panel>
           <Panel title="VM sandbox dry-run" action={`${vmSandboxDryRuns.length} plans`}>
             <VmSandboxDryRunPanel plans={vmSandboxDryRuns} createVmSandboxDryRun={createVmSandboxDryRun} />
+          </Panel>
+          <Panel title="Controlled provisioning gate" action={`${controlledProvisioningGates.length} reviews`}>
+            <ControlledProvisioningGatePanel
+              gates={controlledProvisioningGates}
+              requestControlledProvisioningGate={requestControlledProvisioningGate}
+              decideControlledProvisioningGate={decideControlledProvisioningGate}
+            />
           </Panel>
           <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
             <ApprovalQueue
@@ -1975,6 +2055,86 @@ function RegistryActions({
           <RefreshCw size={15} />
           Restore draft
         </button>
+      )}
+    </div>
+  );
+}
+
+function ControlledProvisioningGatePanel({
+  gates,
+  requestControlledProvisioningGate,
+  decideControlledProvisioningGate,
+}: {
+  gates: ControlledProvisioningGate[];
+  requestControlledProvisioningGate: () => void;
+  decideControlledProvisioningGate: (gateId: string, decision: "approve" | "reject") => void;
+}) {
+  const latest = gates[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Operator-controlled gate</strong>
+          <span>Requires dry-run evidence, manual approval, lab scope, rollback, destroy readiness, and a disabled-by-default kill switch.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={requestControlledProvisioningGate}>
+          <Play size={15} />
+          Request gate review
+        </button>
+        {latest && latest.approval.status === "Pending" && (
+          <>
+            <button className="smallButton successButton" onClick={() => decideControlledProvisioningGate(latest.id, "approve")}>
+              Approve gate
+            </button>
+            <button className="smallButton dangerButton" onClick={() => decideControlledProvisioningGate(latest.id, "reject")}>
+              Reject gate
+            </button>
+          </>
+        )}
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled provisioning gate reviews have been requested.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.environmentName}</strong>
+              <span>
+                Manual approval {latest.approval.status} / {latest.pentestScope.reference}
+              </span>
+            </div>
+            <span className={`status ${latest.status === "Approved for controlled create" ? "approval" : latest.status === "Blocked" ? "failed" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Manual approval" value={latest.approval.status} passed={latest.approval.status === "Approved"} />
+            <CheckLine icon={LockKeyhole} label="Authorized scope" value={latest.pentestScope.present ? "Attached" : "Required"} passed={latest.pentestScope.present && latest.pentestScope.structurallyValid} />
+            <CheckLine icon={Activity} label="Kill switch" value={latest.mutationKillSwitch ? "Enabled" : "Disabled"} passed={latest.mutationKillSwitch} />
+            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={false} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Destroy plan</strong>
+            {latest.destroyPlan.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -2567,6 +2727,94 @@ function createMockVmSandboxDryRun(
     ],
     provisioningEnabled: false,
     createdAt,
+  };
+}
+
+function createMockControlledProvisioningGate(
+  dryRun: VmSandboxDryRunPlan,
+  actor: string
+): ControlledProvisioningGate {
+  return evaluateMockControlledProvisioningGate({
+    id: `vm-controlled-${dryRun.environmentName}-${Date.now()}`,
+    dryRunPlanId: dryRun.id,
+    environmentName: dryRun.environmentName,
+    owner: dryRun.owner,
+    requestedBy: actor,
+    status: "Blocked",
+    approval: {
+      status: "Pending",
+      evidence: "Manual platform approval required before any controlled create can be considered.",
+    },
+    pentestScope: {
+      required: true,
+      present: false,
+      reference: "No authorized lab scope file attached.",
+      structurallyValid: false,
+    },
+    checks: [],
+    rollbackPlan: dryRun.rollbackPlan,
+    destroyPlan: [
+      "Confirm target VM name and categories before any future create call.",
+      "Queue destroy workflow before power-on so rollback ownership is explicit.",
+      "Verify Prism inventory no longer reports the VM before closing the job.",
+    ],
+    mutationKillSwitch: false,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+function evaluateMockControlledProvisioningGate(gate: ControlledProvisioningGate): ControlledProvisioningGate {
+  const rollbackReady = gate.rollbackPlan.length > 0;
+  const destroyReady = gate.destroyPlan.length > 0;
+  const approvalReady = gate.approval.status === "Approved";
+  const scopeReady = gate.pentestScope.present && gate.pentestScope.structurallyValid;
+  const checks = [
+    {
+      name: "Dry-run validations passed",
+      passed: true,
+      detail: "All VM sandbox dry-run validations passed.",
+    },
+    {
+      name: "Rollback plan ready",
+      passed: rollbackReady,
+      detail: rollbackReady ? "Rollback evidence is attached to the dry-run." : "Rollback evidence is missing.",
+    },
+    {
+      name: "Destroy plan ready",
+      passed: destroyReady,
+      detail: destroyReady ? "Destroy workflow expectations are documented." : "Destroy workflow expectations are missing.",
+    },
+    {
+      name: "Manual approval recorded",
+      passed: approvalReady,
+      detail: approvalReady ? gate.approval.evidence : "A platform approver must approve this gate.",
+    },
+    {
+      name: "Authorized scope attached",
+      passed: scopeReady,
+      detail: scopeReady ? gate.pentestScope.reference : "Authorized lab scope remains required.",
+    },
+    {
+      name: "Mutation kill switch enabled",
+      passed: gate.mutationKillSwitch,
+      detail: gate.mutationKillSwitch ? "Kill switch enabled." : "Kill switch is disabled by default.",
+    },
+  ];
+
+  return {
+    ...gate,
+    status:
+      gate.approval.status === "Rejected"
+        ? "Blocked"
+        : approvalReady
+          ? scopeReady && gate.mutationKillSwitch
+            ? "Approved for controlled create"
+            : "Mutation disabled"
+          : "Manual approval required",
+    checks,
+    provisioningEnabled: false,
   };
 }
 

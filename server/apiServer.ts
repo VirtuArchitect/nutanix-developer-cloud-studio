@@ -9,6 +9,11 @@ import {
   retryControlPlaneJob,
 } from "./controlPlane";
 import {
+  ControlledProvisioningError,
+  createControlledProvisioningGate,
+  decideControlledProvisioningGate,
+} from "./controlledProvisioning";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -44,7 +49,9 @@ import type {
   ApiError,
   ApiResponse,
   ApiState,
+  ControlledProvisioningDecisionRequest,
   CreateEnvironmentRequest,
+  CreateControlledProvisioningGateRequest,
   CreateVmSandboxDryRunRequest,
   RegistryAction,
   UpdateIntegrationConfigRequest,
@@ -238,6 +245,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/vm-sandbox/dry-runs") {
     sendJson(response, 200, { data: state.vmSandboxDryRuns });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/vm-sandbox/controlled-provisioning") {
+    sendJson(response, 200, { data: state.controlledProvisioningGates });
     return;
   }
 
@@ -601,6 +613,75 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: plan });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/vm-sandbox/controlled-provisioning") {
+    requireRole(context, ["Platform Admin"]);
+    try {
+      const body = await readJson<CreateControlledProvisioningGateRequest>(request);
+      const gate = createControlledProvisioningGate(state, body, context.session.user);
+      state.controlledProvisioningGates = [
+        gate,
+        ...state.controlledProvisioningGates.filter((item) => item.id !== gate.id),
+      ];
+      addAuditEvent(state, "vm-sandbox.controlled.requested", context.session.user, gate.environmentName, {
+        dryRunPlanId: gate.dryRunPlanId,
+        status: gate.status,
+        approvalStatus: gate.approval.status,
+        scopePresent: gate.pentestScope.present,
+        checksPassed: gate.checks.every((check) => check.passed),
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 201, { data: gate });
+    } catch (error) {
+      if (error instanceof ControlledProvisioningError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  const controlledGateDecisionMatch = url.pathname.match(/^\/api\/vm-sandbox\/controlled-provisioning\/([^/]+)\/(approve|reject)$/);
+  if (request.method === "POST" && controlledGateDecisionMatch) {
+    requireRole(context, ["Platform Admin", "Approver"]);
+    try {
+      const gateId = decodeURIComponent(controlledGateDecisionMatch[1]);
+      const pathDecision = controlledGateDecisionMatch[2] as "approve" | "reject";
+      const body = await readJson<Partial<ControlledProvisioningDecisionRequest>>(request);
+      const decision = body.decision ?? pathDecision;
+      const gate = decideControlledProvisioningGate(state, gateId, decision, context.session.user, body.evidence);
+      state.controlledProvisioningGates = state.controlledProvisioningGates.map((item) =>
+        item.id === gate.id ? gate : item
+      );
+      addAuditEvent(state, `vm-sandbox.controlled.${decision === "approve" ? "approved" : "rejected"}`, context.session.user, gate.environmentName, {
+        dryRunPlanId: gate.dryRunPlanId,
+        status: gate.status,
+        approvalStatus: gate.approval.status,
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 200, { data: gate });
+    } catch (error) {
+      if (error instanceof ControlledProvisioningError) {
+        sendJson(response, 404, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
     return;
   }
 

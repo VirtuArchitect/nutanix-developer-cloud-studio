@@ -172,22 +172,22 @@ Exit gate:
 
 ### v1.1.0-controlled-provisioning
 
-Goal: enable one narrowly scoped VM provisioning path after dry-run and authorization gates pass.
+Goal: add the operator gate required before a future narrowly scoped VM provisioning path can be enabled.
 
 Build:
 
-- One approved AHV VM sandbox create path.
+- Controlled provisioning gate attached to VM sandbox dry-run plans.
 - Manual approval required for every real create request.
-- Rollback and destroy workflow with operator confirmation.
-- Runtime kill switch that disables all mutation calls.
-- Audit evidence for request, approval, create, rollback, and destroy operations.
+- Rollback and destroy readiness evidence with operator confirmation.
+- Runtime kill switch evidence that keeps all mutation calls disabled by default.
+- Audit evidence for request, approval, and rejection decisions.
 
 Exit gate:
 
-- Authorized lab scope and test window are documented.
-- Pentest gate is complete for the scoped lab target.
-- Real provisioning is limited to approved image, project, subnet, category, and quota.
-- Cleanup/destroy is tested before broader use.
+- Gate request and approval workflow is API-backed and audited.
+- Authorized lab scope and test window are still required before real create work.
+- Pentest gate remains required for any scoped lab target.
+- Real provisioning remains disabled until a future adapter phase.
 
 ### v1.2.0-platform-services
 

@@ -191,6 +191,17 @@ The VM sandbox dry-run endpoint validates the Linux VM App Sandbox path against 
 
 Required role: `Platform Admin`.
 
+### Controlled Provisioning Gate
+
+- `GET /api/vm-sandbox/controlled-provisioning`
+- `POST /api/vm-sandbox/controlled-provisioning`
+- `POST /api/vm-sandbox/controlled-provisioning/:id/approve`
+- `POST /api/vm-sandbox/controlled-provisioning/:id/reject`
+
+The controlled provisioning gate attaches to a VM sandbox dry-run plan and records operator readiness before any future real create path. It evaluates dry-run validation, rollback readiness, destroy readiness, manual approval, authorized lab scope evidence, and a disabled-by-default mutation kill switch. Decisions write audit events and keep `provisioningEnabled=false`.
+
+Required roles: `Platform Admin` to request a gate review; `Platform Admin` or `Approver` to approve or reject.
+
 ## Production Foundation Controls
 
 The hosted starter now adds:

@@ -366,6 +366,61 @@ describe("api server", () => {
     );
   });
 
+  it("creates and approves controlled provisioning gates without enabling provisioning", async () => {
+    const plan = await requestJson("/api/vm-sandbox/dry-runs", {
+      method: "POST",
+      body: JSON.stringify({
+        environmentName: "controlled-vm-plan",
+        owner: "demo.user",
+        imageProfileId: "ahv-rocky-9-hardened",
+        project: "developer-cloud-lab",
+        cluster: "berlin-ahv-lab",
+        network: "dev-segment-placeholder",
+        category: "Lifecycle:30-day-expiry",
+        cpu: 2,
+        memoryGb: 8,
+        diskGb: 80,
+        expiryDays: 30,
+      }),
+    });
+    const gate = await requestJson("/api/vm-sandbox/controlled-provisioning", {
+      method: "POST",
+      body: JSON.stringify({ dryRunPlanId: plan.data.id }),
+    });
+    const approved = await requestJson(`/api/vm-sandbox/controlled-provisioning/${gate.data.id}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ evidence: "Operator approval recorded." }),
+    });
+    const gates = await requestJson("/api/vm-sandbox/controlled-provisioning");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(gate.data).toMatchObject({
+      environmentName: "controlled-vm-plan",
+      dryRunPlanId: plan.data.id,
+      status: "Manual approval required",
+      provisioningEnabled: false,
+    });
+    expect(gate.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Dry-run validations passed", passed: true }),
+        expect.objectContaining({ name: "Authorized scope attached", passed: false }),
+        expect.objectContaining({ name: "Mutation kill switch enabled", passed: false }),
+      ])
+    );
+    expect(approved.data).toMatchObject({
+      status: "Mutation disabled",
+      approval: expect.objectContaining({ status: "Approved" }),
+      provisioningEnabled: false,
+    });
+    expect(gates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: gate.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "vm-sandbox.controlled.requested", target: "controlled-vm-plan" }),
+        expect.objectContaining({ action: "vm-sandbox.controlled.approved", target: "controlled-vm-plan" }),
+      ])
+    );
+  });
+
   it("advances, fails, and retries control-plane jobs", async () => {
     await requestJson("/api/environments", {
       method: "POST",
