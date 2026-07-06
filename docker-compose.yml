@@ -11,6 +11,10 @@ services:
       PORT: 8080
       NDC_STATIC_DIR: /app/dist
       NDC_DATA_FILE: /data/ndc-studio.json
+      NDC_REPOSITORY: json
+      NDC_AUDIT_RETENTION_EVENTS: 500
+      NDC_RATE_LIMIT_PER_MINUTE: 120
+      NDC_PRISM_REAL_ADAPTER: disabled
       OIDC_ISSUER_URL: ""
       OIDC_CLIENT_ID: ""
       NDC_DEFAULT_ROLE: "Platform Admin"

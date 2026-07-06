@@ -148,6 +148,11 @@
 - Added API-backed audit export readiness records with retention and redaction boundaries.
 - Added Admin Operations tab for lifecycle requests and audit export preparation.
 - Added tests and smoke coverage while keeping lifecycle operations evidence-only.
+- Started `v1.8.0-on-prem-packaging-hardening`.
+- Added on-prem configuration validation script.
+- Added JSON state backup, restore, and backup/restore smoke scripts.
+- Added on-prem validation and backup/restore smoke to the phase gate.
+- Expanded Compose guardrails and on-prem deployment documentation.
 
 ## Documentation Rule
 

@@ -31,6 +31,14 @@ Hosted starter validation:
 
 The validation script checks health, readiness, mock session/roles, integration configuration, lab adapter availability, and the `provisioningEnabled=false` guardrail.
 
+On-prem configuration validation:
+
+```powershell
+.\scripts\validate-onprem-config.ps1
+```
+
+The validation script checks the JSON state path, audit retention minimum, rate-limit range, repository mode, and the disabled real Prism adapter guardrail.
+
 ## Runtime Configuration
 
 The container uses these environment variables:
@@ -53,9 +61,29 @@ Use `.env.example` as the local template for OIDC and Nutanix lab placeholders. 
 
 `NDC_REPOSITORY=postgres` is a production-foundation scaffold. The SQL migration files are present under `server/migrations/`, but the repository intentionally fails closed until an approved PostgreSQL runtime dependency is added.
 
+## Deployment Matrix
+
+| Area | Starter setting | Production expectation |
+| --- | --- | --- |
+| Static UI | `NDC_STATIC_DIR=/app/dist` | Served by the API container or a hardened internal web tier |
+| API binding | `HOST=0.0.0.0`, `PORT=8080` | Bound behind TLS ingress or reverse proxy |
+| Identity | Trusted OIDC-shaped headers | Validated OIDC tokens before forwarding identity headers |
+| State | `NDC_REPOSITORY=json`, `NDC_DATA_FILE=/data/ndc-studio.json` | Durable database with backup and restore tests |
+| Audit | `NDC_AUDIT_RETENTION_EVENTS=500` | Retention aligned to policy and export destination |
+| Rate limit | `NDC_RATE_LIMIT_PER_MINUTE=120` | Tuned per ingress and expected operator traffic |
+| Prism adapter | `NDC_PRISM_REAL_ADAPTER=disabled` | Enabled only in a future authorized adapter release |
+
 ## Prototype State Backup
 
 The starter uses a JSON file for mock state. For local evaluation, back up the state file or Docker volume before resetting the container:
+
+```powershell
+.\scripts\backup-state.ps1 -DataFile .data\ndc-studio.json
+.\scripts\restore-state.ps1 -BackupFile .data\backups\ndc-studio-YYYYMMDD-HHMMSS.json
+.\scripts\test-state-backup-restore.ps1
+```
+
+For a Docker volume:
 
 ```powershell
 docker compose stop
@@ -73,6 +101,15 @@ For a future real deployment:
 - Keep Nutanix credentials out of the frontend.
 - Store secrets in an enterprise vault or platform secret manager.
 - Allow outbound access only to approved Nutanix management endpoints.
+
+## Security Checklist
+
+- Terminate TLS before exposing the API to users.
+- Validate OIDC tokens at the API or ingress before trusting identity headers.
+- Keep credential references separate from credential values.
+- Keep `NDC_PRISM_REAL_ADAPTER=disabled` until an authorized adapter release.
+- Review logs for sensitive values before production rollout.
+- Run the phase gate and backup/restore smoke before promoting an on-prem bundle.
 
 ## Lab Adapter Guardrail
 

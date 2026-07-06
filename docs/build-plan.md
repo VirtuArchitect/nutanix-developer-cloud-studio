@@ -244,6 +244,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Operations tab exposes lifecycle requests and audit export preparation.
 - Lifecycle operations and exports remain evidence records and do not call Nutanix APIs.
 
+## Current On-Prem Packaging Hardening Slice
+
+- Compose environment now carries explicit repository, audit retention, rate limit, and disabled adapter settings.
+- On-prem configuration validation checks state path, retention, rate limit, repository mode, and real-adapter guardrails.
+- JSON state backup and restore scripts support local starter operations.
+- Backup/restore smoke is part of the phase gate.
+- On-prem runbook includes deployment matrix, backup/restore commands, and security checklist.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

@@ -100,6 +100,14 @@ Invoke-Step "Hosted starter smoke" {
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-hosted-starter.ps1
 }
 
+Invoke-Step "On-prem configuration validation" {
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-onprem-config.ps1
+}
+
+Invoke-Step "State backup and restore smoke" {
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-state-backup-restore.ps1
+}
+
 if ($IncludeAuthorizedPentest) {
   Invoke-Step "Authorized pentest scope check" {
     Assert-PentestScope -Path $PentestScopePath

@@ -120,6 +120,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Audit export readiness API and Admin Operations UI
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
+- On-prem configuration validation and JSON state backup/restore scripts
 - Database-ready `ApiRepository` contract for future repository implementations
 - Containerized starter deployment through `Dockerfile` and `docker-compose.yml`
 - No live Nutanix API calls yet
@@ -152,6 +153,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Audit export records prepare retention and redaction metadata only; production export delivery requires configured external storage.
+- On-prem backup/restore scripts validate JSON starter state only; production deployments still require durable database backup design.
 
 ## Real Integration Readiness Questions
 

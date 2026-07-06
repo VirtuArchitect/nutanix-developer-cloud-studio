@@ -162,6 +162,14 @@
 - Add Admin Operations tab for lifecycle and audit workflows - done
 - Keep lifecycle operations as operator evidence only until authorized adapters exist - done
 
+## Phase 20 - On-Prem Packaging Hardening (`v1.8.0-on-prem-packaging-hardening`)
+
+- Add on-prem configuration validation script - done
+- Add JSON state backup and restore scripts - done
+- Add backup/restore smoke test to the phase gate - done
+- Expand Compose guardrails for repository, audit retention, rate limits, and disabled real adapters - done
+- Expand on-prem deployment runbook and security checklist - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

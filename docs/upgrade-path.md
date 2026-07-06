@@ -315,6 +315,25 @@ Exit gate:
 - Backup/restore dry-run is documented and tested against sample state.
 - Provisioning remains disabled by default.
 
+### v1.9.0-oidc-rbac-hardening
+
+Goal: harden identity and authorization before any live adapter path is considered.
+
+Build:
+
+- Explicit trusted-header deployment mode and denial behavior when headers are incomplete.
+- Role-to-action matrix surfaced in API docs and Admin UI.
+- Authorization tests for lifecycle, audit export, registry, provider, and preflight actions.
+- Operator-facing session diagnostics without exposing sensitive identity claims.
+- Runbook for reverse proxy/OIDC integration boundaries.
+
+Exit gate:
+
+- Permitted and denied access tests cover all mutating API groups.
+- Hosted/on-prem smoke proves session diagnostics and RBAC guardrails.
+- Security review confirms identity headers are documented as trusted-ingress only.
+- Real provisioning remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

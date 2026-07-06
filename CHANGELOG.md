@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.7.0-private-cloud-developer-platform`.
+This project uses release tags for public milestones. The current release is `v1.8.0-on-prem-packaging-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,22 @@ This project uses release tags for public milestones. The current release is `v1
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.8.0-on-prem-packaging-hardening] - 2026-07-06
+
+### Added
+
+- On-prem configuration validation script for state path, audit retention, rate limit, repository mode, and real-adapter guardrails.
+- JSON state backup, restore, and backup/restore smoke scripts.
+- Phase gate checks for on-prem configuration validation and backup/restore smoke.
+- Compose environment hardening for repository mode, audit retention, rate limiting, and disabled Prism real adapter guardrail.
+- Expanded on-prem deployment runbook with validation, backup/restore, deployment matrix, and security checklist.
+
+### Notes
+
+- Backup/restore tooling is for the JSON starter state file and does not replace a production database backup design.
+- Real Nutanix mutation adapters remain disabled.
+- `provisioningEnabled` remains `false`.
 
 ## [v1.7.0-private-cloud-developer-platform] - 2026-07-06
 
