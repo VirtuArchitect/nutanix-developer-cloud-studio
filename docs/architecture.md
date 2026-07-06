@@ -120,6 +120,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Production readiness review API and Admin Overview UI
 - Private-cloud lifecycle operation API and Admin Operations UI
 - Audit export readiness API and Admin Operations UI
+- Audit export manifests, checksums, and retention diagnostics
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - On-prem configuration validation and JSON state backup/restore scripts
@@ -156,6 +157,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Audit export records prepare retention and redaction metadata only; production export delivery requires configured external storage.
+- Audit export manifests checksum retained audit metadata but do not deliver files to external storage yet.
 - On-prem backup/restore scripts validate JSON starter state only; production deployments still require durable database backup design.
 - Postgres mode validates configuration at startup and remains fail-closed until a runtime driver is approved.
 

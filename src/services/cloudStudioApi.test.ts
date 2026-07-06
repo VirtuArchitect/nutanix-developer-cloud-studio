@@ -15,6 +15,7 @@ import {
   decideControlledProvisioningGateViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAuditExportsFromApi,
+  fetchAuditRetentionDiagnosticsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
@@ -318,6 +319,7 @@ describe("cloudStudioApi", () => {
     await fetchLifecycleOperationsFromApi();
     await createLifecycleOperationViaApi({ environmentName: "payments-dev", operation: "Extend" });
     await fetchAuditExportsFromApi();
+    await fetchAuditRetentionDiagnosticsFromApi();
     await createAuditExportViaApi();
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/private-cloud/lifecycle-operations", expect.any(Object));
@@ -327,8 +329,9 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({ method: "POST", body: expect.stringContaining("payments-dev") })
     );
     expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/audit-exports", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/audit/retention", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      4,
+      5,
       "/api/audit-exports",
       expect.objectContaining({ method: "POST" })
     );

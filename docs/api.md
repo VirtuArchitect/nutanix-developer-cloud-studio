@@ -24,6 +24,7 @@ Useful environment variables:
 - `NDC_DATA_FILE`: optional JSON file for persisted mock API state
 - `NDC_REPOSITORY`: `json` by default; `postgres` is validated but remains scaffold-only
 - `NDC_DATABASE_SCHEMA`: schema name used by the Postgres scaffold validator
+- `NDC_AUDIT_EXPORT_DESTINATION_REF`: optional metadata-only export destination reference
 - `VITE_API_BASE_URL`: optional frontend build-time override for API calls. Leave empty for same-origin `/api`.
 
 ## Frontend API Mode
@@ -74,6 +75,7 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/vm-sandbox/dry-runs`
 - `GET /api/approvals`
 - `GET /api/audit-events`
+- `GET /api/audit/retention`
 - `GET /api/environments/:name`
 
 `GET /api/session/diagnostics` returns trusted-header mode, missing required identity headers, and the role/action matrix surfaced in the Admin Overview.
@@ -271,8 +273,11 @@ Required role: `Platform Admin`.
 
 - `GET /api/audit-exports`
 - `POST /api/audit-exports`
+- `GET /api/audit/retention`
 
-Audit export records prepare export metadata, event counts, retention windows, redaction boundaries, and storage boundaries for on-prem operations. The starter records export readiness metadata only; production deployments must configure external storage before real export delivery.
+Audit export records prepare export metadata, event counts, retention windows, redaction boundaries, storage boundaries, a manifest, and a SHA-256 checksum for on-prem operations. The starter records export readiness metadata only; production deployments must configure external storage before real export delivery.
+
+`GET /api/audit/retention` returns retained event count, retention window, oldest/newest event timestamps, bounded status, and destination-reference validation status.
 
 Required role: `Platform Admin`.
 

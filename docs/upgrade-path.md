@@ -372,6 +372,25 @@ Exit gate:
 - Retention smoke proves old events are bounded.
 - Real provisioning remains disabled.
 
+### v2.2.0-provider-credential-reference-hardening
+
+Goal: harden provider credential references before any live Nutanix adapter can be configured.
+
+Build:
+
+- Credential reference validation for NCI, NKP, NDB, NUS, NCM, and NAI.
+- Explicit separation between credential profile names and credential values.
+- Admin provider diagnostics for missing, invalid, and approved credential references.
+- Tests for provider config validation and redaction boundaries.
+- Runbook for mapping references to an external vault or platform credential store.
+
+Exit gate:
+
+- Provider credential reference APIs and UI are tested.
+- Validators reject inline sensitive material.
+- Logs and audit events contain references only.
+- Real provisioning remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

@@ -30,6 +30,7 @@ import {
   templates,
   type AhvControlledProvisioningRun,
   type AuditExportRecord,
+  type AuditRetentionDiagnostics,
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
@@ -96,6 +97,7 @@ import {
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAuditExportsFromApi,
+  fetchAuditRetentionDiagnosticsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchEnvironmentsFromApi,
@@ -175,6 +177,9 @@ export function App() {
   const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
   const [lifecycleOperations, setLifecycleOperations] = useState<LifecycleOperationRecord[]>([]);
   const [auditExports, setAuditExports] = useState<AuditExportRecord[]>([]);
+  const [auditRetentionDiagnostics, setAuditRetentionDiagnostics] = useState<AuditRetentionDiagnostics>(() =>
+    createMockAuditRetentionDiagnostics()
+  );
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -243,6 +248,7 @@ export function App() {
             apiProductionReadinessReviews,
             apiLifecycleOperations,
             apiAuditExports,
+            apiAuditRetentionDiagnostics,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -269,6 +275,7 @@ export function App() {
             fetchProductionReadinessReviewsFromApi(),
             fetchLifecycleOperationsFromApi(),
             fetchAuditExportsFromApi(),
+            fetchAuditRetentionDiagnosticsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -297,6 +304,7 @@ export function App() {
             setProductionReadinessReviews(apiProductionReadinessReviews);
             setLifecycleOperations(apiLifecycleOperations);
             setAuditExports(apiAuditExports);
+            setAuditRetentionDiagnostics(apiAuditRetentionDiagnostics);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -445,6 +453,7 @@ export function App() {
       apiProductionReadinessReviews,
       apiLifecycleOperations,
       apiAuditExports,
+      apiAuditRetentionDiagnostics,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -471,6 +480,7 @@ export function App() {
       fetchProductionReadinessReviewsFromApi(),
       fetchLifecycleOperationsFromApi(),
       fetchAuditExportsFromApi(),
+      fetchAuditRetentionDiagnosticsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -498,6 +508,7 @@ export function App() {
     setProductionReadinessReviews(apiProductionReadinessReviews);
     setLifecycleOperations(apiLifecycleOperations);
     setAuditExports(apiAuditExports);
+    setAuditRetentionDiagnostics(apiAuditRetentionDiagnostics);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -1093,6 +1104,7 @@ export function App() {
             productionReadinessReviews={productionReadinessReviews}
             lifecycleOperations={lifecycleOperations}
             auditExports={auditExports}
+            auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -1610,6 +1622,7 @@ function AdminView({
   productionReadinessReviews,
   lifecycleOperations,
   auditExports,
+  auditRetentionDiagnostics,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1660,6 +1673,7 @@ function AdminView({
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
+  auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1855,7 +1869,11 @@ function AdminView({
             />
           </Panel>
           <Panel title="Audit export boundary" action={`${auditExports.length} exports`}>
-            <AuditExportPanel auditExports={auditExports} prepareAuditExport={prepareAuditExport} />
+            <AuditExportPanel
+              auditExports={auditExports}
+              auditRetentionDiagnostics={auditRetentionDiagnostics}
+              prepareAuditExport={prepareAuditExport}
+            />
           </Panel>
         </div>
       )}
@@ -2275,9 +2293,11 @@ function PrivateCloudOperationsPanel({
 
 function AuditExportPanel({
   auditExports,
+  auditRetentionDiagnostics,
   prepareAuditExport,
 }: {
   auditExports: AuditExportRecord[];
+  auditRetentionDiagnostics: AuditRetentionDiagnostics;
   prepareAuditExport: () => void;
 }) {
   const latest = auditExports[0];
@@ -2297,6 +2317,20 @@ function AuditExportPanel({
           Prepare audit export
         </button>
       </div>
+      <div className="miniMetrics">
+        <div>
+          <strong>{auditRetentionDiagnostics.currentEvents}</strong>
+          <span>retained events</span>
+        </div>
+        <div>
+          <strong>{auditRetentionDiagnostics.retentionEvents}</strong>
+          <span>retention window</span>
+        </div>
+        <div>
+          <strong>{auditRetentionDiagnostics.exportDestination.valid ? "Valid" : "Blocked"}</strong>
+          <span>destination</span>
+        </div>
+      </div>
       {!latest ? (
         <p className="emptyState">No audit export records have been prepared.</p>
       ) : (
@@ -2304,13 +2338,14 @@ function AuditExportPanel({
           <div className="integrationConfigHeader">
             <div>
               <strong>{latest.format} export / {latest.eventCount} events</strong>
-              <span>Retention window: {latest.retentionEvents} events</span>
+              <span>Retention window: {latest.retentionEvents} events / checksum {latest.checksum.slice(0, 12)}</span>
             </div>
             <span className="statusPill ready">{latest.status}</span>
           </div>
           <div className="planList">
             <span>{latest.redactionBoundary}</span>
             <span>{latest.storageBoundary}</span>
+            <span>Manifest destination: {latest.manifest.destinationRef}</span>
           </div>
         </div>
       )}
@@ -4150,16 +4185,41 @@ function createMockLifecycleOperationRecord({
 }
 
 function createMockAuditExportRecord(actor: string, existingExports: number): AuditExportRecord {
+  const createdAt = new Date().toISOString();
+  const exportId = `mock-audit-export-${Date.now()}`;
   return {
-    id: `mock-audit-export-${Date.now()}`,
+    id: exportId,
     status: "Prepared",
     requestedBy: actor,
     format: "JSONL",
     eventCount: existingExports,
     retentionEvents: 500,
+    checksumAlgorithm: "sha256",
+    checksum: `mock${String(existingExports).padStart(60, "0")}`,
+    manifest: {
+      exportId,
+      eventCount: existingExports,
+      retentionWindowEvents: 500,
+      generatedAt: createdAt,
+      destinationRef: "browser-mock",
+    },
     redactionBoundary: "Sensitive credential material is excluded from audit events.",
     storageBoundary: "Browser mock export is metadata only; configure object storage for production exports.",
-    createdAt: new Date().toISOString(),
+    createdAt,
+  };
+}
+
+function createMockAuditRetentionDiagnostics(): AuditRetentionDiagnostics {
+  return {
+    retentionEvents: 500,
+    currentEvents: 0,
+    bounded: true,
+    exportDestination: {
+      configured: false,
+      valid: true,
+      destinationRef: "browser-mock",
+      message: "Browser mock export is metadata only; configure object storage for production exports.",
+    },
   };
 }
 

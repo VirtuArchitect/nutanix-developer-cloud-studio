@@ -186,6 +186,14 @@
 - Add phase gate coverage for Postgres scaffold validation - done
 - Add tests for config, schema, readiness, and fail-closed behavior - done
 
+## Phase 23 - Audit Export Retention Hardening (`v2.1.0-audit-export-retention-hardening`)
+
+- Add audit export manifests with checksums - done
+- Add retention diagnostics API and Admin Operations view - done
+- Add destination-reference validation without storing access material - done
+- Add phase gate coverage for audit export configuration - done
+- Add tests for manifest, checksum, destination, retention, and API/client behavior - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

@@ -454,9 +454,34 @@ export type AuditExportRecord = {
   format: "JSONL";
   eventCount: number;
   retentionEvents: number;
+  checksumAlgorithm: "sha256";
+  checksum: string;
+  manifest: {
+    exportId: string;
+    eventCount: number;
+    retentionWindowEvents: number;
+    firstEventAt?: string;
+    lastEventAt?: string;
+    generatedAt: string;
+    destinationRef: string;
+  };
   redactionBoundary: string;
   storageBoundary: string;
   createdAt: string;
+};
+
+export type AuditRetentionDiagnostics = {
+  retentionEvents: number;
+  currentEvents: number;
+  bounded: boolean;
+  oldestEventAt?: string;
+  newestEventAt?: string;
+  exportDestination: {
+    configured: boolean;
+    valid: boolean;
+    destinationRef: string;
+    message: string;
+  };
 };
 
 export type ControlPlaneJobTransition = {

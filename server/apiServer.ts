@@ -35,6 +35,7 @@ import {
 } from "./platformServicePreflight";
 import {
   createAuditExportRecord,
+  createAuditRetentionDiagnostics,
   createLifecycleOperationRecord,
   PrivateCloudOperationError,
 } from "./privateCloudOperations";
@@ -325,6 +326,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/audit-exports") {
     sendJson(response, 200, { data: state.auditExports });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/audit/retention") {
+    sendJson(response, 200, { data: createAuditRetentionDiagnostics(state) });
     return;
   }
 
@@ -932,6 +938,8 @@ async function routeApi(
       format: auditExport.format,
       eventCount: auditExport.eventCount,
       retentionEvents: auditExport.retentionEvents,
+      checksumAlgorithm: auditExport.checksumAlgorithm,
+      destinationRef: auditExport.manifest.destinationRef,
     });
     await store.save(state);
     sendJson(response, 201, { data: auditExport });

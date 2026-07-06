@@ -20,6 +20,18 @@ function Invoke-Step {
   & $Command
 }
 
+function Invoke-Native {
+  param(
+    [string]$FilePath,
+    [string[]]$Arguments = @()
+  )
+
+  & $FilePath @Arguments
+  if ($LASTEXITCODE -ne 0) {
+    throw "Native command failed with exit code ${LASTEXITCODE}: $FilePath $($Arguments -join ' ')"
+  }
+}
+
 function Assert-PentestScope {
   param([string]$Path)
 
@@ -56,11 +68,11 @@ Set-Location $repoRoot
 Write-Output "Running phase gate for $TargetPhase"
 
 Invoke-Step "Install check" {
-  npm.cmd install --package-lock-only
+  Invoke-Native "npm.cmd" @("install", "--package-lock-only")
 }
 
 Invoke-Step "Dependency audit" {
-  npm.cmd audit --audit-level=moderate
+  Invoke-Native "npm.cmd" @("audit", "--audit-level=moderate")
 }
 
 Invoke-Step "Secret scan" {
@@ -93,23 +105,27 @@ Invoke-Step "Secret scan" {
 }
 
 Invoke-Step "Automated tests, build, and browser smoke" {
-  npm.cmd run test:all
+  Invoke-Native "npm.cmd" @("run", "test:all")
 }
 
 Invoke-Step "Hosted starter smoke" {
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-hosted-starter.ps1
+  Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\validate-hosted-starter.ps1")
 }
 
 Invoke-Step "On-prem configuration validation" {
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-onprem-config.ps1
+  Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\validate-onprem-config.ps1")
 }
 
 Invoke-Step "Postgres repository scaffold validation" {
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-postgres-repository.ps1
+  Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\validate-postgres-repository.ps1")
+}
+
+Invoke-Step "Audit export configuration validation" {
+  Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\validate-audit-export-config.ps1")
 }
 
 Invoke-Step "State backup and restore smoke" {
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-state-backup-restore.ps1
+  Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\test-state-backup-restore.ps1")
 }
 
 if ($IncludeAuthorizedPentest) {

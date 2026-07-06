@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.0.0-postgres-repository-hardening`.
+This project uses release tags for public milestones. The current release is `v2.1.0-audit-export-retention-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,23 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.1.0-audit-export-retention-hardening] - 2026-07-06
+
+### Added
+
+- Audit export manifests with event count, retention window, generated timestamp, destination reference, and SHA-256 checksum.
+- Audit retention diagnostics API for retained event count, bounds, oldest/newest events, and destination status.
+- Admin Operations retention diagnostics and manifest evidence.
+- Audit export destination-reference validation that rejects embedded auth material.
+- Phase gate validation for audit export configuration.
+- Tests for manifest creation, checksum format, destination validation, retention diagnostics, and API/client coverage.
+
+### Notes
+
+- Export destination references are metadata only and do not store access material.
+- Audit export remains a prepared record until external storage is configured.
+- Real provisioning remains disabled.
 
 ## [v2.0.0-postgres-repository-hardening] - 2026-07-06
 

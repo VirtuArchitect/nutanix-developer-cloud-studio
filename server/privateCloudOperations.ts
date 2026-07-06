@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import type {
   AuditExportRecord,
+  AuditRetentionDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
 } from "../src/data/cloudStudioDomain";
@@ -116,15 +118,86 @@ export function createLifecycleOperationRecord(
 
 export function createAuditExportRecord(state: ApiState, actor: string): AuditExportRecord {
   const retentionEvents = Number(process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500);
+  const destination = validateAuditExportDestination(process.env.NDC_AUDIT_EXPORT_DESTINATION_REF ?? "");
+  const createdAt = new Date().toISOString();
+  const eventWindow = state.auditEvents.slice(0, retentionEvents);
+  const firstEventAt = eventWindow[eventWindow.length - 1]?.createdAt;
+  const lastEventAt = eventWindow[0]?.createdAt;
+  const manifest = {
+    exportId: `audit-export-${Date.now()}`,
+    eventCount: eventWindow.length,
+    retentionWindowEvents: retentionEvents,
+    firstEventAt,
+    lastEventAt,
+    generatedAt: createdAt,
+    destinationRef: destination.destinationRef,
+  };
+  const checksum = createHash("sha256")
+    .update(JSON.stringify({
+      manifest,
+      events: eventWindow.map((event) => ({
+        id: event.id,
+        action: event.action,
+        actor: event.actor,
+        target: event.target,
+        createdAt: event.createdAt,
+      })),
+    }))
+    .digest("hex");
+
   return {
-    id: `audit-export-${Date.now()}`,
+    id: manifest.exportId,
     status: "Prepared",
     requestedBy: actor,
     format: "JSONL",
-    eventCount: state.auditEvents.length,
+    eventCount: eventWindow.length,
     retentionEvents,
+    checksumAlgorithm: "sha256",
+    checksum,
+    manifest,
     redactionBoundary: "Sensitive credential material is excluded from audit events.",
-    storageBoundary: "Export record is metadata only; configure external object storage before production exports.",
-    createdAt: new Date().toISOString(),
+    storageBoundary: destination.message,
+    createdAt,
+  };
+}
+
+export function createAuditRetentionDiagnostics(state: ApiState): AuditRetentionDiagnostics {
+  const retentionEvents = Number(process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500);
+  const destination = validateAuditExportDestination(process.env.NDC_AUDIT_EXPORT_DESTINATION_REF ?? "");
+  return {
+    retentionEvents,
+    currentEvents: state.auditEvents.length,
+    bounded: state.auditEvents.length <= retentionEvents,
+    oldestEventAt: state.auditEvents[state.auditEvents.length - 1]?.createdAt,
+    newestEventAt: state.auditEvents[0]?.createdAt,
+    exportDestination: destination,
+  };
+}
+
+export function validateAuditExportDestination(destinationRef: string): AuditRetentionDiagnostics["exportDestination"] {
+  if (!destinationRef) {
+    return {
+      configured: false,
+      valid: true,
+      destinationRef: "not-configured",
+      message: "Export record is metadata only; configure external object storage before production exports.",
+    };
+  }
+
+  const hasEmbeddedAuthMaterial = /:\/\/[^/]*@/.test(destinationRef) || /[?&](key|sig|credential)=/i.test(destinationRef);
+  if (hasEmbeddedAuthMaterial) {
+    return {
+      configured: true,
+      valid: false,
+      destinationRef: "invalid-auth-material",
+      message: "Destination references must not include embedded auth material.",
+    };
+  }
+
+  return {
+    configured: true,
+    valid: true,
+    destinationRef,
+    message: "Destination reference is structurally valid. Store access material outside NDC Studio.",
   };
 }

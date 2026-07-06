@@ -108,6 +108,8 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Prepare audit export" }).click();
   await expect(page.getByText("Audit export readiness")).toBeVisible();
   await expect(page.getByText("Sensitive credential material is excluded from audit events.")).toBeVisible();
+  await expect(page.getByText("retention window", { exact: true })).toBeVisible();
+  await expect(page.getByText("Manifest destination: browser-mock")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

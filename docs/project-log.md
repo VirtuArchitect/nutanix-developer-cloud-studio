@@ -162,6 +162,11 @@
 - Added startup fail-closed behavior for invalid Postgres mode.
 - Added migration scaffold validation script and phase gate step.
 - Added tests for Postgres readiness and scaffold fail-closed behavior.
+- Started `v2.1.0-audit-export-retention-hardening`.
+- Added audit export manifests with SHA-256 checksums.
+- Added audit retention diagnostics API and Admin Operations metrics.
+- Added audit export destination-reference validation and phase gate coverage.
+- Added tests for manifest, checksum, destination validation, and retention diagnostics.
 
 ## Documentation Rule
 

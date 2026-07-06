@@ -50,6 +50,7 @@ The container uses these environment variables:
 - `NDC_REPOSITORY=json`
 - `DATABASE_URL=` blank unless a future approved database driver is added
 - `NDC_AUDIT_RETENTION_EVENTS=500`
+- `NDC_AUDIT_EXPORT_DESTINATION_REF=` blank unless a metadata-only export destination reference is approved
 - `NDC_RATE_LIMIT_PER_MINUTE=120`
 - `NDC_PRISM_REAL_ADAPTER=disabled`
 - `NDC_REQUIRE_TRUSTED_IDENTITY=false`
@@ -71,6 +72,15 @@ Validate the Postgres scaffold and migration files:
 
 The validator checks migration presence, idempotent table creation, schema naming, and structural database URL requirements. It does not open a database connection and does not print connection string values.
 
+Validate audit export and retention settings:
+
+```powershell
+.\scripts\validate-audit-export-config.ps1
+.\scripts\validate-audit-export-config.ps1 -DestinationRef object://audit-exports/ndc-studio -RetentionEvents 500
+```
+
+Destination references must not contain embedded auth material. Store access material outside NDC Studio.
+
 ## Deployment Matrix
 
 | Area | Starter setting | Production expectation |
@@ -80,6 +90,7 @@ The validator checks migration presence, idempotent table creation, schema namin
 | Identity | Trusted OIDC-shaped headers | Validated OIDC tokens before forwarding identity headers |
 | State | `NDC_REPOSITORY=json`, `NDC_DATA_FILE=/data/ndc-studio.json` | Durable database with backup and restore tests |
 | Audit | `NDC_AUDIT_RETENTION_EVENTS=500` | Retention aligned to policy and export destination |
+| Audit export | `NDC_AUDIT_EXPORT_DESTINATION_REF=` | Metadata-only destination reference; access material stays outside the app |
 | Rate limit | `NDC_RATE_LIMIT_PER_MINUTE=120` | Tuned per ingress and expected operator traffic |
 | Prism adapter | `NDC_PRISM_REAL_ADAPTER=disabled` | Enabled only in a future authorized adapter release |
 | Trusted identity | `NDC_REQUIRE_TRUSTED_IDENTITY=false` | Set to `true` only behind an OIDC-validating ingress that forwards required identity headers |

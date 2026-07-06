@@ -268,6 +268,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Database connection values are not logged by validators.
 - `NDC_REPOSITORY=postgres` remains fail-closed until an approved runtime driver phase.
 
+## Current Audit Export Retention Hardening Slice
+
+- Audit exports include manifest metadata and SHA-256 checksums.
+- Retention diagnostics expose current event count, retention window, bounded status, oldest/newest event timestamps, and destination status.
+- Admin Operations surfaces retention diagnostics and manifest evidence.
+- Destination-reference validation rejects embedded auth material.
+- Export delivery remains metadata-only until external storage is configured.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

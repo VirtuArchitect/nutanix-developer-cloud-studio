@@ -674,6 +674,7 @@ describe("api server", () => {
       body: JSON.stringify({ environmentName: "ops-dev", operation: "Extend" }),
     });
     const auditExport = await requestJson("/api/audit-exports", { method: "POST" });
+    const retention = await requestJson("/api/audit/retention");
     const operations = await requestJson("/api/private-cloud/lifecycle-operations");
     const auditExports = await requestJson("/api/audit-exports");
     const auditEvents = await requestJson("/api/audit-events");
@@ -695,6 +696,18 @@ describe("api server", () => {
       status: "Prepared",
       format: "JSONL",
       retentionEvents: 500,
+      checksumAlgorithm: "sha256",
+    });
+    expect(auditExport.data.checksum).toMatch(/^[a-f0-9]{64}$/);
+    expect(auditExport.data.manifest).toMatchObject({
+      eventCount: expect.any(Number),
+      retentionWindowEvents: 500,
+      destinationRef: "not-configured",
+    });
+    expect(retention.data).toMatchObject({
+      retentionEvents: 500,
+      bounded: true,
+      exportDestination: expect.objectContaining({ valid: true }),
     });
     expect(operations.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: operation.data.id })]));
     expect(auditExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: auditExport.data.id })]));

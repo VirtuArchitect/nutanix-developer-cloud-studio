@@ -2,6 +2,7 @@ import type {
   ApprovalRequest,
   AhvControlledProvisioningRun,
   AuditExportRecord,
+  AuditRetentionDiagnostics,
   ControlledProvisioningGate,
   ControlPlaneJob,
   Environment,
@@ -245,6 +246,10 @@ export async function fetchLifecycleOperationsFromApi() {
 
 export async function fetchAuditExportsFromApi() {
   return fetchJson<AuditExportRecord[]>("/api/audit-exports");
+}
+
+export async function fetchAuditRetentionDiagnosticsFromApi() {
+  return fetchJson<AuditRetentionDiagnostics>("/api/audit/retention");
 }
 
 export async function createLabAuthorizationScopeViaApi(payload: {

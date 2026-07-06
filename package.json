@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.0.0-postgres-repository-hardening",
+  "version": "2.1.0-audit-export-retention-hardening",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
