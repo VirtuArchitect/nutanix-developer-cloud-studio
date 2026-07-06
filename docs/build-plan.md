@@ -182,6 +182,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Postgres repository and migration files are scaffolded without adding a runtime database dependency.
 - GitHub Security workflow adds CodeQL and dependency review checks.
 
+## Current VM Sandbox Dry-Run Slice
+
+- API creates and lists AHV VM sandbox dry-run plans.
+- Dry-run validation checks published VM template, approved AHV image, project, cluster, network, lifecycle category, quota, expiry, and approval evidence.
+- Plans include cost estimate, rollback-plan notes, and `provisioningEnabled=false`.
+- Admin Control Plane tab can generate and review dry-run plans.
+- No Prism Central mutation calls are made.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

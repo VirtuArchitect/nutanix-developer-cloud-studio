@@ -35,14 +35,14 @@ flowchart LR
 Run locally:
 
 ```powershell
-.\scripts\run-phase-gate.ps1 -TargetPhase v0.9.0-production-foundation
+.\scripts\run-phase-gate.ps1 -TargetPhase v1.0.0-vm-sandbox-dry-run
 ```
 
 With an explicitly authorized security scope:
 
 ```powershell
 .\scripts\run-phase-gate.ps1 `
-  -TargetPhase v0.9.0-production-foundation `
+  -TargetPhase v1.0.0-vm-sandbox-dry-run `
   -PentestScopePath .\PENTEST_SCOPE_TEMPLATE.md `
   -IncludeAuthorizedPentest
 ```

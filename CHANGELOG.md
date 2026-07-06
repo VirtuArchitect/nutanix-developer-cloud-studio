@@ -2,14 +2,30 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.9.0-production-foundation`.
+This project uses release tags for public milestones. The current release is `v1.0.0-vm-sandbox-dry-run`.
 
 ## [Unreleased]
 
 ### Planned
 
-- Add AHV VM sandbox dry-run planning with image, subnet, project, category, quota, expiry, cost, and approval evidence validation.
+- Add controlled provisioning only after authorized lab scope, manual approval, rollback/destroy plan, and pentest gate.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.0.0-vm-sandbox-dry-run] - 2026-07-06
+
+### Added
+
+- AHV VM sandbox dry-run planning model.
+- API endpoints for listing and creating VM sandbox dry-run plans.
+- Validation for published VM template, approved AHV image, project, cluster, network, lifecycle category, quota, expiry, and approval evidence.
+- Cost estimate, rollback plan, and explicit `provisioningEnabled=false` evidence in each dry-run plan.
+- Admin Control Plane panel for generating and reviewing VM sandbox dry-run plans.
+- Unit/API/client/E2E coverage for VM sandbox dry-run behavior.
+
+### Notes
+
+- This release does not create, clone, power on, resize, or delete AHV VMs.
+- Failed validations are reported in the dry-run plan instead of triggering provisioning.
 
 ## [v0.9.0-production-foundation] - 2026-07-06
 

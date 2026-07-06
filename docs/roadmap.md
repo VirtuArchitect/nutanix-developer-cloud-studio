@@ -99,6 +99,14 @@
 - Add request logging, correlation IDs, rate limits, and security headers - done
 - Add branch/release security gates for production deployment - starter done
 
+## Phase 12 - VM Sandbox Dry-Run (`v1.0.0-vm-sandbox-dry-run`)
+
+- Add Linux VM App Sandbox dry-run planning adapter - done
+- Validate fixed image/profile/subnet choices from approved registry - done
+- Validate owner, cost, expiry, environment tags, quota, project, cluster, and network - done
+- Add approval evidence and rollback/destroy plan preview - done
+- Keep real provisioning disabled until controlled provisioning phase - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

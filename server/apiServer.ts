@@ -30,6 +30,7 @@ import {
   type RequestContext,
 } from "./security";
 import type { ApiStore } from "./storage";
+import { createVmSandboxDryRunPlan } from "./vmSandboxDryRun";
 import type {
   IntegrationConfig,
   LabAdapterSnapshot,
@@ -44,6 +45,7 @@ import type {
   ApiResponse,
   ApiState,
   CreateEnvironmentRequest,
+  CreateVmSandboxDryRunRequest,
   RegistryAction,
   UpdateIntegrationConfigRequest,
 } from "./types";
@@ -231,6 +233,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/control-plane/jobs") {
     sendJson(response, 200, { data: state.controlPlaneJobs });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/vm-sandbox/dry-runs") {
+    sendJson(response, 200, { data: state.vmSandboxDryRuns });
     return;
   }
 
@@ -572,6 +579,28 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 200, { data: state.prismInventoryImport });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/vm-sandbox/dry-runs") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateVmSandboxDryRunRequest>(request);
+    const plan = createVmSandboxDryRunPlan(state, body, context.session.user);
+    state.vmSandboxDryRuns = [plan, ...state.vmSandboxDryRuns.filter((item) => item.environmentName !== plan.environmentName)];
+    addAuditEvent(state, "vm-sandbox.dry-run.planned", context.session.user, plan.environmentName, {
+      imageProfileId: plan.imageProfileId,
+      project: plan.project,
+      cluster: plan.cluster,
+      network: plan.network,
+      category: plan.category,
+      quota: plan.quota,
+      expiryDays: plan.expiryDays,
+      estimatedMonthlyCost: plan.estimatedMonthlyCost,
+      validationsPassed: plan.validations.every((validation) => validation.passed),
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: plan });
     return;
   }
 

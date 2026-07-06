@@ -40,6 +40,7 @@ The React frontend now checks `/healthz` on load:
 - Environment destroy requests queue simulated teardown lifecycle jobs; no real infrastructure is deleted.
 - Template registry, resource profile governance, and policy bundles are API-backed so platform teams can model publication controls before real provisioning is enabled.
 - Prism Central read-only inventory import is API-backed and remains mock-only until lab authorization enables live discovery.
+- AHV VM sandbox dry-run planning is API-backed and validates inputs without provisioning.
 
 ## Endpoints
 
@@ -65,6 +66,7 @@ The React frontend now checks `/healthz` on load:
 - `GET /api/provisioning/adapters`
 - `GET /api/provisioning-jobs`
 - `GET /api/control-plane/jobs`
+- `GET /api/vm-sandbox/dry-runs`
 - `GET /api/approvals`
 - `GET /api/audit-events`
 - `GET /api/environments/:name`
@@ -177,6 +179,15 @@ The discovery endpoint simulates read-only adapter readiness. The Prism inventor
 - `POST /api/control-plane/jobs/:id/fail`
 
 Control-plane jobs model queue and worker execution states. Worker actions update transition history and audit events. They do not call real infrastructure APIs.
+
+Required role: `Platform Admin`.
+
+### VM Sandbox Dry-Run
+
+- `GET /api/vm-sandbox/dry-runs`
+- `POST /api/vm-sandbox/dry-runs`
+
+The VM sandbox dry-run endpoint validates the Linux VM App Sandbox path against approved AHV image profiles, project, cluster, network, lifecycle category, quota, expiry, cost, and approval evidence. It returns validation results, cost estimate, approval evidence, and rollback-plan notes with `provisioningEnabled=false`.
 
 Required role: `Platform Admin`.
 

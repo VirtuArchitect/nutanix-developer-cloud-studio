@@ -107,6 +107,11 @@
 - Added audit retention for prototype stores.
 - Added Postgres repository scaffold and initial SQL migration.
 - Added GitHub Security workflow for CodeQL and dependency review.
+- Started `v1.0.0-vm-sandbox-dry-run`.
+- Added AHV VM sandbox dry-run planning API and Admin Control Plane panel.
+- Added validation for approved image, published template, project, cluster, network, category, quota, expiry, cost, and approval evidence.
+- Added rollback-plan evidence while keeping real provisioning disabled.
+- Added tests and smoke coverage for VM sandbox dry-run planning.
 
 ## Documentation Rule
 

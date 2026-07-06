@@ -28,6 +28,7 @@ flowchart LR
     Provider --> Adapters["Mock Nutanix Adapter Contracts"]
     Api --> Approvals["Approval Queue"]
     Api --> Queue["Control Plane Queue"]
+    Api --> VmDryRun["VM Sandbox Dry-run Planner"]
     Api --> Identity["Mock OIDC Session"]
     Api --> Rbac["RBAC Guardrails"]
     Api --> AuditRetention["Audit Retention"]
@@ -54,6 +55,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Integrations: NCI, NKP, NDB, NUS, NCM, and NAI
 - Jobs: simulated provisioning and operational events
 - Control plane jobs: queued orchestration records with worker transitions, retries, failures, and audit evidence
+- VM sandbox dry-run plans: AHV VM planning records with validation, quota, cost, expiry, approval evidence, and rollback evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
 - Policy bundles: reusable governance control groups mapped to template versions
@@ -100,6 +102,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - API-backed Prism read-only inventory import with mock and disabled-real adapter implementations
 - OIDC-shaped request context, RBAC guardrails, request IDs, structured logs, rate limits, and security headers
 - Postgres repository scaffold and SQL migration files for production persistence planning
+- AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
@@ -125,6 +128,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
 - The frontend auto-detects the hosted/on-prem API through `/healthz` and falls back to browser mock mode when the API is unavailable.
 - Production-foundation controls are starter guardrails. Trusted identity headers must be backed by real OIDC validation before production use.
+- VM sandbox dry-run planning validates candidate inputs but does not create, clone, power, resize, tag, or delete VMs.
 
 ## Real Integration Readiness Questions
 

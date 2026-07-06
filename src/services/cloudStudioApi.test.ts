@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkApiHealth,
   createEnvironmentViaApi,
+  createVmSandboxDryRunViaApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
@@ -13,6 +14,7 @@ import {
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
+  fetchVmSandboxDryRunsFromApi,
   requestEnvironmentDestroyViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
@@ -148,6 +150,21 @@ describe("cloudStudioApi", () => {
       2,
       "/api/control-plane/jobs/cp-api-dev/advance",
       expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and creates VM sandbox dry-run plans", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchVmSandboxDryRunsFromApi();
+    await createVmSandboxDryRunViaApi({ environmentName: "vm-plan-dev", imageProfileId: "ahv-rocky-9-hardened" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/vm-sandbox/dry-runs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/vm-sandbox/dry-runs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("vm-plan-dev") })
     );
   });
 

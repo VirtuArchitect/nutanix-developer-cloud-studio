@@ -468,6 +468,9 @@ button {
 .labAdapterList,
 .prismInventoryPanel,
 .prismInventoryList,
+.dryRunPanel,
+.dryRunSummary,
+.dryRunValidationList,
 .controlPlaneList,
 .resourceProfileList,
 .provisioningAdapterList,
@@ -496,6 +499,7 @@ button {
 .integrationConfigRow,
 .labAdapterRow,
 .prismInventoryRow,
+.dryRunValidationRow,
 .resourceProfileRow,
 .provisioningAdapterRow,
 .templateRegistryRow,
@@ -674,6 +678,7 @@ button {
 .integrationConfigRow,
 .labAdapterRow,
 .prismInventoryRow,
+.dryRunValidationRow,
 .resourceProfileRow,
 .provisioningAdapterRow,
 .templateRegistryRow,
@@ -719,6 +724,20 @@ button {
 .prismInventoryRow span,
 .prismInventoryRow small {
   display: block;
+}
+
+.dryRunValidationRow {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.dryRunValidationRow strong,
+.dryRunValidationRow small {
+  display: block;
+}
+
+.dryRunValidationRow small {
+  color: #60747c;
 }
 
 .policyChipRow {

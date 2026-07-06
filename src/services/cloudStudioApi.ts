@@ -15,6 +15,8 @@ import type {
   TemplateRegistryEntry,
   SystemStatus,
   Target,
+  VmSandboxDryRunPlan,
+  VmSandboxDryRunRequest,
 } from "../data/cloudStudioDomain";
 
 export type ApiMode = "api" | "mock";
@@ -187,6 +189,17 @@ export async function fetchProvisioningAdaptersFromApi() {
 
 export async function fetchControlPlaneJobsFromApi() {
   return fetchJson<ControlPlaneJob[]>("/api/control-plane/jobs");
+}
+
+export async function fetchVmSandboxDryRunsFromApi() {
+  return fetchJson<VmSandboxDryRunPlan[]>("/api/vm-sandbox/dry-runs");
+}
+
+export async function createVmSandboxDryRunViaApi(payload: Partial<VmSandboxDryRunRequest>) {
+  return fetchJson<VmSandboxDryRunPlan>("/api/vm-sandbox/dry-runs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function runControlPlaneJobActionViaApi(

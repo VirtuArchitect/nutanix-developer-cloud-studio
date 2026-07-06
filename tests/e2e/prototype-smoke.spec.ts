@@ -56,6 +56,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Profile candidate").first()).toBeVisible();
   await page.getByRole("tab", { name: "Control plane Jobs and approvals" }).click();
   await expect(page.getByText("Provisioning control plane")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "VM sandbox dry-run" })).toBeVisible();
+  await page.getByRole("button", { name: "Generate dry-run" }).click();
+  await expect(page.getByText("AHV image approved")).toBeVisible();
+  await expect(page.getByText("Quota within sandbox limit")).toBeVisible();
+  await expect(page.getByText("Rollback plan")).toBeVisible();
   await expect(page.getByText("smoke-api-dev").first()).toBeVisible();
   await page.getByRole("button", { name: "Advance" }).first().click();
   await expect(page.getByText("Validating")).toBeVisible();

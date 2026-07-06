@@ -308,6 +308,64 @@ describe("api server", () => {
     });
   });
 
+  it("creates AHV VM sandbox dry-run plans without provisioning", async () => {
+    const plan = await requestJson("/api/vm-sandbox/dry-runs", {
+      method: "POST",
+      body: JSON.stringify({
+        environmentName: "vm-plan-dev",
+        owner: "demo.user",
+        imageProfileId: "ahv-rocky-9-hardened",
+        project: "developer-cloud-lab",
+        cluster: "berlin-ahv-lab",
+        network: "dev-segment-placeholder",
+        category: "Lifecycle:30-day-expiry",
+        cpu: 2,
+        memoryGb: 8,
+        diskGb: 80,
+        expiryDays: 30,
+      }),
+    });
+    const plans = await requestJson("/api/vm-sandbox/dry-runs");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(plan.data).toMatchObject({
+      environmentName: "vm-plan-dev",
+      templateId: "vm-app",
+      imageProfileId: "ahv-rocky-9-hardened",
+      provisioningEnabled: false,
+      estimatedMonthlyCost: expect.any(Number),
+    });
+    expect(plan.data.validations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "AHV image approved", passed: true }),
+        expect.objectContaining({ name: "Quota within sandbox limit", passed: true }),
+        expect.objectContaining({ name: "Expiry within policy", passed: true }),
+      ])
+    );
+    expect(plan.data.rollbackPlan[0]).toContain("No rollback actions required");
+    expect(plans.data).toEqual(expect.arrayContaining([expect.objectContaining({ environmentName: "vm-plan-dev" })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "vm-sandbox.dry-run.planned", target: "vm-plan-dev" })])
+    );
+  });
+
+  it("marks VM sandbox dry-run quota failures without provisioning", async () => {
+    const plan = await requestJson("/api/vm-sandbox/dry-runs", {
+      method: "POST",
+      body: JSON.stringify({
+        environmentName: "oversized-vm-plan",
+        cpu: 8,
+        memoryGb: 32,
+        diskGb: 500,
+      }),
+    });
+
+    expect(plan.data.provisioningEnabled).toBe(false);
+    expect(plan.data.validations).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Quota within sandbox limit", passed: false })])
+    );
+  });
+
   it("advances, fails, and retries control-plane jobs", async () => {
     await requestJson("/api/environments", {
       method: "POST",

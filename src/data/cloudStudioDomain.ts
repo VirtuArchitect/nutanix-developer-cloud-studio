@@ -208,6 +208,52 @@ export type PrismInventoryImportResult = {
   mutationOperationsBlocked: string[];
 };
 
+export type VmSandboxDryRunRequest = {
+  environmentName: string;
+  owner: string;
+  imageProfileId: string;
+  project: string;
+  cluster: string;
+  network: string;
+  category: string;
+  cpu: number;
+  memoryGb: number;
+  diskGb: number;
+  expiryDays: number;
+};
+
+export type VmSandboxDryRunPlan = {
+  id: string;
+  environmentName: string;
+  owner: string;
+  templateId: "vm-app";
+  imageProfileId: string;
+  imageName: string;
+  project: string;
+  cluster: string;
+  network: string;
+  category: string;
+  quota: {
+    cpu: number;
+    memoryGb: number;
+    diskGb: number;
+    maxCpu: number;
+    maxMemoryGb: number;
+    maxDiskGb: number;
+  };
+  expiryDays: number;
+  estimatedMonthlyCost: number;
+  approvalEvidence: string[];
+  validations: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  rollbackPlan: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ControlPlaneJobTransition = {
   state: ControlPlaneJobState;
   actor: string;

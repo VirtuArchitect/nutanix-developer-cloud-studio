@@ -16,6 +16,8 @@ import type {
   Template,
   TemplateGovernance,
   TemplateRegistryEntry,
+  VmSandboxDryRunPlan,
+  VmSandboxDryRunRequest,
 } from "../src/data/cloudStudioDomain";
 import type { ProvisioningJob } from "../src/services/nutanixAdapters";
 
@@ -37,6 +39,7 @@ export type ApiState = {
   jobs: ProvisioningJob[];
   approvals: ApprovalRequest[];
   controlPlaneJobs: ControlPlaneJob[];
+  vmSandboxDryRuns: VmSandboxDryRunPlan[];
   auditEvents: AuditEvent[];
 };
 
@@ -62,6 +65,8 @@ export type UpdateIntegrationConfigRequest = {
   credentialProfile?: string;
   status?: IntegrationConfig["status"];
 };
+
+export type CreateVmSandboxDryRunRequest = Partial<VmSandboxDryRunRequest>;
 
 export type RegistryAction = "submit" | "approve" | "deprecate" | "restore";
 

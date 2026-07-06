@@ -127,6 +127,7 @@ export function createDefaultState(): ApiState {
     jobs: [],
     approvals: defaultApprovals(),
     controlPlaneJobs: [],
+    vmSandboxDryRuns: [],
     auditEvents: [],
   };
 }

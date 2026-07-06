@@ -51,6 +51,8 @@ import {
   type Template,
   type TemplateGovernance,
   type TemplateTier,
+  type VmSandboxDryRunPlan,
+  type VmSandboxDryRunRequest,
   type View,
 } from "./data/cloudStudioData";
 import {
@@ -66,6 +68,7 @@ import {
 import {
   checkApiHealth,
   createEnvironmentViaApi,
+  createVmSandboxDryRunViaApi,
   decideApprovalViaApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
@@ -82,6 +85,7 @@ import {
   fetchSessionFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
+  fetchVmSandboxDryRunsFromApi,
   requestEnvironmentDestroyViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
@@ -124,6 +128,7 @@ export function App() {
     deriveMockProvisioningAdapters(integrations)
   );
   const [controlPlaneJobs, setControlPlaneJobs] = useState<ControlPlaneJob[]>([]);
+  const [vmSandboxDryRuns, setVmSandboxDryRuns] = useState<VmSandboxDryRunPlan[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -181,6 +186,7 @@ export function App() {
             apiTemplateRegistry,
             apiPlatformConfig,
             apiProvisioningAdapters,
+            apiVmSandboxDryRuns,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -196,6 +202,7 @@ export function App() {
             fetchTemplateRegistryFromApi(),
             fetchPlatformConfigFromApi(),
             fetchProvisioningAdaptersFromApi(),
+            fetchVmSandboxDryRunsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -213,6 +220,7 @@ export function App() {
             setTemplateRegistry(apiTemplateRegistry);
             setPlatformConfig(apiPlatformConfig);
             setProvisioningAdapters(apiProvisioningAdapters);
+            setVmSandboxDryRuns(apiVmSandboxDryRuns);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -350,6 +358,7 @@ export function App() {
       apiTemplateRegistry,
       apiPlatformConfig,
       apiProvisioningAdapters,
+      apiVmSandboxDryRuns,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -365,6 +374,7 @@ export function App() {
       fetchTemplateRegistryFromApi(),
       fetchPlatformConfigFromApi(),
       fetchProvisioningAdaptersFromApi(),
+      fetchVmSandboxDryRunsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -381,6 +391,7 @@ export function App() {
     setTemplateRegistry(apiTemplateRegistry);
     setPlatformConfig(apiPlatformConfig);
     setProvisioningAdapters(apiProvisioningAdapters);
+    setVmSandboxDryRuns(apiVmSandboxDryRuns);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -556,6 +567,31 @@ export function App() {
     );
   }
 
+  async function createVmSandboxDryRun() {
+    const payload = {
+      environmentName: "vm-sandbox-dry-run",
+      owner: session.user,
+      imageProfileId: "ahv-rocky-9-hardened",
+      project: platformConfig.defaultProject,
+      cluster: platformConfig.defaultCluster,
+      network: platformConfig.networkProfile,
+      category: "Lifecycle:30-day-expiry",
+      cpu: 2,
+      memoryGb: 8,
+      diskGb: 80,
+      expiryDays: 30,
+    };
+
+    if (apiHealth.mode === "api") {
+      const plan = await createVmSandboxDryRunViaApi(payload);
+      await refreshApiState();
+      setVmSandboxDryRuns((current) => [plan, ...current.filter((item) => item.id !== plan.id)]);
+      return;
+    }
+
+    setVmSandboxDryRuns((current) => [createMockVmSandboxDryRun(payload, resourceProfiles, platformConfig, templateRegistry, session.user), ...current]);
+  }
+
   async function requestEnvironmentDestroy(name: string) {
     if (apiHealth.mode === "api") {
       await requestEnvironmentDestroyViaApi(name);
@@ -727,6 +763,7 @@ export function App() {
             platformConfig={platformConfig}
             provisioningAdapters={provisioningAdapters}
             controlPlaneJobs={controlPlaneJobs}
+            vmSandboxDryRuns={vmSandboxDryRuns}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -736,6 +773,7 @@ export function App() {
             runLabDiscovery={runLabDiscovery}
             importPrismInventory={importPrismInventory}
             runControlPlaneJobAction={runControlPlaneJobAction}
+            createVmSandboxDryRun={createVmSandboxDryRun}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
             runResourceProfileAction={runResourceProfileAction}
@@ -1220,6 +1258,7 @@ function AdminView({
   platformConfig,
   provisioningAdapters,
   controlPlaneJobs,
+  vmSandboxDryRuns,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1229,6 +1268,7 @@ function AdminView({
   runLabDiscovery,
   importPrismInventory,
   runControlPlaneJobAction,
+  createVmSandboxDryRun,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
   runResourceProfileAction,
@@ -1248,6 +1288,7 @@ function AdminView({
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
   controlPlaneJobs: ControlPlaneJob[];
+  vmSandboxDryRuns: VmSandboxDryRunPlan[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1260,6 +1301,7 @@ function AdminView({
   runLabDiscovery: (adapterName: string) => void;
   importPrismInventory: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
+  createVmSandboxDryRun: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
     templateId: string,
@@ -1367,6 +1409,9 @@ function AdminView({
         <div className="adminTabPanel">
           <Panel title="Provisioning control plane" action={`${controlPlaneJobs.length} jobs`}>
             <ControlPlaneQueue jobs={controlPlaneJobs} runControlPlaneJobAction={runControlPlaneJobAction} />
+          </Panel>
+          <Panel title="VM sandbox dry-run" action={`${vmSandboxDryRuns.length} plans`}>
+            <VmSandboxDryRunPanel plans={vmSandboxDryRuns} createVmSandboxDryRun={createVmSandboxDryRun} />
           </Panel>
           <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
             <ApprovalQueue
@@ -1565,6 +1610,81 @@ function ControlPlaneQueue({
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+function VmSandboxDryRunPanel({
+  plans,
+  createVmSandboxDryRun,
+}: {
+  plans: VmSandboxDryRunPlan[];
+  createVmSandboxDryRun: () => void;
+}) {
+  const latest = plans[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Dry-run only</strong>
+          <span>Validates VM sandbox inputs and rollback evidence without creating AHV resources.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createVmSandboxDryRun}>
+          <Play size={15} />
+          Generate dry-run
+        </button>
+        {latest && <small>Last plan {formatDateTime(latest.createdAt)}</small>}
+      </div>
+      {!latest ? (
+        <p className="emptyState">No VM sandbox dry-run plans have been generated.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.environmentName}</strong>
+              <span>
+                {latest.imageName} / {latest.project} / {latest.network}
+              </span>
+            </div>
+            <span className="status ready">Dry-run</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Gauge} label="Quota" value={`${latest.quota.cpu} vCPU / ${latest.quota.memoryGb} GB / ${latest.quota.diskGb} GB`} passed />
+            <CheckLine icon={CircleDollarSign} label="Cost" value={`$${latest.estimatedMonthlyCost}/mo estimate`} passed />
+            <CheckLine icon={Activity} label="Expiry" value={`${latest.expiryDays} days`} passed={latest.expiryDays <= 30} />
+            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={false} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.validations.map((validation) => (
+              <div className="dryRunValidationRow" key={validation.name}>
+                <span className={`status ${validation.passed ? "ready" : "failed"}`}>
+                  {validation.passed ? "Pass" : "Fail"}
+                </span>
+                <div>
+                  <strong>{validation.name}</strong>
+                  <small>{validation.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Approval evidence</strong>
+            {latest.approvalEvidence.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Rollback plan</strong>
+            {latest.rollbackPlan.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2363,6 +2483,91 @@ function createMockPrismInventoryRecords(
       rawRef: "mock://prism/vms/billing-sandbox",
     },
   ];
+}
+
+function createMockVmSandboxDryRun(
+  request: VmSandboxDryRunRequest,
+  profiles: ResourceProfile[],
+  config: PlatformConfig,
+  registry: TemplateRegistryEntry[],
+  actor: string
+): VmSandboxDryRunPlan {
+  const image = profiles.find((profile) => profile.id === request.imageProfileId);
+  const templateEntry = registry.find((entry) => entry.templateId === "vm-app");
+  const createdAt = new Date().toISOString();
+  const validations = [
+    {
+      name: "Template published",
+      passed: templateEntry?.status === "Published",
+      detail: templateEntry?.status === "Published" ? "Linux VM App Sandbox is published." : "Template must be published.",
+    },
+    {
+      name: "AHV image approved",
+      passed: image?.kind === "AHV Image" && image.status === "Published",
+      detail: image ? `${image.name} is ${image.status}.` : "Image profile was not found.",
+    },
+    {
+      name: "Project mapped",
+      passed: request.project === config.defaultProject,
+      detail: `Project ${request.project} mapped to platform config.`,
+    },
+    {
+      name: "Network mapped",
+      passed: request.network === config.networkProfile,
+      detail: `Network ${request.network} mapped to platform config.`,
+    },
+    {
+      name: "Quota within sandbox limit",
+      passed: request.cpu <= 4 && request.memoryGb <= 16 && request.diskGb <= 160,
+      detail: `${request.cpu} vCPU, ${request.memoryGb} GB RAM, ${request.diskGb} GB disk requested.`,
+    },
+    {
+      name: "Expiry within policy",
+      passed: request.expiryDays > 0 && request.expiryDays <= 30,
+      detail: `${request.expiryDays} day expiry requested.`,
+    },
+    {
+      name: "Approval evidence present",
+      passed: Boolean(templateEntry?.approvalEvidence && image?.approvedBy),
+      detail: "Template and image approval evidence are required before future provisioning.",
+    },
+  ];
+
+  return {
+    id: `vm-dryrun-${request.environmentName}-${Date.now()}`,
+    environmentName: request.environmentName,
+    owner: request.owner,
+    templateId: "vm-app",
+    imageProfileId: request.imageProfileId,
+    imageName: image?.name ?? "Unknown image profile",
+    project: request.project,
+    cluster: request.cluster,
+    network: request.network,
+    category: request.category,
+    quota: {
+      cpu: request.cpu,
+      memoryGb: request.memoryGb,
+      diskGb: request.diskGb,
+      maxCpu: 4,
+      maxMemoryGb: 16,
+      maxDiskGb: 160,
+    },
+    expiryDays: request.expiryDays,
+    estimatedMonthlyCost: Math.round(request.cpu * 95 + request.memoryGb * 18 + request.diskGb * 2),
+    approvalEvidence: [
+      templateEntry?.approvalEvidence ?? "Template approval evidence is missing.",
+      image?.approvedBy ? `Image approved by ${image.approvedBy} at ${image.approvedAt ?? "unknown time"}.` : "Image approval is missing.",
+      `Dry-run requested by ${actor}; provisioning remains disabled.`,
+    ],
+    validations,
+    rollbackPlan: [
+      "No rollback actions required for dry-run because no infrastructure mutation is performed.",
+      "Future create path must tag VM with owner, expiry, cost center, and template before power-on.",
+      "Future destroy path must remove VM, detach categories, and verify Prism inventory cleanup before closure.",
+    ],
+    provisioningEnabled: false,
+    createdAt,
+  };
 }
 
 function nextRegistryStatus(action: "submit" | "approve" | "deprecate" | "restore"): RegistryStatus {
