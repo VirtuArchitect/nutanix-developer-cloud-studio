@@ -117,6 +117,11 @@
 - Added manual approval, rollback readiness, destroy readiness, authorized scope, and mutation kill switch checks.
 - Added Admin Control Plane gate review UI and audit events for request and approval decisions.
 - Added tests and smoke coverage while keeping real AHV provisioning disabled.
+- Started `v1.2.0-platform-services`.
+- Added API-backed platform-service request planning for NKP namespace, NDB PostgreSQL, NUS storage, and NAI endpoint flows.
+- Added VM lifecycle proof gating, profile validation, provider matching, cost estimates, rollback notes, and cleanup plans.
+- Added Admin Control Plane platform-service flow planning UI.
+- Added tests and smoke coverage while keeping real NKP, NDB, NUS, and NAI provisioning disabled.
 
 ## Documentation Rule
 

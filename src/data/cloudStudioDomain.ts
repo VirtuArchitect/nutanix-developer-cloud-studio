@@ -294,6 +294,34 @@ export type ControlledProvisioningGate = {
   updatedAt: string;
 };
 
+export type PlatformServiceKind = "NKP Namespace" | "NDB PostgreSQL" | "NUS Storage" | "NAI Endpoint";
+
+export type PlatformServiceRequest = {
+  id: string;
+  kind: PlatformServiceKind;
+  serviceName: string;
+  environmentName: string;
+  owner: string;
+  profileId: string;
+  profileName: string;
+  provider: ProvisioningAdapterName;
+  status: "Blocked" | "Ready for approval" | "Needs approval";
+  dependsOnVmLifecycle: true;
+  vmLifecycleProven: boolean;
+  validations: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  estimatedMonthlyCost: number;
+  approvalRequired: boolean;
+  approvalEvidence: string[];
+  rollbackPlan: string[];
+  cleanupPlan: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ControlPlaneJobTransition = {
   state: ControlPlaneJobState;
   actor: string;

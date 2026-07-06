@@ -3,6 +3,7 @@ import {
   checkApiHealth,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
+  createPlatformServiceRequestViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   fetchControlledProvisioningGatesFromApi,
@@ -11,6 +12,7 @@ import {
   fetchLabAdaptersFromApi,
   fetchPolicyBundlesFromApi,
   fetchPlatformConfigFromApi,
+  fetchPlatformServiceRequestsFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchResourceProfilesFromApi,
@@ -189,6 +191,21 @@ describe("cloudStudioApi", () => {
       3,
       "/api/vm-sandbox/controlled-provisioning/vm-controlled-1/approve",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("Operator approval recorded.") })
+    );
+  });
+
+  it("fetches and creates platform service requests", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchPlatformServiceRequestsFromApi();
+    await createPlatformServiceRequestViaApi({ kind: "NDB PostgreSQL", environmentName: "payments-dev" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/platform-services/requests", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/platform-services/requests",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("NDB PostgreSQL") })
     );
   });
 

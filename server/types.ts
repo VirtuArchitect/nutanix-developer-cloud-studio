@@ -8,6 +8,8 @@ import type {
   IntegrationConfig,
   LabAdapterSnapshot,
   PlatformConfig,
+  PlatformServiceKind,
+  PlatformServiceRequest,
   PlatformSession,
   PolicyBundle,
   PrismInventoryImportResult,
@@ -43,6 +45,7 @@ export type ApiState = {
   controlPlaneJobs: ControlPlaneJob[];
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
   controlledProvisioningGates: ControlledProvisioningGate[];
+  platformServiceRequests: PlatformServiceRequest[];
   auditEvents: AuditEvent[];
 };
 
@@ -81,6 +84,14 @@ export type CreateControlledProvisioningGateRequest = {
 export type ControlledProvisioningDecisionRequest = {
   decision: ControlledProvisioningDecision;
   evidence?: string;
+};
+
+export type CreatePlatformServiceRequest = {
+  kind: PlatformServiceKind;
+  serviceName?: string;
+  environmentName?: string;
+  owner?: string;
+  profileId?: string;
 };
 
 export type RegistryAction = "submit" | "approve" | "deprecate" | "restore";

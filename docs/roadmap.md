@@ -114,6 +114,15 @@
 - Add Admin Control Plane gate review and approval UI - done
 - Keep real AHV provisioning disabled until a future authorized adapter phase - done
 
+## Phase 14 - Platform Services (`v1.2.0-platform-services`)
+
+- Add NKP namespace request planning - done
+- Add NDB PostgreSQL request planning - done
+- Add NUS storage request planning - done
+- Add NAI endpoint request planning - done
+- Gate all platform-service flows on VM lifecycle proof - done
+- Keep real platform-service provisioning disabled until service-specific adapter phases - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

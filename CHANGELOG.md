@@ -2,14 +2,32 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.1.0-controlled-provisioning`.
+This project uses release tags for public milestones. The current release is `v1.2.0-platform-services`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
+- Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.2.0-platform-services] - 2026-07-06
+
+### Added
+
+- Platform-service request model for NKP namespace, NDB PostgreSQL, NUS storage, and NAI endpoint flows.
+- API endpoints for listing and planning platform-service requests.
+- Validation for published service profiles, provider match, service naming, environment mapping, and VM lifecycle proof.
+- Admin Control Plane panel for planning NKP, NDB, NUS, and NAI platform-service flows.
+- Cost estimates, approval evidence, rollback notes, cleanup plans, and audit events for platform-service requests.
+- Unit/API/client/E2E coverage for platform-service planning behavior.
+
+### Notes
+
+- Platform-service requests are planning records only. They do not call NKP, NDB, NUS, or NAI APIs.
+- Requests remain blocked until controlled VM create, verify, rollback, and destroy proof exists.
+- `provisioningEnabled` remains `false`.
 
 ## [v1.1.0-controlled-provisioning] - 2026-07-06
 

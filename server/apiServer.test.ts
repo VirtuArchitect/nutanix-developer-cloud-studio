@@ -421,6 +421,37 @@ describe("api server", () => {
     );
   });
 
+  it("plans platform service requests after checking VM lifecycle proof", async () => {
+    const serviceRequest = await requestJson("/api/platform-services/requests", {
+      method: "POST",
+      body: JSON.stringify({
+        kind: "NDB PostgreSQL",
+        environmentName: "payments-dev",
+      }),
+    });
+    const requests = await requestJson("/api/platform-services/requests");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(serviceRequest.data).toMatchObject({
+      kind: "NDB PostgreSQL",
+      provider: "NDB",
+      status: "Blocked",
+      vmLifecycleProven: false,
+      provisioningEnabled: false,
+    });
+    expect(serviceRequest.data.validations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Profile published", passed: true }),
+        expect.objectContaining({ name: "VM lifecycle proven", passed: false }),
+      ])
+    );
+    expect(serviceRequest.data.cleanupPlan[0]).toContain("Confirm");
+    expect(requests.data).toEqual(expect.arrayContaining([expect.objectContaining({ kind: "NDB PostgreSQL" })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "platform-service.request.planned" })])
+    );
+  });
+
   it("advances, fails, and retries control-plane jobs", async () => {
     await requestJson("/api/environments", {
       method: "POST",

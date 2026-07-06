@@ -68,6 +68,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Mutation kill switch enabled")).toBeVisible();
   await page.getByRole("button", { name: "Approve gate" }).click();
   await expect(page.getByText("Mutation disabled")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Platform service flows" })).toBeVisible();
+  await page.getByRole("button", { name: "Plan NDB PostgreSQL" }).click();
+  await expect(page.getByText("VM lifecycle proven")).toBeVisible();
+  await expect(page.getByText("Complete controlled VM create, verify, rollback, and destroy proof before platform services are enabled.")).toBeVisible();
   await expect(page.getByText("smoke-api-dev").first()).toBeVisible();
   await page.getByRole("button", { name: "Advance" }).first().click();
   await expect(page.getByText("Validating")).toBeVisible();

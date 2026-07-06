@@ -197,6 +197,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Control Plane tab can request, approve, and reject gate reviews.
 - Gate approval records operator intent only; `provisioningEnabled=false` remains enforced.
 
+## Current Platform Services Slice
+
+- API creates and lists NKP namespace, NDB PostgreSQL, NUS storage, and NAI endpoint request plans.
+- Request validation checks published profile, provider mapping, service name, environment reference, and VM lifecycle proof.
+- Plans include cost estimates, approval evidence, rollback notes, cleanup plans, and `provisioningEnabled=false`.
+- Admin Control Plane tab can plan the four platform-service flows.
+- No NKP, NDB, NUS, or NAI API calls are made.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

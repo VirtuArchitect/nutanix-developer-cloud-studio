@@ -202,6 +202,15 @@ The controlled provisioning gate attaches to a VM sandbox dry-run plan and recor
 
 Required roles: `Platform Admin` to request a gate review; `Platform Admin` or `Approver` to approve or reject.
 
+### Platform Service Requests
+
+- `GET /api/platform-services/requests`
+- `POST /api/platform-services/requests`
+
+The platform-service request endpoint plans NKP namespace, NDB PostgreSQL, NUS storage, and NAI endpoint flows. It validates the published resource profile, provider mapping, service name, environment reference, and VM lifecycle proof. Requests include cost estimates, approval evidence, rollback notes, cleanup plans, and `provisioningEnabled=false`.
+
+Required role: `Developer` or `Platform Admin`.
+
 ## Production Foundation Controls
 
 The hosted starter now adds:

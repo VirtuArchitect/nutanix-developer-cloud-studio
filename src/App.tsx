@@ -39,6 +39,8 @@ import {
   templateRegistry as defaultTemplateRegistry,
   type PlatformSession,
   type PlatformConfig,
+  type PlatformServiceKind,
+  type PlatformServiceRequest,
   type PolicyBundle,
   type PrismInventoryImportResult,
   type PrismInventoryRecord,
@@ -70,6 +72,7 @@ import {
   checkApiHealth,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
+  createPlatformServiceRequestViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
@@ -82,6 +85,7 @@ import {
   fetchIntegrationsFromApi,
   fetchLabAdaptersFromApi,
   fetchPlatformConfigFromApi,
+  fetchPlatformServiceRequestsFromApi,
   fetchPolicyBundlesFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
@@ -134,6 +138,7 @@ export function App() {
   const [controlPlaneJobs, setControlPlaneJobs] = useState<ControlPlaneJob[]>([]);
   const [vmSandboxDryRuns, setVmSandboxDryRuns] = useState<VmSandboxDryRunPlan[]>([]);
   const [controlledProvisioningGates, setControlledProvisioningGates] = useState<ControlledProvisioningGate[]>([]);
+  const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -193,6 +198,7 @@ export function App() {
             apiProvisioningAdapters,
             apiVmSandboxDryRuns,
             apiControlledProvisioningGates,
+            apiPlatformServiceRequests,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -210,6 +216,7 @@ export function App() {
             fetchProvisioningAdaptersFromApi(),
             fetchVmSandboxDryRunsFromApi(),
             fetchControlledProvisioningGatesFromApi(),
+            fetchPlatformServiceRequestsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -229,6 +236,7 @@ export function App() {
             setProvisioningAdapters(apiProvisioningAdapters);
             setVmSandboxDryRuns(apiVmSandboxDryRuns);
             setControlledProvisioningGates(apiControlledProvisioningGates);
+            setPlatformServiceRequests(apiPlatformServiceRequests);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -368,6 +376,7 @@ export function App() {
       apiProvisioningAdapters,
       apiVmSandboxDryRuns,
       apiControlledProvisioningGates,
+      apiPlatformServiceRequests,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -385,6 +394,7 @@ export function App() {
       fetchProvisioningAdaptersFromApi(),
       fetchVmSandboxDryRunsFromApi(),
       fetchControlledProvisioningGatesFromApi(),
+      fetchPlatformServiceRequestsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -403,6 +413,7 @@ export function App() {
     setProvisioningAdapters(apiProvisioningAdapters);
     setVmSandboxDryRuns(apiVmSandboxDryRuns);
     setControlledProvisioningGates(apiControlledProvisioningGates);
+    setPlatformServiceRequests(apiPlatformServiceRequests);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -656,6 +667,26 @@ export function App() {
     );
   }
 
+  async function createPlatformServiceRequest(kind: PlatformServiceKind) {
+    const payload = {
+      kind,
+      owner: session.user,
+      environmentName: selectedEnvironmentName || environments[0]?.name || "platform-services-dev",
+    };
+
+    if (apiHealth.mode === "api") {
+      const serviceRequest = await createPlatformServiceRequestViaApi(payload);
+      await refreshApiState();
+      setPlatformServiceRequests((current) => [serviceRequest, ...current.filter((item) => item.id !== serviceRequest.id)]);
+      return;
+    }
+
+    setPlatformServiceRequests((current) => [
+      createMockPlatformServiceRequest(payload, resourceProfiles, controlledProvisioningGates, session.user),
+      ...current,
+    ]);
+  }
+
   async function requestEnvironmentDestroy(name: string) {
     if (apiHealth.mode === "api") {
       await requestEnvironmentDestroyViaApi(name);
@@ -829,6 +860,7 @@ export function App() {
             controlPlaneJobs={controlPlaneJobs}
             vmSandboxDryRuns={vmSandboxDryRuns}
             controlledProvisioningGates={controlledProvisioningGates}
+            platformServiceRequests={platformServiceRequests}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -841,6 +873,7 @@ export function App() {
             createVmSandboxDryRun={createVmSandboxDryRun}
             requestControlledProvisioningGate={requestControlledProvisioningGate}
             decideControlledProvisioningGate={decideControlledProvisioningGate}
+            createPlatformServiceRequest={createPlatformServiceRequest}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
             runResourceProfileAction={runResourceProfileAction}
@@ -1327,6 +1360,7 @@ function AdminView({
   controlPlaneJobs,
   vmSandboxDryRuns,
   controlledProvisioningGates,
+  platformServiceRequests,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1339,6 +1373,7 @@ function AdminView({
   createVmSandboxDryRun,
   requestControlledProvisioningGate,
   decideControlledProvisioningGate,
+  createPlatformServiceRequest,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
   runResourceProfileAction,
@@ -1360,6 +1395,7 @@ function AdminView({
   controlPlaneJobs: ControlPlaneJob[];
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
   controlledProvisioningGates: ControlledProvisioningGate[];
+  platformServiceRequests: PlatformServiceRequest[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1375,6 +1411,7 @@ function AdminView({
   createVmSandboxDryRun: () => void;
   requestControlledProvisioningGate: () => void;
   decideControlledProvisioningGate: (gateId: string, decision: "approve" | "reject") => void;
+  createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
     templateId: string,
@@ -1491,6 +1528,12 @@ function AdminView({
               gates={controlledProvisioningGates}
               requestControlledProvisioningGate={requestControlledProvisioningGate}
               decideControlledProvisioningGate={decideControlledProvisioningGate}
+            />
+          </Panel>
+          <Panel title="Platform service flows" action={`${platformServiceRequests.length} planned`}>
+            <PlatformServiceRequestPanel
+              requests={platformServiceRequests}
+              createPlatformServiceRequest={createPlatformServiceRequest}
             />
           </Panel>
           <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
@@ -2131,6 +2174,77 @@ function ControlledProvisioningGatePanel({
           <div className="inventoryEvidence">
             <strong>Destroy plan</strong>
             {latest.destroyPlan.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlatformServiceRequestPanel({
+  requests,
+  createPlatformServiceRequest,
+}: {
+  requests: PlatformServiceRequest[];
+  createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
+}) {
+  const latest = requests[0];
+  const kinds: PlatformServiceKind[] = ["NKP Namespace", "NDB PostgreSQL", "NUS Storage", "NAI Endpoint"];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Layers3 size={18} />
+        <div>
+          <strong>Platform services gated by VM lifecycle</strong>
+          <span>Plans Kubernetes, database, storage, and AI service requests after the controlled VM path is proven.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        {kinds.map((kind) => (
+          <button className="iconTextButton" key={kind} onClick={() => createPlatformServiceRequest(kind)}>
+            <Play size={15} />
+            Plan {kind}
+          </button>
+        ))}
+      </div>
+      {!latest ? (
+        <p className="emptyState">No platform service flows have been planned.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.serviceName}</strong>
+              <span>
+                {latest.kind} / {latest.profileName} / {latest.environmentName}
+              </span>
+            </div>
+            <span className={`status ${latest.status === "Blocked" ? "failed" : "approval"}`}>{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Layers3} label="Provider" value={latest.provider} passed />
+            <CheckLine icon={ShieldCheck} label="VM lifecycle" value={latest.vmLifecycleProven ? "Proven" : "Required"} passed={latest.vmLifecycleProven} />
+            <CheckLine icon={CircleDollarSign} label="Cost" value={`$${latest.estimatedMonthlyCost}/mo estimate`} passed />
+            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={false} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.validations.map((validation) => (
+              <div className="dryRunValidationRow" key={validation.name}>
+                <span className={`status ${validation.passed ? "ready" : "failed"}`}>
+                  {validation.passed ? "Pass" : "Gate"}
+                </span>
+                <div>
+                  <strong>{validation.name}</strong>
+                  <small>{validation.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Cleanup plan</strong>
+            {latest.cleanupPlan.map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
@@ -2815,6 +2929,82 @@ function evaluateMockControlledProvisioningGate(gate: ControlledProvisioningGate
           : "Manual approval required",
     checks,
     provisioningEnabled: false,
+  };
+}
+
+function createMockPlatformServiceRequest(
+  input: { kind: PlatformServiceKind; owner: string; environmentName: string },
+  profiles: ResourceProfile[],
+  gates: ControlledProvisioningGate[],
+  actor: string
+): PlatformServiceRequest {
+  const defaults: Record<PlatformServiceKind, { provider: ResourceProfile["provider"]; profileId: string; name: string; cost: number; approvalRequired: boolean }> = {
+    "NKP Namespace": { provider: "NKP", profileId: "nkp-1-30-standard", name: "app-namespace-dev", cost: 480, approvalRequired: false },
+    "NDB PostgreSQL": { provider: "NDB", profileId: "ndb-postgres-16-dev", name: "app-postgres-dev", cost: 720, approvalRequired: true },
+    "NUS Storage": { provider: "NUS", profileId: "nus-object-dev", name: "app-object-dev", cost: 260, approvalRequired: false },
+    "NAI Endpoint": { provider: "NAI", profileId: "nai-gpu-small", name: "app-ai-endpoint-dev", cost: 1380, approvalRequired: true },
+  };
+  const config = defaults[input.kind];
+  const profile = profiles.find((item) => item.id === config.profileId);
+  const vmLifecycleProven = gates.some((gate) => gate.status === "Approved for controlled create");
+  const validations = [
+    {
+      name: "Profile published",
+      passed: profile?.status === "Published",
+      detail: profile ? `${profile.name} is ${profile.status}.` : "Required profile was not found.",
+    },
+    {
+      name: "Provider matched",
+      passed: profile?.provider === config.provider,
+      detail: `Expected provider ${config.provider}.`,
+    },
+    {
+      name: "Service name valid",
+      passed: true,
+      detail: `${config.name} will be used as the service identifier.`,
+    },
+    {
+      name: "Environment mapped",
+      passed: Boolean(input.environmentName),
+      detail: `${input.environmentName} is the owning environment reference.`,
+    },
+    {
+      name: "VM lifecycle proven",
+      passed: vmLifecycleProven,
+      detail: vmLifecycleProven
+        ? "Controlled VM lifecycle proof is present."
+        : "Complete controlled VM create, verify, rollback, and destroy proof before platform services are enabled.",
+    },
+  ];
+
+  return {
+    id: `platform-service-${config.provider.toLowerCase()}-${Date.now()}`,
+    kind: input.kind,
+    serviceName: config.name,
+    environmentName: input.environmentName,
+    owner: input.owner,
+    profileId: config.profileId,
+    profileName: profile?.name ?? "Profile not found",
+    provider: config.provider,
+    status: validations.every((validation) => validation.passed)
+      ? config.approvalRequired
+        ? "Needs approval"
+        : "Ready for approval"
+      : "Blocked",
+    dependsOnVmLifecycle: true,
+    vmLifecycleProven,
+    validations,
+    estimatedMonthlyCost: config.cost,
+    approvalRequired: config.approvalRequired,
+    approvalEvidence: [
+      profile?.approvedBy ? `${profile.name} approved by ${profile.approvedBy}.` : "Profile approval is missing.",
+      vmLifecycleProven ? "VM lifecycle proof is present." : "VM lifecycle proof is required before platform-service provisioning.",
+      `Request planned by ${actor}; provisioning remains disabled.`,
+    ],
+    rollbackPlan: ["Reverse service-specific bindings before releasing the request."],
+    cleanupPlan: ["Verify service allocation, access policy, and owner metadata are removed."],
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
   };
 }
 

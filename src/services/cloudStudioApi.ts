@@ -7,6 +7,8 @@ import type {
   IntegrationConfig,
   LabAdapterSnapshot,
   PlatformConfig,
+  PlatformServiceKind,
+  PlatformServiceRequest,
   PlatformSession,
   PolicyBundle,
   PrismInventoryImportResult,
@@ -200,6 +202,10 @@ export async function fetchControlledProvisioningGatesFromApi() {
   return fetchJson<ControlledProvisioningGate[]>("/api/vm-sandbox/controlled-provisioning");
 }
 
+export async function fetchPlatformServiceRequestsFromApi() {
+  return fetchJson<PlatformServiceRequest[]>("/api/platform-services/requests");
+}
+
 export async function createVmSandboxDryRunViaApi(payload: Partial<VmSandboxDryRunRequest>) {
   return fetchJson<VmSandboxDryRunPlan>("/api/vm-sandbox/dry-runs", {
     method: "POST",
@@ -231,6 +237,19 @@ export async function decideControlledProvisioningGateViaApi(
       body: JSON.stringify(evidence ? { decision, evidence } : { decision }),
     }
   );
+}
+
+export async function createPlatformServiceRequestViaApi(payload: {
+  kind: PlatformServiceKind;
+  serviceName?: string;
+  environmentName?: string;
+  owner?: string;
+  profileId?: string;
+}) {
+  return fetchJson<PlatformServiceRequest>("/api/platform-services/requests", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function runControlPlaneJobActionViaApi(

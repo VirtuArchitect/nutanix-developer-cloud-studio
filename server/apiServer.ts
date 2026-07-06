@@ -19,6 +19,7 @@ import {
   requestEnvironmentDestroy,
   RequestValidationError,
 } from "./mockPlatform";
+import { createPlatformServiceRequest, PlatformServiceError } from "./platformServices";
 import {
   createDisabledRealPrismInventoryAdapter,
   createMockPrismInventoryAdapter,
@@ -52,6 +53,7 @@ import type {
   ControlledProvisioningDecisionRequest,
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
+  CreatePlatformServiceRequest,
   CreateVmSandboxDryRunRequest,
   RegistryAction,
   UpdateIntegrationConfigRequest,
@@ -250,6 +252,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/vm-sandbox/controlled-provisioning") {
     sendJson(response, 200, { data: state.controlledProvisioningGates });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/platform-services/requests") {
+    sendJson(response, 200, { data: state.platformServiceRequests });
     return;
   }
 
@@ -637,6 +644,39 @@ async function routeApi(
       sendJson(response, 201, { data: gate });
     } catch (error) {
       if (error instanceof ControlledProvisioningError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/platform-services/requests") {
+    requireRole(context, ["Developer", "Platform Admin"]);
+    try {
+      const body = await readJson<CreatePlatformServiceRequest>(request);
+      const serviceRequest = createPlatformServiceRequest(state, body, context.session.user);
+      state.platformServiceRequests = [
+        serviceRequest,
+        ...state.platformServiceRequests.filter((item) => item.id !== serviceRequest.id),
+      ];
+      addAuditEvent(state, "platform-service.request.planned", context.session.user, serviceRequest.serviceName, {
+        kind: serviceRequest.kind,
+        provider: serviceRequest.provider,
+        status: serviceRequest.status,
+        vmLifecycleProven: serviceRequest.vmLifecycleProven,
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 201, { data: serviceRequest });
+    } catch (error) {
+      if (error instanceof PlatformServiceError) {
         sendJson(response, 400, {
           error: {
             code: error.code,

@@ -191,21 +191,23 @@ Exit gate:
 
 ### v1.2.0-platform-services
 
-Goal: add platform services after VM sandbox proves the control plane.
+Goal: add platform-service planning flows while gating real service provisioning on VM lifecycle proof.
 
 Build:
 
-- NKP namespace provisioning.
-- Resource quota and network policy.
-- NDB profile-backed PostgreSQL request.
-- NUS storage allocation request.
-- Backup and retention metadata.
+- NKP namespace request planning.
+- Resource quota and network policy metadata.
+- NDB profile-backed PostgreSQL request planning.
+- NUS storage allocation request planning.
+- NAI endpoint request planning with GPU quota and safety approval evidence.
+- Backup, retention, rollback, and cleanup metadata.
 
 Exit gate:
 
+- VM lifecycle proof is required before service provisioning can be enabled.
 - Each service has rollback/cleanup documentation.
 - Stateful services require approval.
-- Smoke tests cover failure and approval paths.
+- Smoke tests cover blocked planning paths.
 
 ### v1.3.0-private-cloud-developer-platform
 
