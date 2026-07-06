@@ -19,6 +19,16 @@ import {
   createMockPrismInventoryAdapter,
   createPrismReadOnlyScope,
 } from "./prismInventoryAdapter";
+import {
+  AuthorizationError,
+  createRequestContext,
+  logRequest,
+  MemoryRateLimiter,
+  RateLimitError,
+  requireRole,
+  securityHeaders,
+  type RequestContext,
+} from "./security";
 import type { ApiStore } from "./storage";
 import type {
   IntegrationConfig,
@@ -41,13 +51,48 @@ import type {
 export type ApiServerOptions = {
   store: ApiStore;
   staticDir?: string;
+  rateLimiter?: MemoryRateLimiter;
 };
 
-export function createApiServer({ store, staticDir }: ApiServerOptions) {
+export function createApiServer({ store, staticDir, rateLimiter = new MemoryRateLimiter() }: ApiServerOptions) {
   return createServer(async (request, response) => {
+    const context = createRequestContext(request);
+    response.setHeader("X-Request-Id", context.requestId);
     try {
-      await routeRequest(request, response, store, staticDir);
+      rateLimiter.check(request, context);
+      await routeRequest(request, response, store, staticDir, context);
     } catch (error) {
+      if (error instanceof AuthorizationError) {
+        sendJson(response, 403, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof RateLimitError) {
+        response.setHeader("Retry-After", String(error.retryAfterSeconds));
+        sendJson(response, 429, {
+          error: {
+            code: "rate_limited",
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof RequestValidationError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
       console.error(error);
       sendJson(response, 500, {
         error: {
@@ -55,6 +100,8 @@ export function createApiServer({ store, staticDir }: ApiServerOptions) {
           message: "Unexpected server error.",
         },
       });
+    } finally {
+      logRequest(request, response, context);
     }
   });
 }
@@ -63,7 +110,8 @@ async function routeRequest(
   request: IncomingMessage,
   response: ServerResponse,
   store: ApiStore,
-  staticDir?: string
+  staticDir: string | undefined,
+  context: RequestContext
 ) {
   const url = new URL(request.url ?? "/", "http://localhost");
 
@@ -79,7 +127,7 @@ async function routeRequest(
   }
 
   if (url.pathname.startsWith("/api/")) {
-    await routeApi(request, response, store, url);
+    await routeApi(request, response, store, url, context);
     return;
   }
 
@@ -100,9 +148,11 @@ async function routeApi(
   request: IncomingMessage,
   response: ServerResponse,
   store: ApiStore,
-  url: URL
+  url: URL,
+  context: RequestContext
 ) {
   const state = await store.load();
+  state.session = context.session;
 
   if (request.method === "GET" && url.pathname === "/api/templates") {
     sendJson(response, 200, { data: state.templates });
@@ -110,7 +160,7 @@ async function routeApi(
   }
 
   if (request.method === "GET" && url.pathname === "/api/session") {
-    sendJson(response, 200, { data: state.session });
+    sendJson(response, 200, { data: context.session });
     return;
   }
 
@@ -222,8 +272,9 @@ async function routeApi(
 
   const environmentDestroyMatch = url.pathname.match(/^\/api\/environments\/([^/]+)\/destroy$/);
   if (request.method === "POST" && environmentDestroyMatch) {
+    requireRole(context, ["Platform Admin"]);
     try {
-      const environment = requestEnvironmentDestroy(state, decodeURIComponent(environmentDestroyMatch[1]));
+      const environment = requestEnvironmentDestroy(state, decodeURIComponent(environmentDestroyMatch[1]), context.session.user);
       await store.save(state);
       sendJson(response, 200, { data: environment });
     } catch (error) {
@@ -244,6 +295,7 @@ async function routeApi(
 
   const templateRegistryActionMatch = url.pathname.match(/^\/api\/registry\/templates\/([^/]+)\/(submit|approve|deprecate|restore)$/);
   if (request.method === "POST" && templateRegistryActionMatch) {
+    requireRole(context, ["Platform Admin"]);
     const templateId = decodeURIComponent(templateRegistryActionMatch[1]);
     const action = templateRegistryActionMatch[2] as RegistryAction;
     const entry = state.templateRegistry.find((item) => item.templateId === templateId);
@@ -275,6 +327,7 @@ async function routeApi(
 
   const resourceProfileActionMatch = url.pathname.match(/^\/api\/resource-profiles\/([^/]+)\/(submit|approve|deprecate|restore)$/);
   if (request.method === "POST" && resourceProfileActionMatch) {
+    requireRole(context, ["Platform Admin"]);
     const profileId = decodeURIComponent(resourceProfileActionMatch[1]);
     const action = resourceProfileActionMatch[2] as RegistryAction;
     const profile = state.resourceProfiles.find((item) => item.id === profileId);
@@ -307,6 +360,7 @@ async function routeApi(
   }
 
   if (request.method === "POST" && url.pathname === "/api/environments") {
+    requireRole(context, ["Developer", "Platform Admin"]);
     try {
       const body = await readJson<CreateEnvironmentRequest>(request);
       const result = createEnvironmentRequest(state, body);
@@ -330,6 +384,7 @@ async function routeApi(
 
   const integrationConfigMatch = url.pathname.match(/^\/api\/integration-config\/([^/]+)$/);
   if (request.method === "PUT" && integrationConfigMatch) {
+    requireRole(context, ["Platform Admin"]);
     const integrationName = decodeURIComponent(integrationConfigMatch[1]).toUpperCase();
     const integration = state.integrations.find((item) => item.name === integrationName);
     if (!integration) {
@@ -383,6 +438,7 @@ async function routeApi(
 
   const integrationCheckMatch = url.pathname.match(/^\/api\/integrations\/([^/]+)\/check$/);
   if (request.method === "POST" && integrationCheckMatch) {
+    requireRole(context, ["Platform Admin"]);
     const integrationName = decodeURIComponent(integrationCheckMatch[1]).toUpperCase();
     const integration = state.integrations.find((item) => item.name === integrationName);
     const existing = state.integrationConfigs.find((item) => item.name === integrationName);
@@ -427,6 +483,7 @@ async function routeApi(
 
   const labDiscoveryMatch = url.pathname.match(/^\/api\/lab-adapters\/([^/]+)\/discover$/);
   if (request.method === "POST" && labDiscoveryMatch) {
+    requireRole(context, ["Platform Admin"]);
     const adapterName = decodeURIComponent(labDiscoveryMatch[1]).toUpperCase();
     const adapter = state.labAdapters.find((item) => item.name === adapterName);
     const config = state.integrationConfigs.find((item) => item.name === adapterName);
@@ -474,6 +531,7 @@ async function routeApi(
   }
 
   if (request.method === "POST" && url.pathname === "/api/prism/inventory/import") {
+    requireRole(context, ["Platform Admin"]);
     const integrationConfig = state.integrationConfigs.find((item) => item.name === "NCI");
     if (!integrationConfig || integrationConfig.status !== "Reachable") {
       sendJson(response, 409, {
@@ -519,6 +577,7 @@ async function routeApi(
 
   const controlPlaneJobMatch = url.pathname.match(/^\/api\/control-plane\/jobs\/([^/]+)\/(advance|retry|fail)$/);
   if (request.method === "POST" && controlPlaneJobMatch) {
+    requireRole(context, ["Platform Admin"]);
     try {
       const jobId = decodeURIComponent(controlPlaneJobMatch[1]);
       const action = controlPlaneJobMatch[2];
@@ -549,11 +608,13 @@ async function routeApi(
 
   const approvalMatch = url.pathname.match(/^\/api\/approvals\/([^/]+)\/(approve|reject)$/);
   if (request.method === "POST" && approvalMatch) {
+    requireRole(context, ["Approver", "Platform Admin"]);
     try {
       const approval = decideApproval(
         state,
         decodeURIComponent(approvalMatch[1]),
-        approvalMatch[2] === "approve" ? "Approved" : "Rejected"
+        approvalMatch[2] === "approve" ? "Approved" : "Rejected",
+        context.session.user
       );
       await store.save(state);
       sendJson(response, 200, { data: approval });
@@ -675,17 +736,22 @@ function mergePrismImageProfileCandidates(
 }
 
 function sendJson<T>(response: ServerResponse, status: number, body: ApiResponse<T> | ApiError) {
-  response.writeHead(status, {
+  response.writeHead(status, securityHeaders({
     "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store",
-  });
+  }));
   response.end(JSON.stringify(body));
 }
 
 async function readJson<T>(request: IncomingMessage): Promise<T> {
   const chunks: Buffer[] = [];
+  let size = 0;
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.byteLength;
+    if (size > 1_048_576) {
+      throw new RequestValidationError("request_body_too_large", "Request body exceeds the 1 MB limit.");
+    }
+    chunks.push(buffer);
   }
 
   if (chunks.length === 0) {
@@ -712,6 +778,7 @@ async function serveStatic(response: ServerResponse, staticDir: string, pathname
   const targetPath = (await fileExists(filePath)) ? filePath : fallbackPath;
 
   response.writeHead(200, {
+    ...securityHeaders(),
     "Content-Type": contentType(targetPath),
   });
   createReadStream(targetPath).pipe(response);

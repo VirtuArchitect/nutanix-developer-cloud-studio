@@ -35,14 +35,14 @@ flowchart LR
 Run locally:
 
 ```powershell
-.\scripts\run-phase-gate.ps1 -TargetPhase v0.8.0-prism-readonly-inventory
+.\scripts\run-phase-gate.ps1 -TargetPhase v0.9.0-production-foundation
 ```
 
 With an explicitly authorized security scope:
 
 ```powershell
 .\scripts\run-phase-gate.ps1 `
-  -TargetPhase v0.8.0-prism-readonly-inventory `
+  -TargetPhase v0.9.0-production-foundation `
   -PentestScopePath .\PENTEST_SCOPE_TEMPLATE.md `
   -IncludeAuthorizedPentest
 ```

@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "0.8.0-prism-readonly-inventory",
+  "version": "0.9.0-production-foundation",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

@@ -30,6 +30,7 @@ The React frontend now checks `/healthz` on load:
 
 - If the API responds, the app enters hosted/on-prem API mode and loads environments from `/api/environments`.
 - If the API is unavailable, the app stays in browser mock mode for GitHub Pages and local Vite demos.
+- The hosted API derives a prototype OIDC session from trusted headers and applies RBAC guardrails to mutating routes.
 - Environment launches call `POST /api/environments` in API mode and fall back to browser mock behavior if the request fails.
 - Approval queue, environment detail, and admin integration readiness views read from API endpoints in hosted/on-prem API mode.
 - Session, role context, integration configuration, and integration readiness checks are API-backed mock records.
@@ -86,11 +87,15 @@ Example request:
 
 The API returns a mock environment, mock provisioning jobs, an audit event, and an approval request when the target/template requires platform review.
 
+Required role: `Developer` or `Platform Admin`.
+
 ### Environment Lifecycle
 
 - `POST /api/environments/:name/destroy`
 
 The destroy endpoint marks the mock environment as `Destroying`, queues a control-plane teardown job, and writes audit evidence. It does not call real Nutanix APIs and does not delete infrastructure.
+
+Required role: `Platform Admin`.
 
 ### Provider Inventory And Adapter Readiness
 
@@ -125,12 +130,16 @@ Secrets are not stored in the API state. Credential fields are references only.
 
 Template registry actions update mock publication state and audit evidence. Resource profile actions use the same lifecycle so platform teams can model approval and deprecation of AHV, NKP, NDB, NUS, and NAI catalog records. These actions do not enable real provisioning.
 
+Required role: `Platform Admin`.
+
 ### Approval Decisions
 
 - `POST /api/approvals/:id/approve`
 - `POST /api/approvals/:id/reject`
 
 Approval decisions update the stored approval request, write an audit event, and move the associated mock environment to `Provisioning` or `Failed`.
+
+Required role: `Approver` or `Platform Admin`.
 
 ### Integration Configuration
 
@@ -147,6 +156,8 @@ Example request:
 ```
 
 The readiness check updates the mock integration configuration to `Reachable`, `Failed`, or `Not configured`. It does not call real Nutanix services.
+
+Required role: `Platform Admin`.
 
 ### Lab Adapter Pilot
 
@@ -166,6 +177,22 @@ The discovery endpoint simulates read-only adapter readiness. The Prism inventor
 - `POST /api/control-plane/jobs/:id/fail`
 
 Control-plane jobs model queue and worker execution states. Worker actions update transition history and audit events. They do not call real infrastructure APIs.
+
+Required role: `Platform Admin`.
+
+## Production Foundation Controls
+
+The hosted starter now adds:
+
+- OIDC-shaped session context from `x-ndc-user`, `x-ndc-display-name`, `x-ndc-roles`, and `x-ndc-issuer` headers.
+- RBAC checks for mutating API routes.
+- Security headers on API and static responses.
+- In-memory rate limiting through `NDC_RATE_LIMIT_PER_MINUTE`.
+- JSON request logging with request ID, actor, status, path, and duration.
+- Audit retention through `NDC_AUDIT_RETENTION_EVENTS`.
+- Postgres repository scaffold and migrations under `server/migrations/`.
+
+Trusted headers are a starter boundary only. A production deployment should validate OIDC tokens at the API or an ingress/reverse proxy before forwarding identity headers.
 
 ## Current Limits
 

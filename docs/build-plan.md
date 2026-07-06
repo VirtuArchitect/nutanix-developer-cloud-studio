@@ -172,6 +172,16 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Providers tab includes Prism inventory import evidence and blocked mutation operations.
 - Real Prism Central calls and all mutation operations remain disabled.
 
+## Current Production Foundation Slice
+
+- API request context models OIDC-style user, issuer, display name, and roles.
+- RBAC guardrails protect mutating admin, approval, registry, integration, control-plane, destroy, and inventory import actions.
+- API and static responses include security headers.
+- Hosted starter includes in-memory rate limiting and structured request logging.
+- Memory and JSON-file stores enforce audit retention.
+- Postgres repository and migration files are scaffolded without adding a runtime database dependency.
+- GitHub Security workflow adds CodeQL and dependency review checks.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

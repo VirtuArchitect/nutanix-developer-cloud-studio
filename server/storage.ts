@@ -17,6 +17,8 @@ import {
 } from "../src/data/cloudStudioDomain";
 import type { ApiState } from "./types";
 
+const auditRetentionEvents = Number(process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500);
+
 export type ApiRepository = {
   load(): Promise<ApiState>;
   save(state: ApiState): Promise<void>;
@@ -141,7 +143,7 @@ export class MemoryStore implements ApiStore {
   }
 
   async save(state: ApiState) {
-    this.state = structuredClone(state);
+    this.state = structuredClone(applyRetention(state));
   }
 }
 
@@ -168,6 +170,13 @@ export class JsonFileStore implements ApiStore {
 
   async save(state: ApiState) {
     await mkdir(dirname(this.filePath), { recursive: true });
-    await writeFile(this.filePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+    await writeFile(this.filePath, `${JSON.stringify(applyRetention(state), null, 2)}\n`, "utf8");
   }
+}
+
+export function applyRetention(state: ApiState): ApiState {
+  return {
+    ...state,
+    auditEvents: state.auditEvents.slice(0, auditRetentionEvents),
+  };
 }

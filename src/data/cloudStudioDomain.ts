@@ -77,7 +77,7 @@ export type PlatformSession = {
   user: string;
   displayName: string;
   roles: PlatformRole[];
-  authMode: "Mock OIDC";
+  authMode: "Mock OIDC" | "OIDC";
   identityProvider: string;
 };
 

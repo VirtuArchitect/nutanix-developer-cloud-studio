@@ -29,6 +29,8 @@ flowchart LR
     Api --> Approvals["Approval Queue"]
     Api --> Queue["Control Plane Queue"]
     Api --> Identity["Mock OIDC Session"]
+    Api --> Rbac["RBAC Guardrails"]
+    Api --> AuditRetention["Audit Retention"]
     Api --> Config["Integration Config"]
     Api --> LabAdapters["Read-only Lab Adapter Pilot"]
     Api --> PrismInventory["Prism Read-only Inventory"]
@@ -60,6 +62,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Approvals: platform review records for AI endpoint and regulated-style requests
 - Audit events: request and decision records for hosted/on-prem workflow visibility
 - Session: mocked identity and role context for OIDC-ready UX
+- RBAC: role checks for mutating developer, approver, and platform admin actions
 - Integration config: endpoint/profile placeholders and readiness status for lab planning
 - Lab adapters: read-only discovery candidates with provisioning explicitly disabled
 - Prism inventory: read-only cluster, project, image, network, category, and VM metadata imported for registry planning
@@ -95,6 +98,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - API-backed resource profile catalog, platform config references, and provisioning adapter readiness
 - API-backed template registry governance, policy bundles, and resource profile publication actions
 - API-backed Prism read-only inventory import with mock and disabled-real adapter implementations
+- OIDC-shaped request context, RBAC guardrails, request IDs, structured logs, rate limits, and security headers
+- Postgres repository scaffold and SQL migration files for production persistence planning
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
@@ -119,6 +124,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Approval states are modeled for AI endpoint requests, and hosted/on-prem mode can approve or reject mock requests through API endpoints.
 - Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
 - The frontend auto-detects the hosted/on-prem API through `/healthz` and falls back to browser mock mode when the API is unavailable.
+- Production-foundation controls are starter guardrails. Trusted identity headers must be backed by real OIDC validation before production use.
 
 ## Real Integration Readiness Questions
 

@@ -92,12 +92,12 @@
 
 ## Phase 11 - Production Foundation (`v0.9.0-production-foundation`)
 
-- Add OIDC session validation
-- Add role-based access control around admin and provisioning actions
-- Add Postgres repository implementation and migrations
-- Add audit retention controls
-- Add request logging, correlation IDs, rate limits, and security headers
-- Add branch/release security gates for production deployment
+- Add OIDC session validation - starter done
+- Add role-based access control around admin and provisioning actions - done
+- Add Postgres repository implementation and migrations - scaffold done
+- Add audit retention controls - done
+- Add request logging, correlation IDs, rate limits, and security headers - done
+- Add branch/release security gates for production deployment - starter done
 
 ## Gated Promotion
 

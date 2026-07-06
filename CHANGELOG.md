@@ -2,14 +2,33 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v0.8.0-prism-readonly-inventory`.
+This project uses release tags for public milestones. The current release is `v0.9.0-production-foundation`.
 
 ## [Unreleased]
 
 ### Planned
 
-- Add production foundation controls: OIDC, RBAC, Postgres repository, migrations, audit retention, request logging, rate limits, and security headers.
+- Add AHV VM sandbox dry-run planning with image, subnet, project, category, quota, expiry, cost, and approval evidence validation.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v0.9.0-production-foundation] - 2026-07-06
+
+### Added
+
+- OIDC-shaped request context using trusted prototype headers for user, display name, roles, and issuer.
+- RBAC guardrails for admin, approval, registry, integration, control-plane, destroy, and inventory import actions.
+- Security headers for API and static responses.
+- In-memory rate limiting for the hosted starter API.
+- Structured JSON request logging with request IDs, actor, status, and duration.
+- Request body size guardrail for JSON API requests.
+- Audit retention enforcement for memory and JSON-file stores.
+- Postgres repository scaffold and initial SQL migration for state and audit-event storage.
+- GitHub Security workflow with CodeQL and dependency review.
+
+### Notes
+
+- The Postgres repository is intentionally scaffolded without a runtime database driver. Adding a PostgreSQL dependency requires explicit approval.
+- Auth and RBAC remain starter controls for the hosted prototype. Production deployment still needs a real OIDC validation layer in front of trusted headers.
 
 ## [v0.8.0-prism-readonly-inventory] - 2026-07-06
 

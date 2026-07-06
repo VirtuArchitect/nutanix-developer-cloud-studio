@@ -39,6 +39,10 @@ The container uses these environment variables:
 - `PORT=8080`
 - `NDC_STATIC_DIR=/app/dist`
 - `NDC_DATA_FILE=/data/ndc-studio.json`
+- `NDC_REPOSITORY=json`
+- `DATABASE_URL=` blank unless a future approved database driver is added
+- `NDC_AUDIT_RETENTION_EVENTS=500`
+- `NDC_RATE_LIMIT_PER_MINUTE=120`
 - `NDC_PRISM_REAL_ADAPTER=disabled`
 
 `NDC_DATA_FILE` stores mock API state in the `ndc-studio-data` Docker volume.
@@ -46,6 +50,8 @@ The container uses these environment variables:
 Use `.env.example` as the local template for OIDC and Nutanix lab placeholders. Keep real URLs, client IDs, credential profile names, tokens, and passwords in environment-specific secret management, not in Git.
 
 `NDC_PRISM_REAL_ADAPTER` is documented as a guardrail. The current implementation keeps the real Prism adapter disabled even if the value is changed; the live integration path requires a future authorized phase.
+
+`NDC_REPOSITORY=postgres` is a production-foundation scaffold. The SQL migration files are present under `server/migrations/`, but the repository intentionally fails closed until an approved PostgreSQL runtime dependency is added.
 
 ## Prototype State Backup
 

@@ -2,7 +2,9 @@ import type { Server } from "node:http";
 import { request as httpRequest } from "node:http";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApiServer } from "./apiServer";
-import { MemoryStore } from "./storage";
+import { MemoryRateLimiter } from "./security";
+import { applyRetention, MemoryStore } from "./storage";
+import { createDefaultState } from "./storage";
 
 describe("api server", () => {
   let server: Server;
@@ -39,6 +41,82 @@ describe("api server", () => {
     expect(templates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: "spring-postgres" })]));
     expect(integrations.data).toEqual(expect.arrayContaining([expect.objectContaining({ name: "NCI" })]));
     expect(session.data).toMatchObject({ authMode: "Mock OIDC", roles: expect.arrayContaining(["Platform Admin"]) });
+  });
+
+  it("derives OIDC-style session context from trusted headers", async () => {
+    const session = await requestJson("/api/session", {
+      headers: {
+        "x-ndc-user": "mira.chen",
+        "x-ndc-display-name": "Mira Chen",
+        "x-ndc-roles": "Developer,Approver",
+        "x-ndc-issuer": "https://idp.example",
+      },
+    });
+
+    expect(session.data).toMatchObject({
+      user: "mira.chen",
+      displayName: "Mira Chen",
+      authMode: "OIDC",
+      identityProvider: "https://idp.example",
+      roles: ["Developer", "Approver"],
+    });
+  });
+
+  it("applies security headers and rate limits requests", async () => {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+    server = createApiServer({ store: new MemoryStore(), rateLimiter: new MemoryRateLimiter(1, 60_000) });
+    await new Promise<void>((resolve) => {
+      server.listen(0, "127.0.0.1", resolve);
+    });
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected TCP server address.");
+    }
+    baseUrl = `http://127.0.0.1:${address.port}`;
+
+    const first = await nodeRequest("/api/session");
+    const second = await nodeRequest("/api/session");
+
+    expect(first.headers["x-content-type-options"]).toBe("nosniff");
+    expect(first.headers["content-security-policy"]).toContain("default-src 'self'");
+    expect(second.status).toBe(429);
+    expect(JSON.parse(second.body)).toMatchObject({ error: { code: "rate_limited" } });
+  });
+
+  it("enforces RBAC on admin actions", async () => {
+    await expectJson(
+      "/api/integration-config/NCI",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      {
+        method: "PUT",
+        headers: { "x-ndc-user": "demo.dev", "x-ndc-roles": "Developer" },
+        body: JSON.stringify({
+          endpoint: "https://prism.lab.example",
+          credentialProfile: "nci-readonly",
+        }),
+      }
+    );
+  });
+
+  it("applies audit retention to persisted state", () => {
+    const state = createDefaultState();
+    state.auditEvents = Array.from({ length: 550 }, (_, index) => ({
+      id: `audit-${index}`,
+      action: "test",
+      actor: "tester",
+      target: "retention",
+      createdAt: new Date().toISOString(),
+    }));
+
+    expect(applyRetention(state).auditEvents).toHaveLength(500);
   });
 
   it("updates integration config and runs readiness checks", async () => {
@@ -344,7 +422,7 @@ describe("api server", () => {
     expect(JSON.parse(response.body)).toEqual(body);
   }
 
-  async function nodeRequest(path: string, init?: RequestInit): Promise<{ status: number; body: string }> {
+  async function nodeRequest(path: string, init?: RequestInit): Promise<{ status: number; body: string; headers: Record<string, string> }> {
     const url = new URL(`${baseUrl}${path}`);
     const body = typeof init?.body === "string" ? init.body : undefined;
 
@@ -357,6 +435,7 @@ describe("api server", () => {
           method: init?.method ?? "GET",
           headers: {
             "Content-Type": "application/json",
+            ...((init?.headers as Record<string, string> | undefined) ?? {}),
             ...(body ? { "Content-Length": Buffer.byteLength(body) } : {}),
           },
         },
@@ -367,6 +446,7 @@ describe("api server", () => {
             resolve({
               status: response.statusCode ?? 0,
               body: Buffer.concat(chunks).toString("utf8"),
+              headers: response.headers as Record<string, string>,
             })
           );
         }

@@ -100,6 +100,13 @@
 - Added draft AHV image profile candidate mapping from imported Prism image records.
 - Added Admin Providers view for Prism inventory import evidence and blocked mutation operations.
 - Added tests and smoke coverage for the Prism inventory import path.
+- Started `v0.9.0-production-foundation`.
+- Added OIDC-shaped request context from trusted prototype headers.
+- Added RBAC guardrails for mutating hosted API actions.
+- Added API/static security headers, rate limiting, request IDs, and structured request logging.
+- Added audit retention for prototype stores.
+- Added Postgres repository scaffold and initial SQL migration.
+- Added GitHub Security workflow for CodeQL and dependency review.
 
 ## Documentation Rule
 
