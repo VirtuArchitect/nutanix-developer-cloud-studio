@@ -4,7 +4,7 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
-Current release: `v1.9.0-oidc-rbac-hardening`
+Current release: `v2.0.0-postgres-repository-hardening`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -22,7 +22,7 @@ This repository is an independent clickable MVP prototype. All Nutanix integrati
 - Environment status page with simulated provisioning
 - Mock integrations for NCI, NKP, NDB, NUS, NCM, and NAI
 - Admin view for platform teams
-- Hosted/on-prem starter API for prototype provisioning jobs, control-plane queue orchestration, lifecycle destroy simulation, approvals, environment details, OIDC-shaped role context, RBAC guardrails, trusted-header diagnostics, integration configuration, provider readiness, image/profile catalog, template registry governance, policy bundles, Prism read-only inventory import, AHV VM sandbox dry-run planning, controlled provisioning gate reviews, lab authorization scope evidence, VM lifecycle proof records, fail-closed AHV controlled-provisioning preflight, platform-service request planning and preflight for NKP, NDB, NUS, and NAI, production readiness reviews, private-cloud lifecycle operation records, audit export readiness records, on-prem validation and state backup/restore tooling, system status, request logging, rate limits, security headers, and read-only lab adapter pilots
+- Hosted/on-prem starter API for prototype provisioning jobs, control-plane queue orchestration, lifecycle destroy simulation, approvals, environment details, OIDC-shaped role context, RBAC guardrails, trusted-header diagnostics, integration configuration, provider readiness, image/profile catalog, template registry governance, policy bundles, Prism read-only inventory import, AHV VM sandbox dry-run planning, controlled provisioning gate reviews, lab authorization scope evidence, VM lifecycle proof records, fail-closed AHV controlled-provisioning preflight, platform-service request planning and preflight for NKP, NDB, NUS, and NAI, production readiness reviews, private-cloud lifecycle operation records, audit export readiness records, on-prem validation, state backup/restore tooling, Postgres repository scaffold validation, system status, request logging, rate limits, security headers, and read-only lab adapter pilots
 
 <img width="1720" height="1260" alt="image" src="https://github.com/user-attachments/assets/355abe1b-c5d0-40b5-814f-89d051332836" />
 

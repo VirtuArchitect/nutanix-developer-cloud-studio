@@ -157,6 +157,11 @@
 - Added optional strict trusted-header mode for API routes.
 - Added session diagnostics API and Admin Overview identity boundary panel.
 - Added role/action matrix visibility and tests for fail-closed identity behavior.
+- Started `v2.0.0-postgres-repository-hardening`.
+- Added Postgres repository configuration and schema validation.
+- Added startup fail-closed behavior for invalid Postgres mode.
+- Added migration scaffold validation script and phase gate step.
+- Added tests for Postgres readiness and scaffold fail-closed behavior.
 
 ## Documentation Rule
 

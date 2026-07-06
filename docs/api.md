@@ -22,6 +22,8 @@ Useful environment variables:
 - `PORT`: listen port. Default: `8080`
 - `NDC_STATIC_DIR`: optional static frontend directory to serve from the same process
 - `NDC_DATA_FILE`: optional JSON file for persisted mock API state
+- `NDC_REPOSITORY`: `json` by default; `postgres` is validated but remains scaffold-only
+- `NDC_DATABASE_SCHEMA`: schema name used by the Postgres scaffold validator
 - `VITE_API_BASE_URL`: optional frontend build-time override for API calls. Leave empty for same-origin `/api`.
 
 ## Frontend API Mode
@@ -285,6 +287,7 @@ The hosted starter now adds:
 - JSON request logging with request ID, actor, status, path, and duration.
 - Audit retention through `NDC_AUDIT_RETENTION_EVENTS`.
 - Postgres repository scaffold and migrations under `server/migrations/`.
+- Postgres repository configuration and migration validation through `scripts/validate-postgres-repository.ps1`.
 
 Trusted headers are a starter boundary only. A production deployment should validate OIDC tokens at the API or an ingress/reverse proxy before forwarding identity headers.
 
@@ -294,6 +297,7 @@ Trusted headers are a starter boundary only. A production deployment should vali
 - No authentication or authorization yet.
 - Session and role context are mocked for OIDC readiness only.
 - No production database yet.
+- Postgres mode validates configuration but remains scaffold-only until an approved runtime driver phase.
 - No secret storage yet.
 - GitHub Pages uses browser mock mode because no backend is deployed with the static site.
 - Approval decisions are mock governance records only; they do not authorize real infrastructure changes.

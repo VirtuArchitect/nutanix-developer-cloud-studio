@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { createApiServer } from "./apiServer";
-import { PostgresRepository } from "./postgresRepository";
+import { assertPostgresRepositoryConfig, PostgresRepository } from "./postgresRepository";
 import { JsonFileStore, MemoryStore } from "./storage";
 
 const port = Number(process.env.PORT ?? 8080);
@@ -8,13 +8,18 @@ const host = process.env.HOST ?? "0.0.0.0";
 const dataFile = process.env.NDC_DATA_FILE;
 const staticDir = process.env.NDC_STATIC_DIR ? resolve(process.env.NDC_STATIC_DIR) : undefined;
 const repositoryMode = process.env.NDC_REPOSITORY ?? (process.env.DATABASE_URL ? "postgres" : "json");
+const postgresConfig = {
+  connectionString: process.env.DATABASE_URL ?? "",
+  schema: process.env.NDC_DATABASE_SCHEMA,
+};
+
+if (repositoryMode === "postgres") {
+  assertPostgresRepositoryConfig(postgresConfig);
+}
 
 const store =
   repositoryMode === "postgres"
-    ? new PostgresRepository({
-        connectionString: process.env.DATABASE_URL ?? "",
-        schema: process.env.NDC_DATABASE_SCHEMA,
-      })
+    ? new PostgresRepository(postgresConfig)
     : dataFile
       ? new JsonFileStore(resolve(dataFile))
       : new MemoryStore();

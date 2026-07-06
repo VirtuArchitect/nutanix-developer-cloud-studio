@@ -110,6 +110,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - OIDC-shaped request context, RBAC guardrails, request IDs, structured logs, rate limits, and security headers
 - Optional strict trusted-header mode and session diagnostics
 - Postgres repository scaffold and SQL migration files for production persistence planning
+- Postgres repository configuration validator and migration scaffold validation
 - AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
 - Controlled provisioning gate review API and Admin Control Plane UI
 - Lab authorization and VM lifecycle proof APIs plus Admin Control Plane evidence UI
@@ -156,6 +157,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Audit export records prepare retention and redaction metadata only; production export delivery requires configured external storage.
 - On-prem backup/restore scripts validate JSON starter state only; production deployments still require durable database backup design.
+- Postgres mode validates configuration at startup and remains fail-closed until a runtime driver is approved.
 
 ## Real Integration Readiness Questions
 

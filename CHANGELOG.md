@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.9.0-oidc-rbac-hardening`.
+This project uses release tags for public milestones. The current release is `v2.0.0-postgres-repository-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,23 @@ This project uses release tags for public milestones. The current release is `v1
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.0.0-postgres-repository-hardening] - 2026-07-06
+
+### Added
+
+- Postgres repository configuration validator with fail-closed connection string and schema checks.
+- Postgres readiness metadata that confirms the database driver remains intentionally absent.
+- Startup validation before binding the API when `NDC_REPOSITORY=postgres`.
+- Migration scaffold validation script.
+- Phase gate coverage for migration and Postgres configuration validation.
+- Tests for Postgres configuration, schema validation, readiness metadata, and scaffold fail-closed behavior.
+
+### Notes
+
+- No PostgreSQL runtime dependency was added.
+- `NDC_REPOSITORY=postgres` remains a hardened scaffold until an approved database driver phase.
+- Real provisioning remains disabled.
 
 ## [v1.9.0-oidc-rbac-hardening] - 2026-07-06
 

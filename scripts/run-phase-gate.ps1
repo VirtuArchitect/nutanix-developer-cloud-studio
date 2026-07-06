@@ -104,6 +104,10 @@ Invoke-Step "On-prem configuration validation" {
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-onprem-config.ps1
 }
 
+Invoke-Step "Postgres repository scaffold validation" {
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-postgres-repository.ps1
+}
+
 Invoke-Step "State backup and restore smoke" {
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-state-backup-restore.ps1
 }

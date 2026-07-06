@@ -178,6 +178,14 @@
 - Add session diagnostics API and Admin UI role/action matrix - done
 - Add tests for strict identity and diagnostics behavior - done
 
+## Phase 22 - Postgres Repository Hardening (`v2.0.0-postgres-repository-hardening`)
+
+- Add Postgres repository configuration validation - done
+- Add startup fail-closed behavior for invalid Postgres mode - done
+- Add migration scaffold validation script - done
+- Add phase gate coverage for Postgres scaffold validation - done
+- Add tests for config, schema, readiness, and fail-closed behavior - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

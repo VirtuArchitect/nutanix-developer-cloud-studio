@@ -260,6 +260,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Session diagnostics expose trusted-header mode, missing headers, and role/action matrix.
 - Admin Overview surfaces identity boundary and RBAC matrix for operators.
 
+## Current Postgres Repository Hardening Slice
+
+- Postgres mode validates required connection string and schema naming before startup.
+- Repository readiness metadata confirms the runtime driver is not installed yet.
+- Migration scaffold validation checks SQL files during the phase gate.
+- Database connection values are not logged by validators.
+- `NDC_REPOSITORY=postgres` remains fail-closed until an approved runtime driver phase.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

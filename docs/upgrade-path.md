@@ -353,6 +353,25 @@ Exit gate:
 - Security review confirms database connection values are not logged.
 - Real provisioning remains disabled.
 
+### v2.1.0-audit-export-retention-hardening
+
+Goal: harden audit export and retention before any real provider operation is recorded.
+
+Build:
+
+- Audit export manifest records with checksum, event count, and retention window.
+- Export destination configuration validation without storing destination credentials.
+- Retention policy diagnostics in Admin Operations.
+- Tests for export manifest creation and retention enforcement.
+- Runbook for audit export storage and restore verification.
+
+Exit gate:
+
+- Audit export APIs and UI are tested.
+- Export destination validation does not log sensitive values.
+- Retention smoke proves old events are bounded.
+- Real provisioning remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

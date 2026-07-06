@@ -62,6 +62,15 @@ Use `.env.example` as the local template for OIDC and Nutanix lab placeholders. 
 
 `NDC_REPOSITORY=postgres` is a production-foundation scaffold. The SQL migration files are present under `server/migrations/`, but the repository intentionally fails closed until an approved PostgreSQL runtime dependency is added.
 
+Validate the Postgres scaffold and migration files:
+
+```powershell
+.\scripts\validate-postgres-repository.ps1
+.\scripts\validate-postgres-repository.ps1 -Repository postgres -DatabaseUrl postgresql://example.invalid/ndc_studio
+```
+
+The validator checks migration presence, idempotent table creation, schema naming, and structural database URL requirements. It does not open a database connection and does not print connection string values.
+
 ## Deployment Matrix
 
 | Area | Starter setting | Production expectation |
