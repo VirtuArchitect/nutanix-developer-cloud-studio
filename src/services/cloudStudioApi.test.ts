@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkApiHealth,
   createAhvControlledProvisioningRunViaApi,
+  createAuditExportViaApi,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
   createLabAuthorizationScopeViaApi,
+  createLifecycleOperationViaApi,
   createPlatformServiceRequestViaApi,
   createPlatformServicePreflightRunViaApi,
   createProductionReadinessReviewViaApi,
@@ -12,12 +14,14 @@ import {
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAuditExportsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
   fetchPolicyBundlesFromApi,
+  fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServiceRequestsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
@@ -283,6 +287,29 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/production-readiness/reviews",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and creates private-cloud operations and audit exports", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchLifecycleOperationsFromApi();
+    await createLifecycleOperationViaApi({ environmentName: "payments-dev", operation: "Extend" });
+    await fetchAuditExportsFromApi();
+    await createAuditExportViaApi();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/private-cloud/lifecycle-operations", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/private-cloud/lifecycle-operations",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("payments-dev") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/audit-exports", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/audit-exports",
       expect.objectContaining({ method: "POST" })
     );
   });

@@ -283,19 +283,37 @@ Goal: release as an operational internal developer platform candidate.
 
 Build:
 
-- OIDC/SSO integration.
-- Role-based access control.
-- Production database.
-- Audit export.
+- Private-cloud lifecycle operation records.
 - Lifecycle operations: extend, suspend, destroy, rebuild.
+- Audit export readiness records.
+- Admin Operations console.
 - Operational runbooks.
 
 Exit gate:
 
-- Auth and authorization tests pass.
-- Audit and data-retention review passes.
-- Production readiness review is complete.
-- Real provisioning is enabled only for approved targets and approved golden paths.
+- Lifecycle operation and audit export APIs are covered by tests.
+- Admin smoke test covers operations and audit export preparation.
+- Production readiness review remains visible before operational promotion.
+- Real provisioning remains disabled until an authorized adapter phase.
+
+### v1.8.0-on-prem-packaging-hardening
+
+Goal: harden the private-cloud starter for on-prem deployment evaluation.
+
+Build:
+
+- Compose profile for API, static UI, and durable JSON state.
+- Deployment environment matrix for reverse proxy, OIDC headers, data file, audit retention, and rate limits.
+- Backup and restore runbook for JSON state and future Postgres repository.
+- Health, readiness, and rollback validation script for the on-prem bundle.
+- Security checklist for ingress headers, TLS termination, credential references, and log redaction.
+
+Exit gate:
+
+- Package starts cleanly from documented commands.
+- Health and readiness checks pass.
+- Backup/restore dry-run is documented and tested against sample state.
+- Provisioning remains disabled by default.
 
 ## Automatic Implementation Rule
 

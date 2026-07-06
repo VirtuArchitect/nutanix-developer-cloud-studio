@@ -1,6 +1,7 @@
 import type {
   ApprovalRequest,
   AhvControlledProvisioningRun,
+  AuditExportRecord,
   ControlledProvisioningGate,
   ControlPlaneJob,
   Environment,
@@ -8,6 +9,8 @@ import type {
   IntegrationConfig,
   LabAdapterSnapshot,
   LabAuthorizationScope,
+  LifecycleOperationKind,
+  LifecycleOperationRecord,
   PlatformConfig,
   PlatformServiceKind,
   PlatformServicePreflightRun,
@@ -231,6 +234,14 @@ export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
 
+export async function fetchLifecycleOperationsFromApi() {
+  return fetchJson<LifecycleOperationRecord[]>("/api/private-cloud/lifecycle-operations");
+}
+
+export async function fetchAuditExportsFromApi() {
+  return fetchJson<AuditExportRecord[]>("/api/audit-exports");
+}
+
 export async function createLabAuthorizationScopeViaApi(payload: {
   pentestScopeReference?: string;
   pentestScopeStructurallyValid?: boolean;
@@ -299,6 +310,22 @@ export async function createPlatformServicePreflightRunViaApi(payload: {
 
 export async function createProductionReadinessReviewViaApi() {
   return fetchJson<ProductionReadinessReview>("/api/production-readiness/reviews", {
+    method: "POST",
+  });
+}
+
+export async function createLifecycleOperationViaApi(payload: {
+  environmentName?: string;
+  operation?: LifecycleOperationKind;
+}) {
+  return fetchJson<LifecycleOperationRecord>("/api/private-cloud/lifecycle-operations", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createAuditExportViaApi() {
+  return fetchJson<AuditExportRecord>("/api/audit-exports", {
     method: "POST",
   });
 }

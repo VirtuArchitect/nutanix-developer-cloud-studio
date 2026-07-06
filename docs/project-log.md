@@ -143,6 +143,11 @@
 - Added checks for OIDC boundary, durable state, audit retention, lab authorization, VM lifecycle proof, AHV preflight, platform-service preflight coverage, and provisioning guardrail.
 - Added Admin Overview readiness review UI and audit events.
 - Added tests and smoke coverage while keeping readiness reviews evidence-only.
+- Started `v1.7.0-private-cloud-developer-platform`.
+- Added API-backed private-cloud lifecycle operation records for extend, suspend, destroy, and rebuild.
+- Added API-backed audit export readiness records with retention and redaction boundaries.
+- Added Admin Operations tab for lifecycle requests and audit export preparation.
+- Added tests and smoke coverage while keeping lifecycle operations evidence-only.
 
 ## Documentation Rule
 

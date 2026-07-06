@@ -116,6 +116,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Platform-service planning API and Admin Control Plane UI for NKP, NDB, NUS, and NAI flows
 - Platform-service preflight adapter boundary and Admin Control Plane UI for service readiness checks
 - Production readiness review API and Admin Overview UI
+- Private-cloud lifecycle operation API and Admin Operations UI
+- Audit export readiness API and Admin Operations UI
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
 - Database-ready `ApiRepository` contract for future repository implementations
@@ -148,6 +150,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Platform-service requests validate catalog and dependency readiness but do not call NKP, NDB, NUS, or NAI APIs.
 - Platform-service preflight records check readiness only; NKP, NDB, NUS, and NAI mutation calls remain disabled.
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
+- Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
+- Audit export records prepare retention and redaction metadata only; production export delivery requires configured external storage.
 
 ## Real Integration Readiness Questions
 

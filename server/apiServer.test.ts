@@ -594,6 +594,53 @@ describe("api server", () => {
     );
   });
 
+  it("records private-cloud lifecycle operations and audit exports", async () => {
+    await requestJson("/api/environments", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "ops-dev",
+        templateId: "vm-app",
+        owner: "demo.user",
+        region: "Berlin Lab",
+      }),
+    });
+    const operation = await requestJson("/api/private-cloud/lifecycle-operations", {
+      method: "POST",
+      body: JSON.stringify({ environmentName: "ops-dev", operation: "Extend" }),
+    });
+    const auditExport = await requestJson("/api/audit-exports", { method: "POST" });
+    const operations = await requestJson("/api/private-cloud/lifecycle-operations");
+    const auditExports = await requestJson("/api/audit-exports");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(operation.data).toMatchObject({
+      environmentName: "ops-dev",
+      operation: "Extend",
+      status: "Blocked",
+      approvalRequired: true,
+      provisioningEnabled: false,
+    });
+    expect(operation.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Production readiness reviewed", passed: false }),
+        expect.objectContaining({ name: "Lifecycle proof verified", passed: false }),
+      ])
+    );
+    expect(auditExport.data).toMatchObject({
+      status: "Prepared",
+      format: "JSONL",
+      retentionEvents: 500,
+    });
+    expect(operations.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: operation.data.id })]));
+    expect(auditExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: auditExport.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "private-cloud.lifecycle.requested", target: "ops-dev" }),
+        expect.objectContaining({ action: "audit.export.prepared", target: auditExport.data.id }),
+      ])
+    );
+  });
+
   it("advances, fails, and retries control-plane jobs", async () => {
     await requestJson("/api/environments", {
       method: "POST",

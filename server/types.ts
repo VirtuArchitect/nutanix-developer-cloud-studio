@@ -7,8 +7,11 @@ import type {
   Environment,
   Integration,
   IntegrationConfig,
+  AuditExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
+  LifecycleOperationKind,
+  LifecycleOperationRecord,
   PlatformConfig,
   PlatformServiceKind,
   PlatformServicePreflightRun,
@@ -56,6 +59,8 @@ export type ApiState = {
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   productionReadinessReviews: ProductionReadinessReview[];
+  lifecycleOperations: LifecycleOperationRecord[];
+  auditExports: AuditExportRecord[];
   auditEvents: AuditEvent[];
 };
 
@@ -121,6 +126,11 @@ export type CreateVmLifecycleProofRequest = {
 export type CreateAhvControlledProvisioningRunRequest = {
   gateId?: string;
   action?: AhvControlledProvisioningRun["action"];
+};
+
+export type CreateLifecycleOperationRequest = {
+  environmentName?: string;
+  operation?: LifecycleOperationKind;
 };
 
 export type CreatePlatformServiceRequest = {

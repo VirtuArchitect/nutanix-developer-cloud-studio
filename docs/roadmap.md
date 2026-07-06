@@ -155,6 +155,13 @@
 - Add Admin Overview readiness review UI - done
 - Keep readiness reviews as evidence-only records - done
 
+## Phase 19 - Private Cloud Developer Platform (`v1.7.0-private-cloud-developer-platform`)
+
+- Add API-backed lifecycle operation records for extend, suspend, destroy, and rebuild - done
+- Add API-backed audit export readiness records - done
+- Add Admin Operations tab for lifecycle and audit workflows - done
+- Keep lifecycle operations as operator evidence only until authorized adapters exist - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

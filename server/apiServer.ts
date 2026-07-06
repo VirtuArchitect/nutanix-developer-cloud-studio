@@ -33,6 +33,11 @@ import {
   createDisabledPlatformServicePreflightAdapter,
   PlatformServicePreflightError,
 } from "./platformServicePreflight";
+import {
+  createAuditExportRecord,
+  createLifecycleOperationRecord,
+  PrivateCloudOperationError,
+} from "./privateCloudOperations";
 import { createProductionReadinessReview } from "./productionReadiness";
 import {
   createDisabledRealPrismInventoryAdapter,
@@ -67,6 +72,7 @@ import type {
   CreateAhvControlledProvisioningRunRequest,
   ControlledProvisioningDecisionRequest,
   CreateLabAuthorizationScopeRequest,
+  CreateLifecycleOperationRequest,
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
   CreatePlatformServiceRequest,
@@ -300,6 +306,16 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/production-readiness/reviews") {
     sendJson(response, 200, { data: state.productionReadinessReviews });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/private-cloud/lifecycle-operations") {
+    sendJson(response, 200, { data: state.lifecycleOperations });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/audit-exports") {
+    sendJson(response, 200, { data: state.auditExports });
     return;
   }
 
@@ -867,6 +883,49 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: review });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/private-cloud/lifecycle-operations") {
+    requireRole(context, ["Platform Admin"]);
+    try {
+      const body = await readJson<CreateLifecycleOperationRequest>(request);
+      const operation = createLifecycleOperationRecord(state, body, context.session.user);
+      state.lifecycleOperations = [operation, ...state.lifecycleOperations];
+      addAuditEvent(state, "private-cloud.lifecycle.requested", context.session.user, operation.environmentName, {
+        operation: operation.operation,
+        status: operation.status,
+        approvalRequired: operation.approvalRequired,
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 201, { data: operation });
+    } catch (error) {
+      if (error instanceof PrivateCloudOperationError) {
+        sendJson(response, 404, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/audit-exports") {
+    requireRole(context, ["Platform Admin"]);
+    const auditExport = createAuditExportRecord(state, context.session.user);
+    state.auditExports = [auditExport, ...state.auditExports];
+    addAuditEvent(state, "audit.export.prepared", context.session.user, auditExport.id, {
+      format: auditExport.format,
+      eventCount: auditExport.eventCount,
+      retentionEvents: auditExport.retentionEvents,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: auditExport });
     return;
   }
 

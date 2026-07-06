@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.6.0-production-readiness-review`.
+This project uses release tags for public milestones. The current release is `v1.7.0-private-cloud-developer-platform`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v1
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.7.0-private-cloud-developer-platform] - 2026-07-06
+
+### Added
+
+- API-backed private-cloud lifecycle operation records for extend, suspend, destroy, and rebuild requests.
+- API-backed audit export readiness records with retention and redaction boundaries.
+- Admin Operations tab for lifecycle requests and audit export preparation.
+- Tests and smoke coverage for operations and audit export workflows.
+
+### Notes
+
+- Lifecycle operations are gated operator records only; they do not call Nutanix APIs.
+- Real provider mutation remains disabled until a separate authorized adapter release.
+- `provisioningEnabled` remains `false`.
 
 ## [v1.6.0-production-readiness-review] - 2026-07-06
 

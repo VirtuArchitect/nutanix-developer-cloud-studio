@@ -35,6 +35,7 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Access model")).toBeVisible();
   await expect(page.getByRole("tab", { name: "Providers Config and adapters" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Control plane Jobs and approvals" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Operations Lifecycle and audit" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Governance Queues and controls" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Templates Catalog and ownership" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Production readiness review" })).toBeVisible();
@@ -96,6 +97,15 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("ml-reco-lab").first()).toBeVisible();
   await page.getByRole("button", { name: "Approve" }).first().click();
   await expect(page.getByText("Provisioning").first()).toBeVisible();
+  await page.getByRole("tab", { name: "Operations Lifecycle and audit" }).click();
+  await expect(page.getByRole("heading", { name: "Private cloud lifecycle" })).toBeVisible();
+  await page.getByRole("button", { name: "Extend" }).click();
+  await expect(page.getByText("Operational lifecycle requests")).toBeVisible();
+  await expect(page.getByText("Operator runbook")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Audit export boundary" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare audit export" }).click();
+  await expect(page.getByText("Audit export readiness")).toBeVisible();
+  await expect(page.getByText("Sensitive credential material is excluded from audit events.")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

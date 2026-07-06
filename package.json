@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "1.6.0-production-readiness-review",
+  "version": "1.7.0-private-cloud-developer-platform",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

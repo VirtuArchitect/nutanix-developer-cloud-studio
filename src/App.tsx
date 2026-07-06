@@ -1,5 +1,6 @@
 import {
   Activity,
+  Archive,
   CheckCircle2,
   CircleDollarSign,
   Cloud,
@@ -12,6 +13,7 @@ import {
   Pencil,
   Play,
   RefreshCw,
+  ScrollText,
   Settings,
   ShieldCheck,
   TerminalSquare,
@@ -27,6 +29,7 @@ import {
   targetIcons,
   templates,
   type AhvControlledProvisioningRun,
+  type AuditExportRecord,
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
@@ -36,6 +39,8 @@ import {
   type JobState,
   type LabAdapterSnapshot,
   type LabAuthorizationScope,
+  type LifecycleOperationKind,
+  type LifecycleOperationRecord,
   platformConfig as defaultPlatformConfig,
   policyBundles as defaultPolicyBundles,
   templateRegistry as defaultTemplateRegistry,
@@ -76,7 +81,9 @@ import {
 import {
   checkApiHealth,
   createAhvControlledProvisioningRunViaApi,
+  createAuditExportViaApi,
   createLabAuthorizationScopeViaApi,
+  createLifecycleOperationViaApi,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
   createPlatformServiceRequestViaApi,
@@ -87,6 +94,7 @@ import {
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAuditExportsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchEnvironmentsFromApi,
@@ -96,6 +104,7 @@ import {
   fetchIntegrationsFromApi,
   fetchLabAuthorizationScopesFromApi,
   fetchLabAdaptersFromApi,
+  fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServicePreflightRunsFromApi,
   fetchPlatformServiceRequestsFromApi,
@@ -121,7 +130,7 @@ import {
   type EnvironmentDetail,
 } from "./services/cloudStudioApi";
 
-type AdminTab = "overview" | "providers" | "control" | "governance" | "templates";
+type AdminTab = "overview" | "providers" | "control" | "operations" | "governance" | "templates";
 
 export function App() {
   const [view, setView] = useState<View>("dashboard");
@@ -159,6 +168,8 @@ export function App() {
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
   const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
+  const [lifecycleOperations, setLifecycleOperations] = useState<LifecycleOperationRecord[]>([]);
+  const [auditExports, setAuditExports] = useState<AuditExportRecord[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -224,6 +235,8 @@ export function App() {
             apiVmLifecycleProofs,
             apiAhvControlledProvisioningRuns,
             apiProductionReadinessReviews,
+            apiLifecycleOperations,
+            apiAuditExports,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -247,6 +260,8 @@ export function App() {
             fetchVmLifecycleProofsFromApi(),
             fetchAhvControlledProvisioningRunsFromApi(),
             fetchProductionReadinessReviewsFromApi(),
+            fetchLifecycleOperationsFromApi(),
+            fetchAuditExportsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -272,6 +287,8 @@ export function App() {
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
             setProductionReadinessReviews(apiProductionReadinessReviews);
+            setLifecycleOperations(apiLifecycleOperations);
+            setAuditExports(apiAuditExports);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -417,6 +434,8 @@ export function App() {
       apiVmLifecycleProofs,
       apiAhvControlledProvisioningRuns,
       apiProductionReadinessReviews,
+      apiLifecycleOperations,
+      apiAuditExports,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -440,6 +459,8 @@ export function App() {
       fetchVmLifecycleProofsFromApi(),
       fetchAhvControlledProvisioningRunsFromApi(),
       fetchProductionReadinessReviewsFromApi(),
+      fetchLifecycleOperationsFromApi(),
+      fetchAuditExportsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -464,6 +485,8 @@ export function App() {
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
     setProductionReadinessReviews(apiProductionReadinessReviews);
+    setLifecycleOperations(apiLifecycleOperations);
+    setAuditExports(apiAuditExports);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -836,6 +859,46 @@ export function App() {
     ]);
   }
 
+  async function requestLifecycleOperation(operation: LifecycleOperationKind) {
+    const environmentNameForOperation = selectedEnvironmentName || environments[0]?.name;
+    if (!environmentNameForOperation) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createLifecycleOperationViaApi({
+        environmentName: environmentNameForOperation,
+        operation,
+      });
+      await refreshApiState(environmentNameForOperation);
+      setLifecycleOperations((current) => [record, ...current.filter((item) => item.id !== record.id)]);
+      return;
+    }
+
+    setLifecycleOperations((current) => [
+      createMockLifecycleOperationRecord({
+        environmentName: environmentNameForOperation,
+        operation,
+        actor: session.user,
+        readiness: productionReadinessReviews[0],
+        gates: controlledProvisioningGates,
+        proofs: vmLifecycleProofs,
+      }),
+      ...current,
+    ]);
+  }
+
+  async function prepareAuditExport() {
+    if (apiHealth.mode === "api") {
+      const auditExport = await createAuditExportViaApi();
+      await refreshApiState();
+      setAuditExports((current) => [auditExport, ...current.filter((item) => item.id !== auditExport.id)]);
+      return;
+    }
+
+    setAuditExports((current) => [createMockAuditExportRecord(session.user, current.length), ...current]);
+  }
+
   async function requestEnvironmentDestroy(name: string) {
     if (apiHealth.mode === "api") {
       await requestEnvironmentDestroyViaApi(name);
@@ -1015,6 +1078,8 @@ export function App() {
             vmLifecycleProofs={vmLifecycleProofs}
             ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
             productionReadinessReviews={productionReadinessReviews}
+            lifecycleOperations={lifecycleOperations}
+            auditExports={auditExports}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -1033,6 +1098,8 @@ export function App() {
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
             createProductionReadinessReview={createProductionReadinessReview}
+            requestLifecycleOperation={requestLifecycleOperation}
+            prepareAuditExport={prepareAuditExport}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
             runResourceProfileAction={runResourceProfileAction}
@@ -1525,6 +1592,8 @@ function AdminView({
   vmLifecycleProofs,
   ahvControlledProvisioningRuns,
   productionReadinessReviews,
+  lifecycleOperations,
+  auditExports,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1543,6 +1612,8 @@ function AdminView({
   createPlatformServiceRequest,
   runPlatformServicePreflight,
   createProductionReadinessReview,
+  requestLifecycleOperation,
+  prepareAuditExport,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
   runResourceProfileAction,
@@ -1570,6 +1641,8 @@ function AdminView({
   vmLifecycleProofs: VmLifecycleProof[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   productionReadinessReviews: ProductionReadinessReview[];
+  lifecycleOperations: LifecycleOperationRecord[];
+  auditExports: AuditExportRecord[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1591,6 +1664,8 @@ function AdminView({
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
   createProductionReadinessReview: () => void;
+  requestLifecycleOperation: (operation: LifecycleOperationKind) => void;
+  prepareAuditExport: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
     templateId: string,
@@ -1608,6 +1683,7 @@ function AdminView({
     { id: "overview", label: "Overview", detail: "Access and readiness" },
     { id: "providers", label: "Providers", detail: "Config and adapters" },
     { id: "control", label: "Control plane", detail: "Jobs and approvals" },
+    { id: "operations", label: "Operations", detail: "Lifecycle and audit" },
     { id: "governance", label: "Governance", detail: "Queues and controls" },
     { id: "templates", label: "Templates", detail: "Catalog and ownership" },
   ];
@@ -1747,6 +1823,21 @@ function AdminView({
               decideApproval={decideApproval}
               openEnvironmentDetail={openEnvironmentDetail}
             />
+          </Panel>
+        </div>
+      )}
+
+      {activeTab === "operations" && (
+        <div className="adminTabPanel">
+          <Panel title="Private cloud lifecycle" action={`${lifecycleOperations.length} records`}>
+            <PrivateCloudOperationsPanel
+              environments={environments}
+              operations={lifecycleOperations}
+              requestLifecycleOperation={requestLifecycleOperation}
+            />
+          </Panel>
+          <Panel title="Audit export boundary" action={`${auditExports.length} exports`}>
+            <AuditExportPanel auditExports={auditExports} prepareAuditExport={prepareAuditExport} />
           </Panel>
         </div>
       )}
@@ -2068,6 +2159,117 @@ function VmSandboxDryRunPanel({
             {latest.rollbackPlan.map((item) => (
               <span key={item}>{item}</span>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PrivateCloudOperationsPanel({
+  environments,
+  operations,
+  requestLifecycleOperation,
+}: {
+  environments: Environment[];
+  operations: LifecycleOperationRecord[];
+  requestLifecycleOperation: (operation: LifecycleOperationKind) => void;
+}) {
+  const latest = operations[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="preflightHeader">
+        <Archive size={18} />
+        <div>
+          <strong>Operational lifecycle requests</strong>
+          <span>Extend, suspend, destroy, and rebuild are recorded as gated operator actions.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        {(["Extend", "Suspend", "Destroy", "Rebuild"] as LifecycleOperationKind[]).map((operation) => (
+          <button className="iconTextButton" key={operation} onClick={() => requestLifecycleOperation(operation)}>
+            <Play size={15} />
+            {operation}
+          </button>
+        ))}
+      </div>
+      <div className="miniMetrics">
+        <div>
+          <strong>{environments.length}</strong>
+          <span>tracked environments</span>
+        </div>
+        <div>
+          <strong>{operations.filter((operation) => operation.status === "Blocked").length}</strong>
+          <span>blocked operations</span>
+        </div>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No private-cloud lifecycle operations have been requested.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.operation} / {latest.environmentName}</strong>
+              <span>{latest.status}</span>
+            </div>
+            <span className={`statusPill ${latest.status === "Blocked" ? "warn" : "ready"}`}>{latest.status}</span>
+          </div>
+          <div className="bulletList">
+            {latest.checks.map((check) => (
+              <CheckLine key={check.name} icon={ShieldCheck} label={check.name} value={check.detail} passed={check.passed} />
+            ))}
+          </div>
+          <div className="planList">
+            <strong>Operator runbook</strong>
+            {latest.runbook.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AuditExportPanel({
+  auditExports,
+  prepareAuditExport,
+}: {
+  auditExports: AuditExportRecord[];
+  prepareAuditExport: () => void;
+}) {
+  const latest = auditExports[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="preflightHeader">
+        <ScrollText size={18} />
+        <div>
+          <strong>Audit export readiness</strong>
+          <span>Prepares export metadata and redaction boundaries for on-prem operations.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareAuditExport}>
+          <Play size={15} />
+          Prepare audit export
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No audit export records have been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.format} export / {latest.eventCount} events</strong>
+              <span>Retention window: {latest.retentionEvents} events</span>
+            </div>
+            <span className="statusPill ready">{latest.status}</span>
+          </div>
+          <div className="planList">
+            <span>{latest.redactionBoundary}</span>
+            <span>{latest.storageBoundary}</span>
           </div>
         </div>
       )}
@@ -3813,6 +4015,82 @@ function createMockSystemStatus(
       readOnlyCandidates: adapters.filter((item) => item.mode === "Read-only candidate").length,
     },
     provisioningEnabled: false,
+  };
+}
+
+function createMockLifecycleOperationRecord({
+  environmentName,
+  operation,
+  actor,
+  readiness,
+  gates,
+  proofs,
+}: {
+  environmentName: string;
+  operation: LifecycleOperationKind;
+  actor: string;
+  readiness?: ProductionReadinessReview;
+  gates: ControlledProvisioningGate[];
+  proofs: VmLifecycleProof[];
+}): LifecycleOperationRecord {
+  const gateApproved = gates.some((gate) => gate.environmentName === environmentName && gate.approval.status === "Approved");
+  const proofVerified = proofs.some((proof) => proof.environmentName === environmentName && proof.status === "Verified");
+  const checks = [
+    {
+      name: "Environment exists",
+      passed: true,
+      detail: `${environmentName} is tracked in browser mock inventory.`,
+    },
+    {
+      name: "Production readiness reviewed",
+      passed: readiness?.status === "Ready for review",
+      detail: readiness ? `Latest readiness status is ${readiness.status}.` : "Run a production readiness review first.",
+    },
+    {
+      name: "Controlled gate approved",
+      passed: gateApproved,
+      detail: gateApproved ? "Controlled gate approval is present." : "Controlled gate approval is missing.",
+    },
+    {
+      name: "Lifecycle proof verified",
+      passed: proofVerified,
+      detail: proofVerified ? "Lifecycle proof is verified." : "Lifecycle proof is not verified.",
+    },
+  ];
+
+  return {
+    id: `mock-lifecycle-${environmentName}-${operation.toLowerCase()}-${Date.now()}`,
+    environmentName,
+    operation,
+    status: checks.every((check) => check.passed) ? "Queued for operator review" : "Blocked",
+    requestedBy: actor,
+    checks,
+    runbook: [
+      `Confirm owner approval for ${operation.toLowerCase()} on ${environmentName}.`,
+      "Validate backup, rollback, and audit evidence before any real provider action.",
+      "Keep real mutation disabled until an authorized adapter release is approved.",
+    ],
+    auditEvidence: [
+      "Browser mock lifecycle request recorded.",
+      "Real provider mutation remains disabled.",
+    ],
+    approvalRequired: true,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAuditExportRecord(actor: string, existingExports: number): AuditExportRecord {
+  return {
+    id: `mock-audit-export-${Date.now()}`,
+    status: "Prepared",
+    requestedBy: actor,
+    format: "JSONL",
+    eventCount: existingExports,
+    retentionEvents: 500,
+    redactionBoundary: "Sensitive credential material is excluded from audit events.",
+    storageBoundary: "Browser mock export is metadata only; configure object storage for production exports.",
+    createdAt: new Date().toISOString(),
   };
 }
 

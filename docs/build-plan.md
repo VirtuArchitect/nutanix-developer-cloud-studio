@@ -236,6 +236,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Overview tab can run readiness reviews.
 - Reviews remain evidence records and do not enable real provisioning.
 
+## Current Private Cloud Developer Platform Slice
+
+- API records private-cloud lifecycle operations for extend, suspend, destroy, and rebuild.
+- Lifecycle checks cover production readiness review, controlled gate approval, VM lifecycle proof, and audit export availability.
+- API records audit export readiness metadata with event count, retention, redaction boundary, and storage boundary.
+- Admin Operations tab exposes lifecycle requests and audit export preparation.
+- Lifecycle operations and exports remain evidence records and do not call Nutanix APIs.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

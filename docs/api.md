@@ -249,6 +249,24 @@ The production readiness endpoint records a release-gate review across identity,
 
 Required role: `Platform Admin`.
 
+### Private Cloud Lifecycle Operations
+
+- `GET /api/private-cloud/lifecycle-operations`
+- `POST /api/private-cloud/lifecycle-operations`
+
+Lifecycle operations record extend, suspend, destroy, and rebuild requests against tracked environments. Each record checks production readiness review status, controlled gate approval, lifecycle proof, audit export availability, and keeps `provisioningEnabled=false`. These records are operator workflow evidence only and do not call provider APIs.
+
+Required role: `Platform Admin`.
+
+### Audit Export Records
+
+- `GET /api/audit-exports`
+- `POST /api/audit-exports`
+
+Audit export records prepare export metadata, event counts, retention windows, redaction boundaries, and storage boundaries for on-prem operations. The starter records export readiness metadata only; production deployments must configure external storage before real export delivery.
+
+Required role: `Platform Admin`.
+
 ## Production Foundation Controls
 
 The hosted starter now adds:

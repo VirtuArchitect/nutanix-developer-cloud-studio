@@ -411,6 +411,38 @@ export type ProductionReadinessReview = {
   createdAt: string;
 };
 
+export type LifecycleOperationKind = "Extend" | "Suspend" | "Destroy" | "Rebuild";
+
+export type LifecycleOperationRecord = {
+  id: string;
+  environmentName: string;
+  operation: LifecycleOperationKind;
+  status: "Blocked" | "Queued for operator review";
+  requestedBy: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  runbook: string[];
+  auditEvidence: string[];
+  approvalRequired: true;
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
+export type AuditExportRecord = {
+  id: string;
+  status: "Prepared";
+  requestedBy: string;
+  format: "JSONL";
+  eventCount: number;
+  retentionEvents: number;
+  redactionBoundary: string;
+  storageBoundary: string;
+  createdAt: string;
+};
+
 export type ControlPlaneJobTransition = {
   state: ControlPlaneJobState;
   actor: string;
