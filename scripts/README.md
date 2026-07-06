@@ -11,6 +11,7 @@ testing, linting, security scanning, or smoke testing.
 - `validate-onprem-config.ps1`: validates on-prem starter settings for state path, audit retention, rate limits, repository mode, and disabled real adapter guardrails.
 - `validate-postgres-repository.ps1`: validates migration files, schema naming, and fail-closed Postgres repository configuration without opening a database connection.
 - `validate-audit-export-config.ps1`: validates audit retention and export destination references without connecting to external storage.
+- `validate-provider-credential-references.ps1`: validates provider credential profile references and rejects inline access material.
 - `backup-state.ps1`: copies a JSON state file into a timestamped backup location.
 - `restore-state.ps1`: validates and restores a JSON state backup.
 - `test-state-backup-restore.ps1`: runs a local backup/restore smoke test against sample state.

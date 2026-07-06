@@ -18,6 +18,11 @@ import {
   retryControlPlaneJob,
 } from "./controlPlane";
 import {
+  assertCredentialReference,
+  createCredentialReferenceDiagnostics,
+  CredentialReferenceError,
+} from "./credentialReferences";
+import {
   ControlledProvisioningError,
   createControlledProvisioningGate,
   decideControlledProvisioningGate,
@@ -131,6 +136,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
         return;
       }
 
+      if (error instanceof CredentialReferenceError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
       console.error(error);
       sendJson(response, 500, {
         error: {
@@ -226,6 +241,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/integration-config") {
     sendJson(response, 200, { data: state.integrationConfigs });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/provider-credentials/diagnostics") {
+    sendJson(response, 200, { data: createCredentialReferenceDiagnostics(state.integrationConfigs) });
     return;
   }
 
@@ -498,6 +518,9 @@ async function routeApi(
     }
 
     const body = await readJson<UpdateIntegrationConfigRequest>(request);
+    if (body.credentialProfile !== undefined) {
+      assertCredentialReference(body.credentialProfile);
+    }
     const existing =
       state.integrationConfigs.find((item) => item.name === integrationName) ??
       {
@@ -528,6 +551,10 @@ async function routeApi(
         actor: state.session.user,
         target: integrationName,
         createdAt: new Date().toISOString(),
+        metadata: {
+          credentialReferenceOnly: true,
+          credentialProfileConfigured: Boolean(updated.credentialProfile),
+        },
       },
       ...state.auditEvents,
     ];

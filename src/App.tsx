@@ -31,6 +31,7 @@ import {
   type AhvControlledProvisioningRun,
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
+  type CredentialReferenceDiagnostic,
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
@@ -98,6 +99,7 @@ import {
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
+  fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchEnvironmentsFromApi,
@@ -148,6 +150,9 @@ export function App() {
   const [runtimeIntegrations, setRuntimeIntegrations] = useState<Integration[]>(integrations);
   const [integrationConfigs, setIntegrationConfigs] = useState<IntegrationConfig[]>(() =>
     deriveMockIntegrationConfigs(integrations)
+  );
+  const [credentialDiagnostics, setCredentialDiagnostics] = useState<CredentialReferenceDiagnostic[]>(() =>
+    createMockCredentialDiagnostics(deriveMockIntegrationConfigs(integrations))
   );
   const [session, setSession] = useState<PlatformSession>(mockSession);
   const [sessionDiagnostics, setSessionDiagnostics] = useState<SessionDiagnostics>(() =>
@@ -206,6 +211,7 @@ export function App() {
   useEffect(() => {
     if (apiHealth.mode === "mock") {
       setSystemStatus(createMockSystemStatus(session, integrationConfigs, labAdapters));
+      setCredentialDiagnostics(createMockCredentialDiagnostics(integrationConfigs));
     }
   }, [apiHealth.mode, integrationConfigs, labAdapters, session]);
 
@@ -227,6 +233,7 @@ export function App() {
             apiIntegrations,
             apiApprovals,
             apiIntegrationConfigs,
+            apiCredentialDiagnostics,
             apiSession,
             apiSessionDiagnostics,
             apiSystemStatus,
@@ -254,6 +261,7 @@ export function App() {
             fetchIntegrationsFromApi(),
             fetchApprovalsFromApi(),
             fetchIntegrationConfigsFromApi(),
+            fetchCredentialReferenceDiagnosticsFromApi(),
             fetchSessionFromApi(),
             fetchSessionDiagnosticsFromApi(),
             fetchSystemStatusFromApi(),
@@ -282,6 +290,7 @@ export function App() {
             setRuntimeIntegrations(apiIntegrations);
             setApprovals(apiApprovals);
             setIntegrationConfigs(apiIntegrationConfigs);
+            setCredentialDiagnostics(apiCredentialDiagnostics);
             setSession(apiSession);
             setSessionDiagnostics(apiSessionDiagnostics);
             setSystemStatus(apiSystemStatus);
@@ -432,6 +441,7 @@ export function App() {
       apiIntegrations,
       apiApprovals,
       apiIntegrationConfigs,
+      apiCredentialDiagnostics,
       apiSession,
       apiSessionDiagnostics,
       apiSystemStatus,
@@ -459,6 +469,7 @@ export function App() {
       fetchIntegrationsFromApi(),
       fetchApprovalsFromApi(),
       fetchIntegrationConfigsFromApi(),
+      fetchCredentialReferenceDiagnosticsFromApi(),
       fetchSessionFromApi(),
       fetchSessionDiagnosticsFromApi(),
       fetchSystemStatusFromApi(),
@@ -486,6 +497,7 @@ export function App() {
     setRuntimeIntegrations(apiIntegrations);
     setApprovals(apiApprovals);
     setIntegrationConfigs(apiIntegrationConfigs);
+    setCredentialDiagnostics(apiCredentialDiagnostics);
     setSession(apiSession);
     setSessionDiagnostics(apiSessionDiagnostics);
     setSystemStatus(apiSystemStatus);
@@ -1030,6 +1042,7 @@ export function App() {
             approvals={approvals}
             integrations={runtimeIntegrations}
             integrationConfigs={integrationConfigs}
+            credentialDiagnostics={credentialDiagnostics}
             session={session}
             sessionDiagnostics={sessionDiagnostics}
             systemStatus={systemStatus}
@@ -1082,6 +1095,7 @@ export function App() {
             environments={environments}
             integrations={runtimeIntegrations}
             integrationConfigs={integrationConfigs}
+            credentialDiagnostics={credentialDiagnostics}
             session={session}
             sessionDiagnostics={sessionDiagnostics}
             systemStatus={systemStatus}
@@ -1141,6 +1155,7 @@ function Dashboard({
   approvals,
   integrations,
   integrationConfigs,
+  credentialDiagnostics,
   session,
   sessionDiagnostics,
   systemStatus,
@@ -1154,6 +1169,7 @@ function Dashboard({
   approvals: ApprovalRequest[];
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
+  credentialDiagnostics: CredentialReferenceDiagnostic[];
   session: PlatformSession;
   sessionDiagnostics: SessionDiagnostics;
   systemStatus: SystemStatus;
@@ -1600,6 +1616,7 @@ function AdminView({
   environments,
   integrations,
   integrationConfigs,
+  credentialDiagnostics,
   session,
   sessionDiagnostics,
   systemStatus,
@@ -1651,6 +1668,7 @@ function AdminView({
   environments: Environment[];
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
+  credentialDiagnostics: CredentialReferenceDiagnostic[];
   session: PlatformSession;
   sessionDiagnostics: SessionDiagnostics;
   systemStatus: SystemStatus;
@@ -1787,6 +1805,9 @@ function AdminView({
               saveIntegrationConfig={saveIntegrationConfig}
               runIntegrationCheck={runIntegrationCheck}
             />
+          </Panel>
+          <Panel title="Credential reference diagnostics" action={`${credentialDiagnostics.filter((item) => item.status === "Approved reference").length}/${credentialDiagnostics.length} approved`}>
+            <CredentialReferenceDiagnosticsPanel diagnostics={credentialDiagnostics} />
           </Panel>
           <Panel title="Lab adapter pilot" action="Read-only">
             <LabAdapterPanel
@@ -2377,6 +2398,29 @@ function IntegrationConfigPanel({
           saveIntegrationConfig={saveIntegrationConfig}
           runIntegrationCheck={runIntegrationCheck}
         />
+      ))}
+    </div>
+  );
+}
+
+function CredentialReferenceDiagnosticsPanel({
+  diagnostics,
+}: {
+  diagnostics: CredentialReferenceDiagnostic[];
+}) {
+  return (
+    <div className="readinessList">
+      {diagnostics.map((diagnostic) => (
+        <div className="readinessRow" key={diagnostic.provider}>
+          <strong>{diagnostic.provider} credential reference</strong>
+          <span>{diagnostic.status} / {diagnostic.credentialProfile}</span>
+          <small>{diagnostic.redactionBoundary}</small>
+          <div className="bulletList compactList">
+            {diagnostic.checks.map((check) => (
+              <CheckLine key={check.name} icon={LockKeyhole} label={check.name} value={check.detail} passed={check.passed} />
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -3410,6 +3454,48 @@ function deriveMockIntegrationConfigs(sourceIntegrations: Integration[]): Integr
     status: integration.state === "Healthy" ? "Configured" : "Not configured",
     message: integration.state === "Healthy" ? "Mock adapter is configured for prototype readiness." : integration.nextStep,
   }));
+}
+
+function createMockCredentialDiagnostics(configs: IntegrationConfig[]): CredentialReferenceDiagnostic[] {
+  return configs.map((config) => {
+    const configured = Boolean(config.credentialProfile);
+    const referenceShape = !configured || /^[a-z][a-z0-9._:-]{2,63}$/.test(config.credentialProfile);
+    const noInlineMaterial =
+      !configured ||
+      (!config.credentialProfile.includes("://") &&
+        !config.credentialProfile.includes("@") &&
+        !config.credentialProfile.includes("=") &&
+        !config.credentialProfile.includes("$") &&
+        config.credentialProfile.length <= 64);
+    const checks = [
+      {
+        name: "Reference configured",
+        passed: configured,
+        detail: configured ? "A credential profile reference is configured." : "No credential profile reference is configured.",
+      },
+      {
+        name: "Reference shape",
+        passed: referenceShape,
+        detail: referenceShape
+          ? "Reference name uses the approved profile-name shape."
+          : "Use lowercase letters, numbers, dot, underscore, colon, or dash, starting with a letter.",
+      },
+      {
+        name: "No inline access material",
+        passed: noInlineMaterial,
+        detail: noInlineMaterial
+          ? "No inline access material was detected in the reference."
+          : "Move access material to an external vault or platform credential store.",
+      },
+    ];
+    return {
+      provider: config.name as CredentialReferenceDiagnostic["provider"],
+      credentialProfile: config.credentialProfile || "not-configured",
+      status: !configured ? "Missing" : checks.every((check) => check.passed) ? "Approved reference" : "Invalid",
+      checks,
+      redactionBoundary: "Only credential profile references are stored. Access material must remain outside NDC Studio.",
+    };
+  });
 }
 
 function deriveMockLabAdapters(sourceIntegrations: Integration[]): LabAdapterSnapshot[] {

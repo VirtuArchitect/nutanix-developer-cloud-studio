@@ -81,6 +81,15 @@ Validate audit export and retention settings:
 
 Destination references must not contain embedded auth material. Store access material outside NDC Studio.
 
+Validate provider credential references:
+
+```powershell
+.\scripts\validate-provider-credential-references.ps1
+.\scripts\validate-provider-credential-references.ps1 -CredentialReferences nci-lab-readonly,nkp-lab-readonly
+```
+
+Credential references are profile names only. Store credential values in an external vault or platform credential store.
+
 ## Deployment Matrix
 
 | Area | Starter setting | Production expectation |
@@ -94,6 +103,7 @@ Destination references must not contain embedded auth material. Store access mat
 | Rate limit | `NDC_RATE_LIMIT_PER_MINUTE=120` | Tuned per ingress and expected operator traffic |
 | Prism adapter | `NDC_PRISM_REAL_ADAPTER=disabled` | Enabled only in a future authorized adapter release |
 | Trusted identity | `NDC_REQUIRE_TRUSTED_IDENTITY=false` | Set to `true` only behind an OIDC-validating ingress that forwards required identity headers |
+| Provider credentials | `NUTANIX_CREDENTIAL_PROFILE=lab-readonly` | Reference name only; values stay in a vault or platform credential store |
 
 ## Prototype State Backup
 

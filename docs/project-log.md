@@ -167,6 +167,11 @@
 - Added audit retention diagnostics API and Admin Operations metrics.
 - Added audit export destination-reference validation and phase gate coverage.
 - Added tests for manifest, checksum, destination validation, and retention diagnostics.
+- Started `v2.2.0-provider-credential-reference-hardening`.
+- Added provider credential reference diagnostics and validation.
+- Added Admin Providers diagnostics panel.
+- Added phase gate validation for provider credential reference strings.
+- Added tests for credential reference approval, rejection, diagnostics, and smoke coverage.
 
 ## Documentation Rule
 

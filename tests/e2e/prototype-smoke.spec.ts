@@ -55,6 +55,9 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Configuration saved")).toBeVisible();
   await page.getByRole("button", { name: "Check" }).first().click();
   await expect(page.getByText("Reachable", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Credential reference diagnostics" })).toBeVisible();
+  await expect(page.getByText("NCI credential reference")).toBeVisible();
+  await expect(page.getByText("Only credential profile references are stored. Access material must remain outside NDC Studio.").first()).toBeVisible();
   await page.getByRole("button", { name: "Discover" }).first().click();
   await expect(page.getByText("Read-only candidate")).toBeVisible();
   await expect(page.getByText("Provisioning disabled").first()).toBeVisible();

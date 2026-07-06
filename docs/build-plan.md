@@ -276,6 +276,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Destination-reference validation rejects embedded auth material.
 - Export delivery remains metadata-only until external storage is configured.
 
+## Current Provider Credential Reference Hardening Slice
+
+- Provider integration configs validate credential profile references.
+- Inline access material is rejected before configuration is saved.
+- Admin Providers tab surfaces missing, invalid, and approved credential references.
+- Phase gate validates provider credential reference shape.
+- Audit events record that a reference is configured, not the reference value.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

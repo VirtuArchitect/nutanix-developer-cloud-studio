@@ -391,6 +391,25 @@ Exit gate:
 - Logs and audit events contain references only.
 - Real provisioning remains disabled.
 
+### v2.3.0-adapter-enable-contract-hardening
+
+Goal: define the explicit enablement contract required before any real Nutanix adapter can move beyond disabled preflight.
+
+Build:
+
+- Adapter enablement records for NCI, NKP, NDB, NUS, NCM, and NAI.
+- Required evidence: approved lab scope, credential reference diagnostics, provider readiness, audit export readiness, and rollback owner.
+- Admin UI for blocked/ready adapter enablement evidence.
+- Tests that real adapters remain disabled unless every evidence item is present.
+- Runbook for adapter enablement review.
+
+Exit gate:
+
+- Adapter enablement APIs and UI are tested.
+- Missing evidence blocks enablement.
+- Real mutation calls remain disabled.
+- Pentest scope remains required before live adapter testing.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

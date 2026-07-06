@@ -63,6 +63,7 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/environments`
 - `GET /api/integrations`
 - `GET /api/integration-config`
+- `GET /api/provider-credentials/diagnostics`
 - `GET /api/lab-adapters`
 - `GET /api/prism/inventory`
 - `GET /api/resource-profiles`
@@ -81,6 +82,8 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 `GET /api/session/diagnostics` returns trusted-header mode, missing required identity headers, and the role/action matrix surfaced in the Admin Overview.
 
 When `NDC_REQUIRE_TRUSTED_IDENTITY=true`, API routes fail closed with `401 unauthenticated` unless `x-ndc-user`, `x-ndc-roles`, and `x-ndc-issuer` are present. Health endpoints remain public.
+
+`GET /api/provider-credentials/diagnostics` returns provider credential reference status for NCI, NKP, NDB, NUS, NCM, and NAI. Diagnostics validate that integration configuration stores profile references only and rejects inline access material.
 
 ### Environment Requests
 
@@ -156,6 +159,7 @@ Required role: `Approver` or `Platform Admin`.
 
 ### Integration Configuration
 
+- `GET /api/provider-credentials/diagnostics`
 - `PUT /api/integration-config/:name`
 - `POST /api/integrations/:name/check`
 
@@ -168,7 +172,7 @@ Example request:
 }
 ```
 
-The readiness check updates the mock integration configuration to `Reachable`, `Failed`, or `Not configured`. It does not call real Nutanix services.
+The readiness check updates the mock integration configuration to `Reachable`, `Failed`, or `Not configured`. It does not call real Nutanix services. Credential profile values are validated as reference names, and inline access material is rejected before persistence.
 
 Required role: `Platform Admin`.
 

@@ -109,6 +109,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - API-backed Prism read-only inventory import with mock and disabled-real adapter implementations
 - OIDC-shaped request context, RBAC guardrails, request IDs, structured logs, rate limits, and security headers
 - Optional strict trusted-header mode and session diagnostics
+- Provider credential reference diagnostics and validation
 - Postgres repository scaffold and SQL migration files for production persistence planning
 - Postgres repository configuration validator and migration scaffold validation
 - AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
@@ -138,6 +139,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The control plane models job orchestration but does not mutate infrastructure.
 - The destroy lifecycle is simulated and does not delete infrastructure.
 - Provider configuration stores references only and does not store secrets.
+- Credential reference validation rejects inline access material before provider configuration is saved.
 - Image/profile catalog records are planning metadata until a lab registry source is authorized.
 - Template registry and policy bundle records are governance planning metadata until real approval and publishing controls are wired to identity and provisioning gates.
 - Environment requests persist across browser refreshes through local storage.

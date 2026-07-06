@@ -106,6 +106,20 @@ export type IntegrationConfig = {
   message: string;
 };
 
+export type CredentialReferenceStatus = "Missing" | "Invalid" | "Approved reference";
+
+export type CredentialReferenceDiagnostic = {
+  provider: ProvisioningAdapterName;
+  credentialProfile: string;
+  status: CredentialReferenceStatus;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  redactionBoundary: string;
+};
+
 export type LabAdapterSnapshot = {
   name: string;
   product: string;

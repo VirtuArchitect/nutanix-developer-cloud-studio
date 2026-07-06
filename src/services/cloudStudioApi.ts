@@ -3,6 +3,7 @@ import type {
   AhvControlledProvisioningRun,
   AuditExportRecord,
   AuditRetentionDiagnostics,
+  CredentialReferenceDiagnostic,
   ControlledProvisioningGate,
   ControlPlaneJob,
   Environment,
@@ -133,6 +134,10 @@ export async function fetchIntegrationsFromApi() {
 
 export async function fetchIntegrationConfigsFromApi() {
   return fetchJson<IntegrationConfig[]>("/api/integration-config");
+}
+
+export async function fetchCredentialReferenceDiagnosticsFromApi() {
+  return fetchJson<CredentialReferenceDiagnostic[]>("/api/provider-credentials/diagnostics");
 }
 
 export async function saveIntegrationConfigViaApi(

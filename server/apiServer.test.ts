@@ -194,6 +194,7 @@ describe("api server", () => {
     });
     const checked = await requestJson("/api/integrations/NCI/check", { method: "POST" });
     const configs = await requestJson("/api/integration-config");
+    const credentialDiagnostics = await requestJson("/api/provider-credentials/diagnostics");
 
     expect(saved.data).toMatchObject({
       name: "NCI",
@@ -203,6 +204,35 @@ describe("api server", () => {
     });
     expect(checked.data).toMatchObject({ name: "NCI", status: "Reachable" });
     expect(configs.data).toEqual(expect.arrayContaining([expect.objectContaining({ name: "NCI", status: "Reachable" })]));
+    expect(credentialDiagnostics.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          provider: "NCI",
+          credentialProfile: "nci-readonly",
+          status: "Approved reference",
+        }),
+      ])
+    );
+  });
+
+  it("rejects inline credential material in provider configuration", async () => {
+    await expectJson(
+      "/api/integration-config/NCI",
+      400,
+      {
+        error: {
+          code: "credential_reference_invalid",
+          message: "Credential profile must be a reference name, not inline access material.",
+        },
+      },
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          endpoint: "https://prism.lab.example",
+          credentialProfile: "https://inline.example",
+        }),
+      }
+    );
   });
 
   it("reports system status and simulates read-only lab discovery", async () => {

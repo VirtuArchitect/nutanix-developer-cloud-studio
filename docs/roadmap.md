@@ -194,6 +194,14 @@
 - Add phase gate coverage for audit export configuration - done
 - Add tests for manifest, checksum, destination, retention, and API/client behavior - done
 
+## Phase 24 - Provider Credential Reference Hardening (`v2.2.0-provider-credential-reference-hardening`)
+
+- Add credential reference validation for Nutanix providers - done
+- Add provider credential reference diagnostics API - done
+- Add Admin Providers diagnostics panel - done
+- Add phase gate validation for provider credential references - done
+- Add tests for validation, rejection, diagnostics, and smoke behavior - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

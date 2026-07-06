@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.1.0-audit-export-retention-hardening",
+  "version": "2.2.0-provider-credential-reference-hardening",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

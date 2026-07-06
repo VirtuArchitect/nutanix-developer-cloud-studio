@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.1.0-audit-export-retention-hardening`.
+This project uses release tags for public milestones. The current release is `v2.2.0-provider-credential-reference-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,23 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.2.0-provider-credential-reference-hardening] - 2026-07-06
+
+### Added
+
+- Provider credential reference diagnostics for NCI, NKP, NDB, NUS, NCM, and NAI.
+- Credential reference validator that accepts profile references and rejects inline access material.
+- API endpoint for credential reference diagnostics.
+- Admin Providers panel for missing, invalid, and approved credential references.
+- Phase gate validation for provider credential reference strings.
+- Tests for validator, API rejection, diagnostics, client helper, and smoke coverage.
+
+### Notes
+
+- Integration configuration stores reference names only.
+- Audit events record whether a reference is configured, not the value itself.
+- Real provisioning remains disabled.
 
 ## [v2.1.0-audit-export-retention-hardening] - 2026-07-06
 

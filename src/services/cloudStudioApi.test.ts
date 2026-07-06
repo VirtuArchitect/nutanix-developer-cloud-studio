@@ -16,6 +16,7 @@ import {
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
+  fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
@@ -129,6 +130,7 @@ describe("cloudStudioApi", () => {
       endpoint: "https://prism.lab.example",
       credentialProfile: "nci-readonly",
     });
+    await fetchCredentialReferenceDiagnosticsFromApi();
     await runIntegrationCheckViaApi("NCI");
 
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -141,6 +143,11 @@ describe("cloudStudioApi", () => {
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
+      "/api/provider-credentials/diagnostics",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
       "/api/integrations/NCI/check",
       expect.objectContaining({ method: "POST" })
     );

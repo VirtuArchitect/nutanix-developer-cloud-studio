@@ -124,6 +124,10 @@ Invoke-Step "Audit export configuration validation" {
   Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\validate-audit-export-config.ps1")
 }
 
+Invoke-Step "Provider credential reference validation" {
+  Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\validate-provider-credential-references.ps1")
+}
+
 Invoke-Step "State backup and restore smoke" {
   Invoke-Native "powershell.exe" @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\test-state-backup-restore.ps1")
 }
