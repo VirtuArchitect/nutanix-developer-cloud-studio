@@ -116,6 +116,7 @@ export function createDefaultState(): ApiState {
     integrations,
     integrationConfigs: defaultIntegrationConfigs(),
     labAdapters: defaultLabAdapters(),
+    labAuthorizationScopes: [],
     resourceProfiles,
     policyBundles,
     templateRegistry,
@@ -130,6 +131,7 @@ export function createDefaultState(): ApiState {
     vmSandboxDryRuns: [],
     controlledProvisioningGates: [],
     platformServiceRequests: [],
+    vmLifecycleProofs: [],
     auditEvents: [],
   };
 }

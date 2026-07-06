@@ -116,10 +116,7 @@ export function createPlatformServiceRequest(
 }
 
 function isVmLifecycleProven(state: ApiState) {
-  return (
-    process.env.NDC_VM_LIFECYCLE_PROVEN === "true" &&
-    state.controlledProvisioningGates.some((gate) => gate.status === "Approved for controlled create")
-  );
+  return state.vmLifecycleProofs.some((proof) => proof.status === "Verified");
 }
 
 function buildValidations({

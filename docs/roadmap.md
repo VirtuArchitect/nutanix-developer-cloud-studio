@@ -123,6 +123,15 @@
 - Gate all platform-service flows on VM lifecycle proof - done
 - Keep real platform-service provisioning disabled until service-specific adapter phases - done
 
+## Phase 15 - Lifecycle Evidence (`v1.3.0-lifecycle-evidence`)
+
+- Add lab authorization scope records - done
+- Add pentest scope evidence checks - done
+- Add VM lifecycle proof records for gate, rollback, and destroy validation - done
+- Connect controlled provisioning gates to active lab authorization scope evidence - done
+- Connect platform-service planning to recorded VM lifecycle proof - done
+- Keep all live provisioning disabled until authorized adapter work - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

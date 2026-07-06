@@ -211,6 +211,24 @@ Exit gate:
 
 ### v1.3.0-private-cloud-developer-platform
 
+Goal: record the evidence required before private-cloud developer platform promotion.
+
+Build:
+
+- Lab authorization scope records.
+- Pentest scope evidence.
+- VM lifecycle proof records.
+- Controlled gate linkage to active lab scope.
+- Platform-service linkage to lifecycle proof.
+
+Exit gate:
+
+- Evidence APIs and UI are tested.
+- Lifecycle proof remains blocked until controlled create gate is truly approved.
+- Real provisioning remains disabled until authorized adapter work.
+
+### v1.4.0-private-cloud-developer-platform
+
 Goal: release as an operational internal developer platform candidate.
 
 Build:

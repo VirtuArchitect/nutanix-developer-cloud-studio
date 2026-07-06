@@ -7,6 +7,7 @@ import type {
   Integration,
   IntegrationConfig,
   LabAdapterSnapshot,
+  LabAuthorizationScope,
   PlatformConfig,
   PlatformServiceKind,
   PlatformServiceRequest,
@@ -20,6 +21,7 @@ import type {
   Template,
   TemplateGovernance,
   TemplateRegistryEntry,
+  VmLifecycleProof,
   VmSandboxDryRunPlan,
   VmSandboxDryRunRequest,
 } from "../src/data/cloudStudioDomain";
@@ -31,6 +33,7 @@ export type ApiState = {
   integrations: Integration[];
   integrationConfigs: IntegrationConfig[];
   labAdapters: LabAdapterSnapshot[];
+  labAuthorizationScopes: LabAuthorizationScope[];
   resourceProfiles: ResourceProfile[];
   policyBundles: PolicyBundle[];
   templateRegistry: TemplateRegistryEntry[];
@@ -46,6 +49,7 @@ export type ApiState = {
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
   controlledProvisioningGates: ControlledProvisioningGate[];
   platformServiceRequests: PlatformServiceRequest[];
+  vmLifecycleProofs: VmLifecycleProof[];
   auditEvents: AuditEvent[];
 };
 
@@ -84,6 +88,28 @@ export type CreateControlledProvisioningGateRequest = {
 export type ControlledProvisioningDecisionRequest = {
   decision: ControlledProvisioningDecision;
   evidence?: string;
+};
+
+export type CreateLabAuthorizationScopeRequest = {
+  name?: string;
+  owner?: string;
+  approver?: string;
+  approvedAt?: string;
+  expiresAt?: string;
+  project?: string;
+  cluster?: string;
+  network?: string;
+  allowedActions?: string[];
+  excludedActions?: string[];
+  pentestScopeReference?: string;
+  pentestScopeStructurallyValid?: boolean;
+};
+
+export type CreateVmLifecycleProofRequest = {
+  gateId?: string;
+  rollbackVerified?: boolean;
+  destroyVerified?: boolean;
+  evidence?: string[];
 };
 
 export type CreatePlatformServiceRequest = {

@@ -1,5 +1,6 @@
 import type { ControlledProvisioningDecision, ControlledProvisioningGate, VmSandboxDryRunPlan } from "../src/data/cloudStudioDomain";
 import type { ApiState, CreateControlledProvisioningGateRequest } from "./types";
+import { getActiveLabAuthorizationScope } from "./authorizationEvidence";
 
 export class ControlledProvisioningError extends Error {
   constructor(
@@ -17,6 +18,7 @@ export function createControlledProvisioningGate(
 ): ControlledProvisioningGate {
   const dryRun = findDryRunPlan(state, input);
   const existing = state.controlledProvisioningGates.find((item) => item.dryRunPlanId === dryRun.id);
+  const activeScope = getActiveLabAuthorizationScope(state);
   const now = new Date().toISOString();
   const base: ControlledProvisioningGate =
     existing ??
@@ -33,9 +35,9 @@ export function createControlledProvisioningGate(
       },
       pentestScope: {
         required: true,
-        present: Boolean(input.pentestScopeReference),
-        reference: input.pentestScopeReference ?? "No authorized lab scope file attached.",
-        structurallyValid: Boolean(input.pentestScopeStructurallyValid),
+        present: Boolean(input.pentestScopeReference ?? activeScope?.pentestScopeReference),
+        reference: input.pentestScopeReference ?? activeScope?.pentestScopeReference ?? "No authorized lab scope file attached.",
+        structurallyValid: Boolean(input.pentestScopeStructurallyValid ?? activeScope?.pentestScopeStructurallyValid),
       },
       checks: [],
       rollbackPlan: dryRun.rollbackPlan,
@@ -55,9 +57,11 @@ export function createControlledProvisioningGate(
       ...base,
       pentestScope: {
         ...base.pentestScope,
-        present: Boolean(input.pentestScopeReference) || base.pentestScope.present,
-        reference: input.pentestScopeReference ?? base.pentestScope.reference,
-        structurallyValid: Boolean(input.pentestScopeStructurallyValid) || base.pentestScope.structurallyValid,
+        present: Boolean(input.pentestScopeReference ?? activeScope?.pentestScopeReference) || base.pentestScope.present,
+        reference: input.pentestScopeReference ?? activeScope?.pentestScopeReference ?? base.pentestScope.reference,
+        structurallyValid:
+          Boolean(input.pentestScopeStructurallyValid ?? activeScope?.pentestScopeStructurallyValid) ||
+          base.pentestScope.structurallyValid,
       },
       mutationKillSwitch: process.env.NDC_CONTROLLED_PROVISIONING_ENABLED === "true",
       updatedAt: now,

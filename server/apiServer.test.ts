@@ -421,6 +421,52 @@ describe("api server", () => {
     );
   });
 
+  it("records lab authorization scope and VM lifecycle proof evidence", async () => {
+    const scope = await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        pentestScopeReference: "authorized-lab-scope.md",
+        pentestScopeStructurallyValid: true,
+      }),
+    });
+    const plan = await requestJson("/api/vm-sandbox/dry-runs", {
+      method: "POST",
+      body: JSON.stringify({ environmentName: "scope-backed-vm-plan" }),
+    });
+    const gate = await requestJson("/api/vm-sandbox/controlled-provisioning", {
+      method: "POST",
+      body: JSON.stringify({ dryRunPlanId: plan.data.id }),
+    });
+    const approved = await requestJson(`/api/vm-sandbox/controlled-provisioning/${gate.data.id}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ evidence: "Operator approval recorded." }),
+    });
+    const proof = await requestJson("/api/vm-lifecycle/proofs", {
+      method: "POST",
+      body: JSON.stringify({ gateId: gate.data.id, rollbackVerified: true, destroyVerified: true }),
+    });
+    const scopes = await requestJson("/api/lab-authorization/scopes");
+    const proofs = await requestJson("/api/vm-lifecycle/proofs");
+
+    expect(scope.data).toMatchObject({
+      pentestScopeReference: "authorized-lab-scope.md",
+      pentestScopeStructurallyValid: true,
+    });
+    expect(gate.data.checks).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Authorized scope attached", passed: true })])
+    );
+    expect(approved.data).toMatchObject({ status: "Mutation disabled", provisioningEnabled: false });
+    expect(proof.data).toMatchObject({
+      environmentName: "scope-backed-vm-plan",
+      status: "Blocked",
+      rollbackVerified: true,
+      destroyVerified: true,
+      provisioningEnabled: false,
+    });
+    expect(scopes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: scope.data.id })]));
+    expect(proofs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: proof.data.id })]));
+  });
+
   it("plans platform service requests after checking VM lifecycle proof", async () => {
     const serviceRequest = await requestJson("/api/platform-services/requests", {
       method: "POST",

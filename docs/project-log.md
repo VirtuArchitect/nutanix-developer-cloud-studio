@@ -122,6 +122,12 @@
 - Added VM lifecycle proof gating, profile validation, provider matching, cost estimates, rollback notes, and cleanup plans.
 - Added Admin Control Plane platform-service flow planning UI.
 - Added tests and smoke coverage while keeping real NKP, NDB, NUS, and NAI provisioning disabled.
+- Started `v1.3.0-lifecycle-evidence`.
+- Added API-backed lab authorization scope records with approved project, cluster, network, test window, allowed actions, excluded actions, and pentest scope evidence.
+- Added API-backed VM lifecycle proof records for controlled gate, rollback, and destroy evidence.
+- Connected controlled provisioning gates to active lab authorization scope evidence.
+- Connected platform-service planning to recorded VM lifecycle proof.
+- Added Admin Control Plane evidence UI and tests while keeping real provisioning disabled.
 
 ## Documentation Rule
 

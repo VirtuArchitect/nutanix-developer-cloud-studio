@@ -3,6 +3,11 @@ import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { extname, join, normalize, relative } from "node:path";
 import {
+  AuthorizationEvidenceError,
+  createLabAuthorizationScope,
+  createVmLifecycleProof,
+} from "./authorizationEvidence";
+import {
   advanceControlPlaneJob,
   ControlPlaneError,
   failControlPlaneJob,
@@ -51,9 +56,11 @@ import type {
   ApiResponse,
   ApiState,
   ControlledProvisioningDecisionRequest,
+  CreateLabAuthorizationScopeRequest,
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
   CreatePlatformServiceRequest,
+  CreateVmLifecycleProofRequest,
   CreateVmSandboxDryRunRequest,
   RegistryAction,
   UpdateIntegrationConfigRequest,
@@ -252,6 +259,16 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/vm-sandbox/controlled-provisioning") {
     sendJson(response, 200, { data: state.controlledProvisioningGates });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-authorization/scopes") {
+    sendJson(response, 200, { data: state.labAuthorizationScopes });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/vm-lifecycle/proofs") {
+    sendJson(response, 200, { data: state.vmLifecycleProofs });
     return;
   }
 
@@ -644,6 +661,67 @@ async function routeApi(
       sendJson(response, 201, { data: gate });
     } catch (error) {
       if (error instanceof ControlledProvisioningError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-authorization/scopes") {
+    requireRole(context, ["Platform Admin"]);
+    try {
+      const body = await readJson<CreateLabAuthorizationScopeRequest>(request);
+      const scope = createLabAuthorizationScope(state, body, context.session.user);
+      state.labAuthorizationScopes = [scope, ...state.labAuthorizationScopes];
+      addAuditEvent(state, "lab-authorization.scope.recorded", context.session.user, scope.name, {
+        project: scope.project,
+        cluster: scope.cluster,
+        network: scope.network,
+        status: scope.status,
+        pentestScopeStructurallyValid: scope.pentestScopeStructurallyValid,
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 201, { data: scope });
+    } catch (error) {
+      if (error instanceof AuthorizationEvidenceError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/vm-lifecycle/proofs") {
+    requireRole(context, ["Platform Admin"]);
+    try {
+      const body = await readJson<CreateVmLifecycleProofRequest>(request);
+      const proof = createVmLifecycleProof(state, body, context.session.user);
+      state.vmLifecycleProofs = [proof, ...state.vmLifecycleProofs];
+      addAuditEvent(state, "vm-lifecycle.proof.recorded", context.session.user, proof.environmentName, {
+        gateId: proof.gateId,
+        status: proof.status,
+        rollbackVerified: proof.rollbackVerified,
+        destroyVerified: proof.destroyVerified,
+        provisioningEnabled: false,
+      });
+      await store.save(state);
+      sendJson(response, 201, { data: proof });
+    } catch (error) {
+      if (error instanceof AuthorizationEvidenceError) {
         sendJson(response, 400, {
           error: {
             code: error.code,

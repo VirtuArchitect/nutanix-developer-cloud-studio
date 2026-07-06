@@ -3,13 +3,16 @@ import {
   checkApiHealth,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
+  createLabAuthorizationScopeViaApi,
   createPlatformServiceRequestViaApi,
+  createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
+  fetchLabAuthorizationScopesFromApi,
   fetchPolicyBundlesFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServiceRequestsFromApi,
@@ -20,6 +23,7 @@ import {
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   fetchVmSandboxDryRunsFromApi,
+  fetchVmLifecycleProofsFromApi,
   requestEnvironmentDestroyViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
@@ -191,6 +195,29 @@ describe("cloudStudioApi", () => {
       3,
       "/api/vm-sandbox/controlled-provisioning/vm-controlled-1/approve",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("Operator approval recorded.") })
+    );
+  });
+
+  it("fetches and records lab authorization and VM lifecycle proof", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchLabAuthorizationScopesFromApi();
+    await createLabAuthorizationScopeViaApi({ pentestScopeStructurallyValid: true });
+    await fetchVmLifecycleProofsFromApi();
+    await createVmLifecycleProofViaApi({ gateId: "vm-controlled-1", rollbackVerified: true, destroyVerified: true });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/lab-authorization/scopes", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/lab-authorization/scopes",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("pentestScopeStructurallyValid") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/vm-lifecycle/proofs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/vm-lifecycle/proofs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("vm-controlled-1") })
     );
   });
 

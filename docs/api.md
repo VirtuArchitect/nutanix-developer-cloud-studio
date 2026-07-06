@@ -202,6 +202,17 @@ The controlled provisioning gate attaches to a VM sandbox dry-run plan and recor
 
 Required roles: `Platform Admin` to request a gate review; `Platform Admin` or `Approver` to approve or reject.
 
+### Lab Authorization And Lifecycle Evidence
+
+- `GET /api/lab-authorization/scopes`
+- `POST /api/lab-authorization/scopes`
+- `GET /api/vm-lifecycle/proofs`
+- `POST /api/vm-lifecycle/proofs`
+
+Lab authorization scopes record the approved project, cluster, network, test window, allowed actions, excluded actions, and pentest scope evidence required before controlled create work can be considered. VM lifecycle proofs record gate, rollback, and destroy evidence after an approved controlled gate. These records do not perform real infrastructure actions.
+
+Required role: `Platform Admin` to record evidence.
+
 ### Platform Service Requests
 
 - `GET /api/platform-services/requests`

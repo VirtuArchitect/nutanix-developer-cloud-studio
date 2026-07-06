@@ -34,6 +34,7 @@ import {
   type IntegrationConfig,
   type JobState,
   type LabAdapterSnapshot,
+  type LabAuthorizationScope,
   platformConfig as defaultPlatformConfig,
   policyBundles as defaultPolicyBundles,
   templateRegistry as defaultTemplateRegistry,
@@ -56,6 +57,7 @@ import {
   type TemplateTier,
   type VmSandboxDryRunPlan,
   type VmSandboxDryRunRequest,
+  type VmLifecycleProof,
   type View,
 } from "./data/cloudStudioData";
 import {
@@ -70,9 +72,11 @@ import {
 } from "./services/provisioningService";
 import {
   checkApiHealth,
+  createLabAuthorizationScopeViaApi,
   createControlledProvisioningGateViaApi,
   createEnvironmentViaApi,
   createPlatformServiceRequestViaApi,
+  createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
@@ -83,6 +87,7 @@ import {
   fetchApprovalsFromApi,
   fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
+  fetchLabAuthorizationScopesFromApi,
   fetchLabAdaptersFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServiceRequestsFromApi,
@@ -94,6 +99,7 @@ import {
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   fetchVmSandboxDryRunsFromApi,
+  fetchVmLifecycleProofsFromApi,
   requestEnvironmentDestroyViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
@@ -126,6 +132,7 @@ export function App() {
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
   );
   const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
+  const [labAuthorizationScopes, setLabAuthorizationScopes] = useState<LabAuthorizationScope[]>([]);
   const [prismInventory, setPrismInventory] = useState<PrismInventoryRecord[]>([]);
   const [prismInventoryImport, setPrismInventoryImport] = useState<PrismInventoryImportResult | undefined>();
   const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
@@ -139,6 +146,7 @@ export function App() {
   const [vmSandboxDryRuns, setVmSandboxDryRuns] = useState<VmSandboxDryRunPlan[]>([]);
   const [controlledProvisioningGates, setControlledProvisioningGates] = useState<ControlledProvisioningGate[]>([]);
   const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
+  const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>(() => deriveMockApprovals(loadEnvironments()));
   const [selectedEnvironmentName, setSelectedEnvironmentName] = useState("payments-dev");
   const [environmentDetail, setEnvironmentDetail] = useState<EnvironmentDetail | null>(null);
@@ -189,6 +197,7 @@ export function App() {
             apiSession,
             apiSystemStatus,
             apiLabAdapters,
+            apiLabAuthorizationScopes,
             apiPrismInventory,
             apiControlPlaneJobs,
             apiResourceProfiles,
@@ -199,6 +208,7 @@ export function App() {
             apiVmSandboxDryRuns,
             apiControlledProvisioningGates,
             apiPlatformServiceRequests,
+            apiVmLifecycleProofs,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
             fetchIntegrationsFromApi(),
@@ -207,6 +217,7 @@ export function App() {
             fetchSessionFromApi(),
             fetchSystemStatusFromApi(),
             fetchLabAdaptersFromApi(),
+            fetchLabAuthorizationScopesFromApi(),
             fetchPrismInventoryFromApi(),
             fetchControlPlaneJobsFromApi(),
             fetchResourceProfilesFromApi(),
@@ -217,6 +228,7 @@ export function App() {
             fetchVmSandboxDryRunsFromApi(),
             fetchControlledProvisioningGatesFromApi(),
             fetchPlatformServiceRequestsFromApi(),
+            fetchVmLifecycleProofsFromApi(),
           ]);
           if (active) {
             setEnvironments(apiEnvironments);
@@ -226,6 +238,7 @@ export function App() {
             setSession(apiSession);
             setSystemStatus(apiSystemStatus);
             setLabAdapters(apiLabAdapters);
+            setLabAuthorizationScopes(apiLabAuthorizationScopes);
             setPrismInventory(apiPrismInventory.records);
             setPrismInventoryImport(apiPrismInventory.lastImport);
             setControlPlaneJobs(apiControlPlaneJobs);
@@ -237,6 +250,7 @@ export function App() {
             setVmSandboxDryRuns(apiVmSandboxDryRuns);
             setControlledProvisioningGates(apiControlledProvisioningGates);
             setPlatformServiceRequests(apiPlatformServiceRequests);
+            setVmLifecycleProofs(apiVmLifecycleProofs);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
         } catch {
@@ -367,6 +381,7 @@ export function App() {
       apiSession,
       apiSystemStatus,
       apiLabAdapters,
+      apiLabAuthorizationScopes,
       apiPrismInventory,
       apiControlPlaneJobs,
       apiResourceProfiles,
@@ -377,6 +392,7 @@ export function App() {
       apiVmSandboxDryRuns,
       apiControlledProvisioningGates,
       apiPlatformServiceRequests,
+      apiVmLifecycleProofs,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
       fetchIntegrationsFromApi(),
@@ -385,6 +401,7 @@ export function App() {
       fetchSessionFromApi(),
       fetchSystemStatusFromApi(),
       fetchLabAdaptersFromApi(),
+      fetchLabAuthorizationScopesFromApi(),
       fetchPrismInventoryFromApi(),
       fetchControlPlaneJobsFromApi(),
       fetchResourceProfilesFromApi(),
@@ -395,6 +412,7 @@ export function App() {
       fetchVmSandboxDryRunsFromApi(),
       fetchControlledProvisioningGatesFromApi(),
       fetchPlatformServiceRequestsFromApi(),
+      fetchVmLifecycleProofsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
     setRuntimeIntegrations(apiIntegrations);
@@ -403,6 +421,7 @@ export function App() {
     setSession(apiSession);
     setSystemStatus(apiSystemStatus);
     setLabAdapters(apiLabAdapters);
+    setLabAuthorizationScopes(apiLabAuthorizationScopes);
     setPrismInventory(apiPrismInventory.records);
     setPrismInventoryImport(apiPrismInventory.lastImport);
     setControlPlaneJobs(apiControlPlaneJobs);
@@ -414,6 +433,7 @@ export function App() {
     setVmSandboxDryRuns(apiVmSandboxDryRuns);
     setControlledProvisioningGates(apiControlledProvisioningGates);
     setPlatformServiceRequests(apiPlatformServiceRequests);
+    setVmLifecycleProofs(apiVmLifecycleProofs);
 
     if (environmentNameToRefresh) {
       const detail = await fetchEnvironmentDetailFromApi(environmentNameToRefresh);
@@ -667,6 +687,45 @@ export function App() {
     );
   }
 
+  async function recordLabAuthorizationScope() {
+    const payload = {
+      pentestScopeReference: "Authorized lab scope / controlled provisioning test window",
+      pentestScopeStructurallyValid: true,
+    };
+
+    if (apiHealth.mode === "api") {
+      const scope = await createLabAuthorizationScopeViaApi(payload);
+      await refreshApiState();
+      setLabAuthorizationScopes((current) => [scope, ...current.filter((item) => item.id !== scope.id)]);
+      return;
+    }
+
+    setLabAuthorizationScopes((current) => [createMockLabAuthorizationScope(session.user, platformConfig), ...current]);
+  }
+
+  async function recordVmLifecycleProof() {
+    const gate = controlledProvisioningGates[0];
+    if (!gate) {
+      return;
+    }
+
+    const payload = {
+      gateId: gate.id,
+      rollbackVerified: true,
+      destroyVerified: true,
+      evidence: ["Operator observed controlled create, rollback, and destroy workflow evidence."],
+    };
+
+    if (apiHealth.mode === "api") {
+      const proof = await createVmLifecycleProofViaApi(payload);
+      await refreshApiState();
+      setVmLifecycleProofs((current) => [proof, ...current.filter((item) => item.id !== proof.id)]);
+      return;
+    }
+
+    setVmLifecycleProofs((current) => [createMockVmLifecycleProof(gate, session.user), ...current]);
+  }
+
   async function createPlatformServiceRequest(kind: PlatformServiceKind) {
     const payload = {
       kind,
@@ -682,7 +741,7 @@ export function App() {
     }
 
     setPlatformServiceRequests((current) => [
-      createMockPlatformServiceRequest(payload, resourceProfiles, controlledProvisioningGates, session.user),
+      createMockPlatformServiceRequest(payload, resourceProfiles, vmLifecycleProofs, session.user),
       ...current,
     ]);
   }
@@ -850,6 +909,7 @@ export function App() {
             session={session}
             systemStatus={systemStatus}
             labAdapters={labAdapters}
+            labAuthorizationScopes={labAuthorizationScopes}
             prismInventory={prismInventory}
             prismInventoryImport={prismInventoryImport}
             resourceProfiles={resourceProfiles}
@@ -861,6 +921,7 @@ export function App() {
             vmSandboxDryRuns={vmSandboxDryRuns}
             controlledProvisioningGates={controlledProvisioningGates}
             platformServiceRequests={platformServiceRequests}
+            vmLifecycleProofs={vmLifecycleProofs}
             approvals={approvals}
             templateGovernance={templateGovernance}
             updateTemplateGovernance={updateTemplateGovernance}
@@ -871,8 +932,10 @@ export function App() {
             importPrismInventory={importPrismInventory}
             runControlPlaneJobAction={runControlPlaneJobAction}
             createVmSandboxDryRun={createVmSandboxDryRun}
+            recordLabAuthorizationScope={recordLabAuthorizationScope}
             requestControlledProvisioningGate={requestControlledProvisioningGate}
             decideControlledProvisioningGate={decideControlledProvisioningGate}
+            recordVmLifecycleProof={recordVmLifecycleProof}
             createPlatformServiceRequest={createPlatformServiceRequest}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -1350,6 +1413,7 @@ function AdminView({
   session,
   systemStatus,
   labAdapters,
+  labAuthorizationScopes,
   prismInventory,
   prismInventoryImport,
   resourceProfiles,
@@ -1361,6 +1425,7 @@ function AdminView({
   vmSandboxDryRuns,
   controlledProvisioningGates,
   platformServiceRequests,
+  vmLifecycleProofs,
   approvals,
   templateGovernance,
   updateTemplateGovernance,
@@ -1371,8 +1436,10 @@ function AdminView({
   importPrismInventory,
   runControlPlaneJobAction,
   createVmSandboxDryRun,
+  recordLabAuthorizationScope,
   requestControlledProvisioningGate,
   decideControlledProvisioningGate,
+  recordVmLifecycleProof,
   createPlatformServiceRequest,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -1385,6 +1452,7 @@ function AdminView({
   session: PlatformSession;
   systemStatus: SystemStatus;
   labAdapters: LabAdapterSnapshot[];
+  labAuthorizationScopes: LabAuthorizationScope[];
   prismInventory: PrismInventoryRecord[];
   prismInventoryImport?: PrismInventoryImportResult;
   resourceProfiles: ResourceProfile[];
@@ -1396,6 +1464,7 @@ function AdminView({
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
   controlledProvisioningGates: ControlledProvisioningGate[];
   platformServiceRequests: PlatformServiceRequest[];
+  vmLifecycleProofs: VmLifecycleProof[];
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
   updateTemplateGovernance: (id: string, field: "owner" | "tier", value: string) => void;
@@ -1409,8 +1478,10 @@ function AdminView({
   importPrismInventory: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   createVmSandboxDryRun: () => void;
+  recordLabAuthorizationScope: () => void;
   requestControlledProvisioningGate: () => void;
   decideControlledProvisioningGate: (gateId: string, decision: "approve" | "reject") => void;
+  recordVmLifecycleProof: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -1522,6 +1593,14 @@ function AdminView({
           </Panel>
           <Panel title="VM sandbox dry-run" action={`${vmSandboxDryRuns.length} plans`}>
             <VmSandboxDryRunPanel plans={vmSandboxDryRuns} createVmSandboxDryRun={createVmSandboxDryRun} />
+          </Panel>
+          <Panel title="Lab authorization and lifecycle proof" action={`${labAuthorizationScopes.length + vmLifecycleProofs.length} records`}>
+            <LifecycleEvidencePanel
+              scopes={labAuthorizationScopes}
+              proofs={vmLifecycleProofs}
+              recordLabAuthorizationScope={recordLabAuthorizationScope}
+              recordVmLifecycleProof={recordVmLifecycleProof}
+            />
           </Panel>
           <Panel title="Controlled provisioning gate" action={`${controlledProvisioningGates.length} reviews`}>
             <ControlledProvisioningGatePanel
@@ -2098,6 +2177,86 @@ function RegistryActions({
           <RefreshCw size={15} />
           Restore draft
         </button>
+      )}
+    </div>
+  );
+}
+
+function LifecycleEvidencePanel({
+  scopes,
+  proofs,
+  recordLabAuthorizationScope,
+  recordVmLifecycleProof,
+}: {
+  scopes: LabAuthorizationScope[];
+  proofs: VmLifecycleProof[];
+  recordLabAuthorizationScope: () => void;
+  recordVmLifecycleProof: () => void;
+}) {
+  const latestScope = scopes[0];
+  const latestProof = proofs[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Evidence before promotion</strong>
+          <span>Records authorized lab scope and VM lifecycle proof before platform-service gates can pass.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordLabAuthorizationScope}>
+          <Play size={15} />
+          Record lab scope
+        </button>
+        <button className="iconTextButton" onClick={recordVmLifecycleProof}>
+          <Play size={15} />
+          Record lifecycle proof
+        </button>
+      </div>
+      <div className="platformConfigGrid">
+        <CheckLine
+          icon={ShieldCheck}
+          label="Lab scope"
+          value={latestScope ? latestScope.status : "Missing"}
+          passed={latestScope?.status === "Approved" && latestScope.pentestScopeStructurallyValid}
+        />
+        <CheckLine
+          icon={LockKeyhole}
+          label="Pentest scope"
+          value={latestScope?.pentestScopeStructurallyValid ? "Structured" : "Required"}
+          passed={Boolean(latestScope?.pentestScopeStructurallyValid)}
+        />
+        <CheckLine
+          icon={Activity}
+          label="VM lifecycle"
+          value={latestProof?.status ?? "Missing"}
+          passed={latestProof?.status === "Verified"}
+        />
+        <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={false} />
+      </div>
+      {latestScope && (
+        <div className="inventoryEvidence">
+          <strong>{latestScope.name}</strong>
+          <span>
+            {latestScope.project} / {latestScope.cluster} / {latestScope.network}
+          </span>
+          <span>{latestScope.pentestScopeReference}</span>
+        </div>
+      )}
+      {latestProof && (
+        <div className="dryRunValidationList">
+          {latestProof.checks.map((check) => (
+            <div className="dryRunValidationRow" key={check.name}>
+              <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+              <div>
+                <strong>{check.name}</strong>
+                <small>{check.detail}</small>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -2879,6 +3038,63 @@ function createMockControlledProvisioningGate(
   });
 }
 
+function createMockLabAuthorizationScope(actor: string, config: PlatformConfig): LabAuthorizationScope {
+  const now = new Date();
+  return {
+    id: `lab-scope-${Date.now()}`,
+    name: "Berlin AHV controlled provisioning lab",
+    owner: actor,
+    approver: actor,
+    approvedAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    project: config.defaultProject,
+    cluster: config.defaultCluster,
+    network: config.networkProfile,
+    allowedActions: ["dry_run", "controlled_create_observation", "rollback_validation", "destroy_validation"],
+    excludedActions: ["unscoped_create", "bulk_delete", "network_change", "image_delete", "production_workload_change"],
+    pentestScopeReference: "Authorized lab scope / controlled provisioning test window",
+    pentestScopeStructurallyValid: true,
+    status: "Approved",
+    createdAt: now.toISOString(),
+  };
+}
+
+function createMockVmLifecycleProof(gate: ControlledProvisioningGate, actor: string): VmLifecycleProof {
+  const checks = [
+    {
+      name: "Controlled gate approved",
+      passed: gate.status === "Approved for controlled create",
+      detail:
+        gate.status === "Approved for controlled create"
+          ? "Controlled create gate is approved."
+          : `Gate status is ${gate.status}.`,
+    },
+    {
+      name: "Rollback verified",
+      passed: true,
+      detail: "Rollback evidence was recorded.",
+    },
+    {
+      name: "Destroy verified",
+      passed: true,
+      detail: "Destroy evidence was recorded.",
+    },
+  ];
+
+  return {
+    id: `vm-lifecycle-proof-${gate.environmentName}-${Date.now()}`,
+    gateId: gate.id,
+    environmentName: gate.environmentName,
+    status: checks.every((check) => check.passed) ? "Verified" : "Blocked",
+    rollbackVerified: true,
+    destroyVerified: true,
+    checks,
+    evidence: [`Lifecycle proof recorded by ${actor}; live provisioning remains disabled in this prototype.`],
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 function evaluateMockControlledProvisioningGate(gate: ControlledProvisioningGate): ControlledProvisioningGate {
   const rollbackReady = gate.rollbackPlan.length > 0;
   const destroyReady = gate.destroyPlan.length > 0;
@@ -2935,7 +3151,7 @@ function evaluateMockControlledProvisioningGate(gate: ControlledProvisioningGate
 function createMockPlatformServiceRequest(
   input: { kind: PlatformServiceKind; owner: string; environmentName: string },
   profiles: ResourceProfile[],
-  gates: ControlledProvisioningGate[],
+  proofs: VmLifecycleProof[],
   actor: string
 ): PlatformServiceRequest {
   const defaults: Record<PlatformServiceKind, { provider: ResourceProfile["provider"]; profileId: string; name: string; cost: number; approvalRequired: boolean }> = {
@@ -2946,7 +3162,7 @@ function createMockPlatformServiceRequest(
   };
   const config = defaults[input.kind];
   const profile = profiles.find((item) => item.id === config.profileId);
-  const vmLifecycleProven = gates.some((gate) => gate.status === "Approved for controlled create");
+  const vmLifecycleProven = proofs.some((proof) => proof.status === "Verified");
   const validations = [
     {
       name: "Profile published",

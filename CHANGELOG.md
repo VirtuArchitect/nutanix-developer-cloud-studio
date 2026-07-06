@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v1.2.0-platform-services`.
+This project uses release tags for public milestones. The current release is `v1.3.0-lifecycle-evidence`.
 
 ## [Unreleased]
 
@@ -11,6 +11,24 @@ This project uses release tags for public milestones. The current release is `v1
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v1.3.0-lifecycle-evidence] - 2026-07-06
+
+### Added
+
+- Lab authorization scope records with project, cluster, network, allowed actions, excluded actions, approval window, and pentest scope evidence.
+- VM lifecycle proof records for controlled gate, rollback, and destroy evidence.
+- API endpoints for listing and recording lab authorization scopes and lifecycle proofs.
+- Admin Control Plane evidence panel for scope and lifecycle-proof records.
+- Controlled provisioning gates now consume active lab authorization scope evidence.
+- Platform-service flows now depend on recorded VM lifecycle proof rather than an environment flag.
+- Unit/API/client/E2E coverage for authorization and lifecycle evidence.
+
+### Notes
+
+- Lifecycle proof records do not perform real AHV operations.
+- Real provisioning remains disabled; `provisioningEnabled=false` is preserved.
+- A proof is blocked unless the controlled gate reaches `Approved for controlled create`.
 
 ## [v1.2.0-platform-services] - 2026-07-06
 

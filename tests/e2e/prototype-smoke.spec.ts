@@ -61,6 +61,9 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("AHV image approved")).toBeVisible();
   await expect(page.getByText("Quota within sandbox limit")).toBeVisible();
   await expect(page.getByText("Rollback plan")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab authorization and lifecycle proof" })).toBeVisible();
+  await page.getByRole("button", { name: "Record lab scope" }).click();
+  await expect(page.getByText("Authorized lab scope / controlled provisioning test window")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Controlled provisioning gate" })).toBeVisible();
   await page.getByRole("button", { name: "Request gate review" }).click();
   await expect(page.getByText("Manual approval required")).toBeVisible();
@@ -68,6 +71,8 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Mutation kill switch enabled")).toBeVisible();
   await page.getByRole("button", { name: "Approve gate" }).click();
   await expect(page.getByText("Mutation disabled")).toBeVisible();
+  await page.getByRole("button", { name: "Record lifecycle proof" }).click();
+  await expect(page.getByText("Controlled gate approved")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Platform service flows" })).toBeVisible();
   await page.getByRole("button", { name: "Plan NDB PostgreSQL" }).click();
   await expect(page.getByText("VM lifecycle proven")).toBeVisible();

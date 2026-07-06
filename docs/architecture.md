@@ -57,6 +57,8 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Control plane jobs: queued orchestration records with worker transitions, retries, failures, and audit evidence
 - VM sandbox dry-run plans: AHV VM planning records with validation, quota, cost, expiry, approval evidence, and rollback evidence
 - Controlled provisioning gates: operator review records attached to dry-run plans with manual approval, scope, rollback, destroy, and kill-switch evidence
+- Lab authorization scopes: approved project, cluster, network, test window, allowed actions, excluded actions, and pentest scope evidence
+- VM lifecycle proofs: controlled gate, rollback, and destroy verification records
 - Platform-service requests: NKP, NDB, NUS, and NAI planning records gated by VM lifecycle proof
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -106,6 +108,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Postgres repository scaffold and SQL migration files for production persistence planning
 - AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
 - Controlled provisioning gate review API and Admin Control Plane UI
+- Lab authorization and VM lifecycle proof APIs plus Admin Control Plane evidence UI
 - Platform-service planning API and Admin Control Plane UI for NKP, NDB, NUS, and NAI flows
 - Simulated destroy lifecycle that queues teardown jobs without deleting infrastructure
 - JSON file persistence option through `NDC_DATA_FILE`
@@ -134,6 +137,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Production-foundation controls are starter guardrails. Trusted identity headers must be backed by real OIDC validation before production use.
 - VM sandbox dry-run planning validates candidate inputs but does not create, clone, power, resize, tag, or delete VMs.
 - Controlled provisioning gate reviews can be approved or rejected, but approval does not enable real AHV mutation in this release.
+- Lab authorization and lifecycle proof records are evidence records only; they do not execute AHV operations.
 - Platform-service requests validate catalog and dependency readiness but do not call NKP, NDB, NUS, or NAI APIs.
 
 ## Real Integration Readiness Questions

@@ -294,6 +294,41 @@ export type ControlledProvisioningGate = {
   updatedAt: string;
 };
 
+export type LabAuthorizationScope = {
+  id: string;
+  name: string;
+  owner: string;
+  approver: string;
+  approvedAt: string;
+  expiresAt: string;
+  project: string;
+  cluster: string;
+  network: string;
+  allowedActions: string[];
+  excludedActions: string[];
+  pentestScopeReference: string;
+  pentestScopeStructurallyValid: boolean;
+  status: "Approved" | "Expired";
+  createdAt: string;
+};
+
+export type VmLifecycleProof = {
+  id: string;
+  gateId: string;
+  environmentName: string;
+  status: "Verified" | "Blocked";
+  rollbackVerified: boolean;
+  destroyVerified: boolean;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type PlatformServiceKind = "NKP Namespace" | "NDB PostgreSQL" | "NUS Storage" | "NAI Endpoint";
 
 export type PlatformServiceRequest = {

@@ -6,6 +6,7 @@ import type {
   Integration,
   IntegrationConfig,
   LabAdapterSnapshot,
+  LabAuthorizationScope,
   PlatformConfig,
   PlatformServiceKind,
   PlatformServiceRequest,
@@ -20,6 +21,7 @@ import type {
   Target,
   VmSandboxDryRunPlan,
   VmSandboxDryRunRequest,
+  VmLifecycleProof,
 } from "../data/cloudStudioDomain";
 
 export type ApiMode = "api" | "mock";
@@ -202,8 +204,26 @@ export async function fetchControlledProvisioningGatesFromApi() {
   return fetchJson<ControlledProvisioningGate[]>("/api/vm-sandbox/controlled-provisioning");
 }
 
+export async function fetchLabAuthorizationScopesFromApi() {
+  return fetchJson<LabAuthorizationScope[]>("/api/lab-authorization/scopes");
+}
+
+export async function fetchVmLifecycleProofsFromApi() {
+  return fetchJson<VmLifecycleProof[]>("/api/vm-lifecycle/proofs");
+}
+
 export async function fetchPlatformServiceRequestsFromApi() {
   return fetchJson<PlatformServiceRequest[]>("/api/platform-services/requests");
+}
+
+export async function createLabAuthorizationScopeViaApi(payload: {
+  pentestScopeReference?: string;
+  pentestScopeStructurallyValid?: boolean;
+}) {
+  return fetchJson<LabAuthorizationScope>("/api/lab-authorization/scopes", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function createVmSandboxDryRunViaApi(payload: Partial<VmSandboxDryRunRequest>) {
@@ -247,6 +267,18 @@ export async function createPlatformServiceRequestViaApi(payload: {
   profileId?: string;
 }) {
   return fetchJson<PlatformServiceRequest>("/api/platform-services/requests", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createVmLifecycleProofViaApi(payload: {
+  gateId?: string;
+  rollbackVerified?: boolean;
+  destroyVerified?: boolean;
+  evidence?: string[];
+}) {
+  return fetchJson<VmLifecycleProof>("/api/vm-lifecycle/proofs", {
     method: "POST",
     body: JSON.stringify(payload),
   });

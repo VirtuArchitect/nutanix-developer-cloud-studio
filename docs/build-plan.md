@@ -197,6 +197,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Control Plane tab can request, approve, and reject gate reviews.
 - Gate approval records operator intent only; `provisioningEnabled=false` remains enforced.
 
+## Current Lifecycle Evidence Slice
+
+- API records lab authorization scopes with project, cluster, network, test window, allowed actions, excluded actions, and pentest scope evidence.
+- API records VM lifecycle proof with controlled gate, rollback, and destroy checks.
+- Controlled provisioning gates can consume active lab authorization scope evidence.
+- Platform-service planning depends on recorded VM lifecycle proof.
+- No AHV create, rollback, or destroy calls are made.
+
 ## Current Platform Services Slice
 
 - API creates and lists NKP namespace, NDB PostgreSQL, NUS storage, and NAI endpoint request plans.
