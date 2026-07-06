@@ -172,6 +172,10 @@
 - Added Admin Providers diagnostics panel.
 - Added phase gate validation for provider credential reference strings.
 - Added tests for credential reference approval, rejection, diagnostics, and smoke coverage.
+- Started `v2.3.0-adapter-enable-contract-hardening`.
+- Added adapter enablement contract records for NCI, NKP, NDB, NUS, NCM, and NAI.
+- Added API and Admin Providers UI for enablement evidence, rollback ownership, and blocked mutation operations.
+- Added tests and smoke coverage proving missing evidence blocks enablement and real adapters remain disabled.
 
 ## Documentation Rule
 

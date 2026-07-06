@@ -285,6 +285,15 @@ Audit export records prepare export metadata, event counts, retention windows, r
 
 Required role: `Platform Admin`.
 
+### Adapter Enablement Contract
+
+- `GET /api/adapter-enablement/records`
+- `POST /api/adapter-enablement/records`
+
+Adapter enablement records capture the evidence required before any future real Nutanix adapter can move beyond disabled preflight. Each record checks approved lab scope, credential reference diagnostics, provider readiness, adapter readiness, audit export readiness, rollback ownership, and real-adapter disabled state. Missing evidence keeps the record `Blocked`, and `provisioningEnabled=false` is always returned.
+
+Required role: `Platform Admin`.
+
 ## Production Foundation Controls
 
 The hosted starter now adds:

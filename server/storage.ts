@@ -123,6 +123,7 @@ export function createDefaultState(): ApiState {
     prismInventory: [],
     platformConfig,
     provisioningAdapters: defaultProvisioningAdapters(),
+    adapterEnablementRecords: [],
     session: defaultSession(),
     governance: defaultGovernance(),
     jobs: [],

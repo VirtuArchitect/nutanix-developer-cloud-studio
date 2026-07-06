@@ -200,6 +200,24 @@ export type ProvisioningAdapterReadiness = {
   nextGate: string;
 };
 
+export type AdapterEnablementRecord = {
+  id: string;
+  provider: ProvisioningAdapterName;
+  product: string;
+  status: "Blocked" | "Ready for review";
+  reviewer: string;
+  rollbackOwner: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  mutationOperationsBlocked: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type PrismReadOnlyScope = {
   endpoint: string;
   credentialProfile: string;

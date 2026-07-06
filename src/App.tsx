@@ -28,6 +28,7 @@ import {
   provisioningEvents,
   targetIcons,
   templates,
+  type AdapterEnablementRecord,
   type AhvControlledProvisioningRun,
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
@@ -83,6 +84,7 @@ import {
 } from "./services/provisioningService";
 import {
   checkApiHealth,
+  createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAuditExportViaApi,
   createLabAuthorizationScopeViaApi,
@@ -97,6 +99,7 @@ import {
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
@@ -172,6 +175,7 @@ export function App() {
   const [provisioningAdapters, setProvisioningAdapters] = useState<ProvisioningAdapterReadiness[]>(() =>
     deriveMockProvisioningAdapters(integrations)
   );
+  const [adapterEnablementRecords, setAdapterEnablementRecords] = useState<AdapterEnablementRecord[]>([]);
   const [controlPlaneJobs, setControlPlaneJobs] = useState<ControlPlaneJob[]>([]);
   const [vmSandboxDryRuns, setVmSandboxDryRuns] = useState<VmSandboxDryRunPlan[]>([]);
   const [controlledProvisioningGates, setControlledProvisioningGates] = useState<ControlledProvisioningGate[]>([]);
@@ -246,6 +250,7 @@ export function App() {
             apiTemplateRegistry,
             apiPlatformConfig,
             apiProvisioningAdapters,
+            apiAdapterEnablementRecords,
             apiVmSandboxDryRuns,
             apiControlledProvisioningGates,
             apiPlatformServiceRequests,
@@ -274,6 +279,7 @@ export function App() {
             fetchTemplateRegistryFromApi(),
             fetchPlatformConfigFromApi(),
             fetchProvisioningAdaptersFromApi(),
+            fetchAdapterEnablementRecordsFromApi(),
             fetchVmSandboxDryRunsFromApi(),
             fetchControlledProvisioningGatesFromApi(),
             fetchPlatformServiceRequestsFromApi(),
@@ -304,6 +310,7 @@ export function App() {
             setTemplateRegistry(apiTemplateRegistry);
             setPlatformConfig(apiPlatformConfig);
             setProvisioningAdapters(apiProvisioningAdapters);
+            setAdapterEnablementRecords(apiAdapterEnablementRecords);
             setVmSandboxDryRuns(apiVmSandboxDryRuns);
             setControlledProvisioningGates(apiControlledProvisioningGates);
             setPlatformServiceRequests(apiPlatformServiceRequests);
@@ -454,6 +461,7 @@ export function App() {
       apiTemplateRegistry,
       apiPlatformConfig,
       apiProvisioningAdapters,
+      apiAdapterEnablementRecords,
       apiVmSandboxDryRuns,
       apiControlledProvisioningGates,
       apiPlatformServiceRequests,
@@ -482,6 +490,7 @@ export function App() {
       fetchTemplateRegistryFromApi(),
       fetchPlatformConfigFromApi(),
       fetchProvisioningAdaptersFromApi(),
+      fetchAdapterEnablementRecordsFromApi(),
       fetchVmSandboxDryRunsFromApi(),
       fetchControlledProvisioningGatesFromApi(),
       fetchPlatformServiceRequestsFromApi(),
@@ -511,6 +520,7 @@ export function App() {
     setTemplateRegistry(apiTemplateRegistry);
     setPlatformConfig(apiPlatformConfig);
     setProvisioningAdapters(apiProvisioningAdapters);
+    setAdapterEnablementRecords(apiAdapterEnablementRecords);
     setVmSandboxDryRuns(apiVmSandboxDryRuns);
     setControlledProvisioningGates(apiControlledProvisioningGates);
     setPlatformServiceRequests(apiPlatformServiceRequests);
@@ -933,6 +943,34 @@ export function App() {
     setAuditExports((current) => [createMockAuditExportRecord(session.user, current.length), ...current]);
   }
 
+  async function reviewAdapterEnablement() {
+    const payload = {
+      provider: "NCI" as const,
+      rollbackOwner: "Cloud Operations",
+    };
+
+    if (apiHealth.mode === "api") {
+      const record = await createAdapterEnablementRecordViaApi(payload);
+      await refreshApiState();
+      setAdapterEnablementRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
+      return;
+    }
+
+    setAdapterEnablementRecords((current) => [
+      createMockAdapterEnablementRecord({
+        provider: payload.provider,
+        rollbackOwner: payload.rollbackOwner,
+        actor: session.user,
+        integrationConfigs,
+        credentialDiagnostics,
+        labAuthorizationScopes,
+        provisioningAdapters,
+        auditExports,
+      }),
+      ...current,
+    ]);
+  }
+
   async function requestEnvironmentDestroy(name: string) {
     if (apiHealth.mode === "api") {
       await requestEnvironmentDestroyViaApi(name);
@@ -1108,6 +1146,7 @@ export function App() {
             templateRegistry={templateRegistry}
             platformConfig={platformConfig}
             provisioningAdapters={provisioningAdapters}
+            adapterEnablementRecords={adapterEnablementRecords}
             controlPlaneJobs={controlPlaneJobs}
             vmSandboxDryRuns={vmSandboxDryRuns}
             controlledProvisioningGates={controlledProvisioningGates}
@@ -1139,6 +1178,7 @@ export function App() {
             createProductionReadinessReview={createProductionReadinessReview}
             requestLifecycleOperation={requestLifecycleOperation}
             prepareAuditExport={prepareAuditExport}
+            reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
             runResourceProfileAction={runResourceProfileAction}
@@ -1629,6 +1669,7 @@ function AdminView({
   templateRegistry,
   platformConfig,
   provisioningAdapters,
+  adapterEnablementRecords,
   controlPlaneJobs,
   vmSandboxDryRuns,
   controlledProvisioningGates,
@@ -1660,6 +1701,7 @@ function AdminView({
   createProductionReadinessReview,
   requestLifecycleOperation,
   prepareAuditExport,
+  reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
   runResourceProfileAction,
@@ -1681,6 +1723,7 @@ function AdminView({
   templateRegistry: TemplateRegistryEntry[];
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
+  adapterEnablementRecords: AdapterEnablementRecord[];
   controlPlaneJobs: ControlPlaneJob[];
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
   controlledProvisioningGates: ControlledProvisioningGate[];
@@ -1715,6 +1758,7 @@ function AdminView({
   createProductionReadinessReview: () => void;
   requestLifecycleOperation: (operation: LifecycleOperationKind) => void;
   prepareAuditExport: () => void;
+  reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
     templateId: string,
@@ -1825,6 +1869,12 @@ function AdminView({
           </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
             <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
+          </Panel>
+          <Panel title="Adapter enablement contract" action={`${adapterEnablementRecords.length} reviews`}>
+            <AdapterEnablementPanel
+              records={adapterEnablementRecords}
+              reviewAdapterEnablement={reviewAdapterEnablement}
+            />
           </Panel>
         </div>
       )}
@@ -3083,6 +3133,74 @@ function ProvisioningAdapterPanel({
   );
 }
 
+function AdapterEnablementPanel({
+  records,
+  reviewAdapterEnablement,
+}: {
+  records: AdapterEnablementRecord[];
+  reviewAdapterEnablement: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Real adapter enablement remains gated</strong>
+          <span>Reviews required evidence before a future authorized live-adapter phase.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={reviewAdapterEnablement}>
+          <Play size={15} />
+          Review adapter enablement
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No adapter enablement reviews have been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider} enablement contract</strong>
+              <span>
+                {latest.product} / rollback owner {latest.rollbackOwner}
+              </span>
+            </div>
+            <span className={`status ${latest.status === "Ready for review" ? "approval" : "failed"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Blocked mutation operations</strong>
+            {latest.mutationOperationsBlocked.map((operation) => (
+              <span key={operation}>{operation}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Evidence summary</strong>
+            {latest.evidence.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function IntegrationConfigRow({
   integration,
   config,
@@ -4125,6 +4243,112 @@ function createMockProductionReadinessReview({
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };
+}
+
+function createMockAdapterEnablementRecord({
+  provider,
+  rollbackOwner,
+  actor,
+  integrationConfigs,
+  credentialDiagnostics,
+  labAuthorizationScopes,
+  provisioningAdapters,
+  auditExports,
+}: {
+  provider: AdapterEnablementRecord["provider"];
+  rollbackOwner: string;
+  actor: string;
+  integrationConfigs: IntegrationConfig[];
+  credentialDiagnostics: CredentialReferenceDiagnostic[];
+  labAuthorizationScopes: LabAuthorizationScope[];
+  provisioningAdapters: ProvisioningAdapterReadiness[];
+  auditExports: AuditExportRecord[];
+}): AdapterEnablementRecord {
+  const adapter = provisioningAdapters.find((item) => item.name === provider);
+  const config = integrationConfigs.find((item) => item.name === provider);
+  const credentialDiagnostic = credentialDiagnostics.find((item) => item.provider === provider);
+  const activeScope = labAuthorizationScopes.find(
+    (scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid
+  );
+  const checks = [
+    {
+      name: "Approved lab scope",
+      passed: Boolean(activeScope),
+      detail: activeScope
+        ? `${activeScope.project} / ${activeScope.cluster} / ${activeScope.network}`
+        : "Approved lab scope with structurally valid pentest reference is required.",
+    },
+    {
+      name: "Credential reference approved",
+      passed: credentialDiagnostic?.status === "Approved reference",
+      detail:
+        credentialDiagnostic?.status === "Approved reference"
+          ? `${provider} stores credential profile reference ${credentialDiagnostic.credentialProfile}.`
+          : `${provider} credential profile reference is ${credentialDiagnostic?.status ?? "Missing"}.`,
+    },
+    {
+      name: "Provider readiness reachable",
+      passed: config?.status === "Reachable",
+      detail: config?.status === "Reachable" ? `${provider} integration is reachable.` : `${provider} integration is not reachable.`,
+    },
+    {
+      name: "Adapter readiness configured",
+      passed: adapter?.configured === true,
+      detail: adapter?.configured ? `${provider} adapter planning record is configured.` : `${provider} adapter readiness is incomplete.`,
+    },
+    {
+      name: "Audit export ready",
+      passed: auditExports.length > 0,
+      detail: auditExports.length > 0 ? "Audit export manifest exists." : "Prepare audit export evidence before adapter enablement review.",
+    },
+    {
+      name: "Rollback owner assigned",
+      passed: Boolean(rollbackOwner),
+      detail: rollbackOwner ? `${rollbackOwner} owns rollback and disablement.` : "Rollback owner is required.",
+    },
+    {
+      name: "Real adapter disabled",
+      passed: true,
+      detail: `${provider} real adapter switch remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `adapter-enable-${provider.toLowerCase()}-${Date.now()}`,
+    provider,
+    product: adapter?.product ?? provider,
+    status: checks.every((check) => check.passed) ? "Ready for review" : "Blocked",
+    reviewer: actor,
+    rollbackOwner,
+    checks,
+    evidence: [
+      `Lab scope: ${activeScope?.id ?? "missing"}.`,
+      `Credential diagnostic: ${credentialDiagnostic?.status ?? "missing"}.`,
+      `Provider readiness: ${config?.status ?? "missing"}.`,
+      `Audit exports prepared: ${auditExports.length}.`,
+      "Real adapter mutation remains disabled pending separate authorization and pentest scope.",
+    ],
+    mutationOperationsBlocked: blockedAdapterEnablementOperations(provider),
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function blockedAdapterEnablementOperations(provider: AdapterEnablementRecord["provider"]) {
+  switch (provider) {
+    case "NCI":
+      return ["create_vm", "clone_vm", "power_on_vm", "power_off_vm", "delete_vm", "update_vm_category"];
+    case "NKP":
+      return ["create_namespace", "apply_quota", "apply_network_policy", "delete_namespace"];
+    case "NDB":
+      return ["create_database", "restore_database", "rotate_database_access", "delete_database"];
+    case "NUS":
+      return ["create_share", "create_bucket", "update_lifecycle_rule", "delete_storage_target"];
+    case "NCM":
+      return ["launch_blueprint", "update_policy", "attach_runbook", "delete_blueprint_instance"];
+    case "NAI":
+      return ["create_endpoint", "allocate_gpu", "publish_route", "delete_endpoint"];
+  }
 }
 
 function nextRegistryStatus(action: "submit" | "approve" | "deprecate" | "restore"): RegistryStatus {

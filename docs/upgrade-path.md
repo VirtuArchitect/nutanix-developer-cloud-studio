@@ -410,6 +410,25 @@ Exit gate:
 - Real mutation calls remain disabled.
 - Pentest scope remains required before live adapter testing.
 
+### v2.4.0-lab-scope-pentest-evidence-hardening
+
+Goal: harden lab authorization and pentest evidence before any live adapter endpoint testing is considered.
+
+Build:
+
+- Versioned lab scope records with target environment, provider coverage, allowed action list, excluded action list, approver, expiry, and evidence references.
+- Pentest scope diagnostics that prove authorization, test window, target endpoints, out-of-scope actions, and rollback owner are documented.
+- Admin Control Plane view for scope expiry, coverage gaps, and evidence readiness.
+- API tests that expired or incomplete scopes block adapter enablement and preflight promotion.
+- Runbook for authorized lab endpoint testing and stop conditions.
+
+Exit gate:
+
+- Lab scope diagnostics APIs and UI are tested.
+- Expired or incomplete scope blocks adapter enablement review.
+- Pentest evidence is metadata-only and does not store secrets.
+- Real mutation calls remain disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

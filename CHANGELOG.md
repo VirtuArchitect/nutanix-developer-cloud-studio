@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.2.0-provider-credential-reference-hardening`.
+This project uses release tags for public milestones. The current release is `v2.3.0-adapter-enable-contract-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.3.0-adapter-enable-contract-hardening] - 2026-07-06
+
+### Added
+
+- Adapter enablement contract records for NCI, NKP, NDB, NUS, NCM, and NAI readiness review.
+- API endpoints for listing and recording adapter enablement evidence.
+- Admin Providers panel for adapter enablement checks, rollback ownership, evidence summary, and blocked mutation operations.
+- Tests and smoke coverage for fail-closed adapter enablement review behavior.
+
+### Notes
+
+- Missing evidence keeps adapter enablement blocked.
+- A real-adapter environment switch is treated as a contract failure in this phase.
+- Real Nutanix mutation operations remain disabled.
 
 ## [v2.2.0-provider-credential-reference-hardening] - 2026-07-06
 

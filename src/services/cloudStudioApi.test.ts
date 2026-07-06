@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkApiHealth,
+  createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAuditExportViaApi,
   createControlledProvisioningGateViaApi,
@@ -14,6 +15,7 @@ import {
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
@@ -360,6 +362,21 @@ describe("cloudStudioApi", () => {
       4,
       "/api/environments/api-dev/destroy",
       expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and creates adapter enablement records", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchAdapterEnablementRecordsFromApi();
+    await createAdapterEnablementRecordViaApi({ provider: "NCI", rollbackOwner: "Cloud Operations" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/adapter-enablement/records", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/adapter-enablement/records",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("Cloud Operations") })
     );
   });
 

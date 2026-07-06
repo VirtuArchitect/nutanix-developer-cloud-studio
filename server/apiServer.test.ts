@@ -830,6 +830,42 @@ describe("api server", () => {
     expect(detail.data.approvals[0]).toMatchObject({ status: "Approved" });
   });
 
+  it("records adapter enablement contract evidence while real mutations remain disabled", async () => {
+    const record = await requestJson("/api/adapter-enablement/records", {
+      method: "POST",
+      body: JSON.stringify({
+        provider: "NCI",
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    const records = await requestJson("/api/adapter-enablement/records");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(record.data).toMatchObject({
+      provider: "NCI",
+      status: "Blocked",
+      rollbackOwner: "Cloud Operations",
+      provisioningEnabled: false,
+      mutationOperationsBlocked: expect.arrayContaining(["create_vm", "delete_vm"]),
+    });
+    expect(record.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Approved lab scope", passed: false }),
+        expect.objectContaining({ name: "Credential reference approved", passed: false }),
+        expect.objectContaining({ name: "Real adapter disabled", passed: true }),
+      ])
+    );
+    expect(records.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: record.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "adapter.enablement.review.recorded",
+          target: "NCI",
+        }),
+      ])
+    );
+  });
+
   it("rejects unknown templates", async () => {
     await expectJson(
       "/api/environments",

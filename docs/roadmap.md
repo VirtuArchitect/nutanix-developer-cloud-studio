@@ -202,6 +202,14 @@
 - Add phase gate validation for provider credential references - done
 - Add tests for validation, rejection, diagnostics, and smoke behavior - done
 
+## Phase 25 - Adapter Enablement Contract Hardening (`v2.3.0-adapter-enable-contract-hardening`)
+
+- Add adapter enablement records for NCI, NKP, NDB, NUS, NCM, and NAI - done
+- Check approved lab scope, credential reference diagnostics, provider readiness, audit export readiness, and rollback owner - done
+- Add Admin Providers enablement evidence panel - done
+- Keep enabled real-adapter switches blocked in this review-only phase - done
+- Add API/client and smoke coverage for enablement review behavior - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

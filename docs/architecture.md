@@ -40,6 +40,7 @@ flowchart LR
     Api --> Bundles["Policy Bundles"]
     Api --> ProviderConfig["Provider Config References"]
     Api --> AdapterReadiness["Provisioning Adapter Readiness"]
+    Api --> AdapterEnablement["Adapter Enablement Contract"]
     Api --> Details["Environment Detail"]
     Api --> Audit["Audit Events"]
 ```
@@ -68,6 +69,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Policy bundles: reusable governance control groups mapped to template versions
 - Platform config: provider project, cluster, network, and credential-reference placeholders
 - Provisioning adapters: validate, plan, provision, poll, and destroy contract readiness records
+- Adapter enablement records: provider evidence reviews with lab scope, credential reference, readiness, audit, rollback, and blocked mutation operation checks
 - Approvals: platform review records for AI endpoint and regulated-style requests
 - Audit events: request and decision records for hosted/on-prem workflow visibility
 - Session: mocked identity and role context for OIDC-ready UX
@@ -110,6 +112,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - OIDC-shaped request context, RBAC guardrails, request IDs, structured logs, rate limits, and security headers
 - Optional strict trusted-header mode and session diagnostics
 - Provider credential reference diagnostics and validation
+- Adapter enablement contract review API and Admin Providers UI
 - Postgres repository scaffold and SQL migration files for production persistence planning
 - Postgres repository configuration validator and migration scaffold validation
 - AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
@@ -158,6 +161,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Platform-service preflight records check readiness only; NKP, NDB, NUS, and NAI mutation calls remain disabled.
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
+- Adapter enablement records review evidence only; an enabled real-adapter switch fails this phase and all mutation operations remain blocked.
 - Audit export records prepare retention and redaction metadata only; production export delivery requires configured external storage.
 - Audit export manifests checksum retained audit metadata but do not deliver files to external storage yet.
 - On-prem backup/restore scripts validate JSON starter state only; production deployments still require durable database backup design.

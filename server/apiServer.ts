@@ -3,6 +3,10 @@ import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { extname, join, normalize, relative } from "node:path";
 import {
+  AdapterEnablementError,
+  createAdapterEnablementRecord,
+} from "./adapterEnablement";
+import {
   AhvControlledProvisioningError,
   createDisabledAhvControlledProvisioningAdapter,
 } from "./ahvControlledProvisioning";
@@ -77,6 +81,7 @@ import type {
   ApiResponse,
   ApiState,
   CreateAhvControlledProvisioningRunRequest,
+  CreateAdapterEnablementRecordRequest,
   ControlledProvisioningDecisionRequest,
   CreateLabAuthorizationScopeRequest,
   CreateLifecycleOperationRequest,
@@ -137,6 +142,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof CredentialReferenceError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof AdapterEnablementError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -286,6 +301,12 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/provisioning/adapters") {
     sendJson(response, 200, { data: state.provisioningAdapters });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/adapter-enablement/records") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.adapterEnablementRecords });
     return;
   }
 
@@ -970,6 +991,23 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: auditExport });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/adapter-enablement/records") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateAdapterEnablementRecordRequest>(request);
+    const record = createAdapterEnablementRecord(state, body, context.session.user);
+    state.adapterEnablementRecords = [record, ...state.adapterEnablementRecords];
+    addAuditEvent(state, "adapter.enablement.review.recorded", context.session.user, record.provider, {
+      status: record.status,
+      checksPassed: record.checks.every((check) => check.passed),
+      rollbackOwner: record.rollbackOwner,
+      blockedOperations: record.mutationOperationsBlocked,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
     return;
   }
 

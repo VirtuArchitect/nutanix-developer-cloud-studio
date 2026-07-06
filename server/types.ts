@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   ControlledProvisioningDecision,
   ControlledProvisioningGate,
@@ -47,6 +48,7 @@ export type ApiState = {
   prismInventoryImport?: PrismInventoryImportResult;
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
+  adapterEnablementRecords: AdapterEnablementRecord[];
   session: PlatformSession;
   governance: TemplateGovernance;
   jobs: ProvisioningJob[];
@@ -144,6 +146,11 @@ export type CreatePlatformServiceRequest = {
 export type CreatePlatformServicePreflightRunRequest = {
   requestId?: string;
   kind?: PlatformServiceKind;
+};
+
+export type CreateAdapterEnablementRecordRequest = {
+  provider?: AdapterEnablementRecord["provider"];
+  rollbackOwner?: string;
 };
 
 export type RegistryAction = "submit" | "approve" | "deprecate" | "restore";

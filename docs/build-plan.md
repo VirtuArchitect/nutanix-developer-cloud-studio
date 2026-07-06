@@ -284,6 +284,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Phase gate validates provider credential reference shape.
 - Audit events record that a reference is configured, not the reference value.
 
+## Current Adapter Enablement Contract Hardening Slice
+
+- API records adapter enablement contract reviews for NCI, NKP, NDB, NUS, NCM, and NAI.
+- Reviews check lab scope, credential reference diagnostics, provider readiness, adapter readiness, audit export readiness, rollback ownership, and real-adapter disabled state.
+- Admin Providers tab surfaces blocked/ready evidence, rollback owner, and blocked mutation operations.
+- Missing evidence blocks enablement review status.
+- Real adapter mutation remains disabled, and enabled real-adapter switches fail this review-only phase.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

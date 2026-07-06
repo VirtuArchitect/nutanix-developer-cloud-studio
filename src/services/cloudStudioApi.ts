@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   AuditExportRecord,
   AuditRetentionDiagnostics,
@@ -209,6 +210,10 @@ export async function fetchProvisioningAdaptersFromApi() {
   return fetchJson<ProvisioningAdapterReadiness[]>("/api/provisioning/adapters");
 }
 
+export async function fetchAdapterEnablementRecordsFromApi() {
+  return fetchJson<AdapterEnablementRecord[]>("/api/adapter-enablement/records");
+}
+
 export async function fetchControlPlaneJobsFromApi() {
   return fetchJson<ControlPlaneJob[]>("/api/control-plane/jobs");
 }
@@ -342,6 +347,16 @@ export async function createLifecycleOperationViaApi(payload: {
 export async function createAuditExportViaApi() {
   return fetchJson<AuditExportRecord>("/api/audit-exports", {
     method: "POST",
+  });
+}
+
+export async function createAdapterEnablementRecordViaApi(payload: {
+  provider?: AdapterEnablementRecord["provider"];
+  rollbackOwner?: string;
+}) {
+  return fetchJson<AdapterEnablementRecord>("/api/adapter-enablement/records", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 

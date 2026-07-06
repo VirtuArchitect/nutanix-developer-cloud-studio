@@ -49,6 +49,7 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Lab adapter pilot")).toBeVisible();
   await expect(page.getByText("Prism read-only inventory")).toBeVisible();
   await expect(page.getByText("Provider readiness")).toBeVisible();
+  await expect(page.getByText("Adapter enablement contract")).toBeVisible();
   await page.getByLabel("Endpoint").first().fill("https://prism.lab.example");
   await page.getByLabel("Credential profile").first().fill("nci-readonly");
   await page.getByRole("button", { name: "Save" }).first().click();
@@ -64,6 +65,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Import inventory" }).click();
   await expect(page.getByText("Rocky Linux 9 Hardened").first()).toBeVisible();
   await expect(page.getByText("Profile candidate").first()).toBeVisible();
+  await page.getByRole("button", { name: "Review adapter enablement" }).click();
+  await expect(page.getByText("Real adapter enablement remains gated")).toBeVisible();
+  await expect(page.getByText("Approved lab scope", { exact: true })).toBeVisible();
+  await expect(page.getByText("create_vm", { exact: true })).toBeVisible();
   await page.getByRole("tab", { name: "Control plane Jobs and approvals" }).click();
   await expect(page.getByText("Provisioning control plane")).toBeVisible();
   await expect(page.getByRole("heading", { name: "VM sandbox dry-run" })).toBeVisible();
