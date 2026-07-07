@@ -1351,6 +1351,41 @@ export type ProductionImplementationHoldRecord = {
   createdAt: string;
 };
 
+export type ProductionOperatorAssignmentRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production operator assignment review";
+  requestedBy: string;
+  primaryOperator: string;
+  secondaryOperator: string;
+  executionChannelReference: string;
+  rollbackOperator: string;
+  privilegedAccessConfirmationReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ProductionImplementationHoldRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

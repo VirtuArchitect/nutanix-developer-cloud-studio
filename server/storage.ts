@@ -167,6 +167,7 @@ export function createDefaultState(): ApiState {
     productionCabHandoffPackets: [],
     productionCabDecisionRecords: [],
     productionImplementationHoldRecords: [],
+    productionOperatorAssignmentRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

@@ -946,6 +946,16 @@ describe("api server", () => {
     const productionImplementationHoldRecords = await requestJson(
       "/api/real-adapter/production-implementation-hold-records"
     );
+    const productionOperatorAssignmentRecord = await requestJson(
+      "/api/real-adapter/production-operator-assignment-records",
+      {
+        method: "POST",
+        body: JSON.stringify({ implementationHoldRecordId: productionImplementationHoldRecord.data.id }),
+      }
+    );
+    const productionOperatorAssignmentRecords = await requestJson(
+      "/api/real-adapter/production-operator-assignment-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1460,6 +1470,23 @@ describe("api server", () => {
     expect(productionImplementationHoldRecords.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: productionImplementationHoldRecord.data.id })])
     );
+    expect(productionOperatorAssignmentRecord.data).toMatchObject({
+      provider: "NDB",
+      implementationHoldRecordId: productionImplementationHoldRecord.data.id,
+      cabDecisionRecordId: productionCabDecisionRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionOperatorAssignmentRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Implementation hold ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not promote adapter", passed: true }),
+      ])
+    );
+    expect(productionOperatorAssignmentRecords.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: productionOperatorAssignmentRecord.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1492,6 +1519,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "real-adapter.production-cab-handoff.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.production-cab-decision.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.production-implementation-hold.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.production-operator-assignment.recorded", target: "NDB" }),
       ])
     );
   });

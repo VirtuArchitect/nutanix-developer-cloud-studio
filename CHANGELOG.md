@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.37.0-production-implementation-hold-record`.
+This project uses release tags for public milestones. The current release is `v2.38.0-production-operator-assignment-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production operator assignment records after implementation hold records are complete.
+- Add production execution readiness records after operator assignment records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.38.0-production-operator-assignment-record] - 2026-07-07
+
+### Added
+
+- Production operator assignment records linked to production implementation hold records.
+- API endpoints for listing and recording production operator assignment records.
+- Admin Operations production operator assignment panel.
+- Primary operator, secondary operator, execution channel, rollback operator, and privileged access confirmation checks.
+- Tests proving missing implementation hold records or incomplete operator evidence block assignment readiness.
+
+### Notes
+
+- Production operator assignment records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.37.0-production-implementation-hold-record] - 2026-07-07
 

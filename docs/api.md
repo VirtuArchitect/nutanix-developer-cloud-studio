@@ -461,6 +461,15 @@ Production implementation hold records capture implementation hold evidence afte
 
 Required role: `Platform Admin`.
 
+### Production Operator Assignment Records
+
+- `GET /api/real-adapter/production-operator-assignment-records`
+- `POST /api/real-adapter/production-operator-assignment-records`
+
+Production operator assignment records capture named execution ownership after implementation hold readiness and before any production execution readiness review. Records require a ready implementation hold record, primary operator, secondary operator, execution channel, rollback operator, privileged access confirmation, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

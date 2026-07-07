@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.38.0-production-operator-assignment-record`.
+- Added production operator assignment records linked to production implementation hold records.
+- Added API endpoints for production operator assignment records.
+- Added Admin Operations production operator assignment panel.
+- Added tests proving missing implementation hold records or incomplete operator assignment evidence block readiness.
+- Planned `v2.39.0-production-execution-readiness-record` for evidence-only execution readiness records.
 - Released `v2.37.0-production-implementation-hold-record`.
 - Added production implementation hold records linked to production CAB decision records.
 - Added API endpoints for production implementation hold records.

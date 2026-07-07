@@ -454,10 +454,17 @@
 
 ## Phase 60 - Production Operator Assignment Record (`v2.38.0-production-operator-assignment-record`)
 
-- Add production operator assignment records linked to implementation hold records - planned
-- Require primary operator, secondary operator, execution channel, rollback operator, and privileged access confirmation - planned
-- Add Admin Operations operator assignment panel - planned
-- Keep operator assignment records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production operator assignment records linked to implementation hold records - done
+- Require primary operator, secondary operator, execution channel, rollback operator, and privileged access confirmation - done
+- Add Admin Operations operator assignment panel - done
+- Keep operator assignment records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 61 - Production Execution Readiness Record (`v2.39.0-production-execution-readiness-record`)
+
+- Add production execution readiness records linked to operator assignment records - planned
+- Require execution owner, pre-execution checklist, rollback bridge, monitoring observer, and implementation timer - planned
+- Add Admin Operations execution readiness panel - planned
+- Keep execution readiness records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

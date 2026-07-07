@@ -125,6 +125,10 @@ import {
   ProductionImplementationHoldRecordError,
 } from "./productionImplementationHoldRecord";
 import {
+  createProductionOperatorAssignmentRecord,
+  ProductionOperatorAssignmentRecordError,
+} from "./productionOperatorAssignmentRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -237,6 +241,7 @@ import type {
   CreateProductionCabHandoffPacketRequest,
   CreateProductionCabDecisionRecordRequest,
   CreateProductionImplementationHoldRecordRequest,
+  CreateProductionOperatorAssignmentRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -582,6 +587,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionImplementationHoldRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionOperatorAssignmentRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1035,6 +1050,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/production-implementation-hold-records") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionImplementationHoldRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/production-operator-assignment-records") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionOperatorAssignmentRecords });
     return;
   }
 
@@ -2154,6 +2175,22 @@ async function routeApi(
     state.productionImplementationHoldRecords = [record, ...state.productionImplementationHoldRecords];
     addAuditEvent(state, "real-adapter.production-implementation-hold.recorded", context.session.user, record.provider, {
       cabDecisionRecordId: record.cabDecisionRecordId,
+      idempotencyKey: record.idempotencyKey,
+      status: record.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/production-operator-assignment-records") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionOperatorAssignmentRecordRequest>(request);
+    const record = createProductionOperatorAssignmentRecord(state, body, context.session.user);
+    state.productionOperatorAssignmentRecords = [record, ...state.productionOperatorAssignmentRecords];
+    addAuditEvent(state, "real-adapter.production-operator-assignment.recorded", context.session.user, record.provider, {
+      implementationHoldRecordId: record.implementationHoldRecordId,
       idempotencyKey: record.idempotencyKey,
       status: record.status,
       provisioningEnabled: false,
