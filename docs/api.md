@@ -677,6 +677,15 @@ Production execution archive recovery drill records capture recovery drill evide
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Acceptance Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-acceptance-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-acceptance-records`
+
+Production execution archive recovery acceptance records capture acceptance evidence after archive recovery drill and before any future archive recovery closure phase. Records require a ready archive recovery drill record, acceptance owner, recovery evidence packet, RTO/RPO variance review, residual recovery risk register, acceptance sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

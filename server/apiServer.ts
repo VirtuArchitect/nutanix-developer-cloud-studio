@@ -221,6 +221,10 @@ import {
   ProductionExecutionArchiveRecoveryDrillRecordError,
 } from "./productionExecutionArchiveRecoveryDrillRecord";
 import {
+  createProductionExecutionArchiveRecoveryAcceptanceRecord,
+  ProductionExecutionArchiveRecoveryAcceptanceRecordError,
+} from "./productionExecutionArchiveRecoveryAcceptanceRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -357,6 +361,7 @@ import type {
   CreateProductionExecutionReadinessArchiveHandoffRecordRequest,
   CreateProductionExecutionArchiveRetrievalValidationRecordRequest,
   CreateProductionExecutionArchiveRecoveryDrillRecordRequest,
+  CreateProductionExecutionArchiveRecoveryAcceptanceRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -942,6 +947,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionArchiveRecoveryDrillRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionArchiveRecoveryAcceptanceRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1593,6 +1608,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryDrillRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-acceptance-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryAcceptanceRecords });
     return;
   }
 
@@ -3308,6 +3332,34 @@ async function routeApi(
       record.provider,
       {
         archiveRetrievalValidationRecordId: record.archiveRetrievalValidationRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-acceptance-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionArchiveRecoveryAcceptanceRecordRequest>(request);
+    const record = createProductionExecutionArchiveRecoveryAcceptanceRecord(state, body, context.session.user);
+    state.productionExecutionArchiveRecoveryAcceptanceRecords = [
+      record,
+      ...state.productionExecutionArchiveRecoveryAcceptanceRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-archive-recovery-acceptance.recorded",
+      context.session.user,
+      record.provider,
+      {
+        archiveRecoveryDrillRecordId: record.archiveRecoveryDrillRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

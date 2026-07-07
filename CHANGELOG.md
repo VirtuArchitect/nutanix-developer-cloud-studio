@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.61.0-production-execution-archive-recovery-drill-record`.
+This project uses release tags for public milestones. The current release is `v2.62.0-production-execution-archive-recovery-acceptance-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery acceptance records after archive recovery drill records are complete.
+- Add production execution archive recovery closure records after archive recovery acceptance records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.62.0-production-execution-archive-recovery-acceptance-record] - 2026-07-07
+
+### Added
+
+- Production execution archive recovery acceptance records linked to production execution archive recovery drill records.
+- API endpoints for listing and recording production execution archive recovery acceptance records.
+- Admin Operations production archive recovery acceptance panel.
+- Acceptance owner, recovery evidence packet, RTO/RPO variance review, residual recovery risk register, and acceptance sign-off checks.
+- Tests proving missing archive recovery drill records or incomplete acceptance evidence block archive recovery acceptance readiness.
+
+### Notes
+
+- Production execution archive recovery acceptance records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.61.0-production-execution-archive-recovery-drill-record] - 2026-07-07
 

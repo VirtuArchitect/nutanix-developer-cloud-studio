@@ -105,6 +105,7 @@ import {
   type ProductionExecutionReadinessArchiveHandoffRecord,
   type ProductionExecutionArchiveRetrievalValidationRecord,
   type ProductionExecutionArchiveRecoveryDrillRecord,
+  type ProductionExecutionArchiveRecoveryAcceptanceRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -172,6 +173,7 @@ import {
   createProductionExecutionReadinessArchiveHandoffRecordViaApi,
   createProductionExecutionArchiveRetrievalValidationRecordViaApi,
   createProductionExecutionArchiveRecoveryDrillRecordViaApi,
+  createProductionExecutionArchiveRecoveryAcceptanceRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -244,6 +246,7 @@ import {
   fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi,
   fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryDrillRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryAcceptanceRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -455,6 +458,10 @@ export function App() {
     productionExecutionArchiveRecoveryDrillRecords,
     setProductionExecutionArchiveRecoveryDrillRecords,
   ] = useState<ProductionExecutionArchiveRecoveryDrillRecord[]>([]);
+  const [
+    productionExecutionArchiveRecoveryAcceptanceRecords,
+    setProductionExecutionArchiveRecoveryAcceptanceRecords,
+  ] = useState<ProductionExecutionArchiveRecoveryAcceptanceRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -587,6 +594,7 @@ export function App() {
             apiProductionExecutionReadinessArchiveHandoffRecords,
             apiProductionExecutionArchiveRetrievalValidationRecords,
             apiProductionExecutionArchiveRecoveryDrillRecords,
+            apiProductionExecutionArchiveRecoveryAcceptanceRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -674,6 +682,7 @@ export function App() {
             fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi(),
             fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi(),
             fetchProductionExecutionArchiveRecoveryDrillRecordsFromApi(),
+            fetchProductionExecutionArchiveRecoveryAcceptanceRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -774,6 +783,9 @@ export function App() {
             );
             setProductionExecutionArchiveRecoveryDrillRecords(
               apiProductionExecutionArchiveRecoveryDrillRecords
+            );
+            setProductionExecutionArchiveRecoveryAcceptanceRecords(
+              apiProductionExecutionArchiveRecoveryAcceptanceRecords
             );
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -984,6 +996,7 @@ export function App() {
       apiProductionExecutionReadinessArchiveHandoffRecords,
       apiProductionExecutionArchiveRetrievalValidationRecords,
       apiProductionExecutionArchiveRecoveryDrillRecords,
+      apiProductionExecutionArchiveRecoveryAcceptanceRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -1071,6 +1084,7 @@ export function App() {
       fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi(),
       fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi(),
       fetchProductionExecutionArchiveRecoveryDrillRecordsFromApi(),
+      fetchProductionExecutionArchiveRecoveryAcceptanceRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1159,6 +1173,7 @@ export function App() {
     setProductionExecutionReadinessArchiveHandoffRecords(apiProductionExecutionReadinessArchiveHandoffRecords);
     setProductionExecutionArchiveRetrievalValidationRecords(apiProductionExecutionArchiveRetrievalValidationRecords);
     setProductionExecutionArchiveRecoveryDrillRecords(apiProductionExecutionArchiveRecoveryDrillRecords);
+    setProductionExecutionArchiveRecoveryAcceptanceRecords(apiProductionExecutionArchiveRecoveryAcceptanceRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2879,6 +2894,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionArchiveRecoveryAcceptance() {
+    const archiveRecoveryDrillRecord = productionExecutionArchiveRecoveryDrillRecords[0];
+    if (!archiveRecoveryDrillRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionArchiveRecoveryAcceptanceRecordViaApi({
+        archiveRecoveryDrillRecordId: archiveRecoveryDrillRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionArchiveRecoveryAcceptanceRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionArchiveRecoveryAcceptanceRecords((current) => [
+      createMockProductionExecutionArchiveRecoveryAcceptanceRecord(archiveRecoveryDrillRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -3151,6 +3190,7 @@ export function App() {
             productionExecutionReadinessArchiveHandoffRecords={productionExecutionReadinessArchiveHandoffRecords}
             productionExecutionArchiveRetrievalValidationRecords={productionExecutionArchiveRetrievalValidationRecords}
             productionExecutionArchiveRecoveryDrillRecords={productionExecutionArchiveRecoveryDrillRecords}
+            productionExecutionArchiveRecoveryAcceptanceRecords={productionExecutionArchiveRecoveryAcceptanceRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -3228,6 +3268,7 @@ export function App() {
             recordProductionExecutionReadinessArchiveHandoff={recordProductionExecutionReadinessArchiveHandoff}
             recordProductionExecutionArchiveRetrievalValidation={recordProductionExecutionArchiveRetrievalValidation}
             recordProductionExecutionArchiveRecoveryDrill={recordProductionExecutionArchiveRecoveryDrill}
+            recordProductionExecutionArchiveRecoveryAcceptance={recordProductionExecutionArchiveRecoveryAcceptance}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3788,6 +3829,7 @@ function AdminView({
   productionExecutionReadinessArchiveHandoffRecords,
   productionExecutionArchiveRetrievalValidationRecords,
   productionExecutionArchiveRecoveryDrillRecords,
+  productionExecutionArchiveRecoveryAcceptanceRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3865,6 +3907,7 @@ function AdminView({
   recordProductionExecutionReadinessArchiveHandoff,
   recordProductionExecutionArchiveRetrievalValidation,
   recordProductionExecutionArchiveRecoveryDrill,
+  recordProductionExecutionArchiveRecoveryAcceptance,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3956,6 +3999,7 @@ function AdminView({
   productionExecutionReadinessArchiveHandoffRecords: ProductionExecutionReadinessArchiveHandoffRecord[];
   productionExecutionArchiveRetrievalValidationRecords: ProductionExecutionArchiveRetrievalValidationRecord[];
   productionExecutionArchiveRecoveryDrillRecords: ProductionExecutionArchiveRecoveryDrillRecord[];
+  productionExecutionArchiveRecoveryAcceptanceRecords: ProductionExecutionArchiveRecoveryAcceptanceRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -4036,6 +4080,7 @@ function AdminView({
   recordProductionExecutionReadinessArchiveHandoff: () => void;
   recordProductionExecutionArchiveRetrievalValidation: () => void;
   recordProductionExecutionArchiveRecoveryDrill: () => void;
+  recordProductionExecutionArchiveRecoveryAcceptance: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4616,6 +4661,15 @@ function AdminView({
             <ProductionExecutionArchiveRecoveryDrillRecordPanel
               records={productionExecutionArchiveRecoveryDrillRecords}
               recordProductionExecutionArchiveRecoveryDrill={recordProductionExecutionArchiveRecoveryDrill}
+            />
+          </Panel>
+          <Panel
+            title="Production archive recovery acceptance"
+            action={`${productionExecutionArchiveRecoveryAcceptanceRecords.length} records`}
+          >
+            <ProductionExecutionArchiveRecoveryAcceptanceRecordPanel
+              records={productionExecutionArchiveRecoveryAcceptanceRecords}
+              recordProductionExecutionArchiveRecoveryAcceptance={recordProductionExecutionArchiveRecoveryAcceptance}
             />
           </Panel>
         </div>
@@ -8817,6 +8871,73 @@ function ProductionExecutionArchiveRecoveryDrillRecordPanel({
             <span>Restored artifact review: {latest.restoredArtifactReviewReference || "missing"}</span>
             <span>Drill sign-off: {latest.drillSignOffReference || "missing"}</span>
             <span>Archive retrieval validation: {latest.archiveRetrievalValidationRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionArchiveRecoveryAcceptanceRecordPanel({
+  records,
+  recordProductionExecutionArchiveRecoveryAcceptance,
+}: {
+  records: ProductionExecutionArchiveRecoveryAcceptanceRecord[];
+  recordProductionExecutionArchiveRecoveryAcceptance: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution archive recovery acceptance record</strong>
+          <span>Captures recovery evidence packet, RTO/RPO variance, residual risk, and acceptance sign-off evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionArchiveRecoveryAcceptance}>
+          <Archive size={15} />
+          Record archive recovery acceptance
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution archive recovery acceptance record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.archiveRecoveryDrillRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution archive recovery acceptance review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Acceptance owner" value={latest.acceptanceOwner || "missing"} passed={Boolean(latest.acceptanceOwner)} />
+            <CheckLine icon={Archive} label="Evidence packet" value={latest.recoveryEvidencePacketReference || "missing"} passed={Boolean(latest.recoveryEvidencePacketReference)} />
+            <CheckLine icon={ScrollText} label="RTO/RPO variance" value={latest.rtoRpoVarianceReviewReference || "missing"} passed={Boolean(latest.rtoRpoVarianceReviewReference)} />
+            <CheckLine icon={ShieldCheck} label="Recovery acceptance" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution archive recovery acceptance evidence</strong>
+            <span>Residual recovery risk: {latest.residualRecoveryRiskRegisterReference || "missing"}</span>
+            <span>Acceptance sign-off: {latest.acceptanceSignOffReference || "missing"}</span>
+            <span>Archive recovery drill: {latest.archiveRecoveryDrillRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -15871,6 +15992,125 @@ function createMockProductionExecutionArchiveRecoveryDrillRecord(
       }.`,
     ],
     killSwitch: archiveRetrievalValidationRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionArchiveRecoveryAcceptanceRecord(
+  archiveRecoveryDrillRecord: ProductionExecutionArchiveRecoveryDrillRecord,
+  actor: string
+): ProductionExecutionArchiveRecoveryAcceptanceRecord {
+  const providerSlug = archiveRecoveryDrillRecord.provider.toLowerCase();
+  const acceptanceOwner = "Production Archive Recovery Acceptance Owner";
+  const recoveryEvidencePacketReference = `production-archive-recovery-evidence-packet-${providerSlug}.md`;
+  const rtoRpoVarianceReviewReference = `production-archive-rto-rpo-variance-review-${providerSlug}.md`;
+  const residualRecoveryRiskRegisterReference = `production-archive-residual-recovery-risk-register-${providerSlug}.md`;
+  const acceptanceSignOffReference = `production-archive-recovery-acceptance-signoff-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Archive recovery drill ready",
+      passed:
+        archiveRecoveryDrillRecord.status ===
+        "Ready for production execution archive recovery drill review",
+      detail: `${archiveRecoveryDrillRecord.id} is ${archiveRecoveryDrillRecord.status}.`,
+    },
+    {
+      name: "Acceptance owner assigned",
+      passed: Boolean(acceptanceOwner),
+      detail: acceptanceOwner,
+    },
+    {
+      name: "Recovery evidence packet linked",
+      passed: Boolean(recoveryEvidencePacketReference),
+      detail: recoveryEvidencePacketReference,
+    },
+    {
+      name: "RTO/RPO variance review linked",
+      passed: Boolean(rtoRpoVarianceReviewReference),
+      detail: rtoRpoVarianceReviewReference,
+    },
+    {
+      name: "Residual recovery risk register linked",
+      passed: Boolean(residualRecoveryRiskRegisterReference),
+      detail: residualRecoveryRiskRegisterReference,
+    },
+    {
+      name: "Acceptance sign-off linked",
+      passed: Boolean(acceptanceSignOffReference),
+      detail: acceptanceSignOffReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !archiveRecoveryDrillRecord.provisioningEnabled && !archiveRecoveryDrillRecord.killSwitch.enabled,
+      detail: `${archiveRecoveryDrillRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-archive-recovery-acceptance-record-${providerSlug}-${Date.now()}`,
+    provider: archiveRecoveryDrillRecord.provider,
+    archiveRecoveryDrillRecordId: archiveRecoveryDrillRecord.id,
+    archiveRetrievalValidationRecordId: archiveRecoveryDrillRecord.archiveRetrievalValidationRecordId,
+    readinessArchiveHandoffRecordId: archiveRecoveryDrillRecord.readinessArchiveHandoffRecordId,
+    finalAcceptanceArchiveRecordId: archiveRecoveryDrillRecord.finalAcceptanceArchiveRecordId,
+    improvementClosureRecordId: archiveRecoveryDrillRecord.improvementClosureRecordId,
+    postImplementationReviewRecordId: archiveRecoveryDrillRecord.postImplementationReviewRecordId,
+    operationalClosureRecordId: archiveRecoveryDrillRecord.operationalClosureRecordId,
+    finalTurnoverRecordId: archiveRecoveryDrillRecord.finalTurnoverRecordId,
+    serviceAcceptanceRecordId: archiveRecoveryDrillRecord.serviceAcceptanceRecordId,
+    supportReadinessRecordId: archiveRecoveryDrillRecord.supportReadinessRecordId,
+    operationsHandoverRecordId: archiveRecoveryDrillRecord.operationsHandoverRecordId,
+    completionDossierRecordId: archiveRecoveryDrillRecord.completionDossierRecordId,
+    finalArchiveCertificationRecordId: archiveRecoveryDrillRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: archiveRecoveryDrillRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: archiveRecoveryDrillRecord.archivalHandoffRecordId,
+    closurePacketRecordId: archiveRecoveryDrillRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: archiveRecoveryDrillRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: archiveRecoveryDrillRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: archiveRecoveryDrillRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: archiveRecoveryDrillRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: archiveRecoveryDrillRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: archiveRecoveryDrillRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: archiveRecoveryDrillRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: archiveRecoveryDrillRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: archiveRecoveryDrillRecord.implementationHoldRecordId,
+    cabDecisionRecordId: archiveRecoveryDrillRecord.cabDecisionRecordId,
+    cabHandoffPacketId: archiveRecoveryDrillRecord.cabHandoffPacketId,
+    freezeRecordId: archiveRecoveryDrillRecord.freezeRecordId,
+    authorizationPacketId: archiveRecoveryDrillRecord.authorizationPacketId,
+    promotionDossierId: archiveRecoveryDrillRecord.promotionDossierId,
+    closurePackageId: archiveRecoveryDrillRecord.closurePackageId,
+    outcomeRecordId: archiveRecoveryDrillRecord.outcomeRecordId,
+    handoffPackageId: archiveRecoveryDrillRecord.handoffPackageId,
+    controlledSwitchRequestId: archiveRecoveryDrillRecord.controlledSwitchRequestId,
+    auditPackageId: archiveRecoveryDrillRecord.auditPackageId,
+    switchReviewId: archiveRecoveryDrillRecord.switchReviewId,
+    activationId: archiveRecoveryDrillRecord.activationId,
+    idempotencyKey: archiveRecoveryDrillRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution archive recovery acceptance review"
+      : "Blocked",
+    requestedBy: actor,
+    acceptanceOwner,
+    recoveryEvidencePacketReference,
+    rtoRpoVarianceReviewReference,
+    residualRecoveryRiskRegisterReference,
+    acceptanceSignOffReference,
+    checks,
+    evidence: [
+      `Archive recovery drill record: ${archiveRecoveryDrillRecord.id}.`,
+      `Archive retrieval validation record: ${archiveRecoveryDrillRecord.archiveRetrievalValidationRecordId}.`,
+      `Acceptance owner: ${acceptanceOwner}.`,
+      `Recovery evidence packet: ${recoveryEvidencePacketReference}.`,
+      `RTO/RPO variance review: ${rtoRpoVarianceReviewReference}.`,
+      `Residual recovery risk register: ${residualRecoveryRiskRegisterReference}.`,
+      `Acceptance sign-off: ${acceptanceSignOffReference}.`,
+      `Kill switch: ${archiveRecoveryDrillRecord.killSwitch.name}=${
+        archiveRecoveryDrillRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: archiveRecoveryDrillRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

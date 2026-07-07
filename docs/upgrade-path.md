@@ -1411,6 +1411,22 @@ Promotion criteria:
 
 - Production execution archive recovery acceptance APIs and UI are tested.
 - Archive recovery acceptance records are evidence-only.
+
+### v2.63.0-production-execution-archive-recovery-closure-record
+
+Goal: record archive recovery closure evidence after archive recovery acceptance without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery closure records linked to archive recovery acceptance records.
+- Require closure owner, recovery closure packet, follow-up action register, stakeholder closure notice, and archive recovery closure sign-off.
+- Add Admin Operations archive recovery closure panel with blockers and evidence references.
+- Add tests proving missing ready archive recovery acceptance records, closure owners, recovery closure packets, follow-up action registers, stakeholder closure notices, or closure sign-offs block archive recovery closure readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery closure APIs and UI are tested.
+- Archive recovery closure records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
 ## Automatic Implementation Rule

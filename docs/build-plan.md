@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.62.0-production-execution-archive-recovery-acceptance-record` adds evidence-only archive recovery acceptance records linked to archive recovery drill records and an Admin Operations archive recovery acceptance panel.
 - `v2.61.0-production-execution-archive-recovery-drill-record` adds evidence-only archive recovery drill records linked to archive retrieval validation records and an Admin Operations archive recovery drill panel.
 - `v2.60.0-production-execution-archive-retrieval-validation-record` adds evidence-only archive retrieval validation records linked to readiness archive handoff records and an Admin Operations archive retrieval validation panel.
 - `v2.59.0-production-execution-readiness-archive-handoff-record` adds evidence-only readiness archive handoff records linked to final acceptance archive records and an Admin Operations readiness archive handoff panel.
