@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.27.0-real-adapter-switch-state-audit-package",
+  "version": "2.28.0-controlled-switch-configuration-request",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

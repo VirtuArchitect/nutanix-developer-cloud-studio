@@ -12,6 +12,7 @@ import {
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
+  createControlledSwitchConfigurationRequestViaApi,
   createExecutionBrokerDispatchApprovalViaApi,
   createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
@@ -51,6 +52,7 @@ import {
   fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchControlledLabDryRunWindowsFromApi,
   fetchControlledLabReleaseRunbooksFromApi,
+  fetchControlledSwitchConfigurationRequestsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
@@ -482,6 +484,8 @@ describe("cloudStudioApi", () => {
     await createManualRealAdapterSwitchReviewViaApi({ activationId: "real-adapter-lab-scope-activation-ndb-1" });
     await fetchRealAdapterSwitchStateAuditPackagesFromApi();
     await createRealAdapterSwitchStateAuditPackageViaApi({ switchReviewId: "manual-real-adapter-switch-review-ndb-1" });
+    await fetchControlledSwitchConfigurationRequestsFromApi();
+    await createControlledSwitchConfigurationRequestViaApi({ auditPackageId: "real-adapter-switch-state-audit-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -578,6 +582,12 @@ describe("cloudStudioApi", () => {
       32,
       "/api/real-adapter/switch-state-audit-packages",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("manual-real-adapter-switch-review-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(33, "/api/real-adapter/controlled-switch-requests", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      34,
+      "/api/real-adapter/controlled-switch-requests",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("real-adapter-switch-state-audit-ndb-1") })
     );
   });
 

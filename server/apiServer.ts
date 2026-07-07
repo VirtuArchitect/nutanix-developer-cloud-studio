@@ -85,6 +85,10 @@ import {
   RealAdapterSwitchStateAuditPackageError,
 } from "./realAdapterSwitchStateAuditPackage";
 import {
+  createControlledSwitchConfigurationRequest,
+  ControlledSwitchConfigurationRequestError,
+} from "./controlledSwitchConfigurationRequest";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -187,6 +191,7 @@ import type {
   CreateRealAdapterLabScopeActivationRequest,
   CreateManualRealAdapterSwitchReviewRequest,
   CreateRealAdapterSwitchStateAuditPackageRequest,
+  CreateControlledSwitchConfigurationRequestRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -432,6 +437,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof RealAdapterSwitchStateAuditPackageError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledSwitchConfigurationRequestError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -825,6 +840,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-state-audit-packages") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.realAdapterSwitchStateAuditPackages });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/controlled-switch-requests") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledSwitchConfigurationRequests });
     return;
   }
 
@@ -1775,6 +1796,25 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: auditPackage });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/controlled-switch-requests") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledSwitchConfigurationRequestRequest>(request);
+    const switchRequest = createControlledSwitchConfigurationRequest(state, body, context.session.user);
+    state.controlledSwitchConfigurationRequests = [
+      switchRequest,
+      ...state.controlledSwitchConfigurationRequests,
+    ];
+    addAuditEvent(state, "real-adapter.controlled-switch-request.recorded", context.session.user, switchRequest.provider, {
+      auditPackageId: switchRequest.auditPackageId,
+      idempotencyKey: switchRequest.idempotencyKey,
+      status: switchRequest.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: switchRequest });
     return;
   }
 

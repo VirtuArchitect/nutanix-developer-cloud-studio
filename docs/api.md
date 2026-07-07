@@ -371,6 +371,15 @@ Real-adapter switch-state audit packages collect evidence after manual switch re
 
 Required role: `Platform Admin`.
 
+### Controlled Switch Configuration Requests
+
+- `GET /api/real-adapter/controlled-switch-requests`
+- `POST /api/real-adapter/controlled-switch-requests`
+
+Controlled switch configuration requests record evidence after switch-state audit package readiness. Requests require a ready switch-state audit package, operator confirmation, second reviewer acceptance, rollback timer, final dry-run proof, retention reference, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

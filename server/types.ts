@@ -5,6 +5,7 @@ import type {
   AhvCreateAdapterContractReview,
   ControlledProvisioningDecision,
   ControlledLabReleaseRunbookRecord,
+  ControlledSwitchConfigurationRequest,
   ControlledLabExecutionApprovalGate,
   ControlledLabDryRunExecutionChecklist,
   ControlledLabExecutionEvidenceLedger,
@@ -105,6 +106,7 @@ export type ApiState = {
   realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
   manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
   realAdapterSwitchStateAuditPackages: RealAdapterSwitchStateAuditPackage[];
+  controlledSwitchConfigurationRequests: ControlledSwitchConfigurationRequest[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -371,6 +373,16 @@ export type CreateRealAdapterSwitchStateAuditPackageRequest = {
   postChangeSnapshotReference?: string;
   reviewerEvidenceReference?: string;
   rollbackTimerMinutes?: number;
+  retentionReference?: string;
+};
+
+export type CreateControlledSwitchConfigurationRequestRequest = {
+  auditPackageId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  operatorConfirmation?: string;
+  secondReviewerAcceptance?: string;
+  rollbackTimerMinutes?: number;
+  finalDryRunProofReference?: string;
   retentionReference?: string;
 };
 

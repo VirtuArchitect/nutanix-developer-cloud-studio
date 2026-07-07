@@ -230,6 +230,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Switch-state audit package")).toBeVisible();
   await expect(page.getByText("Switch-state audit evidence")).toBeVisible();
   await expect(page.getByText("Prototype leaves switch state unchanged")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Controlled switch requests" })).toBeVisible();
+  await page.getByRole("button", { name: "Request controlled switch" }).click();
+  await expect(page.getByText("Controlled switch request", { exact: true })).toBeVisible();
+  await expect(page.getByText("Controlled switch evidence")).toBeVisible();
+  await expect(page.getByText("Prototype remains non-mutating")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

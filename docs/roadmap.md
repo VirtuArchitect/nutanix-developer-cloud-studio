@@ -384,10 +384,17 @@
 
 ## Phase 50 - Controlled Switch Configuration Request (`v2.28.0-controlled-switch-configuration-request`)
 
-- Add controlled switch configuration request records linked to switch-state audit packages - planned
-- Require operator confirmation, second reviewer acceptance, rollback timer, retention, and final dry-run proof - planned
-- Add Admin Operations controlled switch request panel - planned
-- Keep requests non-mutating unless explicitly executed by an authorized lab operator outside the prototype - planned
+- Add controlled switch configuration request records linked to switch-state audit packages - done
+- Require operator confirmation, second reviewer acceptance, rollback timer, retention, and final dry-run proof - done
+- Add Admin Operations controlled switch request panel - done
+- Keep requests non-mutating unless explicitly executed by an authorized lab operator outside the prototype - done
+
+## Phase 51 - Switch Execution Handoff Package (`v2.29.0-switch-execution-handoff-package`)
+
+- Add switch execution handoff packages linked to controlled switch requests - planned
+- Require operator run sheet, communications plan, observation window, rollback owner acceptance, and execution freeze proof - planned
+- Add Admin Operations switch handoff panel - planned
+- Keep handoff packages non-mutating and require out-of-band authorized operator execution - planned
 
 ## Gated Promotion
 

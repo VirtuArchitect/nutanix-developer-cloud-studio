@@ -157,6 +157,7 @@ export function createDefaultState(): ApiState {
     realAdapterLabScopeActivations: [],
     manualRealAdapterSwitchReviews: [],
     realAdapterSwitchStateAuditPackages: [],
+    controlledSwitchConfigurationRequests: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

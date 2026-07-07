@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.28.0-controlled-switch-configuration-request`.
+- Added controlled switch configuration request records linked to switch-state audit packages.
+- Added API endpoints for controlled switch requests.
+- Added Admin Operations controlled switch request panel.
+- Added tests proving missing audit packages or incomplete switch request evidence block readiness.
+- Planned `v2.29.0-switch-execution-handoff-package` for evidence-only operator handoff packages.
 - Released `v2.27.0-real-adapter-switch-state-audit-package`.
 - Added real-adapter switch-state audit package records linked to manual switch reviews.
 - Added API endpoints for switch-state audit packages.
 - Added Admin Operations switch-state audit panel.
 - Added tests proving missing switch reviews or incomplete switch-state audit evidence block readiness.
-- Planned `v2.28.0-controlled-switch-configuration-request` for evidence-only controlled switch request records.
 - Released `v2.26.0-manual-real-adapter-switch-review`.
 - Added manual real-adapter switch review records linked to lab scope activations.
 - Added API endpoints for switch reviews.

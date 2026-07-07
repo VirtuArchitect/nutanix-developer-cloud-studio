@@ -101,6 +101,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Real-adapter lab scope activations: authorized scope, pentest completion, rollback ownership, bounded target, and manual control evidence linked to dispatch approvals
 - Manual real-adapter switch reviews: named operator, second reviewer, maintenance window, switch-state audit, and rollback contact evidence linked to lab scope activations
 - Real-adapter switch-state audit packages: pre-change and post-change snapshot, reviewer evidence, rollback timer, and retention evidence linked to manual switch reviews
+- Controlled switch configuration requests: operator confirmation, second reviewer acceptance, rollback timer, final dry-run proof, and retention evidence linked to switch-state audit packages
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -130,7 +131,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Backend-shaped Nutanix adapter contracts in `src/services/nutanixAdapters.ts`
 - Requested environments persisted in browser local storage
 - Real-adapter switch-state audit package API and Admin Operations audit UI
-- Real-adapter switch-state audit packages are evidence-only records; the prototype does not change switch configuration.
+- Controlled switch request API and Admin Operations request UI
+- Real-adapter switch-state audit packages and controlled switch requests are evidence-only records; the prototype does not change switch configuration.
 - Admin template governance edits persisted in browser local storage
 - Timed mock provisioning state transitions exposed through the provisioning service
 - Template details view for golden-path outcomes and readiness notes

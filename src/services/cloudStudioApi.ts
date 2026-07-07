@@ -12,6 +12,7 @@ import type {
   ControlledLabExecutionRehearsalPacket,
   ControlledLabDryRunWindowRecord,
   ControlledLabReleaseRunbookRecord,
+  ControlledSwitchConfigurationRequest,
   CredentialReferenceDiagnostic,
   ControlledProvisioningGate,
   ControlPlaneJob,
@@ -366,6 +367,10 @@ export async function fetchRealAdapterSwitchStateAuditPackagesFromApi() {
   return fetchJson<RealAdapterSwitchStateAuditPackage[]>("/api/real-adapter/switch-state-audit-packages");
 }
 
+export async function fetchControlledSwitchConfigurationRequestsFromApi() {
+  return fetchJson<ControlledSwitchConfigurationRequest[]>("/api/real-adapter/controlled-switch-requests");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -653,6 +658,16 @@ export async function createRealAdapterSwitchStateAuditPackageViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<RealAdapterSwitchStateAuditPackage>("/api/real-adapter/switch-state-audit-packages", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createControlledSwitchConfigurationRequestViaApi(payload: {
+  auditPackageId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ControlledSwitchConfigurationRequest>("/api/real-adapter/controlled-switch-requests", {
     method: "POST",
     body: JSON.stringify(payload),
   });

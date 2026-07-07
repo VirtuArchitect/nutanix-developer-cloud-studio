@@ -839,6 +839,23 @@ Exit gate:
 - Request records are evidence-only.
 - No switch is changed by the prototype.
 
+### v2.29.0-switch-execution-handoff-package
+
+Goal: prepare an operator handoff package after controlled switch request readiness while keeping execution outside the prototype.
+
+Build:
+
+- Switch execution handoff package records linked to controlled switch requests.
+- Operator run sheet, communications plan, observation window, rollback owner acceptance, and execution freeze proof checks.
+- Admin Operations switch handoff panel with blockers and evidence references.
+- Tests proving missing ready switch requests, run sheets, communications plans, observation windows, rollback owner acceptance, or freeze proof block handoff readiness.
+
+Exit gate:
+
+- Switch handoff package APIs and UI are tested.
+- Handoff packages are evidence-only.
+- No switch is changed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

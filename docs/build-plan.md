@@ -432,6 +432,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing switch reviews, config snapshots, reviewer evidence, or retention references block readiness.
 - The prototype does not change adapter switch configuration.
 
+## Current Controlled Switch Configuration Request Slice
+
+- API records controlled switch configuration requests linked to switch-state audit packages.
+- Requests require operator confirmation, second reviewer acceptance, rollback timer, final dry-run proof, and retention references.
+- Admin Operations surfaces controlled switch request readiness, evidence references, and blockers.
+- Missing ready audit packages, operator confirmation, reviewer acceptance, dry-run proof, or retention references block readiness.
+- The prototype does not change adapter switch configuration.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

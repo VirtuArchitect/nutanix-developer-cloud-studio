@@ -40,6 +40,7 @@ import {
   type ControlledLabExecutionRehearsalPacket,
   type ControlledLabDryRunWindowRecord,
   type ControlledLabReleaseRunbookRecord,
+  type ControlledSwitchConfigurationRequest,
   type CredentialReferenceDiagnostic,
   type Environment,
   type ApprovalRequest,
@@ -119,6 +120,7 @@ import {
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
+  createControlledSwitchConfigurationRequestViaApi,
   createExecutionBrokerDispatchApprovalViaApi,
   createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
@@ -160,6 +162,7 @@ import {
   fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchControlledLabDryRunWindowsFromApi,
   fetchControlledLabReleaseRunbooksFromApi,
+  fetchControlledSwitchConfigurationRequestsFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
@@ -277,6 +280,7 @@ export function App() {
   const [realAdapterLabScopeActivations, setRealAdapterLabScopeActivations] = useState<RealAdapterLabScopeActivation[]>([]);
   const [manualRealAdapterSwitchReviews, setManualRealAdapterSwitchReviews] = useState<ManualRealAdapterSwitchReview[]>([]);
   const [realAdapterSwitchStateAuditPackages, setRealAdapterSwitchStateAuditPackages] = useState<RealAdapterSwitchStateAuditPackage[]>([]);
+  const [controlledSwitchConfigurationRequests, setControlledSwitchConfigurationRequests] = useState<ControlledSwitchConfigurationRequest[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -375,6 +379,7 @@ export function App() {
             apiRealAdapterLabScopeActivations,
             apiManualRealAdapterSwitchReviews,
             apiRealAdapterSwitchStateAuditPackages,
+            apiControlledSwitchConfigurationRequests,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -428,6 +433,7 @@ export function App() {
             fetchRealAdapterLabScopeActivationsFromApi(),
             fetchManualRealAdapterSwitchReviewsFromApi(),
             fetchRealAdapterSwitchStateAuditPackagesFromApi(),
+            fetchControlledSwitchConfigurationRequestsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -483,6 +489,7 @@ export function App() {
             setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
             setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
             setRealAdapterSwitchStateAuditPackages(apiRealAdapterSwitchStateAuditPackages);
+            setControlledSwitchConfigurationRequests(apiControlledSwitchConfigurationRequests);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -658,6 +665,7 @@ export function App() {
       apiRealAdapterLabScopeActivations,
       apiManualRealAdapterSwitchReviews,
       apiRealAdapterSwitchStateAuditPackages,
+      apiControlledSwitchConfigurationRequests,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -711,6 +719,7 @@ export function App() {
       fetchRealAdapterLabScopeActivationsFromApi(),
       fetchManualRealAdapterSwitchReviewsFromApi(),
       fetchRealAdapterSwitchStateAuditPackagesFromApi(),
+      fetchControlledSwitchConfigurationRequestsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -765,6 +774,7 @@ export function App() {
     setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
     setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
     setRealAdapterSwitchStateAuditPackages(apiRealAdapterSwitchStateAuditPackages);
+    setControlledSwitchConfigurationRequests(apiControlledSwitchConfigurationRequests);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1681,6 +1691,28 @@ export function App() {
     ]);
   }
 
+  async function requestControlledSwitchConfiguration() {
+    const auditPackage = realAdapterSwitchStateAuditPackages[0];
+    if (!auditPackage) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const switchRequest = await createControlledSwitchConfigurationRequestViaApi({ auditPackageId: auditPackage.id });
+      await refreshApiState();
+      setControlledSwitchConfigurationRequests((current) => [
+        switchRequest,
+        ...current.filter((item) => item.id !== switchRequest.id),
+      ]);
+      return;
+    }
+
+    setControlledSwitchConfigurationRequests((current) => [
+      createMockControlledSwitchConfigurationRequest(auditPackage, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1919,6 +1951,7 @@ export function App() {
             realAdapterLabScopeActivations={realAdapterLabScopeActivations}
             manualRealAdapterSwitchReviews={manualRealAdapterSwitchReviews}
             realAdapterSwitchStateAuditPackages={realAdapterSwitchStateAuditPackages}
+            controlledSwitchConfigurationRequests={controlledSwitchConfigurationRequests}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1962,6 +1995,7 @@ export function App() {
             recordRealAdapterLabScopeActivation={recordRealAdapterLabScopeActivation}
             recordManualRealAdapterSwitchReview={recordManualRealAdapterSwitchReview}
             prepareRealAdapterSwitchStateAuditPackage={prepareRealAdapterSwitchStateAuditPackage}
+            requestControlledSwitchConfiguration={requestControlledSwitchConfiguration}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2488,6 +2522,7 @@ function AdminView({
   realAdapterLabScopeActivations,
   manualRealAdapterSwitchReviews,
   realAdapterSwitchStateAuditPackages,
+  controlledSwitchConfigurationRequests,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2531,6 +2566,7 @@ function AdminView({
   recordRealAdapterLabScopeActivation,
   recordManualRealAdapterSwitchReview,
   prepareRealAdapterSwitchStateAuditPackage,
+  requestControlledSwitchConfiguration,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2588,6 +2624,7 @@ function AdminView({
   realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
   manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
   realAdapterSwitchStateAuditPackages: RealAdapterSwitchStateAuditPackage[];
+  controlledSwitchConfigurationRequests: ControlledSwitchConfigurationRequest[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2634,6 +2671,7 @@ function AdminView({
   recordRealAdapterLabScopeActivation: () => void;
   recordManualRealAdapterSwitchReview: () => void;
   prepareRealAdapterSwitchStateAuditPackage: () => void;
+  requestControlledSwitchConfiguration: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2956,6 +2994,12 @@ function AdminView({
             <RealAdapterSwitchStateAuditPackagePanel
               packages={realAdapterSwitchStateAuditPackages}
               prepareRealAdapterSwitchStateAuditPackage={prepareRealAdapterSwitchStateAuditPackage}
+            />
+          </Panel>
+          <Panel title="Controlled switch requests" action={`${controlledSwitchConfigurationRequests.length} requests`}>
+            <ControlledSwitchConfigurationRequestPanel
+              requests={controlledSwitchConfigurationRequests}
+              requestControlledSwitchConfiguration={requestControlledSwitchConfiguration}
             />
           </Panel>
         </div>
@@ -4879,6 +4923,73 @@ function RealAdapterSwitchStateAuditPackagePanel({
             <span>Rollback timer: {latest.rollbackTimerMinutes} minutes</span>
             <span>Retention: {latest.retentionReference || "missing"}</span>
             <span>Activation: {latest.activationId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledSwitchConfigurationRequestPanel({
+  requests,
+  requestControlledSwitchConfiguration,
+}: {
+  requests: ControlledSwitchConfigurationRequest[];
+  requestControlledSwitchConfiguration: () => void;
+}) {
+  const latest = requests[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Controlled switch request</strong>
+          <span>Records operator confirmation, reviewer acceptance, final dry-run proof, rollback timer, and retention evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={requestControlledSwitchConfiguration}>
+          <LockKeyhole size={15} />
+          Request controlled switch
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled switch configuration request has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.auditPackageId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for controlled switch request review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Operator" value={latest.operatorConfirmation || "missing"} passed={Boolean(latest.operatorConfirmation)} />
+            <CheckLine icon={ShieldCheck} label="Reviewer" value={latest.secondReviewerAcceptance || "missing"} passed={Boolean(latest.secondReviewerAcceptance)} />
+            <CheckLine icon={Archive} label="Dry-run proof" value={latest.finalDryRunProofReference || "missing"} passed={Boolean(latest.finalDryRunProofReference)} />
+            <CheckLine icon={LockKeyhole} label="Switch" value="Unchanged" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Controlled switch evidence</strong>
+            <span>Rollback timer: {latest.rollbackTimerMinutes} minutes</span>
+            <span>Retention: {latest.retentionReference || "missing"}</span>
+            <span>Switch review: {latest.switchReviewId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -8571,6 +8682,85 @@ function createMockRealAdapterSwitchStateAuditPackage(
       `Kill switch: ${switchReview.killSwitch.name}=${switchReview.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: switchReview.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockControlledSwitchConfigurationRequest(
+  auditPackage: RealAdapterSwitchStateAuditPackage,
+  actor: string
+): ControlledSwitchConfigurationRequest {
+  const operatorConfirmation = `operator-confirmation-${auditPackage.provider.toLowerCase()}.md`;
+  const secondReviewerAcceptance = `second-reviewer-acceptance-${auditPackage.provider.toLowerCase()}.md`;
+  const finalDryRunProofReference = `final-switch-dry-run-${auditPackage.provider.toLowerCase()}.json`;
+  const rollbackTimerMinutes = auditPackage.rollbackTimerMinutes;
+  const retentionReference = auditPackage.retentionReference;
+  const checks = [
+    {
+      name: "Switch-state audit package ready",
+      passed: auditPackage.status === "Ready for switch-state audit review",
+      detail: `${auditPackage.id} is ${auditPackage.status}.`,
+    },
+    {
+      name: "Operator confirmation linked",
+      passed: Boolean(operatorConfirmation),
+      detail: operatorConfirmation,
+    },
+    {
+      name: "Second reviewer acceptance linked",
+      passed: Boolean(secondReviewerAcceptance),
+      detail: secondReviewerAcceptance,
+    },
+    {
+      name: "Rollback timer retained",
+      passed: rollbackTimerMinutes >= 15,
+      detail: `${rollbackTimerMinutes} minute rollback timer.`,
+    },
+    {
+      name: "Final dry-run proof linked",
+      passed: Boolean(finalDryRunProofReference),
+      detail: finalDryRunProofReference,
+    },
+    {
+      name: "Retention reference linked",
+      passed: Boolean(retentionReference),
+      detail: retentionReference,
+    },
+    {
+      name: "Prototype remains non-mutating",
+      passed: !auditPackage.provisioningEnabled && !auditPackage.killSwitch.enabled,
+      detail: `${auditPackage.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `controlled-switch-configuration-request-${auditPackage.provider.toLowerCase()}-${Date.now()}`,
+    provider: auditPackage.provider,
+    auditPackageId: auditPackage.id,
+    switchReviewId: auditPackage.switchReviewId,
+    activationId: auditPackage.activationId,
+    idempotencyKey: auditPackage.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for controlled switch request review" : "Blocked",
+    requestedBy: actor,
+    operatorConfirmation,
+    secondReviewerAcceptance,
+    finalDryRunProofReference,
+    rollbackTimerMinutes,
+    retentionReference,
+    checks,
+    evidence: [
+      `Audit package: ${auditPackage.id}.`,
+      `Switch review: ${auditPackage.switchReviewId}.`,
+      `Activation: ${auditPackage.activationId}.`,
+      `Operator confirmation: ${operatorConfirmation}.`,
+      `Second reviewer acceptance: ${secondReviewerAcceptance}.`,
+      `Final dry-run proof: ${finalDryRunProofReference}.`,
+      `Rollback timer: ${rollbackTimerMinutes} minutes.`,
+      `Retention reference: ${retentionReference}.`,
+      `Kill switch: ${auditPackage.killSwitch.name}=${auditPackage.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: auditPackage.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

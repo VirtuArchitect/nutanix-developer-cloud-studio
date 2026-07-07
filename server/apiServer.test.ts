@@ -891,6 +891,11 @@ describe("api server", () => {
       body: JSON.stringify({ switchReviewId: switchReview.data.id }),
     });
     const switchStateAuditPackages = await requestJson("/api/real-adapter/switch-state-audit-packages");
+    const controlledSwitchRequest = await requestJson("/api/real-adapter/controlled-switch-requests", {
+      method: "POST",
+      body: JSON.stringify({ auditPackageId: switchStateAuditPackage.data.id }),
+    });
+    const controlledSwitchRequests = await requestJson("/api/real-adapter/controlled-switch-requests");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1234,6 +1239,24 @@ describe("api server", () => {
     expect(switchStateAuditPackages.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: switchStateAuditPackage.data.id })])
     );
+    expect(controlledSwitchRequest.data).toMatchObject({
+      provider: "NDB",
+      auditPackageId: switchStateAuditPackage.data.id,
+      switchReviewId: switchReview.data.id,
+      activationId: labScopeActivation.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(controlledSwitchRequest.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Switch-state audit package ready", passed: false }),
+        expect.objectContaining({ name: "Prototype remains non-mutating", passed: true }),
+      ])
+    );
+    expect(controlledSwitchRequests.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: controlledSwitchRequest.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1256,6 +1279,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "real-adapter.lab-scope-activation.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.switch-review.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.switch-state-audit.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.controlled-switch-request.recorded", target: "NDB" }),
       ])
     );
   });

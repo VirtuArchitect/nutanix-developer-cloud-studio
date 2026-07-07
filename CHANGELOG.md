@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.27.0-real-adapter-switch-state-audit-package`.
+This project uses release tags for public milestones. The current release is `v2.28.0-controlled-switch-configuration-request`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add controlled switch configuration request records after switch-state audit packages are complete.
+- Add switch execution handoff packages after controlled switch request evidence is complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.28.0-controlled-switch-configuration-request] - 2026-07-07
+
+### Added
+
+- Controlled switch configuration request records linked to switch-state audit packages.
+- API endpoints for listing and recording controlled switch requests.
+- Admin Operations controlled switch request panel.
+- Operator confirmation, second reviewer acceptance, rollback timer, final dry-run proof, and retention reference checks.
+- Tests proving missing audit packages or incomplete controlled switch evidence block readiness.
+
+### Notes
+
+- Controlled switch requests are evidence-only.
+- The prototype does not change real-adapter switch state.
 
 ## [v2.27.0-real-adapter-switch-state-audit-package] - 2026-07-07
 
