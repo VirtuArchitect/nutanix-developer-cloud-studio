@@ -224,12 +224,16 @@ Required roles: `Platform Admin` to request a gate review; `Platform Admin` or `
 - `GET /api/lab-authorization/diagnostics`
 - `GET /api/vm-lifecycle/proofs`
 - `POST /api/vm-lifecycle/proofs`
+- `GET /api/vm-sandbox/rollback-destroy-proofs`
+- `POST /api/vm-sandbox/rollback-destroy-proofs`
 
 Lab authorization scopes record the approved project, cluster, network, target environment, provider coverage, target endpoint references, test window, allowed actions, excluded actions, evidence references, rollback owner, and pentest scope evidence required before controlled create work can be considered.
 
 `GET /api/lab-authorization/diagnostics` returns scope readiness checks, expiry, provider coverage, and whether the latest scope is ready for adapter review. Diagnostics store references only; do not place credentials, tokens, or pentest report contents in scope records.
 
 VM lifecycle proofs record gate, rollback, and destroy evidence after an approved controlled gate. These records do not perform real infrastructure actions.
+
+Rollback/destroy proof records attach to VM sandbox dry-run plans and check backup/export evidence, owner notification, rollback owner, teardown order, inventory reconciliation, and audit export readiness. Controlled provisioning gate review remains blocked until a ready rollback/destroy proof exists for the dry-run.
 
 Required role: `Platform Admin` to record evidence.
 

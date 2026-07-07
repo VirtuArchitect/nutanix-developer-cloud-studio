@@ -1,6 +1,7 @@
 import type { ControlledProvisioningDecision, ControlledProvisioningGate, VmSandboxDryRunPlan } from "../src/data/cloudStudioDomain";
 import type { ApiState, CreateControlledProvisioningGateRequest } from "./types";
 import { getActiveLabAuthorizationScope } from "./authorizationEvidence";
+import { getReadyRollbackDestroyProof } from "./rollbackDestroyProof";
 
 export class ControlledProvisioningError extends Error {
   constructor(
@@ -66,7 +67,8 @@ export function createControlledProvisioningGate(
       mutationKillSwitch: process.env.NDC_CONTROLLED_PROVISIONING_ENABLED === "true",
       updatedAt: now,
     },
-    dryRun
+    dryRun,
+    state
   );
 }
 
@@ -98,7 +100,7 @@ export function decideControlledProvisioningGate(
     updatedAt: new Date().toISOString(),
   };
 
-  return evaluateGate(updated, dryRun);
+  return evaluateGate(updated, dryRun, state);
 }
 
 function findDryRunPlan(state: ApiState, input: CreateControlledProvisioningGateRequest) {
@@ -115,10 +117,11 @@ function findDryRunPlan(state: ApiState, input: CreateControlledProvisioningGate
   return plan;
 }
 
-function evaluateGate(gate: ControlledProvisioningGate, dryRun: VmSandboxDryRunPlan): ControlledProvisioningGate {
+function evaluateGate(gate: ControlledProvisioningGate, dryRun: VmSandboxDryRunPlan, state?: ApiState): ControlledProvisioningGate {
   const dryRunPassed = dryRun.validations.every((validation) => validation.passed);
-  const rollbackReady = dryRun.rollbackPlan.length > 0;
-  const destroyReady = gate.destroyPlan.length > 0;
+  const rollbackDestroyProof = state ? getReadyRollbackDestroyProof(state, dryRun.id) : undefined;
+  const rollbackReady = dryRun.rollbackPlan.length > 0 && Boolean(rollbackDestroyProof);
+  const destroyReady = gate.destroyPlan.length > 0 && Boolean(rollbackDestroyProof);
   const approvalReady = gate.approval.status === "Approved";
   const scopeReady = gate.pentestScope.present && gate.pentestScope.structurallyValid;
 
@@ -131,12 +134,12 @@ function evaluateGate(gate: ControlledProvisioningGate, dryRun: VmSandboxDryRunP
     {
       name: "Rollback plan ready",
       passed: rollbackReady,
-      detail: rollbackReady ? "Rollback evidence is attached to the dry-run." : "Rollback evidence is missing.",
+      detail: rollbackReady ? `Rollback/destroy proof ${rollbackDestroyProof?.id} is ready.` : "Rollback/destroy proof is required.",
     },
     {
       name: "Destroy plan ready",
       passed: destroyReady,
-      detail: destroyReady ? "Destroy workflow expectations are documented." : "Destroy workflow expectations are missing.",
+      detail: destroyReady ? `Destroy proof ${rollbackDestroyProof?.id} is ready.` : "Destroy proof is required.",
     },
     {
       name: "Manual approval recorded",

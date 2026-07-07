@@ -448,6 +448,23 @@ Exit gate:
 - Audit records are produced for proof review.
 - Real mutation calls remain disabled.
 
+### v2.6.0-controlled-create-adapter-authorization-envelope
+
+Goal: define the final authorization envelope for a future narrowly scoped AHV create adapter without enabling live mutation yet.
+
+Build:
+
+- Consolidated authorization envelope combining lab scope, rollback/destroy proof, controlled gate approval, lifecycle proof, adapter enablement, audit export, and pentest gate status.
+- API endpoint and Admin Control Plane panel that shows exactly which evidence blocks live adapter authorization.
+- Tests proving the envelope remains blocked when active pentest scope is absent.
+- Runbook for the future adapter implementation, including allowed create fields, rollback trigger, kill switch, and emergency stop procedure.
+
+Exit gate:
+
+- Authorization envelope APIs and UI are tested.
+- Missing active pentest scope blocks live adapter authorization.
+- Real mutation calls remain disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

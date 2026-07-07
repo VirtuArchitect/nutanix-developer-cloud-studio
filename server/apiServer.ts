@@ -49,6 +49,10 @@ import {
   createLifecycleOperationRecord,
   PrivateCloudOperationError,
 } from "./privateCloudOperations";
+import {
+  createRollbackDestroyProofRecord,
+  RollbackDestroyProofError,
+} from "./rollbackDestroyProof";
 import { createProductionReadinessReview } from "./productionReadiness";
 import {
   createDisabledRealPrismInventoryAdapter,
@@ -90,6 +94,7 @@ import type {
   CreateControlledProvisioningGateRequest,
   CreatePlatformServiceRequest,
   CreatePlatformServicePreflightRunRequest,
+  CreateRollbackDestroyProofRequest,
   CreateVmLifecycleProofRequest,
   CreateVmSandboxDryRunRequest,
   RegistryAction,
@@ -153,6 +158,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof AdapterEnablementError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof RollbackDestroyProofError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -344,6 +359,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/vm-lifecycle/proofs") {
     sendJson(response, 200, { data: state.vmLifecycleProofs });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/vm-sandbox/rollback-destroy-proofs") {
+    sendJson(response, 200, { data: state.rollbackDestroyProofs });
     return;
   }
 
@@ -848,6 +868,25 @@ async function routeApi(
       }
       throw error;
     }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/vm-sandbox/rollback-destroy-proofs") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateRollbackDestroyProofRequest>(request);
+    const proof = createRollbackDestroyProofRecord(state, body, context.session.user);
+    state.rollbackDestroyProofs = [
+      proof,
+      ...state.rollbackDestroyProofs.filter((item) => item.dryRunPlanId !== proof.dryRunPlanId),
+    ];
+    addAuditEvent(state, "vm-sandbox.rollback-destroy-proof.recorded", context.session.user, proof.environmentName, {
+      status: proof.status,
+      rollbackOwner: proof.rollbackOwner,
+      checksPassed: proof.checks.every((check) => check.passed),
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: proof });
     return;
   }
 

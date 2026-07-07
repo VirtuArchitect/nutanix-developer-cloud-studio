@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.4.0-lab-scope-pentest-evidence-hardening",
+  "version": "2.5.0-preflight-destroy-rollback-hardening",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

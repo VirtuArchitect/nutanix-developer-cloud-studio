@@ -25,6 +25,7 @@ import type {
   ProductionReadinessReview,
   RegistryStatus,
   ResourceProfile,
+  RollbackDestroyProofRecord,
   Template,
   TemplateGovernance,
   TemplateRegistryEntry,
@@ -58,6 +59,7 @@ export type ApiState = {
   controlledProvisioningGates: ControlledProvisioningGate[];
   platformServiceRequests: PlatformServiceRequest[];
   vmLifecycleProofs: VmLifecycleProof[];
+  rollbackDestroyProofs: RollbackDestroyProofRecord[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   productionReadinessReviews: ProductionReadinessReview[];
@@ -129,6 +131,17 @@ export type CreateVmLifecycleProofRequest = {
   rollbackVerified?: boolean;
   destroyVerified?: boolean;
   evidence?: string[];
+};
+
+export type CreateRollbackDestroyProofRequest = {
+  dryRunPlanId?: string;
+  backupEvidenceReference?: string;
+  ownerNotificationReference?: string;
+  inventoryReconciliationReference?: string;
+  rollbackOwner?: string;
+  teardownOrder?: string[];
+  stopConditions?: string[];
+  evidenceReferences?: string[];
 };
 
 export type CreateAhvControlledProvisioningRunRequest = {

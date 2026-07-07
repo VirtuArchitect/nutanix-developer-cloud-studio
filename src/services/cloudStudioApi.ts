@@ -26,6 +26,7 @@ import type {
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
   ResourceProfile,
+  RollbackDestroyProofRecord,
   SessionDiagnostics,
   TemplateRegistryEntry,
   SystemStatus,
@@ -239,6 +240,10 @@ export async function fetchVmLifecycleProofsFromApi() {
   return fetchJson<VmLifecycleProof[]>("/api/vm-lifecycle/proofs");
 }
 
+export async function fetchRollbackDestroyProofsFromApi() {
+  return fetchJson<RollbackDestroyProofRecord[]>("/api/vm-sandbox/rollback-destroy-proofs");
+}
+
 export async function fetchAhvControlledProvisioningRunsFromApi() {
   return fetchJson<AhvControlledProvisioningRun[]>("/api/ahv/controlled-provisioning/runs");
 }
@@ -377,6 +382,22 @@ export async function createVmLifecycleProofViaApi(payload: {
   evidence?: string[];
 }) {
   return fetchJson<VmLifecycleProof>("/api/vm-lifecycle/proofs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createRollbackDestroyProofViaApi(payload: {
+  dryRunPlanId?: string;
+  backupEvidenceReference?: string;
+  ownerNotificationReference?: string;
+  inventoryReconciliationReference?: string;
+  rollbackOwner?: string;
+  teardownOrder?: string[];
+  stopConditions?: string[];
+  evidenceReferences?: string[];
+}) {
+  return fetchJson<RollbackDestroyProofRecord>("/api/vm-sandbox/rollback-destroy-proofs", {
     method: "POST",
     body: JSON.stringify(payload),
   });

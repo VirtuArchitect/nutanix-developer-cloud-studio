@@ -406,6 +406,25 @@ export type VmLifecycleProof = {
   createdAt: string;
 };
 
+export type RollbackDestroyProofRecord = {
+  id: string;
+  dryRunPlanId: string;
+  environmentName: string;
+  status: "Blocked" | "Ready for controlled create";
+  requestedBy: string;
+  rollbackOwner: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  teardownOrder: string[];
+  stopConditions: string[];
+  evidenceReferences: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type AhvControlledProvisioningRun = {
   id: string;
   gateId: string;

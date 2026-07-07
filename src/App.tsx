@@ -61,6 +61,7 @@ import {
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
+  type RollbackDestroyProofRecord,
   type SessionDiagnostics,
   type SystemStatus,
   type TemplateRegistryEntry,
@@ -95,6 +96,7 @@ import {
   createPlatformServiceRequestViaApi,
   createPlatformServicePreflightRunViaApi,
   createProductionReadinessReviewViaApi,
+  createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
@@ -122,6 +124,7 @@ import {
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
+  fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSessionDiagnosticsFromApi,
@@ -187,6 +190,7 @@ export function App() {
   const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
+  const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
   const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
   const [lifecycleOperations, setLifecycleOperations] = useState<LifecycleOperationRecord[]>([]);
@@ -262,6 +266,7 @@ export function App() {
             apiPlatformServiceRequests,
             apiPlatformServicePreflightRuns,
             apiVmLifecycleProofs,
+            apiRollbackDestroyProofs,
             apiAhvControlledProvisioningRuns,
             apiProductionReadinessReviews,
             apiLifecycleOperations,
@@ -292,6 +297,7 @@ export function App() {
             fetchPlatformServiceRequestsFromApi(),
             fetchPlatformServicePreflightRunsFromApi(),
             fetchVmLifecycleProofsFromApi(),
+            fetchRollbackDestroyProofsFromApi(),
             fetchAhvControlledProvisioningRunsFromApi(),
             fetchProductionReadinessReviewsFromApi(),
             fetchLifecycleOperationsFromApi(),
@@ -324,6 +330,7 @@ export function App() {
             setPlatformServiceRequests(apiPlatformServiceRequests);
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setVmLifecycleProofs(apiVmLifecycleProofs);
+            setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
             setProductionReadinessReviews(apiProductionReadinessReviews);
             setLifecycleOperations(apiLifecycleOperations);
@@ -476,6 +483,7 @@ export function App() {
       apiPlatformServiceRequests,
       apiPlatformServicePreflightRuns,
       apiVmLifecycleProofs,
+      apiRollbackDestroyProofs,
       apiAhvControlledProvisioningRuns,
       apiProductionReadinessReviews,
       apiLifecycleOperations,
@@ -506,6 +514,7 @@ export function App() {
       fetchPlatformServiceRequestsFromApi(),
       fetchPlatformServicePreflightRunsFromApi(),
       fetchVmLifecycleProofsFromApi(),
+      fetchRollbackDestroyProofsFromApi(),
       fetchAhvControlledProvisioningRunsFromApi(),
       fetchProductionReadinessReviewsFromApi(),
       fetchLifecycleOperationsFromApi(),
@@ -537,6 +546,7 @@ export function App() {
     setPlatformServiceRequests(apiPlatformServiceRequests);
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setVmLifecycleProofs(apiVmLifecycleProofs);
+    setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
     setProductionReadinessReviews(apiProductionReadinessReviews);
     setLifecycleOperations(apiLifecycleOperations);
@@ -757,7 +767,7 @@ export function App() {
     }
 
     setControlledProvisioningGates((current) => [
-      createMockControlledProvisioningGate(latest, session.user),
+      createMockControlledProvisioningGate(latest, rollbackDestroyProofs, session.user),
       ...current.filter((item) => item.dryRunPlanId !== latest.id),
     ]);
   }
@@ -789,7 +799,7 @@ export function App() {
                     : "Operator rejected controlled create.",
               },
               updatedAt: new Date().toISOString(),
-            })
+            }, rollbackDestroyProofs)
           : gate
       )
     );
@@ -841,6 +851,35 @@ export function App() {
     }
 
     setVmLifecycleProofs((current) => [createMockVmLifecycleProof(gate, session.user), ...current]);
+  }
+
+  async function recordRollbackDestroyProof() {
+    const latest = vmSandboxDryRuns[0];
+    if (!latest) {
+      await createVmSandboxDryRun();
+      return;
+    }
+
+    const payload = {
+      dryRunPlanId: latest.id,
+      backupEvidenceReference: "audit-export-manifest",
+      ownerNotificationReference: "owner-notification-record",
+      inventoryReconciliationReference: "prism-inventory-reconciliation",
+      rollbackOwner: "Cloud Operations",
+      evidenceReferences: ["audit-export-manifest", "owner-notification-record", "prism-inventory-reconciliation"],
+    };
+
+    if (apiHealth.mode === "api") {
+      const proof = await createRollbackDestroyProofViaApi(payload);
+      await refreshApiState();
+      setRollbackDestroyProofs((current) => [proof, ...current.filter((item) => item.id !== proof.id)]);
+      return;
+    }
+
+    setRollbackDestroyProofs((current) => [
+      createMockRollbackDestroyProof(latest, auditExports, session.user),
+      ...current.filter((item) => item.dryRunPlanId !== latest.id),
+    ]);
   }
 
   async function runAhvControlledProvisioningPreflight() {
@@ -1174,6 +1213,7 @@ export function App() {
             platformServiceRequests={platformServiceRequests}
             platformServicePreflightRuns={platformServicePreflightRuns}
             vmLifecycleProofs={vmLifecycleProofs}
+            rollbackDestroyProofs={rollbackDestroyProofs}
             ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
             productionReadinessReviews={productionReadinessReviews}
             lifecycleOperations={lifecycleOperations}
@@ -1193,6 +1233,7 @@ export function App() {
             requestControlledProvisioningGate={requestControlledProvisioningGate}
             decideControlledProvisioningGate={decideControlledProvisioningGate}
             recordVmLifecycleProof={recordVmLifecycleProof}
+            recordRollbackDestroyProof={recordRollbackDestroyProof}
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
@@ -1698,6 +1739,7 @@ function AdminView({
   platformServiceRequests,
   platformServicePreflightRuns,
   vmLifecycleProofs,
+  rollbackDestroyProofs,
   ahvControlledProvisioningRuns,
   productionReadinessReviews,
   lifecycleOperations,
@@ -1717,6 +1759,7 @@ function AdminView({
   requestControlledProvisioningGate,
   decideControlledProvisioningGate,
   recordVmLifecycleProof,
+  recordRollbackDestroyProof,
   runAhvControlledProvisioningPreflight,
   createPlatformServiceRequest,
   runPlatformServicePreflight,
@@ -1753,6 +1796,7 @@ function AdminView({
   platformServiceRequests: PlatformServiceRequest[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   vmLifecycleProofs: VmLifecycleProof[];
+  rollbackDestroyProofs: RollbackDestroyProofRecord[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
@@ -1775,6 +1819,7 @@ function AdminView({
   requestControlledProvisioningGate: () => void;
   decideControlledProvisioningGate: (gateId: string, decision: "approve" | "reject") => void;
   recordVmLifecycleProof: () => void;
+  recordRollbackDestroyProof: () => void;
   runAhvControlledProvisioningPreflight: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
@@ -1917,6 +1962,12 @@ function AdminView({
               proofs={vmLifecycleProofs}
               recordLabAuthorizationScope={recordLabAuthorizationScope}
               recordVmLifecycleProof={recordVmLifecycleProof}
+            />
+          </Panel>
+          <Panel title="Rollback and destroy proof" action={`${rollbackDestroyProofs.length} records`}>
+            <RollbackDestroyProofPanel
+              proofs={rollbackDestroyProofs}
+              recordRollbackDestroyProof={recordRollbackDestroyProof}
             />
           </Panel>
           <Panel title="Controlled provisioning gate" action={`${controlledProvisioningGates.length} reviews`}>
@@ -2949,6 +3000,66 @@ function ControlledProvisioningGatePanel({
   );
 }
 
+function RollbackDestroyProofPanel({
+  proofs,
+  recordRollbackDestroyProof,
+}: {
+  proofs: RollbackDestroyProofRecord[];
+  recordRollbackDestroyProof: () => void;
+}) {
+  const latest = proofs[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Rollback and destroy rehearsal</strong>
+          <span>Requires backup/export evidence, owner notice, teardown order, inventory reconciliation, and audit export readiness.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordRollbackDestroyProof}>
+          <Play size={15} />
+          Record rollback proof
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No rollback and destroy proof has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.environmentName}</strong>
+              <span>Rollback owner {latest.rollbackOwner}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for controlled create" ? "approval" : "failed"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Stop conditions</strong>
+            {latest.stopConditions.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AhvControlledPreflightPanel({
   runs,
   runAhvControlledProvisioningPreflight,
@@ -3870,6 +3981,7 @@ function createMockVmSandboxDryRun(
 
 function createMockControlledProvisioningGate(
   dryRun: VmSandboxDryRunPlan,
+  rollbackDestroyProofs: RollbackDestroyProofRecord[],
   actor: string
 ): ControlledProvisioningGate {
   return evaluateMockControlledProvisioningGate({
@@ -3900,7 +4012,7 @@ function createMockControlledProvisioningGate(
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-  });
+  }, rollbackDestroyProofs);
 }
 
 function createMockLabAuthorizationScope(actor: string, config: PlatformConfig): LabAuthorizationScope {
@@ -4039,6 +4151,72 @@ function createMockVmLifecycleProof(gate: ControlledProvisioningGate, actor: str
   };
 }
 
+function createMockRollbackDestroyProof(
+  dryRun: VmSandboxDryRunPlan,
+  auditExports: AuditExportRecord[],
+  actor: string
+): RollbackDestroyProofRecord {
+  const auditExportReady = auditExports.length > 0;
+  const rollbackOwner = "Cloud Operations";
+  const teardownOrder = [
+    "Disable owner access and routes before power state changes.",
+    "Power off the VM before deletion.",
+    "Delete VM and verify inventory reconciliation.",
+  ];
+  const stopConditions = [
+    "Stop if owner notification is missing.",
+    "Stop if inventory reconciliation fails.",
+    "Stop if audit export evidence is unavailable.",
+  ];
+  const checks = [
+    {
+      name: "Backup/export evidence referenced",
+      passed: true,
+      detail: "audit-export-manifest",
+    },
+    {
+      name: "Owner notification referenced",
+      passed: true,
+      detail: "owner-notification-record",
+    },
+    {
+      name: "Rollback owner assigned",
+      passed: true,
+      detail: rollbackOwner,
+    },
+    {
+      name: "Teardown order documented",
+      passed: true,
+      detail: `${teardownOrder.length} teardown steps documented.`,
+    },
+    {
+      name: "Inventory reconciliation referenced",
+      passed: true,
+      detail: "prism-inventory-reconciliation",
+    },
+    {
+      name: "Audit export ready",
+      passed: auditExportReady,
+      detail: auditExportReady ? `${auditExports.length} audit export record exists.` : "Audit export must be prepared.",
+    },
+  ];
+
+  return {
+    id: `rollback-destroy-${dryRun.environmentName}-${Date.now()}`,
+    dryRunPlanId: dryRun.id,
+    environmentName: dryRun.environmentName,
+    status: checks.every((check) => check.passed) ? "Ready for controlled create" : "Blocked",
+    requestedBy: actor,
+    rollbackOwner,
+    checks,
+    teardownOrder,
+    stopConditions,
+    evidenceReferences: ["audit-export-manifest", "owner-notification-record", "prism-inventory-reconciliation"],
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 function createMockAhvControlledProvisioningRun(
   gate: ControlledProvisioningGate,
   dryRuns: VmSandboxDryRunPlan[],
@@ -4097,9 +4275,15 @@ function createMockAhvControlledProvisioningRun(
   };
 }
 
-function evaluateMockControlledProvisioningGate(gate: ControlledProvisioningGate): ControlledProvisioningGate {
-  const rollbackReady = gate.rollbackPlan.length > 0;
-  const destroyReady = gate.destroyPlan.length > 0;
+function evaluateMockControlledProvisioningGate(
+  gate: ControlledProvisioningGate,
+  rollbackDestroyProofs: RollbackDestroyProofRecord[] = []
+): ControlledProvisioningGate {
+  const rollbackDestroyProof = rollbackDestroyProofs.find(
+    (proof) => proof.dryRunPlanId === gate.dryRunPlanId && proof.status === "Ready for controlled create"
+  );
+  const rollbackReady = gate.rollbackPlan.length > 0 && Boolean(rollbackDestroyProof);
+  const destroyReady = gate.destroyPlan.length > 0 && Boolean(rollbackDestroyProof);
   const approvalReady = gate.approval.status === "Approved";
   const scopeReady = gate.pentestScope.present && gate.pentestScope.structurallyValid;
   const checks = [
@@ -4111,12 +4295,12 @@ function evaluateMockControlledProvisioningGate(gate: ControlledProvisioningGate
     {
       name: "Rollback plan ready",
       passed: rollbackReady,
-      detail: rollbackReady ? "Rollback evidence is attached to the dry-run." : "Rollback evidence is missing.",
+      detail: rollbackReady ? `Rollback/destroy proof ${rollbackDestroyProof?.id} is ready.` : "Rollback/destroy proof is required.",
     },
     {
       name: "Destroy plan ready",
       passed: destroyReady,
-      detail: destroyReady ? "Destroy workflow expectations are documented." : "Destroy workflow expectations are missing.",
+      detail: destroyReady ? `Destroy proof ${rollbackDestroyProof?.id} is ready.` : "Destroy proof is required.",
     },
     {
       name: "Manual approval recorded",

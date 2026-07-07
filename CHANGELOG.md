@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.4.0-lab-scope-pentest-evidence-hardening`.
+This project uses release tags for public milestones. The current release is `v2.5.0-preflight-destroy-rollback-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,22 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.5.0-preflight-destroy-rollback-hardening] - 2026-07-07
+
+### Added
+
+- Rollback/destroy proof records tied to VM sandbox dry-run plans.
+- API endpoints for listing and recording rollback/destroy proof evidence.
+- Controlled provisioning gate now requires ready rollback/destroy proof before manual approval can promote to mutation-disabled readiness.
+- Admin Control Plane panel for backup/export evidence, owner notification, teardown order, inventory reconciliation, and stop conditions.
+- Tests and smoke coverage for the rollback/destroy proof gate.
+
+### Notes
+
+- Missing rollback or destroy evidence blocks controlled create promotion.
+- Rollback/destroy proof records are evidence-only and do not mutate AHV resources.
+- Real Nutanix mutation operations remain disabled.
 
 ## [v2.4.0-lab-scope-pentest-evidence-hardening] - 2026-07-07
 

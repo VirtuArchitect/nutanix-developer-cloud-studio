@@ -218,6 +218,14 @@
 - Make expired or incomplete scope evidence block adapter enablement review - done
 - Keep pentest evidence metadata-only and real mutation disabled - done
 
+## Phase 27 - Rollback Destroy Proof Hardening (`v2.5.0-preflight-destroy-rollback-hardening`)
+
+- Add rollback/destroy proof records tied to VM sandbox dry-runs - done
+- Check backup/export evidence, owner notification, rollback owner, teardown order, inventory reconciliation, and audit export readiness - done
+- Add Admin Control Plane rollback/destroy proof panel - done
+- Block controlled create promotion when rollback/destroy proof is missing - done
+- Keep proof records evidence-only and real mutation disabled - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

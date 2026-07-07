@@ -11,6 +11,7 @@ import {
   createPlatformServiceRequestViaApi,
   createPlatformServicePreflightRunViaApi,
   createProductionReadinessReviewViaApi,
+  createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
@@ -33,6 +34,7 @@ import {
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
+  fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
   fetchSessionDiagnosticsFromApi,
@@ -248,6 +250,8 @@ describe("cloudStudioApi", () => {
     await createLabAuthorizationScopeViaApi({ pentestScopeStructurallyValid: true });
     await fetchVmLifecycleProofsFromApi();
     await createVmLifecycleProofViaApi({ gateId: "vm-controlled-1", rollbackVerified: true, destroyVerified: true });
+    await fetchRollbackDestroyProofsFromApi();
+    await createRollbackDestroyProofViaApi({ dryRunPlanId: "vm-dryrun-1", backupEvidenceReference: "backup-ref" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/lab-authorization/scopes", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/lab-authorization/diagnostics", expect.any(Object));
@@ -261,6 +265,12 @@ describe("cloudStudioApi", () => {
       5,
       "/api/vm-lifecycle/proofs",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("vm-controlled-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/vm-sandbox/rollback-destroy-proofs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      7,
+      "/api/vm-sandbox/rollback-destroy-proofs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("backup-ref") })
     );
   });
 

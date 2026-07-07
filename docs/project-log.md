@@ -181,6 +181,11 @@
 - Added lab scope diagnostics API and Admin Control Plane diagnostics.
 - Updated adapter enablement and production readiness to use stricter active lab-scope checks.
 - Added tests proving expired lab scope evidence blocks adapter enablement review.
+- Started `v2.5.0-preflight-destroy-rollback-hardening`.
+- Added rollback/destroy proof records tied to VM sandbox dry-run plans.
+- Added API and Admin Control Plane UI for backup/export evidence, owner notification, teardown order, inventory reconciliation, audit readiness, and stop conditions.
+- Updated controlled provisioning gate review to require ready rollback/destroy proof.
+- Added tests and smoke coverage proving missing proof blocks controlled create promotion.
 
 ## Documentation Rule
 

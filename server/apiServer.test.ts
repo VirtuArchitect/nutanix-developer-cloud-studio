@@ -492,18 +492,20 @@ describe("api server", () => {
     expect(gate.data).toMatchObject({
       environmentName: "controlled-vm-plan",
       dryRunPlanId: plan.data.id,
-      status: "Manual approval required",
+      status: "Blocked",
       provisioningEnabled: false,
     });
     expect(gate.data.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "Dry-run validations passed", passed: true }),
+        expect.objectContaining({ name: "Rollback plan ready", passed: false }),
+        expect.objectContaining({ name: "Destroy plan ready", passed: false }),
         expect.objectContaining({ name: "Authorized scope attached", passed: false }),
         expect.objectContaining({ name: "Mutation kill switch enabled", passed: false }),
       ])
     );
     expect(approved.data).toMatchObject({
-      status: "Mutation disabled",
+      status: "Blocked",
       approval: expect.objectContaining({ status: "Approved" }),
       provisioningEnabled: false,
     });
@@ -533,6 +535,17 @@ describe("api server", () => {
       method: "POST",
       body: JSON.stringify({ environmentName: "scope-backed-vm-plan" }),
     });
+    await requestJson("/api/audit-exports", { method: "POST" });
+    const rollbackProof = await requestJson("/api/vm-sandbox/rollback-destroy-proofs", {
+      method: "POST",
+      body: JSON.stringify({
+        dryRunPlanId: plan.data.id,
+        backupEvidenceReference: "backup-export-ref",
+        ownerNotificationReference: "owner-notice-ref",
+        inventoryReconciliationReference: "inventory-reconciliation-ref",
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
     const gate = await requestJson("/api/vm-sandbox/controlled-provisioning", {
       method: "POST",
       body: JSON.stringify({ dryRunPlanId: plan.data.id }),
@@ -548,6 +561,7 @@ describe("api server", () => {
     const scopes = await requestJson("/api/lab-authorization/scopes");
     const diagnostics = await requestJson("/api/lab-authorization/diagnostics");
     const proofs = await requestJson("/api/vm-lifecycle/proofs");
+    const rollbackProofs = await requestJson("/api/vm-sandbox/rollback-destroy-proofs");
 
     expect(scope.data).toMatchObject({
       version: "v1",
@@ -567,8 +581,13 @@ describe("api server", () => {
       expect.arrayContaining([expect.objectContaining({ provider: "NCI", covered: true })])
     );
     expect(gate.data.checks).toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: "Authorized scope attached", passed: true })])
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Rollback plan ready", passed: true }),
+        expect.objectContaining({ name: "Destroy plan ready", passed: true }),
+        expect.objectContaining({ name: "Authorized scope attached", passed: true }),
+      ])
     );
+    expect(rollbackProof.data).toMatchObject({ status: "Ready for controlled create", provisioningEnabled: false });
     expect(approved.data).toMatchObject({ status: "Mutation disabled", provisioningEnabled: false });
     expect(proof.data).toMatchObject({
       environmentName: "scope-backed-vm-plan",
@@ -578,6 +597,7 @@ describe("api server", () => {
       provisioningEnabled: false,
     });
     expect(scopes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: scope.data.id })]));
+    expect(rollbackProofs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: rollbackProof.data.id })]));
     expect(proofs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: proof.data.id })]));
   });
 

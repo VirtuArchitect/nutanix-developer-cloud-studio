@@ -300,6 +300,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Adapter enablement and production readiness use the stricter active lab-scope predicate.
 - Expired or incomplete scope evidence blocks adapter enablement review.
 
+## Current Rollback Destroy Proof Hardening Slice
+
+- API records rollback/destroy proof for VM sandbox dry-run plans.
+- Proof checks backup/export evidence, owner notification, rollback owner, teardown order, inventory reconciliation, and audit export readiness.
+- Controlled provisioning gate remains blocked until ready rollback/destroy proof exists.
+- Admin Control Plane surfaces proof checks and stop conditions.
+- Proof records remain evidence-only and do not mutate AHV resources.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

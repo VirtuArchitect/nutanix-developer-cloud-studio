@@ -82,6 +82,15 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Provider coverage", { exact: true })).toBeVisible();
   await expect(page.getByText("Target endpoints documented", { exact: true })).toBeVisible();
   await expect(page.getByText("Rollback owner assigned", { exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: "Operations Lifecycle and audit" }).click();
+  await expect(page.getByRole("heading", { name: "Audit export boundary" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare audit export" }).click();
+  await expect(page.getByText("Audit export readiness")).toBeVisible();
+  await page.getByRole("tab", { name: "Control plane Jobs and approvals" }).click();
+  await expect(page.getByRole("heading", { name: "Rollback and destroy proof" })).toBeVisible();
+  await page.getByRole("button", { name: "Record rollback proof" }).click();
+  await expect(page.getByText("Ready for controlled create")).toBeVisible();
+  await expect(page.getByText("Inventory reconciliation referenced")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Controlled provisioning gate" })).toBeVisible();
   await page.getByRole("button", { name: "Request gate review" }).click();
   await expect(page.getByText("Manual approval required")).toBeVisible();
@@ -116,7 +125,6 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Operational lifecycle requests")).toBeVisible();
   await expect(page.getByText("Operator runbook")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Audit export boundary" })).toBeVisible();
-  await page.getByRole("button", { name: "Prepare audit export" }).click();
   await expect(page.getByText("Audit export readiness")).toBeVisible();
   await expect(page.getByText("Sensitive credential material is excluded from audit events.")).toBeVisible();
   await expect(page.getByText("retention window", { exact: true })).toBeVisible();
