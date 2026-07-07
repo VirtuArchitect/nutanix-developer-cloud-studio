@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.56.0-production-execution-post-implementation-review-record`.
+- Added production execution post-implementation review records linked to production execution operational closure records.
+- Added API endpoints for production execution post-implementation review records.
+- Added Admin Operations production post-implementation review panel.
+- Added tests proving missing operational closure records or incomplete PIR evidence block readiness.
+- Planned `v2.57.0-production-execution-improvement-closure-record` for evidence-only improvement closure records.
 - Released `v2.55.0-production-execution-operational-closure-record`.
 - Added production execution operational closure records linked to production execution final turnover records.
 - Added API endpoints for production execution operational closure records.

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.55.0-production-execution-operational-closure-record`.
+This project uses release tags for public milestones. The current release is `v2.56.0-production-execution-post-implementation-review-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution post-implementation review records after operational closure records are complete.
+- Add production execution improvement closure records after post-implementation review records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.56.0-production-execution-post-implementation-review-record] - 2026-07-07
+
+### Added
+
+- Production execution post-implementation review records linked to production execution operational closure records.
+- API endpoints for listing and recording production execution post-implementation review records.
+- Admin Operations production post-implementation review panel.
+- Review owner, PIR minutes reference, incident review proof, cost variance review, and improvement backlog reference checks.
+- Tests proving missing operational closure records or incomplete post-implementation review evidence block PIR readiness.
+
+### Notes
+
+- Production execution post-implementation review records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.55.0-production-execution-operational-closure-record] - 2026-07-07
 

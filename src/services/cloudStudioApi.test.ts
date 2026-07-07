@@ -56,6 +56,7 @@ import {
   createProductionExecutionServiceAcceptanceRecordViaApi,
   createProductionExecutionFinalTurnoverRecordViaApi,
   createProductionExecutionOperationalClosureRecordViaApi,
+  createProductionExecutionPostImplementationReviewRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -129,6 +130,7 @@ import {
   fetchProductionExecutionServiceAcceptanceRecordsFromApi,
   fetchProductionExecutionFinalTurnoverRecordsFromApi,
   fetchProductionExecutionOperationalClosureRecordsFromApi,
+  fetchProductionExecutionPostImplementationReviewRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -642,6 +644,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionOperationalClosureRecordViaApi({
       finalTurnoverRecordId: "production-execution-final-turnover-record-ndb-1",
     });
+    await fetchProductionExecutionPostImplementationReviewRecordsFromApi();
+    await createProductionExecutionPostImplementationReviewRecordViaApi({
+      operationalClosureRecordId: "production-execution-operational-closure-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1035,6 +1041,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-final-turnover-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      89,
+      "/api/real-adapter/production-execution-post-implementation-review-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      90,
+      "/api/real-adapter/production-execution-post-implementation-review-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-operational-closure-record-ndb-1"),
       })
     );
   });

@@ -580,10 +580,17 @@
 
 ## Phase 78 - Production Execution Post-Implementation Review Record (`v2.56.0-production-execution-post-implementation-review-record`)
 
-- Add production execution post-implementation review records linked to operational closure records - planned
-- Require review owner, PIR minutes, incident review proof, cost variance review, and improvement backlog reference - planned
-- Add Admin Operations post-implementation review panel - planned
-- Keep post-implementation review records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution post-implementation review records linked to operational closure records - done
+- Require review owner, PIR minutes, incident review proof, cost variance review, and improvement backlog reference - done
+- Add Admin Operations post-implementation review panel - done
+- Keep post-implementation review records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 79 - Production Execution Improvement Closure Record (`v2.57.0-production-execution-improvement-closure-record`)
+
+- Add production execution improvement closure records linked to post-implementation review records - planned
+- Require improvement owner, action register, accepted deferrals, lessons-learned publication, and next-cycle owner - planned
+- Add Admin Operations improvement closure panel - planned
+- Keep improvement closure records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

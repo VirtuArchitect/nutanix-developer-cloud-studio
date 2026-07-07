@@ -623,6 +623,15 @@ Production execution operational closure records capture closure evidence after 
 
 Required role: `Platform Admin`.
 
+### Production Execution Post-Implementation Review Records
+
+- `GET /api/real-adapter/production-execution-post-implementation-review-records`
+- `POST /api/real-adapter/production-execution-post-implementation-review-records`
+
+Production execution post-implementation review records capture PIR evidence after operational closure and before any future improvement closure phase. Records require a ready operational closure record, review owner, PIR minutes, incident review proof, cost variance review, improvement backlog reference, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -99,6 +99,7 @@ import {
   type ProductionExecutionServiceAcceptanceRecord,
   type ProductionExecutionFinalTurnoverRecord,
   type ProductionExecutionOperationalClosureRecord,
+  type ProductionExecutionPostImplementationReviewRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -160,6 +161,7 @@ import {
   createProductionExecutionServiceAcceptanceRecordViaApi,
   createProductionExecutionFinalTurnoverRecordViaApi,
   createProductionExecutionOperationalClosureRecordViaApi,
+  createProductionExecutionPostImplementationReviewRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -226,6 +228,7 @@ import {
   fetchProductionExecutionServiceAcceptanceRecordsFromApi,
   fetchProductionExecutionFinalTurnoverRecordsFromApi,
   fetchProductionExecutionOperationalClosureRecordsFromApi,
+  fetchProductionExecutionPostImplementationReviewRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -414,6 +417,10 @@ export function App() {
   const [productionExecutionOperationalClosureRecords, setProductionExecutionOperationalClosureRecords] = useState<
     ProductionExecutionOperationalClosureRecord[]
   >([]);
+  const [
+    productionExecutionPostImplementationReviewRecords,
+    setProductionExecutionPostImplementationReviewRecords,
+  ] = useState<ProductionExecutionPostImplementationReviewRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -540,6 +547,7 @@ export function App() {
             apiProductionExecutionServiceAcceptanceRecords,
             apiProductionExecutionFinalTurnoverRecords,
             apiProductionExecutionOperationalClosureRecords,
+            apiProductionExecutionPostImplementationReviewRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -621,6 +629,7 @@ export function App() {
             fetchProductionExecutionServiceAcceptanceRecordsFromApi(),
             fetchProductionExecutionFinalTurnoverRecordsFromApi(),
             fetchProductionExecutionOperationalClosureRecordsFromApi(),
+            fetchProductionExecutionPostImplementationReviewRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -706,6 +715,9 @@ export function App() {
             setProductionExecutionServiceAcceptanceRecords(apiProductionExecutionServiceAcceptanceRecords);
             setProductionExecutionFinalTurnoverRecords(apiProductionExecutionFinalTurnoverRecords);
             setProductionExecutionOperationalClosureRecords(apiProductionExecutionOperationalClosureRecords);
+            setProductionExecutionPostImplementationReviewRecords(
+              apiProductionExecutionPostImplementationReviewRecords
+            );
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -909,6 +921,7 @@ export function App() {
       apiProductionExecutionServiceAcceptanceRecords,
       apiProductionExecutionFinalTurnoverRecords,
       apiProductionExecutionOperationalClosureRecords,
+      apiProductionExecutionPostImplementationReviewRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -990,6 +1003,7 @@ export function App() {
       fetchProductionExecutionServiceAcceptanceRecordsFromApi(),
       fetchProductionExecutionFinalTurnoverRecordsFromApi(),
       fetchProductionExecutionOperationalClosureRecordsFromApi(),
+      fetchProductionExecutionPostImplementationReviewRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1072,6 +1086,7 @@ export function App() {
     setProductionExecutionServiceAcceptanceRecords(apiProductionExecutionServiceAcceptanceRecords);
     setProductionExecutionFinalTurnoverRecords(apiProductionExecutionFinalTurnoverRecords);
     setProductionExecutionOperationalClosureRecords(apiProductionExecutionOperationalClosureRecords);
+    setProductionExecutionPostImplementationReviewRecords(apiProductionExecutionPostImplementationReviewRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2648,6 +2663,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionPostImplementationReview() {
+    const operationalClosureRecord = productionExecutionOperationalClosureRecords[0];
+    if (!operationalClosureRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionPostImplementationReviewRecordViaApi({
+        operationalClosureRecordId: operationalClosureRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionPostImplementationReviewRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionPostImplementationReviewRecords((current) => [
+      createMockProductionExecutionPostImplementationReviewRecord(operationalClosureRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2914,6 +2953,7 @@ export function App() {
             productionExecutionServiceAcceptanceRecords={productionExecutionServiceAcceptanceRecords}
             productionExecutionFinalTurnoverRecords={productionExecutionFinalTurnoverRecords}
             productionExecutionOperationalClosureRecords={productionExecutionOperationalClosureRecords}
+            productionExecutionPostImplementationReviewRecords={productionExecutionPostImplementationReviewRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2985,6 +3025,7 @@ export function App() {
             recordProductionExecutionServiceAcceptance={recordProductionExecutionServiceAcceptance}
             recordProductionExecutionFinalTurnover={recordProductionExecutionFinalTurnover}
             recordProductionExecutionOperationalClosure={recordProductionExecutionOperationalClosure}
+            recordProductionExecutionPostImplementationReview={recordProductionExecutionPostImplementationReview}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3539,6 +3580,7 @@ function AdminView({
   productionExecutionServiceAcceptanceRecords,
   productionExecutionFinalTurnoverRecords,
   productionExecutionOperationalClosureRecords,
+  productionExecutionPostImplementationReviewRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3610,6 +3652,7 @@ function AdminView({
   recordProductionExecutionServiceAcceptance,
   recordProductionExecutionFinalTurnover,
   recordProductionExecutionOperationalClosure,
+  recordProductionExecutionPostImplementationReview,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3695,6 +3738,7 @@ function AdminView({
   productionExecutionServiceAcceptanceRecords: ProductionExecutionServiceAcceptanceRecord[];
   productionExecutionFinalTurnoverRecords: ProductionExecutionFinalTurnoverRecord[];
   productionExecutionOperationalClosureRecords: ProductionExecutionOperationalClosureRecord[];
+  productionExecutionPostImplementationReviewRecords: ProductionExecutionPostImplementationReviewRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3769,6 +3813,7 @@ function AdminView({
   recordProductionExecutionServiceAcceptance: () => void;
   recordProductionExecutionFinalTurnover: () => void;
   recordProductionExecutionOperationalClosure: () => void;
+  recordProductionExecutionPostImplementationReview: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4295,6 +4340,15 @@ function AdminView({
             <ProductionExecutionOperationalClosureRecordPanel
               records={productionExecutionOperationalClosureRecords}
               recordProductionExecutionOperationalClosure={recordProductionExecutionOperationalClosure}
+            />
+          </Panel>
+          <Panel
+            title="Production post-implementation review"
+            action={`${productionExecutionPostImplementationReviewRecords.length} records`}
+          >
+            <ProductionExecutionPostImplementationReviewRecordPanel
+              records={productionExecutionPostImplementationReviewRecords}
+              recordProductionExecutionPostImplementationReview={recordProductionExecutionPostImplementationReview}
             />
           </Panel>
         </div>
@@ -8094,6 +8148,73 @@ function ProductionExecutionOperationalClosureRecordPanel({
             <span>Support backlog: {latest.supportBacklogHandoffReference || "missing"}</span>
             <span>Residual risk: {latest.residualRiskAcceptanceReference || "missing"}</span>
             <span>Final turnover: {latest.finalTurnoverRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionPostImplementationReviewRecordPanel({
+  records,
+  recordProductionExecutionPostImplementationReview,
+}: {
+  records: ProductionExecutionPostImplementationReviewRecord[];
+  recordProductionExecutionPostImplementationReview: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution post-implementation review record</strong>
+          <span>Captures PIR minutes, incident review, cost variance, and improvement backlog evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionPostImplementationReview}>
+          <Archive size={15} />
+          Record post-implementation review
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution post-implementation review record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.operationalClosureRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution post-implementation review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Review owner" value={latest.reviewOwner || "missing"} passed={Boolean(latest.reviewOwner)} />
+            <CheckLine icon={ScrollText} label="PIR minutes" value={latest.pirMinutesReference || "missing"} passed={Boolean(latest.pirMinutesReference)} />
+            <CheckLine icon={ShieldCheck} label="Incident review" value={latest.incidentReviewProofReference || "missing"} passed={Boolean(latest.incidentReviewProofReference)} />
+            <CheckLine icon={Archive} label="PIR record" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution post-implementation review evidence</strong>
+            <span>Cost variance: {latest.costVarianceReviewReference || "missing"}</span>
+            <span>Improvement backlog: {latest.improvementBacklogReference || "missing"}</span>
+            <span>Operational closure: {latest.operationalClosureRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -14455,6 +14576,119 @@ function createMockProductionExecutionOperationalClosureRecord(
       }.`,
     ],
     killSwitch: finalTurnoverRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionPostImplementationReviewRecord(
+  operationalClosureRecord: ProductionExecutionOperationalClosureRecord,
+  actor: string
+): ProductionExecutionPostImplementationReviewRecord {
+  const providerSlug = operationalClosureRecord.provider.toLowerCase();
+  const reviewOwner = "Production PIR Owner";
+  const pirMinutesReference = `production-pir-minutes-${providerSlug}.md`;
+  const incidentReviewProofReference = `production-incident-review-proof-${providerSlug}.md`;
+  const costVarianceReviewReference = `production-cost-variance-review-${providerSlug}.md`;
+  const improvementBacklogReference = `production-improvement-backlog-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Operational closure ready",
+      passed:
+        operationalClosureRecord.status ===
+        "Ready for production execution operational closure review",
+      detail: `${operationalClosureRecord.id} is ${operationalClosureRecord.status}.`,
+    },
+    {
+      name: "Review owner assigned",
+      passed: Boolean(reviewOwner),
+      detail: reviewOwner,
+    },
+    {
+      name: "PIR minutes linked",
+      passed: Boolean(pirMinutesReference),
+      detail: pirMinutesReference,
+    },
+    {
+      name: "Incident review proof linked",
+      passed: Boolean(incidentReviewProofReference),
+      detail: incidentReviewProofReference,
+    },
+    {
+      name: "Cost variance review linked",
+      passed: Boolean(costVarianceReviewReference),
+      detail: costVarianceReviewReference,
+    },
+    {
+      name: "Improvement backlog linked",
+      passed: Boolean(improvementBacklogReference),
+      detail: improvementBacklogReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !operationalClosureRecord.provisioningEnabled && !operationalClosureRecord.killSwitch.enabled,
+      detail: `${operationalClosureRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-post-implementation-review-record-${providerSlug}-${Date.now()}`,
+    provider: operationalClosureRecord.provider,
+    operationalClosureRecordId: operationalClosureRecord.id,
+    finalTurnoverRecordId: operationalClosureRecord.finalTurnoverRecordId,
+    serviceAcceptanceRecordId: operationalClosureRecord.serviceAcceptanceRecordId,
+    supportReadinessRecordId: operationalClosureRecord.supportReadinessRecordId,
+    operationsHandoverRecordId: operationalClosureRecord.operationsHandoverRecordId,
+    completionDossierRecordId: operationalClosureRecord.completionDossierRecordId,
+    finalArchiveCertificationRecordId: operationalClosureRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: operationalClosureRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: operationalClosureRecord.archivalHandoffRecordId,
+    closurePacketRecordId: operationalClosureRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: operationalClosureRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: operationalClosureRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: operationalClosureRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: operationalClosureRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: operationalClosureRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: operationalClosureRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: operationalClosureRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: operationalClosureRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: operationalClosureRecord.implementationHoldRecordId,
+    cabDecisionRecordId: operationalClosureRecord.cabDecisionRecordId,
+    cabHandoffPacketId: operationalClosureRecord.cabHandoffPacketId,
+    freezeRecordId: operationalClosureRecord.freezeRecordId,
+    authorizationPacketId: operationalClosureRecord.authorizationPacketId,
+    promotionDossierId: operationalClosureRecord.promotionDossierId,
+    closurePackageId: operationalClosureRecord.closurePackageId,
+    outcomeRecordId: operationalClosureRecord.outcomeRecordId,
+    handoffPackageId: operationalClosureRecord.handoffPackageId,
+    controlledSwitchRequestId: operationalClosureRecord.controlledSwitchRequestId,
+    auditPackageId: operationalClosureRecord.auditPackageId,
+    switchReviewId: operationalClosureRecord.switchReviewId,
+    activationId: operationalClosureRecord.activationId,
+    idempotencyKey: operationalClosureRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution post-implementation review"
+      : "Blocked",
+    requestedBy: actor,
+    reviewOwner,
+    pirMinutesReference,
+    incidentReviewProofReference,
+    costVarianceReviewReference,
+    improvementBacklogReference,
+    checks,
+    evidence: [
+      `Operational closure record: ${operationalClosureRecord.id}.`,
+      `Final turnover record: ${operationalClosureRecord.finalTurnoverRecordId}.`,
+      `Review owner: ${reviewOwner}.`,
+      `PIR minutes: ${pirMinutesReference}.`,
+      `Incident review proof: ${incidentReviewProofReference}.`,
+      `Cost variance review: ${costVarianceReviewReference}.`,
+      `Improvement backlog: ${improvementBacklogReference}.`,
+      `Kill switch: ${operationalClosureRecord.killSwitch.name}=${
+        operationalClosureRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: operationalClosureRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

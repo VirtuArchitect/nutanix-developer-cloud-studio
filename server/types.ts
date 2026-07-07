@@ -73,6 +73,7 @@ import type {
   ProductionExecutionServiceAcceptanceRecord,
   ProductionExecutionFinalTurnoverRecord,
   ProductionExecutionOperationalClosureRecord,
+  ProductionExecutionPostImplementationReviewRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -161,6 +162,7 @@ export type ApiState = {
   productionExecutionServiceAcceptanceRecords: ProductionExecutionServiceAcceptanceRecord[];
   productionExecutionFinalTurnoverRecords: ProductionExecutionFinalTurnoverRecord[];
   productionExecutionOperationalClosureRecords: ProductionExecutionOperationalClosureRecord[];
+  productionExecutionPostImplementationReviewRecords: ProductionExecutionPostImplementationReviewRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -708,6 +710,16 @@ export type CreateProductionExecutionOperationalClosureRecordRequest = {
   sloReviewProofReference?: string;
   supportBacklogHandoffReference?: string;
   residualRiskAcceptanceReference?: string;
+};
+
+export type CreateProductionExecutionPostImplementationReviewRecordRequest = {
+  operationalClosureRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  reviewOwner?: string;
+  pirMinutesReference?: string;
+  incidentReviewProofReference?: string;
+  costVarianceReviewReference?: string;
+  improvementBacklogReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

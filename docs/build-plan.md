@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.56.0-production-execution-post-implementation-review-record` adds evidence-only post-implementation review records linked to operational closure records and an Admin Operations post-implementation review panel.
 - `v2.55.0-production-execution-operational-closure-record` adds evidence-only operational closure records linked to final turnover records and an Admin Operations operational closure panel.
 - `v2.54.0-production-execution-final-turnover-record` adds evidence-only final turnover records linked to service acceptance records and an Admin Operations final turnover panel.
 - `v2.53.0-production-execution-service-acceptance-record` adds evidence-only service acceptance records linked to support readiness records and an Admin Operations service acceptance panel.

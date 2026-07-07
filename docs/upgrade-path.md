@@ -1315,6 +1315,23 @@ Exit gate:
 - Post-implementation review records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.57.0-production-execution-improvement-closure-record
+
+Goal: record improvement closure evidence after post-implementation review without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production execution improvement closure records linked to post-implementation review records.
+- Improvement owner, action register, accepted deferrals, lessons-learned publication, and next-cycle owner checks.
+- Admin Operations improvement closure panel with blockers and evidence references.
+- Tests proving missing ready post-implementation review records, improvement owners, action registers, accepted deferrals, lessons-learned publications, or next-cycle owners block improvement closure.
+
+Exit gate:
+
+- Production execution improvement closure APIs and UI are tested.
+- Improvement closure records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:
