@@ -3,6 +3,7 @@ import type {
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   ControlledProvisioningDecision,
+  ControlledCreateAuthorizationEnvelope,
   ControlledProvisioningGate,
   ControlPlaneJob,
   Environment,
@@ -60,6 +61,7 @@ export type ApiState = {
   platformServiceRequests: PlatformServiceRequest[];
   vmLifecycleProofs: VmLifecycleProof[];
   rollbackDestroyProofs: RollbackDestroyProofRecord[];
+  controlledCreateAuthorizationEnvelopes: ControlledCreateAuthorizationEnvelope[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   productionReadinessReviews: ProductionReadinessReview[];

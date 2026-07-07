@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.5.0-preflight-destroy-rollback-hardening`.
+This project uses release tags for public milestones. The current release is `v2.6.0-controlled-create-adapter-authorization-envelope`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.6.0-controlled-create-adapter-authorization-envelope] - 2026-07-07
+
+### Added
+
+- Controlled-create authorization envelope records that roll up lab scope, rollback/destroy proof, gate approval, lifecycle proof, adapter enablement, audit export, pentest gate status, and mutation guardrails.
+- API endpoints for listing and recording authorization envelope reviews.
+- Admin Control Plane panel showing exactly which evidence blocks future live AHV create authorization.
+- Tests proving missing active pentest scope blocks live adapter authorization.
+
+### Notes
+
+- This phase does not enable live AHV mutation.
+- Active pentest scope remains required for future real adapter work.
+- Real Nutanix mutation operations remain disabled.
 
 ## [v2.5.0-preflight-destroy-rollback-hardening] - 2026-07-07
 

@@ -134,6 +134,7 @@ export function createDefaultState(): ApiState {
     platformServiceRequests: [],
     vmLifecycleProofs: [],
     rollbackDestroyProofs: [],
+    controlledCreateAuthorizationEnvelopes: [],
     ahvControlledProvisioningRuns: [],
     platformServicePreflightRuns: [],
     productionReadinessReviews: [],

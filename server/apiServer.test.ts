@@ -633,6 +633,63 @@ describe("api server", () => {
     expect(record.data).toMatchObject({ status: "Blocked", provisioningEnabled: false });
   });
 
+  it("keeps controlled create authorization blocked without active pentest scope", async () => {
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        pentestScopeReference: "authorized-lab-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        evidenceReferences: ["authorized-lab-scope.md"],
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    const plan = await requestJson("/api/vm-sandbox/dry-runs", {
+      method: "POST",
+      body: JSON.stringify({ environmentName: "authorization-envelope-plan" }),
+    });
+    await requestJson("/api/audit-exports", { method: "POST" });
+    await requestJson("/api/vm-sandbox/rollback-destroy-proofs", {
+      method: "POST",
+      body: JSON.stringify({
+        dryRunPlanId: plan.data.id,
+        backupEvidenceReference: "backup-export-ref",
+        ownerNotificationReference: "owner-notice-ref",
+        inventoryReconciliationReference: "inventory-reconciliation-ref",
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    const gate = await requestJson("/api/vm-sandbox/controlled-provisioning", {
+      method: "POST",
+      body: JSON.stringify({ dryRunPlanId: plan.data.id }),
+    });
+    await requestJson(`/api/vm-sandbox/controlled-provisioning/${gate.data.id}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ evidence: "Operator approval recorded." }),
+    });
+    await requestJson("/api/vm-lifecycle/proofs", {
+      method: "POST",
+      body: JSON.stringify({ gateId: gate.data.id, rollbackVerified: true, destroyVerified: true }),
+    });
+
+    const envelope = await requestJson("/api/vm-sandbox/controlled-create-authorization", { method: "POST" });
+    const envelopes = await requestJson("/api/vm-sandbox/controlled-create-authorization");
+
+    expect(envelope.data).toMatchObject({
+      environmentName: "authorization-envelope-plan",
+      status: "Blocked",
+      provisioningEnabled: false,
+    });
+    expect(envelope.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Active pentest scope", passed: false }),
+        expect.objectContaining({ name: "Real mutation remains disabled", passed: true }),
+      ])
+    );
+    expect(envelopes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: envelope.data.id })]));
+  });
+
   it("records fail-closed AHV controlled provisioning preflight runs", async () => {
     const plan = await requestJson("/api/vm-sandbox/dry-runs", {
       method: "POST",

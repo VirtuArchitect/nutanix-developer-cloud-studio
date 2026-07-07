@@ -98,8 +98,13 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Mutation kill switch enabled")).toBeVisible();
   await page.getByRole("button", { name: "Approve gate" }).click();
   await expect(page.getByText("Mutation disabled")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Controlled create authorization" })).toBeVisible();
+  await page.getByRole("button", { name: "Review authorization" }).click();
+  await expect(page.getByText("Live adapter authorization envelope")).toBeVisible();
+  await expect(page.getByText("Active pentest scope", { exact: true })).toBeVisible();
+  await expect(page.getByText("Active authorized pentest scope is required before live adapter authorization.")).toBeVisible();
   await page.getByRole("button", { name: "Record lifecycle proof" }).click();
-  await expect(page.getByText("Controlled gate approved")).toBeVisible();
+  await expect(page.getByText("Controlled gate approved").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "AHV controlled preflight" })).toBeVisible();
   await page.getByRole("button", { name: "Run AHV preflight" }).click();
   await expect(page.getByText("Fail-closed AHV boundary")).toBeVisible();

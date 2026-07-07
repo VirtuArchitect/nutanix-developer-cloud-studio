@@ -36,6 +36,7 @@ import {
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
+  type ControlledCreateAuthorizationEnvelope,
   type ControlPlaneJob,
   type Integration,
   type IntegrationConfig,
@@ -92,6 +93,7 @@ import {
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
   createControlledProvisioningGateViaApi,
+  createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
   createPlatformServiceRequestViaApi,
   createPlatformServicePreflightRunViaApi,
@@ -108,6 +110,7 @@ import {
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledProvisioningGatesFromApi,
+  fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchApprovalsFromApi,
@@ -187,6 +190,7 @@ export function App() {
   const [controlPlaneJobs, setControlPlaneJobs] = useState<ControlPlaneJob[]>([]);
   const [vmSandboxDryRuns, setVmSandboxDryRuns] = useState<VmSandboxDryRunPlan[]>([]);
   const [controlledProvisioningGates, setControlledProvisioningGates] = useState<ControlledProvisioningGate[]>([]);
+  const [controlledCreateAuthorizationEnvelopes, setControlledCreateAuthorizationEnvelopes] = useState<ControlledCreateAuthorizationEnvelope[]>([]);
   const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
@@ -263,6 +267,7 @@ export function App() {
             apiAdapterEnablementRecords,
             apiVmSandboxDryRuns,
             apiControlledProvisioningGates,
+            apiControlledCreateAuthorizationEnvelopes,
             apiPlatformServiceRequests,
             apiPlatformServicePreflightRuns,
             apiVmLifecycleProofs,
@@ -294,6 +299,7 @@ export function App() {
             fetchAdapterEnablementRecordsFromApi(),
             fetchVmSandboxDryRunsFromApi(),
             fetchControlledProvisioningGatesFromApi(),
+            fetchControlledCreateAuthorizationEnvelopesFromApi(),
             fetchPlatformServiceRequestsFromApi(),
             fetchPlatformServicePreflightRunsFromApi(),
             fetchVmLifecycleProofsFromApi(),
@@ -327,6 +333,7 @@ export function App() {
             setAdapterEnablementRecords(apiAdapterEnablementRecords);
             setVmSandboxDryRuns(apiVmSandboxDryRuns);
             setControlledProvisioningGates(apiControlledProvisioningGates);
+            setControlledCreateAuthorizationEnvelopes(apiControlledCreateAuthorizationEnvelopes);
             setPlatformServiceRequests(apiPlatformServiceRequests);
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setVmLifecycleProofs(apiVmLifecycleProofs);
@@ -480,6 +487,7 @@ export function App() {
       apiAdapterEnablementRecords,
       apiVmSandboxDryRuns,
       apiControlledProvisioningGates,
+      apiControlledCreateAuthorizationEnvelopes,
       apiPlatformServiceRequests,
       apiPlatformServicePreflightRuns,
       apiVmLifecycleProofs,
@@ -511,6 +519,7 @@ export function App() {
       fetchAdapterEnablementRecordsFromApi(),
       fetchVmSandboxDryRunsFromApi(),
       fetchControlledProvisioningGatesFromApi(),
+      fetchControlledCreateAuthorizationEnvelopesFromApi(),
       fetchPlatformServiceRequestsFromApi(),
       fetchPlatformServicePreflightRunsFromApi(),
       fetchVmLifecycleProofsFromApi(),
@@ -543,6 +552,7 @@ export function App() {
     setAdapterEnablementRecords(apiAdapterEnablementRecords);
     setVmSandboxDryRuns(apiVmSandboxDryRuns);
     setControlledProvisioningGates(apiControlledProvisioningGates);
+    setControlledCreateAuthorizationEnvelopes(apiControlledCreateAuthorizationEnvelopes);
     setPlatformServiceRequests(apiPlatformServiceRequests);
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setVmLifecycleProofs(apiVmLifecycleProofs);
@@ -882,6 +892,29 @@ export function App() {
     ]);
   }
 
+  async function reviewControlledCreateAuthorization() {
+    if (apiHealth.mode === "api") {
+      const envelope = await createControlledCreateAuthorizationEnvelopeViaApi();
+      await refreshApiState();
+      setControlledCreateAuthorizationEnvelopes((current) => [envelope, ...current.filter((item) => item.id !== envelope.id)]);
+      return;
+    }
+
+    setControlledCreateAuthorizationEnvelopes((current) => [
+      createMockControlledCreateAuthorizationEnvelope({
+        actor: session.user,
+        labAuthorizationScopes,
+        vmSandboxDryRuns,
+        controlledProvisioningGates,
+        rollbackDestroyProofs,
+        vmLifecycleProofs,
+        adapterEnablementRecords,
+        auditExports,
+      }),
+      ...current,
+    ]);
+  }
+
   async function runAhvControlledProvisioningPreflight() {
     const gate = controlledProvisioningGates[0];
     if (!gate) {
@@ -1210,6 +1243,7 @@ export function App() {
             controlPlaneJobs={controlPlaneJobs}
             vmSandboxDryRuns={vmSandboxDryRuns}
             controlledProvisioningGates={controlledProvisioningGates}
+            controlledCreateAuthorizationEnvelopes={controlledCreateAuthorizationEnvelopes}
             platformServiceRequests={platformServiceRequests}
             platformServicePreflightRuns={platformServicePreflightRuns}
             vmLifecycleProofs={vmLifecycleProofs}
@@ -1234,6 +1268,7 @@ export function App() {
             decideControlledProvisioningGate={decideControlledProvisioningGate}
             recordVmLifecycleProof={recordVmLifecycleProof}
             recordRollbackDestroyProof={recordRollbackDestroyProof}
+            reviewControlledCreateAuthorization={reviewControlledCreateAuthorization}
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
@@ -1736,6 +1771,7 @@ function AdminView({
   controlPlaneJobs,
   vmSandboxDryRuns,
   controlledProvisioningGates,
+  controlledCreateAuthorizationEnvelopes,
   platformServiceRequests,
   platformServicePreflightRuns,
   vmLifecycleProofs,
@@ -1760,6 +1796,7 @@ function AdminView({
   decideControlledProvisioningGate,
   recordVmLifecycleProof,
   recordRollbackDestroyProof,
+  reviewControlledCreateAuthorization,
   runAhvControlledProvisioningPreflight,
   createPlatformServiceRequest,
   runPlatformServicePreflight,
@@ -1793,6 +1830,7 @@ function AdminView({
   controlPlaneJobs: ControlPlaneJob[];
   vmSandboxDryRuns: VmSandboxDryRunPlan[];
   controlledProvisioningGates: ControlledProvisioningGate[];
+  controlledCreateAuthorizationEnvelopes: ControlledCreateAuthorizationEnvelope[];
   platformServiceRequests: PlatformServiceRequest[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   vmLifecycleProofs: VmLifecycleProof[];
@@ -1820,6 +1858,7 @@ function AdminView({
   decideControlledProvisioningGate: (gateId: string, decision: "approve" | "reject") => void;
   recordVmLifecycleProof: () => void;
   recordRollbackDestroyProof: () => void;
+  reviewControlledCreateAuthorization: () => void;
   runAhvControlledProvisioningPreflight: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
@@ -1975,6 +2014,12 @@ function AdminView({
               gates={controlledProvisioningGates}
               requestControlledProvisioningGate={requestControlledProvisioningGate}
               decideControlledProvisioningGate={decideControlledProvisioningGate}
+            />
+          </Panel>
+          <Panel title="Controlled create authorization" action={`${controlledCreateAuthorizationEnvelopes.length} reviews`}>
+            <ControlledCreateAuthorizationPanel
+              envelopes={controlledCreateAuthorizationEnvelopes}
+              reviewControlledCreateAuthorization={reviewControlledCreateAuthorization}
             />
           </Panel>
           <Panel title="AHV controlled preflight" action={`${ahvControlledProvisioningRuns.length} runs`}>
@@ -3052,6 +3097,72 @@ function RollbackDestroyProofPanel({
             <strong>Stop conditions</strong>
             {latest.stopConditions.map((item) => (
               <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledCreateAuthorizationPanel({
+  envelopes,
+  reviewControlledCreateAuthorization,
+}: {
+  envelopes: ControlledCreateAuthorizationEnvelope[];
+  reviewControlledCreateAuthorization: () => void;
+}) {
+  const latest = envelopes[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Live adapter authorization envelope</strong>
+          <span>Rolls up final evidence before a future narrowly scoped AHV create adapter can be considered.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={reviewControlledCreateAuthorization}>
+          <Play size={15} />
+          Review authorization
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled-create authorization envelope has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.environmentName}</strong>
+              <span>{latest.id}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for authorization review" ? "approval" : "failed"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Allowed create fields</strong>
+            {latest.allowedCreateFields.map((field) => (
+              <span key={field}>{field}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Emergency stop</strong>
+            {latest.emergencyStopProcedure.map((step) => (
+              <span key={step}>{step}</span>
             ))}
           </div>
         </div>
@@ -4212,6 +4323,106 @@ function createMockRollbackDestroyProof(
     teardownOrder,
     stopConditions,
     evidenceReferences: ["audit-export-manifest", "owner-notification-record", "prism-inventory-reconciliation"],
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockControlledCreateAuthorizationEnvelope({
+  actor,
+  labAuthorizationScopes,
+  vmSandboxDryRuns,
+  controlledProvisioningGates,
+  rollbackDestroyProofs,
+  vmLifecycleProofs,
+  adapterEnablementRecords,
+  auditExports,
+}: {
+  actor: string;
+  labAuthorizationScopes: LabAuthorizationScope[];
+  vmSandboxDryRuns: VmSandboxDryRunPlan[];
+  controlledProvisioningGates: ControlledProvisioningGate[];
+  rollbackDestroyProofs: RollbackDestroyProofRecord[];
+  vmLifecycleProofs: VmLifecycleProof[];
+  adapterEnablementRecords: AdapterEnablementRecord[];
+  auditExports: AuditExportRecord[];
+}): ControlledCreateAuthorizationEnvelope {
+  const gate = controlledProvisioningGates[0];
+  const dryRun = vmSandboxDryRuns.find((item) => item.id === gate?.dryRunPlanId) ?? vmSandboxDryRuns[0];
+  const activeScope = labAuthorizationScopes.find((scope) => createMockLabScopeChecks(scope).every((check) => check.passed));
+  const rollbackProof = rollbackDestroyProofs.find((proof) => proof.dryRunPlanId === dryRun?.id && proof.status === "Ready for controlled create");
+  const lifecycleProof = vmLifecycleProofs.find((proof) => proof.gateId === gate?.id && proof.status === "Verified");
+  const adapterEnablement = adapterEnablementRecords.find((record) => record.provider === "NCI" && record.status === "Ready for review");
+  const auditExport = auditExports[0];
+  const checks = [
+    {
+      name: "Lab scope active",
+      passed: Boolean(activeScope),
+      detail: activeScope ? activeScope.id : "Active lab scope is required.",
+    },
+    {
+      name: "Rollback destroy proof ready",
+      passed: Boolean(rollbackProof),
+      detail: rollbackProof ? rollbackProof.id : "Rollback/destroy proof must be ready.",
+    },
+    {
+      name: "Controlled gate approved",
+      passed: gate?.status === "Approved for controlled create",
+      detail: gate ? `Gate status is ${gate.status}.` : "Controlled gate is required.",
+    },
+    {
+      name: "Lifecycle proof verified",
+      passed: Boolean(lifecycleProof),
+      detail: lifecycleProof ? lifecycleProof.id : "Verified lifecycle proof is required.",
+    },
+    {
+      name: "Adapter enablement ready",
+      passed: Boolean(adapterEnablement),
+      detail: adapterEnablement ? adapterEnablement.id : "NCI adapter enablement review must be ready.",
+    },
+    {
+      name: "Audit export ready",
+      passed: Boolean(auditExport),
+      detail: auditExport ? auditExport.id : "Audit export must be prepared.",
+    },
+    {
+      name: "Active pentest scope",
+      passed: false,
+      detail: "Active authorized pentest scope is required before live adapter authorization.",
+    },
+    {
+      name: "Real mutation remains disabled",
+      passed: true,
+      detail: "Controlled create switch and AHV real adapter are disabled.",
+    },
+  ];
+
+  return {
+    id: `controlled-create-auth-${dryRun?.environmentName ?? "missing"}-${Date.now()}`,
+    status: checks.every((check) => check.passed) ? "Ready for authorization review" : "Blocked",
+    requestedBy: actor,
+    environmentName: dryRun?.environmentName ?? "missing-dry-run",
+    dryRunPlanId: dryRun?.id ?? "missing-dry-run",
+    gateId: gate?.id,
+    checks,
+    evidence: [
+      `Lab scope: ${activeScope?.id ?? "missing"}.`,
+      `Rollback/destroy proof: ${rollbackProof?.id ?? "missing"}.`,
+      `Lifecycle proof: ${lifecycleProof?.id ?? "missing"}.`,
+      `Adapter enablement: ${adapterEnablement?.id ?? "missing"}.`,
+      `Audit export: ${auditExport?.id ?? "missing"}.`,
+      "Pentest scope: missing.",
+    ],
+    allowedCreateFields: ["name", "project", "cluster", "network", "imageProfileId", "cpu", "memoryGb", "diskGb", "category", "owner"],
+    killSwitch: {
+      name: "NDC_CONTROLLED_PROVISIONING_ENABLED",
+      enabled: false,
+    },
+    emergencyStopProcedure: [
+      "Disable NDC_CONTROLLED_PROVISIONING_ENABLED before any further review.",
+      "Keep NDC_AHV_REAL_ADAPTER_ENABLED disabled until approved adapter implementation is present.",
+      "Notify rollback owner and preserve audit export evidence.",
+    ],
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

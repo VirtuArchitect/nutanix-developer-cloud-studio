@@ -425,6 +425,29 @@ export type RollbackDestroyProofRecord = {
   createdAt: string;
 };
 
+export type ControlledCreateAuthorizationEnvelope = {
+  id: string;
+  status: "Blocked" | "Ready for authorization review";
+  requestedBy: string;
+  environmentName: string;
+  dryRunPlanId: string;
+  gateId?: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  allowedCreateFields: string[];
+  killSwitch: {
+    name: string;
+    enabled: boolean;
+  };
+  emergencyStopProcedure: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type AhvControlledProvisioningRun = {
   id: string;
   gateId: string;

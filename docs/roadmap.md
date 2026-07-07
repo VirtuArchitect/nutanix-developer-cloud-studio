@@ -226,6 +226,14 @@
 - Block controlled create promotion when rollback/destroy proof is missing - done
 - Keep proof records evidence-only and real mutation disabled - done
 
+## Phase 28 - Controlled Create Authorization Envelope (`v2.6.0-controlled-create-adapter-authorization-envelope`)
+
+- Add consolidated authorization envelope for future AHV create adapter - done
+- Check lab scope, rollback/destroy proof, controlled gate, lifecycle proof, adapter enablement, audit export, pentest gate, and mutation guardrail - done
+- Add Admin Control Plane authorization envelope panel - done
+- Prove missing active pentest scope blocks live authorization - done
+- Keep real mutation disabled - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

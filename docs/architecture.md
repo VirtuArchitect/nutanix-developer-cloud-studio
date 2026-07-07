@@ -60,6 +60,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Controlled provisioning gates: operator review records attached to dry-run plans with manual approval, scope, rollback, destroy, and kill-switch evidence
 - Lab authorization scopes: versioned project, cluster, network, provider coverage, target endpoint, test window, allowed action, excluded action, evidence reference, rollback owner, and pentest scope evidence
 - Rollback/destroy proof records: backup/export evidence, owner notification, teardown order, inventory reconciliation, audit export readiness, and stop conditions tied to VM dry-runs
+- Controlled-create authorization envelopes: final evidence rollups for future AHV create authorization, including pentest gate and mutation guardrail status
 - VM lifecycle proofs: controlled gate, rollback, and destroy verification records
 - AHV controlled-provisioning runs: fail-closed preflight records for controlled create/destroy readiness
 - Platform-service requests: NKP, NDB, NUS, and NAI planning records gated by VM lifecycle proof
@@ -121,6 +122,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Controlled provisioning gate review API and Admin Control Plane UI
 - Lab authorization and VM lifecycle proof APIs plus Admin Control Plane evidence UI
 - Rollback/destroy proof API and Admin Control Plane proof UI
+- Controlled-create authorization envelope API and Admin Control Plane review UI
 - AHV controlled-provisioning preflight adapter boundary and Admin Control Plane UI
 - Platform-service planning API and Admin Control Plane UI for NKP, NDB, NUS, and NAI flows
 - Platform-service preflight adapter boundary and Admin Control Plane UI for service readiness checks
@@ -160,6 +162,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Controlled provisioning gate reviews can be approved or rejected, but approval does not enable real AHV mutation in this release.
 - Lab authorization and lifecycle proof records are evidence records only; they do not execute AHV operations.
 - Rollback/destroy proof records are evidence records only and do not power off, delete, or reconcile real infrastructure.
+- Controlled-create authorization envelopes are evidence rollups only; missing active pentest scope blocks future live adapter authorization.
 - Lab scope diagnostics store metadata and evidence references only, not pentest report contents, endpoint secrets, credentials, or tokens.
 - AHV controlled-provisioning preflight records checks only; Prism Central mutation calls remain disabled.
 - Platform-service requests validate catalog and dependency readiness but do not call NKP, NDB, NUS, or NAI APIs.

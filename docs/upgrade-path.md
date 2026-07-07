@@ -465,6 +465,23 @@ Exit gate:
 - Missing active pentest scope blocks live adapter authorization.
 - Real mutation calls remain disabled.
 
+### v2.7.0-controlled-create-adapter-contract
+
+Goal: define the real AHV create adapter contract and dry-run-to-live payload mapping while keeping execution disabled.
+
+Build:
+
+- AHV create adapter interface with validate, map payload, execute disabled, poll disabled, and rollback disabled methods.
+- Payload mapping from approved VM sandbox dry-run fields to the future Prism Central create request.
+- Contract tests proving disallowed fields are rejected and execute remains disabled without authorization envelope approval.
+- Admin Control Plane view for payload preview, blocked mutation operations, and adapter kill switch status.
+
+Exit gate:
+
+- Adapter contract APIs and UI are tested.
+- Payload mapping contains only approved fields.
+- Execute path remains disabled without authorized pentest scope and explicit adapter release.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

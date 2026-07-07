@@ -33,6 +33,10 @@ import {
   decideControlledProvisioningGate,
 } from "./controlledProvisioning";
 import {
+  ControlledCreateAuthorizationError,
+  createControlledCreateAuthorizationEnvelope,
+} from "./controlledCreateAuthorization";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -168,6 +172,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof RollbackDestroyProofError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledCreateAuthorizationError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -364,6 +378,12 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/vm-sandbox/rollback-destroy-proofs") {
     sendJson(response, 200, { data: state.rollbackDestroyProofs });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/vm-sandbox/controlled-create-authorization") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledCreateAuthorizationEnvelopes });
     return;
   }
 
@@ -887,6 +907,20 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: proof });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/vm-sandbox/controlled-create-authorization") {
+    requireRole(context, ["Platform Admin"]);
+    const envelope = createControlledCreateAuthorizationEnvelope(state, context.session.user);
+    state.controlledCreateAuthorizationEnvelopes = [envelope, ...state.controlledCreateAuthorizationEnvelopes];
+    addAuditEvent(state, "vm-sandbox.controlled-create-authorization.reviewed", context.session.user, envelope.environmentName, {
+      status: envelope.status,
+      checksPassed: envelope.checks.every((check) => check.passed),
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: envelope });
     return;
   }
 

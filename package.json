@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.5.0-preflight-destroy-rollback-hardening",
+  "version": "2.6.0-controlled-create-adapter-authorization-envelope",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

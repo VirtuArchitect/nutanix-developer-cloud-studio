@@ -7,6 +7,7 @@ import type {
   CredentialReferenceDiagnostic,
   ControlledProvisioningGate,
   ControlPlaneJob,
+  ControlledCreateAuthorizationEnvelope,
   Environment,
   Integration,
   IntegrationConfig,
@@ -244,6 +245,10 @@ export async function fetchRollbackDestroyProofsFromApi() {
   return fetchJson<RollbackDestroyProofRecord[]>("/api/vm-sandbox/rollback-destroy-proofs");
 }
 
+export async function fetchControlledCreateAuthorizationEnvelopesFromApi() {
+  return fetchJson<ControlledCreateAuthorizationEnvelope[]>("/api/vm-sandbox/controlled-create-authorization");
+}
+
 export async function fetchAhvControlledProvisioningRunsFromApi() {
   return fetchJson<AhvControlledProvisioningRun[]>("/api/ahv/controlled-provisioning/runs");
 }
@@ -400,6 +405,12 @@ export async function createRollbackDestroyProofViaApi(payload: {
   return fetchJson<RollbackDestroyProofRecord>("/api/vm-sandbox/rollback-destroy-proofs", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export async function createControlledCreateAuthorizationEnvelopeViaApi() {
+  return fetchJson<ControlledCreateAuthorizationEnvelope>("/api/vm-sandbox/controlled-create-authorization", {
+    method: "POST",
   });
 }
 

@@ -186,6 +186,10 @@
 - Added API and Admin Control Plane UI for backup/export evidence, owner notification, teardown order, inventory reconciliation, audit readiness, and stop conditions.
 - Updated controlled provisioning gate review to require ready rollback/destroy proof.
 - Added tests and smoke coverage proving missing proof blocks controlled create promotion.
+- Started `v2.6.0-controlled-create-adapter-authorization-envelope`.
+- Added controlled-create authorization envelope records and API endpoints.
+- Added Admin Control Plane panel for final AHV create authorization blockers, allowed create fields, kill switch, and emergency stop procedure.
+- Added tests proving missing active pentest scope blocks live adapter authorization.
 
 ## Documentation Rule
 

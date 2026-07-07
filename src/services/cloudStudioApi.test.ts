@@ -5,6 +5,7 @@ import {
   createAhvControlledProvisioningRunViaApi,
   createAuditExportViaApi,
   createControlledProvisioningGateViaApi,
+  createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
@@ -21,6 +22,7 @@ import {
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlledProvisioningGatesFromApi,
+  fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
@@ -238,6 +240,21 @@ describe("cloudStudioApi", () => {
       3,
       "/api/vm-sandbox/controlled-provisioning/vm-controlled-1/approve",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("Operator approval recorded.") })
+    );
+  });
+
+  it("fetches and creates controlled create authorization envelopes", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchControlledCreateAuthorizationEnvelopesFromApi();
+    await createControlledCreateAuthorizationEnvelopeViaApi();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/vm-sandbox/controlled-create-authorization", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/vm-sandbox/controlled-create-authorization",
+      expect.objectContaining({ method: "POST" })
     );
   });
 

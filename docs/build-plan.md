@@ -308,6 +308,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Control Plane surfaces proof checks and stop conditions.
 - Proof records remain evidence-only and do not mutate AHV resources.
 
+## Current Controlled Create Authorization Envelope Slice
+
+- API records controlled-create authorization envelope reviews.
+- Envelopes roll up lab scope, rollback/destroy proof, controlled gate approval, lifecycle proof, adapter enablement, audit export, active pentest scope, and mutation guardrails.
+- Admin Control Plane shows exact blockers, allowed create fields, kill switch, and emergency stop procedure.
+- Missing active pentest scope blocks future live adapter authorization.
+- Real AHV mutation remains disabled.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI
