@@ -110,6 +110,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Production change freeze records: freeze owner, freeze window, stakeholder notification, rollback standby, and no-change exception plan linked to production authorization packets
 - Production CAB handoff packets: CAB owner, agenda reference, risk acceptance, rollback representation, and final go/no-go agenda linked to production change freeze records
 - Production CAB decision records: CAB decision, decision authority, condition list, rollback approval, and decision minutes linked to CAB handoff packets
+- Production implementation hold records: implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment linked to CAB decision records
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -148,7 +149,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Production change freeze record API and Admin Operations freeze UI
 - Production CAB handoff packet API and Admin Operations CAB handoff UI
 - Production CAB decision record API and Admin Operations CAB decision UI
-- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, promotion dossiers, production authorization packets, production change freeze records, CAB handoff packets, and CAB decision records are evidence-only records; the prototype does not change switch configuration or promote adapters.
+- Production implementation hold record API and Admin Operations implementation hold UI
+- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, promotion dossiers, production authorization packets, production change freeze records, CAB handoff packets, CAB decision records, and implementation hold records are evidence-only records; the prototype does not change switch configuration or promote adapters.
 - Admin template governance edits persisted in browser local storage
 - Timed mock provisioning state transitions exposed through the provisioning service
 - Template details view for golden-path outcomes and readiness notes

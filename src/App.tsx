@@ -80,6 +80,7 @@ import {
   type ProductionChangeFreezeRecord,
   type ProductionCabHandoffPacket,
   type ProductionCabDecisionRecord,
+  type ProductionImplementationHoldRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -122,6 +123,7 @@ import {
   createProductionChangeFreezeRecordViaApi,
   createProductionCabHandoffPacketViaApi,
   createProductionCabDecisionRecordViaApi,
+  createProductionImplementationHoldRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -169,6 +171,7 @@ import {
   fetchProductionChangeFreezeRecordsFromApi,
   fetchProductionCabHandoffPacketsFromApi,
   fetchProductionCabDecisionRecordsFromApi,
+  fetchProductionImplementationHoldRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -313,6 +316,7 @@ export function App() {
   const [productionChangeFreezeRecords, setProductionChangeFreezeRecords] = useState<ProductionChangeFreezeRecord[]>([]);
   const [productionCabHandoffPackets, setProductionCabHandoffPackets] = useState<ProductionCabHandoffPacket[]>([]);
   const [productionCabDecisionRecords, setProductionCabDecisionRecords] = useState<ProductionCabDecisionRecord[]>([]);
+  const [productionImplementationHoldRecords, setProductionImplementationHoldRecords] = useState<ProductionImplementationHoldRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -420,6 +424,7 @@ export function App() {
             apiProductionChangeFreezeRecords,
             apiProductionCabHandoffPackets,
             apiProductionCabDecisionRecords,
+            apiProductionImplementationHoldRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -482,6 +487,7 @@ export function App() {
             fetchProductionChangeFreezeRecordsFromApi(),
             fetchProductionCabHandoffPacketsFromApi(),
             fetchProductionCabDecisionRecordsFromApi(),
+            fetchProductionImplementationHoldRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -546,6 +552,7 @@ export function App() {
             setProductionChangeFreezeRecords(apiProductionChangeFreezeRecords);
             setProductionCabHandoffPackets(apiProductionCabHandoffPackets);
             setProductionCabDecisionRecords(apiProductionCabDecisionRecords);
+            setProductionImplementationHoldRecords(apiProductionImplementationHoldRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -730,6 +737,7 @@ export function App() {
       apiProductionChangeFreezeRecords,
       apiProductionCabHandoffPackets,
       apiProductionCabDecisionRecords,
+      apiProductionImplementationHoldRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -792,6 +800,7 @@ export function App() {
       fetchProductionChangeFreezeRecordsFromApi(),
       fetchProductionCabHandoffPacketsFromApi(),
       fetchProductionCabDecisionRecordsFromApi(),
+      fetchProductionImplementationHoldRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -855,6 +864,7 @@ export function App() {
     setProductionChangeFreezeRecords(apiProductionChangeFreezeRecords);
     setProductionCabHandoffPackets(apiProductionCabHandoffPackets);
     setProductionCabDecisionRecords(apiProductionCabDecisionRecords);
+    setProductionImplementationHoldRecords(apiProductionImplementationHoldRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1975,6 +1985,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionImplementationHold() {
+    const decisionRecord = productionCabDecisionRecords[0];
+    if (!decisionRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionImplementationHoldRecordViaApi({
+        cabDecisionRecordId: decisionRecord.id,
+      });
+      await refreshApiState();
+      setProductionImplementationHoldRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionImplementationHoldRecords((current) => [
+      createMockProductionImplementationHoldRecord(decisionRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2222,6 +2256,7 @@ export function App() {
             productionChangeFreezeRecords={productionChangeFreezeRecords}
             productionCabHandoffPackets={productionCabHandoffPackets}
             productionCabDecisionRecords={productionCabDecisionRecords}
+            productionImplementationHoldRecords={productionImplementationHoldRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2274,6 +2309,7 @@ export function App() {
             recordProductionChangeFreeze={recordProductionChangeFreeze}
             prepareProductionCabHandoffPacket={prepareProductionCabHandoffPacket}
             recordProductionCabDecision={recordProductionCabDecision}
+            recordProductionImplementationHold={recordProductionImplementationHold}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2809,6 +2845,7 @@ function AdminView({
   productionChangeFreezeRecords,
   productionCabHandoffPackets,
   productionCabDecisionRecords,
+  productionImplementationHoldRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2861,6 +2898,7 @@ function AdminView({
   recordProductionChangeFreeze,
   prepareProductionCabHandoffPacket,
   recordProductionCabDecision,
+  recordProductionImplementationHold,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2927,6 +2965,7 @@ function AdminView({
   productionChangeFreezeRecords: ProductionChangeFreezeRecord[];
   productionCabHandoffPackets: ProductionCabHandoffPacket[];
   productionCabDecisionRecords: ProductionCabDecisionRecord[];
+  productionImplementationHoldRecords: ProductionImplementationHoldRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2982,6 +3021,7 @@ function AdminView({
   recordProductionChangeFreeze: () => void;
   prepareProductionCabHandoffPacket: () => void;
   recordProductionCabDecision: () => void;
+  recordProductionImplementationHold: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3358,6 +3398,12 @@ function AdminView({
             <ProductionCabDecisionRecordPanel
               records={productionCabDecisionRecords}
               recordProductionCabDecision={recordProductionCabDecision}
+            />
+          </Panel>
+          <Panel title="Production implementation hold" action={`${productionImplementationHoldRecords.length} records`}>
+            <ProductionImplementationHoldRecordPanel
+              records={productionImplementationHoldRecords}
+              recordProductionImplementationHold={recordProductionImplementationHold}
             />
           </Panel>
         </div>
@@ -5884,6 +5930,73 @@ function ProductionCabDecisionRecordPanel({
             <span>Rollback approval: {latest.rollbackApprovalReference || "missing"}</span>
             <span>Decision minutes: {latest.decisionMinutesReference || "missing"}</span>
             <span>CAB handoff packet: {latest.cabHandoffPacketId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionImplementationHoldRecordPanel({
+  records,
+  recordProductionImplementationHold,
+}: {
+  records: ProductionImplementationHoldRecord[];
+  recordProductionImplementationHold: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production implementation hold record</strong>
+          <span>Captures implementation ownership, hold window, condition acceptance, rollback owner, and freeze acknowledgment.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionImplementationHold}>
+          <Archive size={15} />
+          Record implementation hold
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production implementation hold record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.cabDecisionRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production implementation hold review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Owner" value={latest.implementationOwner || "missing"} passed={Boolean(latest.implementationOwner)} />
+            <CheckLine icon={Archive} label="Window" value={latest.holdWindowReference || "missing"} passed={Boolean(latest.holdWindowReference)} />
+            <CheckLine icon={ScrollText} label="Conditions" value={latest.conditionAcceptanceReference || "missing"} passed={Boolean(latest.conditionAcceptanceReference)} />
+            <CheckLine icon={LockKeyhole} label="Hold" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Implementation hold evidence</strong>
+            <span>Rollback implementation owner: {latest.rollbackImplementationOwner || "missing"}</span>
+            <span>Release freeze acknowledgment: {latest.releaseFreezeAcknowledgmentReference || "missing"}</span>
+            <span>CAB decision record: {latest.cabDecisionRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -10323,6 +10436,96 @@ function createMockProductionCabDecisionRecord(
       `Kill switch: ${handoffPacket.killSwitch.name}=${handoffPacket.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: handoffPacket.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionImplementationHoldRecord(
+  decisionRecord: ProductionCabDecisionRecord,
+  actor: string
+): ProductionImplementationHoldRecord {
+  const providerSlug = decisionRecord.provider.toLowerCase();
+  const implementationOwner = "Production Implementation Owner";
+  const holdWindowReference = `production-implementation-hold-window-${providerSlug}.md`;
+  const conditionAcceptanceReference = `cab-condition-acceptance-${providerSlug}.md`;
+  const rollbackImplementationOwner = "Rollback Implementation Owner";
+  const releaseFreezeAcknowledgmentReference = `release-freeze-acknowledgment-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "CAB decision ready",
+      passed: decisionRecord.status === "Ready for production CAB decision review",
+      detail: `${decisionRecord.id} is ${decisionRecord.status}.`,
+    },
+    {
+      name: "Implementation owner assigned",
+      passed: Boolean(implementationOwner),
+      detail: implementationOwner,
+    },
+    {
+      name: "Hold window linked",
+      passed: Boolean(holdWindowReference),
+      detail: holdWindowReference,
+    },
+    {
+      name: "Condition acceptance linked",
+      passed: Boolean(conditionAcceptanceReference),
+      detail: conditionAcceptanceReference,
+    },
+    {
+      name: "Rollback implementation owner assigned",
+      passed: Boolean(rollbackImplementationOwner),
+      detail: rollbackImplementationOwner,
+    },
+    {
+      name: "Release freeze acknowledgment linked",
+      passed: Boolean(releaseFreezeAcknowledgmentReference),
+      detail: releaseFreezeAcknowledgmentReference,
+    },
+    {
+      name: "Prototype does not promote adapter",
+      passed: !decisionRecord.provisioningEnabled && !decisionRecord.killSwitch.enabled,
+      detail: `${decisionRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-implementation-hold-record-${providerSlug}-${Date.now()}`,
+    provider: decisionRecord.provider,
+    cabDecisionRecordId: decisionRecord.id,
+    cabHandoffPacketId: decisionRecord.cabHandoffPacketId,
+    freezeRecordId: decisionRecord.freezeRecordId,
+    authorizationPacketId: decisionRecord.authorizationPacketId,
+    promotionDossierId: decisionRecord.promotionDossierId,
+    closurePackageId: decisionRecord.closurePackageId,
+    outcomeRecordId: decisionRecord.outcomeRecordId,
+    handoffPackageId: decisionRecord.handoffPackageId,
+    controlledSwitchRequestId: decisionRecord.controlledSwitchRequestId,
+    auditPackageId: decisionRecord.auditPackageId,
+    switchReviewId: decisionRecord.switchReviewId,
+    activationId: decisionRecord.activationId,
+    idempotencyKey: decisionRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production implementation hold review"
+      : "Blocked",
+    requestedBy: actor,
+    implementationOwner,
+    holdWindowReference,
+    conditionAcceptanceReference,
+    rollbackImplementationOwner,
+    releaseFreezeAcknowledgmentReference,
+    checks,
+    evidence: [
+      `CAB decision record: ${decisionRecord.id}.`,
+      `CAB handoff packet: ${decisionRecord.cabHandoffPacketId}.`,
+      `Implementation owner: ${implementationOwner}.`,
+      `Hold window: ${holdWindowReference}.`,
+      `Condition acceptance: ${conditionAcceptanceReference}.`,
+      `Rollback implementation owner: ${rollbackImplementationOwner}.`,
+      `Release freeze acknowledgment: ${releaseFreezeAcknowledgmentReference}.`,
+      `Kill switch: ${decisionRecord.killSwitch.name}=${decisionRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: decisionRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

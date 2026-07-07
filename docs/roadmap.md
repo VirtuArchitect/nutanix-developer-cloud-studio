@@ -447,10 +447,17 @@
 
 ## Phase 59 - Production Implementation Hold Record (`v2.37.0-production-implementation-hold-record`)
 
-- Add production implementation hold records linked to CAB decision records - planned
-- Require implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment - planned
-- Add Admin Operations implementation hold panel - planned
-- Keep implementation hold records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production implementation hold records linked to CAB decision records - done
+- Require implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment - done
+- Add Admin Operations implementation hold panel - done
+- Keep implementation hold records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 60 - Production Operator Assignment Record (`v2.38.0-production-operator-assignment-record`)
+
+- Add production operator assignment records linked to implementation hold records - planned
+- Require primary operator, secondary operator, execution channel, rollback operator, and privileged access confirmation - planned
+- Add Admin Operations operator assignment panel - planned
+- Keep operator assignment records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.36.0-production-cab-decision-record`.
+This project uses release tags for public milestones. The current release is `v2.37.0-production-implementation-hold-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production implementation hold records after CAB decision records are complete.
+- Add production operator assignment records after implementation hold records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.37.0-production-implementation-hold-record] - 2026-07-07
+
+### Added
+
+- Production implementation hold records linked to production CAB decision records.
+- API endpoints for listing and recording production implementation hold records.
+- Admin Operations production implementation hold panel.
+- Implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment checks.
+- Tests proving missing CAB decision records or incomplete hold evidence block implementation hold readiness.
+
+### Notes
+
+- Production implementation hold records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.36.0-production-cab-decision-record] - 2026-07-07
 

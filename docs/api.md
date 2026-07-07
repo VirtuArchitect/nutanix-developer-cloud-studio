@@ -452,6 +452,15 @@ Production CAB decision records capture the external CAB decision after handoff 
 
 Required role: `Platform Admin`.
 
+### Production Implementation Hold Records
+
+- `GET /api/real-adapter/production-implementation-hold-records`
+- `POST /api/real-adapter/production-implementation-hold-records`
+
+Production implementation hold records capture implementation hold evidence after CAB decision readiness and before any external operator execution. Records require a ready CAB decision record, implementation owner, hold window, condition acceptance, rollback implementation owner, release freeze acknowledgment, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -936,6 +936,16 @@ describe("api server", () => {
       body: JSON.stringify({ cabHandoffPacketId: productionCabHandoffPacket.data.id }),
     });
     const productionCabDecisionRecords = await requestJson("/api/real-adapter/production-cab-decision-records");
+    const productionImplementationHoldRecord = await requestJson(
+      "/api/real-adapter/production-implementation-hold-records",
+      {
+        method: "POST",
+        body: JSON.stringify({ cabDecisionRecordId: productionCabDecisionRecord.data.id }),
+      }
+    );
+    const productionImplementationHoldRecords = await requestJson(
+      "/api/real-adapter/production-implementation-hold-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1433,6 +1443,23 @@ describe("api server", () => {
     expect(productionCabDecisionRecords.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: productionCabDecisionRecord.data.id })])
     );
+    expect(productionImplementationHoldRecord.data).toMatchObject({
+      provider: "NDB",
+      cabDecisionRecordId: productionCabDecisionRecord.data.id,
+      cabHandoffPacketId: productionCabHandoffPacket.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionImplementationHoldRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "CAB decision ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not promote adapter", passed: true }),
+      ])
+    );
+    expect(productionImplementationHoldRecords.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: productionImplementationHoldRecord.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1464,6 +1491,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "real-adapter.production-change-freeze.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.production-cab-handoff.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.production-cab-decision.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.production-implementation-hold.recorded", target: "NDB" }),
       ])
     );
   });

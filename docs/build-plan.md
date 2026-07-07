@@ -504,6 +504,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready handoff packets, CAB decisions, authorities, condition lists, rollback approvals, or decision minutes block readiness.
 - The prototype does not promote or enable real adapters.
 
+## Current Production Implementation Hold Record Slice
+
+- API records production implementation hold records linked to production CAB decision records.
+- Implementation hold records require implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment.
+- Admin Operations surfaces implementation hold readiness, evidence references, and blockers.
+- Missing ready CAB decision records, implementation owners, hold windows, condition acceptance, rollback implementation ownership, or freeze acknowledgment block readiness.
+- The prototype does not promote or enable real adapters.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

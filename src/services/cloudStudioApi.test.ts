@@ -37,6 +37,7 @@ import {
   createProductionChangeFreezeRecordViaApi,
   createProductionCabHandoffPacketViaApi,
   createProductionCabDecisionRecordViaApi,
+  createProductionImplementationHoldRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -91,6 +92,7 @@ import {
   fetchProductionChangeFreezeRecordsFromApi,
   fetchProductionCabHandoffPacketsFromApi,
   fetchProductionCabDecisionRecordsFromApi,
+  fetchProductionImplementationHoldRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -528,6 +530,10 @@ describe("cloudStudioApi", () => {
     await createProductionCabDecisionRecordViaApi({
       cabHandoffPacketId: "production-cab-handoff-packet-ndb-1",
     });
+    await fetchProductionImplementationHoldRecordsFromApi();
+    await createProductionImplementationHoldRecordViaApi({
+      cabDecisionRecordId: "production-cab-decision-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -678,6 +684,16 @@ describe("cloudStudioApi", () => {
       50,
       "/api/real-adapter/production-cab-decision-records",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("production-cab-handoff-packet-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      51,
+      "/api/real-adapter/production-implementation-hold-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      52,
+      "/api/real-adapter/production-implementation-hold-records",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("production-cab-decision-record-ndb-1") })
     );
   });
 

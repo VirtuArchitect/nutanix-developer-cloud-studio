@@ -992,6 +992,23 @@ Exit gate:
 - Implementation hold records are evidence-only.
 - No adapter is promoted by the prototype.
 
+### v2.38.0-production-operator-assignment-record
+
+Goal: record production operator assignment after implementation hold readiness without promoting adapters from the prototype.
+
+Build:
+
+- Production operator assignment records linked to implementation hold records.
+- Primary operator, secondary operator, execution channel, rollback operator, and privileged access confirmation checks.
+- Admin Operations operator assignment panel with blockers and evidence references.
+- Tests proving missing ready implementation hold records, operators, execution channels, rollback operators, or privileged access confirmations block assignment readiness.
+
+Exit gate:
+
+- Production operator assignment APIs and UI are tested.
+- Operator assignment records are evidence-only.
+- No adapter is promoted by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

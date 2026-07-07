@@ -1317,6 +1317,40 @@ export type ProductionCabDecisionRecord = {
   createdAt: string;
 };
 
+export type ProductionImplementationHoldRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production implementation hold review";
+  requestedBy: string;
+  implementationOwner: string;
+  holdWindowReference: string;
+  conditionAcceptanceReference: string;
+  rollbackImplementationOwner: string;
+  releaseFreezeAcknowledgmentReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ProductionCabDecisionRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

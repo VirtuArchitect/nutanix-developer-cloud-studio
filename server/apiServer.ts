@@ -121,6 +121,10 @@ import {
   ProductionCabDecisionRecordError,
 } from "./productionCabDecisionRecord";
 import {
+  createProductionImplementationHoldRecord,
+  ProductionImplementationHoldRecordError,
+} from "./productionImplementationHoldRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -232,6 +236,7 @@ import type {
   CreateProductionChangeFreezeRecordRequest,
   CreateProductionCabHandoffPacketRequest,
   CreateProductionCabDecisionRecordRequest,
+  CreateProductionImplementationHoldRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -567,6 +572,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionCabDecisionRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionImplementationHoldRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1014,6 +1029,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/production-cab-decision-records") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionCabDecisionRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/production-implementation-hold-records") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionImplementationHoldRecords });
     return;
   }
 
@@ -2117,6 +2138,22 @@ async function routeApi(
     state.productionCabDecisionRecords = [record, ...state.productionCabDecisionRecords];
     addAuditEvent(state, "real-adapter.production-cab-decision.recorded", context.session.user, record.provider, {
       cabHandoffPacketId: record.cabHandoffPacketId,
+      idempotencyKey: record.idempotencyKey,
+      status: record.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/production-implementation-hold-records") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionImplementationHoldRecordRequest>(request);
+    const record = createProductionImplementationHoldRecord(state, body, context.session.user);
+    state.productionImplementationHoldRecords = [record, ...state.productionImplementationHoldRecords];
+    addAuditEvent(state, "real-adapter.production-implementation-hold.recorded", context.session.user, record.provider, {
+      cabDecisionRecordId: record.cabDecisionRecordId,
       idempotencyKey: record.idempotencyKey,
       status: record.status,
       provisioningEnabled: false,

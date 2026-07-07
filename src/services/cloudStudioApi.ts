@@ -47,6 +47,7 @@ import type {
   ProductionChangeFreezeRecord,
   ProductionCabHandoffPacket,
   ProductionCabDecisionRecord,
+  ProductionImplementationHoldRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -409,6 +410,10 @@ export async function fetchProductionCabHandoffPacketsFromApi() {
 
 export async function fetchProductionCabDecisionRecordsFromApi() {
   return fetchJson<ProductionCabDecisionRecord[]>("/api/real-adapter/production-cab-decision-records");
+}
+
+export async function fetchProductionImplementationHoldRecordsFromApi() {
+  return fetchJson<ProductionImplementationHoldRecord[]>("/api/real-adapter/production-implementation-hold-records");
 }
 
 export async function fetchProductionReadinessReviewsFromApi() {
@@ -788,6 +793,16 @@ export async function createProductionCabDecisionRecordViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ProductionCabDecisionRecord>("/api/real-adapter/production-cab-decision-records", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionImplementationHoldRecordViaApi(payload: {
+  cabDecisionRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionImplementationHoldRecord>("/api/real-adapter/production-implementation-hold-records", {
     method: "POST",
     body: JSON.stringify(payload),
   });
