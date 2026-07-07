@@ -907,6 +907,23 @@ Exit gate:
 - Promotion dossiers are evidence-only.
 - No adapter is promoted by the prototype.
 
+### v2.33.0-production-adapter-authorization-packet
+
+Goal: prepare a production adapter authorization packet after adapter promotion readiness without promoting adapters from the prototype.
+
+Build:
+
+- Production adapter authorization packet records linked to adapter promotion dossiers.
+- Production approver, change ticket, release window, emergency rollback authorization, and compliance acceptance checks.
+- Admin Operations production authorization panel with blockers and evidence references.
+- Tests proving missing ready promotion dossiers, production approvers, change tickets, release windows, rollback authorization, or compliance acceptance block authorization packet readiness.
+
+Exit gate:
+
+- Production authorization packet APIs and UI are tested.
+- Authorization packets are evidence-only.
+- No adapter is promoted by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

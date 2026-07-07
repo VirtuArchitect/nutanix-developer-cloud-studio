@@ -407,6 +407,15 @@ Switch closure retention packages close retained evidence after switch outcome r
 
 Required role: `Platform Admin`.
 
+### Adapter Promotion Readiness Dossiers
+
+- `GET /api/real-adapter/adapter-promotion-dossiers`
+- `POST /api/real-adapter/adapter-promotion-dossiers`
+
+Adapter promotion readiness dossiers assemble retained switch closure evidence before future adapter promotion. Dossiers require a ready closure package, promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, security acceptance, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

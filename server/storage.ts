@@ -161,6 +161,7 @@ export function createDefaultState(): ApiState {
     switchExecutionHandoffPackages: [],
     switchExecutionOutcomeRecords: [],
     switchClosureRetentionPackages: [],
+    adapterPromotionReadinessDossiers: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

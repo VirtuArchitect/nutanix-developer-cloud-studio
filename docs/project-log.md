@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.32.0-adapter-promotion-readiness-dossier`.
+- Added adapter promotion readiness dossiers linked to switch closure packages.
+- Added API endpoints for adapter promotion dossiers.
+- Added Admin Operations adapter promotion dossier panel.
+- Added tests proving missing closure packages or incomplete promotion evidence block readiness.
+- Planned `v2.33.0-production-adapter-authorization-packet` for evidence-only production adapter authorization packets.
 - Released `v2.31.0-switch-closure-retention-package`.
 - Added switch closure retention packages linked to outcome records.
 - Added API endpoints for switch closure packages.
 - Added Admin Operations switch closure retention panel.
 - Added tests proving missing outcome records or incomplete closure evidence block readiness.
-- Planned `v2.32.0-adapter-promotion-readiness-dossier` for evidence-only adapter promotion readiness dossiers.
 - Released `v2.30.0-switch-execution-outcome-record`.
 - Added switch execution outcome records linked to handoff packages.
 - Added API endpoints for switch outcome records.

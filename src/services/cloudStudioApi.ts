@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  AdapterPromotionReadinessDossier,
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   AhvCreateAdapterContractReview,
@@ -386,6 +387,10 @@ export async function fetchSwitchClosureRetentionPackagesFromApi() {
   return fetchJson<SwitchClosureRetentionPackage[]>("/api/real-adapter/switch-closure-packages");
 }
 
+export async function fetchAdapterPromotionReadinessDossiersFromApi() {
+  return fetchJson<AdapterPromotionReadinessDossier[]>("/api/real-adapter/adapter-promotion-dossiers");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -713,6 +718,16 @@ export async function createSwitchClosureRetentionPackageViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<SwitchClosureRetentionPackage>("/api/real-adapter/switch-closure-packages", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createAdapterPromotionReadinessDossierViaApi(payload: {
+  closurePackageId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<AdapterPromotionReadinessDossier>("/api/real-adapter/adapter-promotion-dossiers", {
     method: "POST",
     body: JSON.stringify(payload),
   });

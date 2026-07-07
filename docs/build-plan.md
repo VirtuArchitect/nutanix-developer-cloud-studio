@@ -464,6 +464,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready outcome records, retained manifests, lessons learned, rollback timer closure, or audit retention confirmation block readiness.
 - The prototype closes retained evidence only and does not execute adapter switch changes.
 
+## Current Adapter Promotion Readiness Dossier Slice
+
+- API records adapter promotion readiness dossiers linked to switch closure packages.
+- Dossiers require promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, and security acceptance.
+- Admin Operations surfaces adapter promotion dossier readiness, evidence references, and blockers.
+- Missing ready closure packages, retained switch evidence, monitoring plans, rollback drill confirmations, or security acceptance block readiness.
+- The prototype does not promote or enable real adapters.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

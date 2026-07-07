@@ -412,10 +412,17 @@
 
 ## Phase 54 - Adapter Promotion Readiness Dossier (`v2.32.0-adapter-promotion-readiness-dossier`)
 
-- Add adapter promotion readiness dossiers linked to switch closure packages - planned
-- Require promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, and security acceptance - planned
-- Add Admin Operations adapter promotion dossier panel - planned
-- Keep promotion dossiers evidence-only and require separate production authorization before any adapter promotion - planned
+- Add adapter promotion readiness dossiers linked to switch closure packages - done
+- Require promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, and security acceptance - done
+- Add Admin Operations adapter promotion dossier panel - done
+- Keep promotion dossiers evidence-only and require separate production authorization before any adapter promotion - done
+
+## Phase 55 - Production Adapter Authorization Packet (`v2.33.0-production-adapter-authorization-packet`)
+
+- Add production adapter authorization packets linked to adapter promotion dossiers - planned
+- Require production approver, change ticket, release window, emergency rollback authorization, and compliance acceptance - planned
+- Add Admin Operations production authorization panel - planned
+- Keep authorization packets evidence-only and require an external production change process before adapter promotion - planned
 
 ## Gated Promotion
 

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.31.0-switch-closure-retention-package`.
+This project uses release tags for public milestones. The current release is `v2.32.0-adapter-promotion-readiness-dossier`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add adapter promotion readiness dossier records after switch closure evidence is complete.
+- Add production adapter authorization packet records after promotion dossiers are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.32.0-adapter-promotion-readiness-dossier] - 2026-07-07
+
+### Added
+
+- Adapter promotion readiness dossier records linked to switch closure packages.
+- API endpoints for listing and recording adapter promotion dossiers.
+- Admin Operations adapter promotion dossier panel.
+- Promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, and security acceptance checks.
+- Tests proving missing closure packages or incomplete promotion evidence block readiness.
+
+### Notes
+
+- Adapter promotion dossiers are evidence-only.
+- The prototype does not promote or enable real adapters.
 
 ## [v2.31.0-switch-closure-retention-package] - 2026-07-07
 

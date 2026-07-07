@@ -1162,6 +1162,35 @@ export type SwitchClosureRetentionPackage = {
   createdAt: string;
 };
 
+export type AdapterPromotionReadinessDossier = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for adapter promotion review";
+  requestedBy: string;
+  promotionOwner: string;
+  retainedSwitchEvidenceReference: string;
+  monitoringPlanReference: string;
+  rollbackDrillConfirmation: string;
+  securityAcceptanceReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: SwitchClosureRetentionPackage["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

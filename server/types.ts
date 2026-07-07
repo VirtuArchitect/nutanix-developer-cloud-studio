@@ -49,6 +49,7 @@ import type {
   SwitchExecutionHandoffPackage,
   SwitchExecutionOutcomeRecord,
   SwitchClosureRetentionPackage,
+  AdapterPromotionReadinessDossier,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -113,6 +114,7 @@ export type ApiState = {
   switchExecutionHandoffPackages: SwitchExecutionHandoffPackage[];
   switchExecutionOutcomeRecords: SwitchExecutionOutcomeRecord[];
   switchClosureRetentionPackages: SwitchClosureRetentionPackage[];
+  adapterPromotionReadinessDossiers: AdapterPromotionReadinessDossier[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -420,6 +422,16 @@ export type CreateSwitchClosureRetentionPackageRequest = {
   lessonsLearnedReference?: string;
   rollbackTimerClosureReference?: string;
   finalAuditRetentionConfirmation?: string;
+};
+
+export type CreateAdapterPromotionReadinessDossierRequest = {
+  closurePackageId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  promotionOwner?: string;
+  retainedSwitchEvidenceReference?: string;
+  monitoringPlanReference?: string;
+  rollbackDrillConfirmation?: string;
+  securityAcceptanceReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

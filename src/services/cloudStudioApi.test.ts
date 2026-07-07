@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkApiHealth,
   createAdapterEnablementRecordViaApi,
+  createAdapterPromotionReadinessDossierViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
@@ -42,6 +43,7 @@ import {
   decideControlledProvisioningGateViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
+  fetchAdapterPromotionReadinessDossiersFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -500,6 +502,8 @@ describe("cloudStudioApi", () => {
     await createSwitchExecutionOutcomeRecordViaApi({ handoffPackageId: "switch-execution-handoff-package-ndb-1" });
     await fetchSwitchClosureRetentionPackagesFromApi();
     await createSwitchClosureRetentionPackageViaApi({ outcomeRecordId: "switch-execution-outcome-record-ndb-1" });
+    await fetchAdapterPromotionReadinessDossiersFromApi();
+    await createAdapterPromotionReadinessDossierViaApi({ closurePackageId: "switch-closure-retention-package-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -620,6 +624,12 @@ describe("cloudStudioApi", () => {
       40,
       "/api/real-adapter/switch-closure-packages",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("switch-execution-outcome-record-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(41, "/api/real-adapter/adapter-promotion-dossiers", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      42,
+      "/api/real-adapter/adapter-promotion-dossiers",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("switch-closure-retention-package-ndb-1") })
     );
   });
 

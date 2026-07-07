@@ -28,6 +28,7 @@ import {
   provisioningEvents,
   targetIcons,
   templates,
+  type AdapterPromotionReadinessDossier,
   type AdapterEnablementRecord,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
@@ -112,6 +113,7 @@ import {
 } from "./services/provisioningService";
 import {
   checkApiHealth,
+  createAdapterPromotionReadinessDossierViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -154,6 +156,7 @@ import {
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
+  fetchAdapterPromotionReadinessDossiersFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -293,6 +296,7 @@ export function App() {
   const [switchExecutionHandoffPackages, setSwitchExecutionHandoffPackages] = useState<SwitchExecutionHandoffPackage[]>([]);
   const [switchExecutionOutcomeRecords, setSwitchExecutionOutcomeRecords] = useState<SwitchExecutionOutcomeRecord[]>([]);
   const [switchClosureRetentionPackages, setSwitchClosureRetentionPackages] = useState<SwitchClosureRetentionPackage[]>([]);
+  const [adapterPromotionReadinessDossiers, setAdapterPromotionReadinessDossiers] = useState<AdapterPromotionReadinessDossier[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -395,6 +399,7 @@ export function App() {
             apiSwitchExecutionHandoffPackages,
             apiSwitchExecutionOutcomeRecords,
             apiSwitchClosureRetentionPackages,
+            apiAdapterPromotionReadinessDossiers,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -452,6 +457,7 @@ export function App() {
             fetchSwitchExecutionHandoffPackagesFromApi(),
             fetchSwitchExecutionOutcomeRecordsFromApi(),
             fetchSwitchClosureRetentionPackagesFromApi(),
+            fetchAdapterPromotionReadinessDossiersFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -511,6 +517,7 @@ export function App() {
             setSwitchExecutionHandoffPackages(apiSwitchExecutionHandoffPackages);
             setSwitchExecutionOutcomeRecords(apiSwitchExecutionOutcomeRecords);
             setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
+            setAdapterPromotionReadinessDossiers(apiAdapterPromotionReadinessDossiers);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -690,6 +697,7 @@ export function App() {
       apiSwitchExecutionHandoffPackages,
       apiSwitchExecutionOutcomeRecords,
       apiSwitchClosureRetentionPackages,
+      apiAdapterPromotionReadinessDossiers,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -747,6 +755,7 @@ export function App() {
       fetchSwitchExecutionHandoffPackagesFromApi(),
       fetchSwitchExecutionOutcomeRecordsFromApi(),
       fetchSwitchClosureRetentionPackagesFromApi(),
+      fetchAdapterPromotionReadinessDossiersFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -805,6 +814,7 @@ export function App() {
     setSwitchExecutionHandoffPackages(apiSwitchExecutionHandoffPackages);
     setSwitchExecutionOutcomeRecords(apiSwitchExecutionOutcomeRecords);
     setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
+    setAdapterPromotionReadinessDossiers(apiAdapterPromotionReadinessDossiers);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1811,6 +1821,28 @@ export function App() {
     ]);
   }
 
+  async function prepareAdapterPromotionReadinessDossier() {
+    const closurePackage = switchClosureRetentionPackages[0];
+    if (!closurePackage) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const dossier = await createAdapterPromotionReadinessDossierViaApi({ closurePackageId: closurePackage.id });
+      await refreshApiState();
+      setAdapterPromotionReadinessDossiers((current) => [
+        dossier,
+        ...current.filter((item) => item.id !== dossier.id),
+      ]);
+      return;
+    }
+
+    setAdapterPromotionReadinessDossiers((current) => [
+      createMockAdapterPromotionReadinessDossier(closurePackage, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2053,6 +2085,7 @@ export function App() {
             switchExecutionHandoffPackages={switchExecutionHandoffPackages}
             switchExecutionOutcomeRecords={switchExecutionOutcomeRecords}
             switchClosureRetentionPackages={switchClosureRetentionPackages}
+            adapterPromotionReadinessDossiers={adapterPromotionReadinessDossiers}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2100,6 +2133,7 @@ export function App() {
             prepareSwitchExecutionHandoffPackage={prepareSwitchExecutionHandoffPackage}
             recordSwitchExecutionOutcome={recordSwitchExecutionOutcome}
             prepareSwitchClosureRetentionPackage={prepareSwitchClosureRetentionPackage}
+            prepareAdapterPromotionReadinessDossier={prepareAdapterPromotionReadinessDossier}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2630,6 +2664,7 @@ function AdminView({
   switchExecutionHandoffPackages,
   switchExecutionOutcomeRecords,
   switchClosureRetentionPackages,
+  adapterPromotionReadinessDossiers,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2677,6 +2712,7 @@ function AdminView({
   prepareSwitchExecutionHandoffPackage,
   recordSwitchExecutionOutcome,
   prepareSwitchClosureRetentionPackage,
+  prepareAdapterPromotionReadinessDossier,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2738,6 +2774,7 @@ function AdminView({
   switchExecutionHandoffPackages: SwitchExecutionHandoffPackage[];
   switchExecutionOutcomeRecords: SwitchExecutionOutcomeRecord[];
   switchClosureRetentionPackages: SwitchClosureRetentionPackage[];
+  adapterPromotionReadinessDossiers: AdapterPromotionReadinessDossier[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2788,6 +2825,7 @@ function AdminView({
   prepareSwitchExecutionHandoffPackage: () => void;
   recordSwitchExecutionOutcome: () => void;
   prepareSwitchClosureRetentionPackage: () => void;
+  prepareAdapterPromotionReadinessDossier: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3134,6 +3172,12 @@ function AdminView({
             <SwitchClosureRetentionPackagePanel
               packages={switchClosureRetentionPackages}
               prepareSwitchClosureRetentionPackage={prepareSwitchClosureRetentionPackage}
+            />
+          </Panel>
+          <Panel title="Adapter promotion dossiers" action={`${adapterPromotionReadinessDossiers.length} dossiers`}>
+            <AdapterPromotionReadinessDossierPanel
+              dossiers={adapterPromotionReadinessDossiers}
+              prepareAdapterPromotionReadinessDossier={prepareAdapterPromotionReadinessDossier}
             />
           </Panel>
         </div>
@@ -5325,6 +5369,73 @@ function SwitchClosureRetentionPackagePanel({
             <span>Rollback closure: {latest.rollbackTimerClosureReference || "missing"}</span>
             <span>Final retention: {latest.finalAuditRetentionConfirmation || "missing"}</span>
             <span>Outcome record: {latest.outcomeRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdapterPromotionReadinessDossierPanel({
+  dossiers,
+  prepareAdapterPromotionReadinessDossier,
+}: {
+  dossiers: AdapterPromotionReadinessDossier[];
+  prepareAdapterPromotionReadinessDossier: () => void;
+}) {
+  const latest = dossiers[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Adapter promotion readiness dossier</strong>
+          <span>Assembles retained switch evidence, monitoring, rollback drill, and security acceptance.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareAdapterPromotionReadinessDossier}>
+          <ShieldCheck size={15} />
+          Prepare promotion dossier
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No adapter promotion readiness dossier has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.closurePackageId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for adapter promotion review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Owner" value={latest.promotionOwner || "missing"} passed={Boolean(latest.promotionOwner)} />
+            <CheckLine icon={Archive} label="Evidence" value={latest.retainedSwitchEvidenceReference || "missing"} passed={Boolean(latest.retainedSwitchEvidenceReference)} />
+            <CheckLine icon={Gauge} label="Monitoring" value={latest.monitoringPlanReference || "missing"} passed={Boolean(latest.monitoringPlanReference)} />
+            <CheckLine icon={LockKeyhole} label="Promotion" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Adapter promotion evidence</strong>
+            <span>Rollback drill: {latest.rollbackDrillConfirmation || "missing"}</span>
+            <span>Security acceptance: {latest.securityAcceptanceReference || "missing"}</span>
+            <span>Closure package: {latest.closurePackageId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -9336,6 +9447,88 @@ function createMockSwitchClosureRetentionPackage(
       `Kill switch: ${outcomeRecord.killSwitch.name}=${outcomeRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: outcomeRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAdapterPromotionReadinessDossier(
+  closurePackage: SwitchClosureRetentionPackage,
+  actor: string
+): AdapterPromotionReadinessDossier {
+  const promotionOwner = "Cloud Platform Owner";
+  const retainedSwitchEvidenceReference = closurePackage.retainedEvidenceManifestReference;
+  const monitoringPlanReference = `adapter-promotion-monitoring-${closurePackage.provider.toLowerCase()}.md`;
+  const rollbackDrillConfirmation = `rollback-drill-confirmation-${closurePackage.provider.toLowerCase()}.md`;
+  const securityAcceptanceReference = `security-acceptance-${closurePackage.provider.toLowerCase()}.md`;
+  const checks = [
+    {
+      name: "Closure package ready",
+      passed: closurePackage.status === "Ready for switch closure review",
+      detail: `${closurePackage.id} is ${closurePackage.status}.`,
+    },
+    {
+      name: "Promotion owner assigned",
+      passed: Boolean(promotionOwner),
+      detail: promotionOwner,
+    },
+    {
+      name: "Retained switch evidence linked",
+      passed: Boolean(retainedSwitchEvidenceReference),
+      detail: retainedSwitchEvidenceReference,
+    },
+    {
+      name: "Monitoring plan linked",
+      passed: Boolean(monitoringPlanReference),
+      detail: monitoringPlanReference,
+    },
+    {
+      name: "Rollback drill confirmed",
+      passed: Boolean(rollbackDrillConfirmation),
+      detail: rollbackDrillConfirmation,
+    },
+    {
+      name: "Security acceptance linked",
+      passed: Boolean(securityAcceptanceReference),
+      detail: securityAcceptanceReference,
+    },
+    {
+      name: "Prototype does not promote adapter",
+      passed: !closurePackage.provisioningEnabled && !closurePackage.killSwitch.enabled,
+      detail: `${closurePackage.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `adapter-promotion-readiness-dossier-${closurePackage.provider.toLowerCase()}-${Date.now()}`,
+    provider: closurePackage.provider,
+    closurePackageId: closurePackage.id,
+    outcomeRecordId: closurePackage.outcomeRecordId,
+    handoffPackageId: closurePackage.handoffPackageId,
+    controlledSwitchRequestId: closurePackage.controlledSwitchRequestId,
+    auditPackageId: closurePackage.auditPackageId,
+    switchReviewId: closurePackage.switchReviewId,
+    activationId: closurePackage.activationId,
+    idempotencyKey: closurePackage.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for adapter promotion review" : "Blocked",
+    requestedBy: actor,
+    promotionOwner,
+    retainedSwitchEvidenceReference,
+    monitoringPlanReference,
+    rollbackDrillConfirmation,
+    securityAcceptanceReference,
+    checks,
+    evidence: [
+      `Closure package: ${closurePackage.id}.`,
+      `Outcome record: ${closurePackage.outcomeRecordId}.`,
+      `Promotion owner: ${promotionOwner}.`,
+      `Retained switch evidence: ${retainedSwitchEvidenceReference}.`,
+      `Monitoring plan: ${monitoringPlanReference}.`,
+      `Rollback drill: ${rollbackDrillConfirmation}.`,
+      `Security acceptance: ${securityAcceptanceReference}.`,
+      `Kill switch: ${closurePackage.killSwitch.name}=${closurePackage.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: closurePackage.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

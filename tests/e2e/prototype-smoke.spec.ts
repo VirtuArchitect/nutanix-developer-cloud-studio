@@ -250,6 +250,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Switch closure retention package")).toBeVisible();
   await expect(page.getByText("Switch closure evidence")).toBeVisible();
   await expect(page.getByText("Prototype closes evidence only")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Adapter promotion dossiers" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare promotion dossier" }).click();
+  await expect(page.getByText("Adapter promotion readiness dossier")).toBeVisible();
+  await expect(page.getByText("Adapter promotion evidence")).toBeVisible();
+  await expect(page.getByText("Prototype does not promote adapter")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

@@ -101,6 +101,10 @@ import {
   SwitchClosureRetentionPackageError,
 } from "./switchClosureRetentionPackage";
 import {
+  createAdapterPromotionReadinessDossier,
+  AdapterPromotionReadinessDossierError,
+} from "./adapterPromotionReadinessDossier";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -207,6 +211,7 @@ import type {
   CreateSwitchExecutionHandoffPackageRequest,
   CreateSwitchExecutionOutcomeRecordRequest,
   CreateSwitchClosureRetentionPackageRequest,
+  CreateAdapterPromotionReadinessDossierRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -492,6 +497,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof SwitchClosureRetentionPackageError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof AdapterPromotionReadinessDossierError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -909,6 +924,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-closure-packages") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.switchClosureRetentionPackages });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/adapter-promotion-dossiers") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.adapterPromotionReadinessDossiers });
     return;
   }
 
@@ -1935,6 +1956,25 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: closurePackage });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/adapter-promotion-dossiers") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateAdapterPromotionReadinessDossierRequest>(request);
+    const dossier = createAdapterPromotionReadinessDossier(state, body, context.session.user);
+    state.adapterPromotionReadinessDossiers = [
+      dossier,
+      ...state.adapterPromotionReadinessDossiers,
+    ];
+    addAuditEvent(state, "real-adapter.adapter-promotion-dossier.recorded", context.session.user, dossier.provider, {
+      closurePackageId: dossier.closurePackageId,
+      idempotencyKey: dossier.idempotencyKey,
+      status: dossier.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: dossier });
     return;
   }
 
