@@ -881,6 +881,11 @@ describe("api server", () => {
       body: JSON.stringify({ dispatchApprovalId: dispatchApproval.data.id }),
     });
     const labScopeActivations = await requestJson("/api/real-adapter/lab-scope-activations");
+    const switchReview = await requestJson("/api/real-adapter/switch-reviews", {
+      method: "POST",
+      body: JSON.stringify({ activationId: labScopeActivation.data.id }),
+    });
+    const switchReviews = await requestJson("/api/real-adapter/switch-reviews");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1192,6 +1197,21 @@ describe("api server", () => {
     expect(labScopeActivations.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: labScopeActivation.data.id })])
     );
+    expect(switchReview.data).toMatchObject({
+      provider: "NDB",
+      activationId: labScopeActivation.data.id,
+      dispatchApprovalId: dispatchApproval.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(switchReview.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Lab scope activation ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not change switch state", passed: true }),
+      ])
+    );
+    expect(switchReviews.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: switchReview.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1212,6 +1232,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "execution-broker.queue.recorded", target: "NDB" }),
         expect.objectContaining({ action: "execution-broker.dispatch-approval.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.lab-scope-activation.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.switch-review.recorded", target: "NDB" }),
       ])
     );
   });

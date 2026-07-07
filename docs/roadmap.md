@@ -370,10 +370,17 @@
 
 ## Phase 48 - Manual Real Adapter Switch Review (`v2.26.0-manual-real-adapter-switch-review`)
 
-- Add manual real-adapter switch review records linked to lab scope activations - planned
-- Require named switch operator, second reviewer, maintenance window, and switch-state audit references - planned
-- Add Admin Operations switch review panel - planned
-- Keep switch reviews evidence-only until an authorized lab operator explicitly changes environment configuration - planned
+- Add manual real-adapter switch review records linked to lab scope activations - done
+- Require named switch operator, second reviewer, maintenance window, and switch-state audit references - done
+- Add Admin Operations switch review panel - done
+- Keep switch reviews evidence-only until an authorized lab operator explicitly changes environment configuration - done
+
+## Phase 49 - Real Adapter Switch State Audit Package (`v2.27.0-real-adapter-switch-state-audit-package`)
+
+- Add switch-state audit package records linked to manual switch reviews - planned
+- Require pre-change and post-change config snapshots, reviewer evidence, rollback timer, and retention references - planned
+- Add Admin Operations switch-state audit panel - planned
+- Keep audit packages evidence-only and leave adapter switch state unchanged from the prototype - planned
 
 ## Gated Promotion
 

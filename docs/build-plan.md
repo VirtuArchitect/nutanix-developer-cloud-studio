@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.26.0-manual-real-adapter-switch-review` adds evidence-only switch reviews linked to lab scope activations and an Admin Operations switch review panel.
 - `v2.25.0-real-adapter-lab-scope-activation` adds manual-switch-review activation evidence linked to dispatch approvals and an Admin Operations activation panel.
 - `v2.24.0-execution-broker-dispatch-approval` adds non-executing dispatch approvals linked to broker queue records and an Admin Operations dispatch approval panel.
 - `v2.23.0-execution-broker-hardening` adds operator-review-only execution broker queue records linked to readiness attestations and an Admin Operations broker panel.
@@ -414,6 +415,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Operations surfaces activation readiness, evidence references, and blockers.
 - Missing dispatch approvals or incomplete activation evidence block manual switch review readiness.
 - Real adapter execution remains disabled.
+
+## Current Manual Real Adapter Switch Review Slice
+
+- API records manual real-adapter switch reviews linked to lab scope activations.
+- Switch reviews require named switch operator, second reviewer, maintenance window, switch-state audit references, and rollback contact.
+- Admin Operations surfaces switch review readiness, evidence references, and blockers.
+- Missing activations or incomplete switch review evidence block readiness.
+- The prototype does not change adapter switch configuration.
 
 ## Suggested Tech Stack
 

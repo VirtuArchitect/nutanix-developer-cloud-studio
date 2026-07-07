@@ -353,6 +353,15 @@ Real-adapter lab scope activations record explicit evidence before any manual re
 
 Required role: `Platform Admin`.
 
+### Manual Real Adapter Switch Reviews
+
+- `GET /api/real-adapter/switch-reviews`
+- `POST /api/real-adapter/switch-reviews`
+
+Manual real-adapter switch reviews record evidence before an authorized lab operator can consider changing adapter switch configuration outside the prototype. Reviews require a ready lab scope activation, named switch operator, second reviewer, maintenance window reference, switch-state audit references, rollback contact, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -60,6 +60,7 @@ import {
   type LabScopeDiagnostics,
   type LifecycleOperationKind,
   type LifecycleOperationRecord,
+  type ManualRealAdapterSwitchReview,
   platformConfig as defaultPlatformConfig,
   policyBundles as defaultPolicyBundles,
   templateRegistry as defaultTemplateRegistry,
@@ -123,6 +124,7 @@ import {
   createLabExecutionProposalEnvelopeViaApi,
   createLabExecutionProposalExportViaApi,
   createLabWindowEvidenceExportViaApi,
+  createManualRealAdapterSwitchReviewViaApi,
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
   createControlledProvisioningGateViaApi,
@@ -169,6 +171,7 @@ import {
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
+  fetchManualRealAdapterSwitchReviewsFromApi,
   fetchLabAdaptersFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -269,6 +272,7 @@ export function App() {
   const [executionBrokerQueueRecords, setExecutionBrokerQueueRecords] = useState<ExecutionBrokerQueueRecord[]>([]);
   const [executionBrokerDispatchApprovals, setExecutionBrokerDispatchApprovals] = useState<ExecutionBrokerDispatchApproval[]>([]);
   const [realAdapterLabScopeActivations, setRealAdapterLabScopeActivations] = useState<RealAdapterLabScopeActivation[]>([]);
+  const [manualRealAdapterSwitchReviews, setManualRealAdapterSwitchReviews] = useState<ManualRealAdapterSwitchReview[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -365,6 +369,7 @@ export function App() {
             apiExecutionBrokerQueueRecords,
             apiExecutionBrokerDispatchApprovals,
             apiRealAdapterLabScopeActivations,
+            apiManualRealAdapterSwitchReviews,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -416,6 +421,7 @@ export function App() {
             fetchExecutionBrokerQueueRecordsFromApi(),
             fetchExecutionBrokerDispatchApprovalsFromApi(),
             fetchRealAdapterLabScopeActivationsFromApi(),
+            fetchManualRealAdapterSwitchReviewsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -469,6 +475,7 @@ export function App() {
             setExecutionBrokerQueueRecords(apiExecutionBrokerQueueRecords);
             setExecutionBrokerDispatchApprovals(apiExecutionBrokerDispatchApprovals);
             setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
+            setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -642,6 +649,7 @@ export function App() {
       apiExecutionBrokerQueueRecords,
       apiExecutionBrokerDispatchApprovals,
       apiRealAdapterLabScopeActivations,
+      apiManualRealAdapterSwitchReviews,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -693,6 +701,7 @@ export function App() {
       fetchExecutionBrokerQueueRecordsFromApi(),
       fetchExecutionBrokerDispatchApprovalsFromApi(),
       fetchRealAdapterLabScopeActivationsFromApi(),
+      fetchManualRealAdapterSwitchReviewsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -745,6 +754,7 @@ export function App() {
     setExecutionBrokerQueueRecords(apiExecutionBrokerQueueRecords);
     setExecutionBrokerDispatchApprovals(apiExecutionBrokerDispatchApprovals);
     setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
+    setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1617,6 +1627,28 @@ export function App() {
     ]);
   }
 
+  async function recordManualRealAdapterSwitchReview() {
+    const activation = realAdapterLabScopeActivations[0];
+    if (!activation) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const review = await createManualRealAdapterSwitchReviewViaApi({ activationId: activation.id });
+      await refreshApiState();
+      setManualRealAdapterSwitchReviews((current) => [
+        review,
+        ...current.filter((item) => item.id !== review.id),
+      ]);
+      return;
+    }
+
+    setManualRealAdapterSwitchReviews((current) => [
+      createMockManualRealAdapterSwitchReview(activation, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1853,6 +1885,7 @@ export function App() {
             executionBrokerQueueRecords={executionBrokerQueueRecords}
             executionBrokerDispatchApprovals={executionBrokerDispatchApprovals}
             realAdapterLabScopeActivations={realAdapterLabScopeActivations}
+            manualRealAdapterSwitchReviews={manualRealAdapterSwitchReviews}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1894,6 +1927,7 @@ export function App() {
             queueExecutionBrokerRecord={queueExecutionBrokerRecord}
             recordExecutionBrokerDispatchApproval={recordExecutionBrokerDispatchApproval}
             recordRealAdapterLabScopeActivation={recordRealAdapterLabScopeActivation}
+            recordManualRealAdapterSwitchReview={recordManualRealAdapterSwitchReview}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2418,6 +2452,7 @@ function AdminView({
   executionBrokerQueueRecords,
   executionBrokerDispatchApprovals,
   realAdapterLabScopeActivations,
+  manualRealAdapterSwitchReviews,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2459,6 +2494,7 @@ function AdminView({
   queueExecutionBrokerRecord,
   recordExecutionBrokerDispatchApproval,
   recordRealAdapterLabScopeActivation,
+  recordManualRealAdapterSwitchReview,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2514,6 +2550,7 @@ function AdminView({
   executionBrokerQueueRecords: ExecutionBrokerQueueRecord[];
   executionBrokerDispatchApprovals: ExecutionBrokerDispatchApproval[];
   realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
+  manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2558,6 +2595,7 @@ function AdminView({
   queueExecutionBrokerRecord: () => void;
   recordExecutionBrokerDispatchApproval: () => void;
   recordRealAdapterLabScopeActivation: () => void;
+  recordManualRealAdapterSwitchReview: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2868,6 +2906,12 @@ function AdminView({
             <RealAdapterLabScopeActivationPanel
               activations={realAdapterLabScopeActivations}
               recordRealAdapterLabScopeActivation={recordRealAdapterLabScopeActivation}
+            />
+          </Panel>
+          <Panel title="Manual real-adapter switch review" action={`${manualRealAdapterSwitchReviews.length} reviews`}>
+            <ManualRealAdapterSwitchReviewPanel
+              reviews={manualRealAdapterSwitchReviews}
+              recordManualRealAdapterSwitchReview={recordManualRealAdapterSwitchReview}
             />
           </Panel>
         </div>
@@ -4657,6 +4701,73 @@ function RealAdapterLabScopeActivationPanel({
             <span>Pentest completion: {latest.pentestCompletionEvidence || "missing"}</span>
             <span>Manual controls: {latest.manualOperatorControls.join(", ")}</span>
             <span>Bounded targets: {latest.boundedProviderTargets.join(", ")}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ManualRealAdapterSwitchReviewPanel({
+  reviews,
+  recordManualRealAdapterSwitchReview,
+}: {
+  reviews: ManualRealAdapterSwitchReview[];
+  recordManualRealAdapterSwitchReview: () => void;
+}) {
+  const latest = reviews[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Settings size={18} />
+        <div>
+          <strong>Manual switch review</strong>
+          <span>Records named operator, second reviewer, maintenance window, switch-state audit refs, and rollback contact.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordManualRealAdapterSwitchReview}>
+          <Settings size={15} />
+          Record switch review
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No manual real-adapter switch review has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.activationId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for manual switch change review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Operator" value={latest.switchOperator || "missing"} passed={Boolean(latest.switchOperator)} />
+            <CheckLine icon={ShieldCheck} label="Reviewer" value={latest.secondReviewer || "missing"} passed={Boolean(latest.secondReviewer)} />
+            <CheckLine icon={Archive} label="Audit refs" value={`${latest.switchStateAuditReferences.length} refs`} passed={latest.switchStateAuditReferences.length >= 2} />
+            <CheckLine icon={LockKeyhole} label="Switch" value="Unchanged" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Switch review evidence</strong>
+            <span>Maintenance window: {latest.maintenanceWindowReference || "missing"}</span>
+            <span>Switch-state audit: {latest.switchStateAuditReferences.join(", ")}</span>
+            <span>Rollback contact: {latest.rollbackContact || "missing"}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -8192,6 +8303,86 @@ function createMockRealAdapterLabScopeActivation(
       `Kill switch: ${dispatchApproval.killSwitch.name}=${dispatchApproval.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: dispatchApproval.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockManualRealAdapterSwitchReview(
+  activation: RealAdapterLabScopeActivation,
+  actor: string
+): ManualRealAdapterSwitchReview {
+  const switchOperator = "cloud.switch.operator";
+  const secondReviewer = "security.change.reviewer";
+  const maintenanceWindowReference = `maintenance-window-${activation.provider.toLowerCase()}.md`;
+  const switchStateAuditReferences = [
+    `pre-switch-state-${activation.provider.toLowerCase()}.json`,
+    `post-switch-state-${activation.provider.toLowerCase()}.json`,
+  ];
+  const rollbackContact = activation.rollbackOwner;
+  const checks = [
+    {
+      name: "Lab scope activation ready",
+      passed: activation.status === "Ready for manual real-adapter switch review",
+      detail: `${activation.id} is ${activation.status}.`,
+    },
+    {
+      name: "Switch operator assigned",
+      passed: Boolean(switchOperator),
+      detail: switchOperator,
+    },
+    {
+      name: "Second reviewer assigned",
+      passed: Boolean(secondReviewer),
+      detail: secondReviewer,
+    },
+    {
+      name: "Maintenance window linked",
+      passed: Boolean(maintenanceWindowReference),
+      detail: maintenanceWindowReference,
+    },
+    {
+      name: "Switch-state audit references linked",
+      passed: switchStateAuditReferences.length >= 2,
+      detail: `${switchStateAuditReferences.length}/2 switch-state audit reference(s).`,
+    },
+    {
+      name: "Rollback contact assigned",
+      passed: Boolean(rollbackContact),
+      detail: rollbackContact,
+    },
+    {
+      name: "Prototype does not change switch state",
+      passed: !activation.provisioningEnabled && !activation.killSwitch.enabled,
+      detail: `${activation.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `manual-real-adapter-switch-review-${activation.provider.toLowerCase()}-${Date.now()}`,
+    provider: activation.provider,
+    activationId: activation.id,
+    dispatchApprovalId: activation.dispatchApprovalId,
+    idempotencyKey: activation.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for manual switch change review" : "Blocked",
+    requestedBy: actor,
+    switchOperator,
+    secondReviewer,
+    maintenanceWindowReference,
+    switchStateAuditReferences,
+    rollbackContact,
+    checks,
+    evidence: [
+      `Activation: ${activation.id}.`,
+      `Dispatch approval: ${activation.dispatchApprovalId}.`,
+      `Switch operator: ${switchOperator}.`,
+      `Second reviewer: ${secondReviewer}.`,
+      `Maintenance window: ${maintenanceWindowReference}.`,
+      `Switch-state audit references: ${switchStateAuditReferences.length}.`,
+      `Rollback contact: ${rollbackContact}.`,
+      `Kill switch: ${activation.killSwitch.name}=${activation.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: activation.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

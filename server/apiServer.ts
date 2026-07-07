@@ -77,6 +77,10 @@ import {
   RealAdapterLabScopeActivationError,
 } from "./realAdapterLabScopeActivation";
 import {
+  createManualRealAdapterSwitchReview,
+  ManualRealAdapterSwitchReviewError,
+} from "./manualRealAdapterSwitchReview";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -177,6 +181,7 @@ import type {
   CreateExecutionBrokerDispatchApprovalRequest,
   CreateExecutionBrokerQueueRecordRequest,
   CreateRealAdapterLabScopeActivationRequest,
+  CreateManualRealAdapterSwitchReviewRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -402,6 +407,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof RealAdapterLabScopeActivationError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ManualRealAdapterSwitchReviewError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -783,6 +798,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/lab-scope-activations") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.realAdapterLabScopeActivations });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-reviews") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.manualRealAdapterSwitchReviews });
     return;
   }
 
@@ -1701,6 +1722,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: activation });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/switch-reviews") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateManualRealAdapterSwitchReviewRequest>(request);
+    const review = createManualRealAdapterSwitchReview(state, body, context.session.user);
+    state.manualRealAdapterSwitchReviews = [review, ...state.manualRealAdapterSwitchReviews];
+    addAuditEvent(state, "real-adapter.switch-review.recorded", context.session.user, review.provider, {
+      activationId: review.activationId,
+      idempotencyKey: review.idempotencyKey,
+      status: review.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: review });
     return;
   }
 

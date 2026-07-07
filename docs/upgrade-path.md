@@ -805,6 +805,23 @@ Exit gate:
 - Switch reviews are evidence-only records.
 - No switch is changed by the prototype.
 
+### v2.27.0-real-adapter-switch-state-audit-package
+
+Goal: collect pre-change and post-change switch-state evidence after manual switch review without changing adapter configuration from the prototype.
+
+Build:
+
+- Switch-state audit package records linked to manual switch reviews.
+- Pre-change and post-change configuration snapshots, reviewer evidence, rollback timer, and retention references.
+- Admin Operations switch-state audit panel with blockers and evidence references.
+- Tests proving missing switch reviews, config snapshots, reviewer evidence, or retention references block audit package readiness.
+
+Exit gate:
+
+- Switch-state audit package APIs and UI are tested.
+- Audit packages are evidence-only records.
+- No switch is changed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

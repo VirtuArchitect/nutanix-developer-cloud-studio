@@ -220,6 +220,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Real-adapter lab scope activation")).toBeVisible();
   await expect(page.getByText("Activation evidence")).toBeVisible();
   await expect(page.getByText("Real adapter switch remains disabled")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Manual real-adapter switch review" })).toBeVisible();
+  await page.getByRole("button", { name: "Record switch review" }).click();
+  await expect(page.getByText("Manual switch review")).toBeVisible();
+  await expect(page.getByText("Switch review evidence")).toBeVisible();
+  await expect(page.getByText("Prototype does not change switch state")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

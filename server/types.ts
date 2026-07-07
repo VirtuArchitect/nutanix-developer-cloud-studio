@@ -28,6 +28,7 @@ import type {
   LabAuthorizationScope,
   LifecycleOperationKind,
   LifecycleOperationRecord,
+  ManualRealAdapterSwitchReview,
   PlatformConfig,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -101,6 +102,7 @@ export type ApiState = {
   executionBrokerQueueRecords: ExecutionBrokerQueueRecord[];
   executionBrokerDispatchApprovals: ExecutionBrokerDispatchApproval[];
   realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
+  manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -348,6 +350,16 @@ export type CreateRealAdapterLabScopeActivationRequest = {
   rollbackOwner?: string;
   boundedProviderTargets?: string[];
   manualOperatorControls?: string[];
+};
+
+export type CreateManualRealAdapterSwitchReviewRequest = {
+  activationId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  switchOperator?: string;
+  secondReviewer?: string;
+  maintenanceWindowReference?: string;
+  switchStateAuditReferences?: string[];
+  rollbackContact?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

@@ -30,6 +30,7 @@ import type {
   LabScopeDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
+  ManualRealAdapterSwitchReview,
   PlatformConfig,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -356,6 +357,10 @@ export async function fetchRealAdapterLabScopeActivationsFromApi() {
   return fetchJson<RealAdapterLabScopeActivation[]>("/api/real-adapter/lab-scope-activations");
 }
 
+export async function fetchManualRealAdapterSwitchReviewsFromApi() {
+  return fetchJson<ManualRealAdapterSwitchReview[]>("/api/real-adapter/switch-reviews");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -623,6 +628,16 @@ export async function createRealAdapterLabScopeActivationViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<RealAdapterLabScopeActivation>("/api/real-adapter/lab-scope-activations", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createManualRealAdapterSwitchReviewViaApi(payload: {
+  activationId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ManualRealAdapterSwitchReview>("/api/real-adapter/switch-reviews", {
     method: "POST",
     body: JSON.stringify(payload),
   });

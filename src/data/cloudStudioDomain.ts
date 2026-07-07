@@ -1008,6 +1008,30 @@ export type RealAdapterLabScopeActivation = {
   createdAt: string;
 };
 
+export type ManualRealAdapterSwitchReview = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  activationId: string;
+  dispatchApprovalId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for manual switch change review";
+  requestedBy: string;
+  switchOperator: string;
+  secondReviewer: string;
+  maintenanceWindowReference: string;
+  switchStateAuditReferences: string[];
+  rollbackContact: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: RealAdapterLabScopeActivation["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";
