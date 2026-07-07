@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.52.0-production-execution-support-readiness-record`.
+- Added production execution support readiness records linked to production execution operations handover records.
+- Added API endpoints for production execution support readiness records.
+- Added Admin Operations production support readiness panel.
+- Added tests proving missing operations handover records or incomplete support readiness evidence block readiness.
+- Planned `v2.53.0-production-execution-service-acceptance-record` for evidence-only service acceptance records.
 - Released `v2.51.0-production-execution-operations-handover-record`.
 - Added production execution operations handover records linked to production execution completion dossier records.
 - Added API endpoints for production execution operations handover records.

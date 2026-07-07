@@ -1880,6 +1880,51 @@ export type ProductionExecutionOperationsHandoverRecord = {
   createdAt: string;
 };
 
+export type ProductionExecutionSupportReadinessRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  operationsHandoverRecordId: string;
+  completionDossierRecordId: string;
+  finalArchiveCertificationRecordId: string;
+  retentionAttestationRecordId: string;
+  archivalHandoffRecordId: string;
+  closurePacketRecordId: string;
+  closureAuthorizationRecordId: string;
+  outcomeAuthorizationRecordId: string;
+  executionHoldPointRecordId: string;
+  finalExecutionPacketRecordId: string;
+  changeTicketLockRecordId: string;
+  executionAuthorizationRecordId: string;
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production execution support readiness review";
+  requestedBy: string;
+  supportOwner: string;
+  runbookAcceptanceReference: string;
+  alertRoutingProofReference: string;
+  incidentProcessReference: string;
+  knowledgeBasePublicationReference: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionOperationsHandoverRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

@@ -552,10 +552,17 @@
 
 ## Phase 74 - Production Execution Support Readiness Record (`v2.52.0-production-execution-support-readiness-record`)
 
-- Add production execution support readiness records linked to operations handover records - planned
-- Require support owner, runbook acceptance, alert routing proof, incident process reference, and knowledge base publication - planned
-- Add Admin Operations support readiness panel - planned
-- Keep support readiness records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution support readiness records linked to operations handover records - done
+- Require support owner, runbook acceptance, alert routing proof, incident process reference, and knowledge base publication - done
+- Add Admin Operations support readiness panel - done
+- Keep support readiness records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 75 - Production Execution Service Acceptance Record (`v2.53.0-production-execution-service-acceptance-record`)
+
+- Add production execution service acceptance records linked to support readiness records - planned
+- Require service owner, acceptance criteria reference, operational SLO reference, support sign-off, and final customer notification - planned
+- Add Admin Operations service acceptance panel - planned
+- Keep service acceptance records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

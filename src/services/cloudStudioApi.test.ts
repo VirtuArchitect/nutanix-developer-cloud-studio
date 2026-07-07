@@ -52,6 +52,7 @@ import {
   createProductionExecutionFinalArchiveCertificationRecordViaApi,
   createProductionExecutionCompletionDossierRecordViaApi,
   createProductionExecutionOperationsHandoverRecordViaApi,
+  createProductionExecutionSupportReadinessRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -121,6 +122,7 @@ import {
   fetchProductionExecutionFinalArchiveCertificationRecordsFromApi,
   fetchProductionExecutionCompletionDossierRecordsFromApi,
   fetchProductionExecutionOperationsHandoverRecordsFromApi,
+  fetchProductionExecutionSupportReadinessRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -618,6 +620,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionOperationsHandoverRecordViaApi({
       completionDossierRecordId: "production-execution-completion-dossier-record-ndb-1",
     });
+    await fetchProductionExecutionSupportReadinessRecordsFromApi();
+    await createProductionExecutionSupportReadinessRecordViaApi({
+      operationsHandoverRecordId: "production-execution-operations-handover-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -959,6 +965,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-completion-dossier-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      81,
+      "/api/real-adapter/production-execution-support-readiness-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      82,
+      "/api/real-adapter/production-execution-support-readiness-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-operations-handover-record-ndb-1"),
       })
     );
   });

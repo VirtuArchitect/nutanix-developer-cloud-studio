@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.52.0-production-execution-support-readiness-record` adds evidence-only support readiness records linked to operations handovers and an Admin Operations support readiness panel.
 - `v2.51.0-production-execution-operations-handover-record` adds evidence-only operations handover records linked to completion dossiers and an Admin Operations operations handover panel.
 - `v2.50.0-production-execution-completion-dossier-record` adds evidence-only completion dossier records linked to final archive certifications and an Admin Operations completion dossier panel.
 - `v2.49.0-production-execution-final-archive-certification-record` adds evidence-only final archive certification records linked to retention attestations and an Admin Operations final archive certification panel.

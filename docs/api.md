@@ -587,6 +587,15 @@ Production execution operations handover records capture handover evidence after
 
 Required role: `Platform Admin`.
 
+### Production Execution Support Readiness Records
+
+- `GET /api/real-adapter/production-execution-support-readiness-records`
+- `POST /api/real-adapter/production-execution-support-readiness-records`
+
+Production execution support readiness records capture support readiness evidence after operations handover readiness and before any future service acceptance phase. Records require a ready operations handover record, support owner, runbook acceptance, alert routing proof, incident process reference, knowledge base publication, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

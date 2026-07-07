@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.51.0-production-execution-operations-handover-record`.
+This project uses release tags for public milestones. The current release is `v2.52.0-production-execution-support-readiness-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution support readiness records after operations handover records are complete.
+- Add production execution service acceptance records after support readiness records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.52.0-production-execution-support-readiness-record] - 2026-07-07
+
+### Added
+
+- Production execution support readiness records linked to production execution operations handover records.
+- API endpoints for listing and recording production execution support readiness records.
+- Admin Operations production support readiness panel.
+- Support owner, runbook acceptance, alert routing proof, incident process reference, and knowledge base publication checks.
+- Tests proving missing operations handover records or incomplete support readiness evidence block support readiness.
+
+### Notes
+
+- Production execution support readiness records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.51.0-production-execution-operations-handover-record] - 2026-07-07
 
