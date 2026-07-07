@@ -456,6 +456,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready handoff packages, result evidence, validation evidence, rollback decisions, bridge logs, or audit sign-off block readiness.
 - The prototype records out-of-band outcomes only and does not execute adapter switch changes.
 
+## Current Switch Closure Retention Package Slice
+
+- API records switch closure retention packages linked to switch outcome records.
+- Closure packages require closure owner, retained evidence manifest, lessons learned, rollback timer closure, and final audit retention confirmation.
+- Admin Operations surfaces switch closure readiness, evidence references, and blockers.
+- Missing ready outcome records, retained manifests, lessons learned, rollback timer closure, or audit retention confirmation block readiness.
+- The prototype closes retained evidence only and does not execute adapter switch changes.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

@@ -53,6 +53,7 @@ import type {
   SessionDiagnostics,
   TemplateRegistryEntry,
   SystemStatus,
+  SwitchClosureRetentionPackage,
   SwitchExecutionHandoffPackage,
   SwitchExecutionOutcomeRecord,
   Target,
@@ -381,6 +382,10 @@ export async function fetchSwitchExecutionOutcomeRecordsFromApi() {
   return fetchJson<SwitchExecutionOutcomeRecord[]>("/api/real-adapter/switch-outcome-records");
 }
 
+export async function fetchSwitchClosureRetentionPackagesFromApi() {
+  return fetchJson<SwitchClosureRetentionPackage[]>("/api/real-adapter/switch-closure-packages");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -698,6 +703,16 @@ export async function createSwitchExecutionOutcomeRecordViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<SwitchExecutionOutcomeRecord>("/api/real-adapter/switch-outcome-records", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createSwitchClosureRetentionPackageViaApi(payload: {
+  outcomeRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<SwitchClosureRetentionPackage>("/api/real-adapter/switch-closure-packages", {
     method: "POST",
     body: JSON.stringify(payload),
   });

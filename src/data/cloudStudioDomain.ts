@@ -1134,6 +1134,34 @@ export type SwitchExecutionOutcomeRecord = {
   createdAt: string;
 };
 
+export type SwitchClosureRetentionPackage = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for switch closure review";
+  requestedBy: string;
+  closureOwner: string;
+  retainedEvidenceManifestReference: string;
+  lessonsLearnedReference: string;
+  rollbackTimerClosureReference: string;
+  finalAuditRetentionConfirmation: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: SwitchExecutionOutcomeRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

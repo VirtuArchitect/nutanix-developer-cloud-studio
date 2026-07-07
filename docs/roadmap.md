@@ -405,10 +405,17 @@
 
 ## Phase 53 - Switch Closure Retention Package (`v2.31.0-switch-closure-retention-package`)
 
-- Add switch closure retention packages linked to outcome records - planned
-- Require closure owner, retained evidence manifest, lessons learned, rollback timer closure, and final audit retention confirmation - planned
-- Add Admin Operations switch closure panel - planned
-- Keep closure packages evidence-only and require retained records before future adapter promotion - planned
+- Add switch closure retention packages linked to outcome records - done
+- Require closure owner, retained evidence manifest, lessons learned, rollback timer closure, and final audit retention confirmation - done
+- Add Admin Operations switch closure panel - done
+- Keep closure packages evidence-only and require retained records before future adapter promotion - done
+
+## Phase 54 - Adapter Promotion Readiness Dossier (`v2.32.0-adapter-promotion-readiness-dossier`)
+
+- Add adapter promotion readiness dossiers linked to switch closure packages - planned
+- Require promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, and security acceptance - planned
+- Add Admin Operations adapter promotion dossier panel - planned
+- Keep promotion dossiers evidence-only and require separate production authorization before any adapter promotion - planned
 
 ## Gated Promotion
 

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.30.0-switch-execution-outcome-record`.
+This project uses release tags for public milestones. The current release is `v2.31.0-switch-closure-retention-package`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add switch closure and retention package records after outcome evidence is complete.
+- Add adapter promotion readiness dossier records after switch closure evidence is complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.31.0-switch-closure-retention-package] - 2026-07-07
+
+### Added
+
+- Switch closure retention package records linked to outcome records.
+- API endpoints for listing and recording switch closure packages.
+- Admin Operations switch closure retention panel.
+- Closure owner, retained evidence manifest, lessons learned, rollback timer closure, and final audit retention checks.
+- Tests proving missing outcome records or incomplete closure evidence block readiness.
+
+### Notes
+
+- Switch closure packages are evidence-only.
+- The prototype closes retained records only and does not execute switch changes.
 
 ## [v2.30.0-switch-execution-outcome-record] - 2026-07-07
 

@@ -890,6 +890,23 @@ Exit gate:
 - Closure packages are evidence-only.
 - No switch is changed by the prototype.
 
+### v2.32.0-adapter-promotion-readiness-dossier
+
+Goal: assemble retained switch closure evidence into an adapter promotion readiness dossier without enabling promotion from the prototype.
+
+Build:
+
+- Adapter promotion readiness dossier records linked to switch closure packages.
+- Promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, and security acceptance checks.
+- Admin Operations adapter promotion dossier panel with blockers and evidence references.
+- Tests proving missing ready closure packages, retained evidence, monitoring plans, rollback drill confirmations, or security acceptance block promotion dossier readiness.
+
+Exit gate:
+
+- Adapter promotion dossier APIs and UI are tested.
+- Promotion dossiers are evidence-only.
+- No adapter is promoted by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

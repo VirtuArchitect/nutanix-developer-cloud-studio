@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.31.0-switch-closure-retention-package`.
+- Added switch closure retention packages linked to outcome records.
+- Added API endpoints for switch closure packages.
+- Added Admin Operations switch closure retention panel.
+- Added tests proving missing outcome records or incomplete closure evidence block readiness.
+- Planned `v2.32.0-adapter-promotion-readiness-dossier` for evidence-only adapter promotion readiness dossiers.
 - Released `v2.30.0-switch-execution-outcome-record`.
 - Added switch execution outcome records linked to handoff packages.
 - Added API endpoints for switch outcome records.
 - Added Admin Operations switch execution outcome panel.
 - Added tests proving missing handoff packages or incomplete outcome evidence block readiness.
-- Planned `v2.31.0-switch-closure-retention-package` for evidence-only closure and retention packages.
 - Released `v2.29.0-switch-execution-handoff-package`.
 - Added switch execution handoff package records linked to controlled switch requests.
 - Added API endpoints for switch handoff packages.

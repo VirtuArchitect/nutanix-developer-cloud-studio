@@ -87,6 +87,7 @@ import {
   type RollbackDestroyProofRecord,
   type SessionDiagnostics,
   type SystemStatus,
+  type SwitchClosureRetentionPackage,
   type SwitchExecutionHandoffPackage,
   type SwitchExecutionOutcomeRecord,
   type TemplateRegistryEntry,
@@ -125,6 +126,7 @@ import {
   createControlledSwitchConfigurationRequestViaApi,
   createSwitchExecutionHandoffPackageViaApi,
   createSwitchExecutionOutcomeRecordViaApi,
+  createSwitchClosureRetentionPackageViaApi,
   createExecutionBrokerDispatchApprovalViaApi,
   createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
@@ -169,6 +171,7 @@ import {
   fetchControlledSwitchConfigurationRequestsFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
   fetchSwitchExecutionOutcomeRecordsFromApi,
+  fetchSwitchClosureRetentionPackagesFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
@@ -289,6 +292,7 @@ export function App() {
   const [controlledSwitchConfigurationRequests, setControlledSwitchConfigurationRequests] = useState<ControlledSwitchConfigurationRequest[]>([]);
   const [switchExecutionHandoffPackages, setSwitchExecutionHandoffPackages] = useState<SwitchExecutionHandoffPackage[]>([]);
   const [switchExecutionOutcomeRecords, setSwitchExecutionOutcomeRecords] = useState<SwitchExecutionOutcomeRecord[]>([]);
+  const [switchClosureRetentionPackages, setSwitchClosureRetentionPackages] = useState<SwitchClosureRetentionPackage[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -390,6 +394,7 @@ export function App() {
             apiControlledSwitchConfigurationRequests,
             apiSwitchExecutionHandoffPackages,
             apiSwitchExecutionOutcomeRecords,
+            apiSwitchClosureRetentionPackages,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -446,6 +451,7 @@ export function App() {
             fetchControlledSwitchConfigurationRequestsFromApi(),
             fetchSwitchExecutionHandoffPackagesFromApi(),
             fetchSwitchExecutionOutcomeRecordsFromApi(),
+            fetchSwitchClosureRetentionPackagesFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -504,6 +510,7 @@ export function App() {
             setControlledSwitchConfigurationRequests(apiControlledSwitchConfigurationRequests);
             setSwitchExecutionHandoffPackages(apiSwitchExecutionHandoffPackages);
             setSwitchExecutionOutcomeRecords(apiSwitchExecutionOutcomeRecords);
+            setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -682,6 +689,7 @@ export function App() {
       apiControlledSwitchConfigurationRequests,
       apiSwitchExecutionHandoffPackages,
       apiSwitchExecutionOutcomeRecords,
+      apiSwitchClosureRetentionPackages,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -738,6 +746,7 @@ export function App() {
       fetchControlledSwitchConfigurationRequestsFromApi(),
       fetchSwitchExecutionHandoffPackagesFromApi(),
       fetchSwitchExecutionOutcomeRecordsFromApi(),
+      fetchSwitchClosureRetentionPackagesFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -795,6 +804,7 @@ export function App() {
     setControlledSwitchConfigurationRequests(apiControlledSwitchConfigurationRequests);
     setSwitchExecutionHandoffPackages(apiSwitchExecutionHandoffPackages);
     setSwitchExecutionOutcomeRecords(apiSwitchExecutionOutcomeRecords);
+    setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1779,6 +1789,28 @@ export function App() {
     ]);
   }
 
+  async function prepareSwitchClosureRetentionPackage() {
+    const outcomeRecord = switchExecutionOutcomeRecords[0];
+    if (!outcomeRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const closurePackage = await createSwitchClosureRetentionPackageViaApi({ outcomeRecordId: outcomeRecord.id });
+      await refreshApiState();
+      setSwitchClosureRetentionPackages((current) => [
+        closurePackage,
+        ...current.filter((item) => item.id !== closurePackage.id),
+      ]);
+      return;
+    }
+
+    setSwitchClosureRetentionPackages((current) => [
+      createMockSwitchClosureRetentionPackage(outcomeRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2020,6 +2052,7 @@ export function App() {
             controlledSwitchConfigurationRequests={controlledSwitchConfigurationRequests}
             switchExecutionHandoffPackages={switchExecutionHandoffPackages}
             switchExecutionOutcomeRecords={switchExecutionOutcomeRecords}
+            switchClosureRetentionPackages={switchClosureRetentionPackages}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2066,6 +2099,7 @@ export function App() {
             requestControlledSwitchConfiguration={requestControlledSwitchConfiguration}
             prepareSwitchExecutionHandoffPackage={prepareSwitchExecutionHandoffPackage}
             recordSwitchExecutionOutcome={recordSwitchExecutionOutcome}
+            prepareSwitchClosureRetentionPackage={prepareSwitchClosureRetentionPackage}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2595,6 +2629,7 @@ function AdminView({
   controlledSwitchConfigurationRequests,
   switchExecutionHandoffPackages,
   switchExecutionOutcomeRecords,
+  switchClosureRetentionPackages,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2641,6 +2676,7 @@ function AdminView({
   requestControlledSwitchConfiguration,
   prepareSwitchExecutionHandoffPackage,
   recordSwitchExecutionOutcome,
+  prepareSwitchClosureRetentionPackage,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2701,6 +2737,7 @@ function AdminView({
   controlledSwitchConfigurationRequests: ControlledSwitchConfigurationRequest[];
   switchExecutionHandoffPackages: SwitchExecutionHandoffPackage[];
   switchExecutionOutcomeRecords: SwitchExecutionOutcomeRecord[];
+  switchClosureRetentionPackages: SwitchClosureRetentionPackage[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2750,6 +2787,7 @@ function AdminView({
   requestControlledSwitchConfiguration: () => void;
   prepareSwitchExecutionHandoffPackage: () => void;
   recordSwitchExecutionOutcome: () => void;
+  prepareSwitchClosureRetentionPackage: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3090,6 +3128,12 @@ function AdminView({
             <SwitchExecutionOutcomeRecordPanel
               records={switchExecutionOutcomeRecords}
               recordSwitchExecutionOutcome={recordSwitchExecutionOutcome}
+            />
+          </Panel>
+          <Panel title="Switch closure retention" action={`${switchClosureRetentionPackages.length} packages`}>
+            <SwitchClosureRetentionPackagePanel
+              packages={switchClosureRetentionPackages}
+              prepareSwitchClosureRetentionPackage={prepareSwitchClosureRetentionPackage}
             />
           </Panel>
         </div>
@@ -5214,6 +5258,73 @@ function SwitchExecutionOutcomeRecordPanel({
             <span>Incident bridge: {latest.incidentBridgeLogReference || "missing"}</span>
             <span>Audit sign-off: {latest.auditSignOffReference || "missing"}</span>
             <span>Controlled request: {latest.controlledSwitchRequestId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SwitchClosureRetentionPackagePanel({
+  packages,
+  prepareSwitchClosureRetentionPackage,
+}: {
+  packages: SwitchClosureRetentionPackage[];
+  prepareSwitchClosureRetentionPackage: () => void;
+}) {
+  const latest = packages[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Switch closure retention package</strong>
+          <span>Closes out retained evidence, lessons learned, rollback timer closure, and final audit retention.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareSwitchClosureRetentionPackage}>
+          <Archive size={15} />
+          Prepare closure package
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No switch closure retention package has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.outcomeRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for switch closure review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Owner" value={latest.closureOwner || "missing"} passed={Boolean(latest.closureOwner)} />
+            <CheckLine icon={Archive} label="Manifest" value={latest.retainedEvidenceManifestReference || "missing"} passed={Boolean(latest.retainedEvidenceManifestReference)} />
+            <CheckLine icon={ScrollText} label="Lessons" value={latest.lessonsLearnedReference || "missing"} passed={Boolean(latest.lessonsLearnedReference)} />
+            <CheckLine icon={LockKeyhole} label="Switch" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Switch closure evidence</strong>
+            <span>Rollback closure: {latest.rollbackTimerClosureReference || "missing"}</span>
+            <span>Final retention: {latest.finalAuditRetentionConfirmation || "missing"}</span>
+            <span>Outcome record: {latest.outcomeRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -9144,6 +9255,87 @@ function createMockSwitchExecutionOutcomeRecord(
       `Kill switch: ${handoffPackage.killSwitch.name}=${handoffPackage.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: handoffPackage.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockSwitchClosureRetentionPackage(
+  outcomeRecord: SwitchExecutionOutcomeRecord,
+  actor: string
+): SwitchClosureRetentionPackage {
+  const closureOwner = "Cloud Operations";
+  const retainedEvidenceManifestReference = `retained-evidence-manifest-${outcomeRecord.provider.toLowerCase()}.json`;
+  const lessonsLearnedReference = `lessons-learned-${outcomeRecord.provider.toLowerCase()}.md`;
+  const rollbackTimerClosureReference = `rollback-timer-closure-${outcomeRecord.provider.toLowerCase()}.md`;
+  const finalAuditRetentionConfirmation = `final-audit-retention-${outcomeRecord.provider.toLowerCase()}.md`;
+  const checks = [
+    {
+      name: "Outcome record ready",
+      passed: outcomeRecord.status === "Ready for switch outcome review",
+      detail: `${outcomeRecord.id} is ${outcomeRecord.status}.`,
+    },
+    {
+      name: "Closure owner assigned",
+      passed: Boolean(closureOwner),
+      detail: closureOwner,
+    },
+    {
+      name: "Retained evidence manifest linked",
+      passed: Boolean(retainedEvidenceManifestReference),
+      detail: retainedEvidenceManifestReference,
+    },
+    {
+      name: "Lessons learned linked",
+      passed: Boolean(lessonsLearnedReference),
+      detail: lessonsLearnedReference,
+    },
+    {
+      name: "Rollback timer closure linked",
+      passed: Boolean(rollbackTimerClosureReference),
+      detail: rollbackTimerClosureReference,
+    },
+    {
+      name: "Final audit retention confirmed",
+      passed: Boolean(finalAuditRetentionConfirmation),
+      detail: finalAuditRetentionConfirmation,
+    },
+    {
+      name: "Prototype closes evidence only",
+      passed: !outcomeRecord.provisioningEnabled && !outcomeRecord.killSwitch.enabled,
+      detail: `${outcomeRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `switch-closure-retention-package-${outcomeRecord.provider.toLowerCase()}-${Date.now()}`,
+    provider: outcomeRecord.provider,
+    outcomeRecordId: outcomeRecord.id,
+    handoffPackageId: outcomeRecord.handoffPackageId,
+    controlledSwitchRequestId: outcomeRecord.controlledSwitchRequestId,
+    auditPackageId: outcomeRecord.auditPackageId,
+    switchReviewId: outcomeRecord.switchReviewId,
+    activationId: outcomeRecord.activationId,
+    idempotencyKey: outcomeRecord.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for switch closure review" : "Blocked",
+    requestedBy: actor,
+    closureOwner,
+    retainedEvidenceManifestReference,
+    lessonsLearnedReference,
+    rollbackTimerClosureReference,
+    finalAuditRetentionConfirmation,
+    checks,
+    evidence: [
+      `Outcome record: ${outcomeRecord.id}.`,
+      `Handoff package: ${outcomeRecord.handoffPackageId}.`,
+      `Closure owner: ${closureOwner}.`,
+      `Retained evidence manifest: ${retainedEvidenceManifestReference}.`,
+      `Lessons learned: ${lessonsLearnedReference}.`,
+      `Rollback timer closure: ${rollbackTimerClosureReference}.`,
+      `Final audit retention: ${finalAuditRetentionConfirmation}.`,
+      `Kill switch: ${outcomeRecord.killSwitch.name}=${outcomeRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: outcomeRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

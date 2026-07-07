@@ -398,6 +398,15 @@ Switch execution outcome records document the result of an out-of-band operator 
 
 Required role: `Platform Admin`.
 
+### Switch Closure Retention Packages
+
+- `GET /api/real-adapter/switch-closure-packages`
+- `POST /api/real-adapter/switch-closure-packages`
+
+Switch closure retention packages close retained evidence after switch outcome readiness. Packages require a ready outcome record, closure owner, retained evidence manifest, lessons learned, rollback timer closure, final audit retention confirmation, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.30.0-switch-execution-outcome-record",
+  "version": "2.31.0-switch-closure-retention-package",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
