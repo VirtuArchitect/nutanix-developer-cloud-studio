@@ -60,6 +60,7 @@ import {
   createProductionExecutionImprovementClosureRecordViaApi,
   createProductionExecutionFinalAcceptanceArchiveRecordViaApi,
   createProductionExecutionReadinessArchiveHandoffRecordViaApi,
+  createProductionExecutionArchiveRetrievalValidationRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -137,6 +138,7 @@ import {
   fetchProductionExecutionImprovementClosureRecordsFromApi,
   fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi,
   fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi,
+  fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -666,6 +668,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionReadinessArchiveHandoffRecordViaApi({
       finalAcceptanceArchiveRecordId: "production-execution-final-acceptance-archive-record-ndb-1",
     });
+    await fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi();
+    await createProductionExecutionArchiveRetrievalValidationRecordViaApi({
+      readinessArchiveHandoffRecordId: "production-execution-readiness-archive-handoff-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1111,6 +1117,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-final-acceptance-archive-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      97,
+      "/api/real-adapter/production-execution-archive-retrieval-validation-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      98,
+      "/api/real-adapter/production-execution-archive-retrieval-validation-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-readiness-archive-handoff-record-ndb-1"),
       })
     );
   });

@@ -659,6 +659,15 @@ Production execution readiness archive handoff records capture archive handoff e
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Retrieval Validation Records
+
+- `GET /api/real-adapter/production-execution-archive-retrieval-validation-records`
+- `POST /api/real-adapter/production-execution-archive-retrieval-validation-records`
+
+Production execution archive retrieval validation records capture retrievability evidence after readiness archive handoff and before any future archive recovery drill phase. Records require a ready readiness archive handoff record, retrieval operator, sample retrieval proof, checksum verification, access audit, recovery SLA witness, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

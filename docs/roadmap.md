@@ -608,10 +608,17 @@
 
 ## Phase 82 - Production Execution Archive Retrieval Validation Record (`v2.60.0-production-execution-archive-retrieval-validation-record`)
 
-- Add production execution archive retrieval validation records linked to readiness archive handoff records - planned
-- Require retrieval operator, sample retrieval proof, checksum verification, access audit, and recovery SLA witness - planned
-- Add Admin Operations archive retrieval validation panel - planned
-- Keep archive retrieval validation records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive retrieval validation records linked to readiness archive handoff records - done
+- Require retrieval operator, sample retrieval proof, checksum verification, access audit, and recovery SLA witness - done
+- Add Admin Operations archive retrieval validation panel - done
+- Keep archive retrieval validation records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 83 - Production Execution Archive Recovery Drill Record (`v2.61.0-production-execution-archive-recovery-drill-record`)
+
+- Add production execution archive recovery drill records linked to archive retrieval validation records - planned
+- Require drill owner, recovery scenario, elapsed recovery proof, restored artifact review, and drill sign-off - planned
+- Add Admin Operations archive recovery drill panel - planned
+- Keep archive recovery drill records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

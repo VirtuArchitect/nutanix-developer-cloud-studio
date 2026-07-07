@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.60.0-production-execution-archive-retrieval-validation-record`.
+- Added production execution archive retrieval validation records linked to production execution readiness archive handoff records.
+- Added API endpoints for production execution archive retrieval validation records.
+- Added Admin Operations production archive retrieval validation panel.
+- Added tests proving missing readiness archive handoff records or incomplete retrieval evidence block readiness.
+- Planned `v2.61.0-production-execution-archive-recovery-drill-record` for evidence-only archive recovery drill records.
 - Released `v2.59.0-production-execution-readiness-archive-handoff-record`.
 - Added production execution readiness archive handoff records linked to production execution final acceptance archive records.
 - Added API endpoints for production execution readiness archive handoff records.

@@ -70,6 +70,7 @@ import type {
   ProductionExecutionImprovementClosureRecord,
   ProductionExecutionFinalAcceptanceArchiveRecord,
   ProductionExecutionReadinessArchiveHandoffRecord,
+  ProductionExecutionArchiveRetrievalValidationRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -555,6 +556,12 @@ export async function fetchProductionExecutionFinalAcceptanceArchiveRecordsFromA
 export async function fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi() {
   return fetchJson<ProductionExecutionReadinessArchiveHandoffRecord[]>(
     "/api/real-adapter/production-execution-readiness-archive-handoff-records"
+  );
+}
+
+export async function fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi() {
+  return fetchJson<ProductionExecutionArchiveRetrievalValidationRecord[]>(
+    "/api/real-adapter/production-execution-archive-retrieval-validation-records"
   );
 }
 
@@ -1211,6 +1218,19 @@ export async function createProductionExecutionReadinessArchiveHandoffRecordViaA
 }) {
   return fetchJson<ProductionExecutionReadinessArchiveHandoffRecord>(
     "/api/real-adapter/production-execution-readiness-archive-handoff-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionArchiveRetrievalValidationRecordViaApi(payload: {
+  readinessArchiveHandoffRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionArchiveRetrievalValidationRecord>(
+    "/api/real-adapter/production-execution-archive-retrieval-validation-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

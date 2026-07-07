@@ -77,6 +77,7 @@ import type {
   ProductionExecutionImprovementClosureRecord,
   ProductionExecutionFinalAcceptanceArchiveRecord,
   ProductionExecutionReadinessArchiveHandoffRecord,
+  ProductionExecutionArchiveRetrievalValidationRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -169,6 +170,7 @@ export type ApiState = {
   productionExecutionImprovementClosureRecords: ProductionExecutionImprovementClosureRecord[];
   productionExecutionFinalAcceptanceArchiveRecords: ProductionExecutionFinalAcceptanceArchiveRecord[];
   productionExecutionReadinessArchiveHandoffRecords: ProductionExecutionReadinessArchiveHandoffRecord[];
+  productionExecutionArchiveRetrievalValidationRecords: ProductionExecutionArchiveRetrievalValidationRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -756,6 +758,16 @@ export type CreateProductionExecutionReadinessArchiveHandoffRecordRequest = {
   retrievalRunbookReference?: string;
   archiveAccessReviewReference?: string;
   archiveCustodyReceiptReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRetrievalValidationRecordRequest = {
+  readinessArchiveHandoffRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  retrievalOperator?: string;
+  sampleRetrievalProofReference?: string;
+  checksumVerificationReference?: string;
+  accessAuditReference?: string;
+  recoverySlaWitnessReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

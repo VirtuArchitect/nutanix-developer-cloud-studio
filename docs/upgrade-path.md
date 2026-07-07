@@ -1379,6 +1379,22 @@ Promotion criteria:
 
 - Production execution archive retrieval validation APIs and UI are tested.
 - Archive retrieval validation records are evidence-only.
+
+### v2.61.0-production-execution-archive-recovery-drill-record
+
+Goal: record archive recovery drill evidence after archive retrieval validation without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery drill records linked to archive retrieval validation records.
+- Require drill owner, recovery scenario, elapsed recovery proof, restored artifact review, and drill sign-off.
+- Add Admin Operations archive recovery drill panel with blockers and evidence references.
+- Add tests proving missing ready archive retrieval validation records, drill owners, recovery scenarios, elapsed recovery proof, restored artifact reviews, or drill sign-offs block archive recovery drill readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery drill APIs and UI are tested.
+- Archive recovery drill records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
 ## Automatic Implementation Rule
