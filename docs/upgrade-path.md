@@ -584,6 +584,23 @@ Exit gate:
 - Window scheduling remains evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.14.0-lab-window-evidence-export
+
+Goal: make controlled lab dry-run window evidence exportable for operations, security, and platform review.
+
+Build:
+
+- Lab window evidence export records linked to controlled lab dry-run windows.
+- Redacted metadata manifest containing runbook, release evidence export, lab scope, rollback owner, emergency contacts, readiness checks, and disabled execution state.
+- Admin Operations export history for lab window evidence.
+- Tests proving exports contain references and metadata only.
+
+Exit gate:
+
+- Lab window evidence export APIs and UI are tested.
+- Exports contain no inline auth material.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

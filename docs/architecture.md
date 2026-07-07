@@ -47,6 +47,7 @@ flowchart LR
     Api --> ReleaseDashboard["Provider Release Readiness"]
     Api --> ReleaseEvidence["Release Evidence Exports"]
     Api --> ReleaseRunbook["Controlled Lab Release Runbooks"]
+    Api --> ReleaseWindow["Controlled Lab Dry-Run Windows"]
     Api --> Details["Environment Detail"]
     Api --> Audit["Audit Events"]
 ```
@@ -77,6 +78,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Provider release readiness summaries: per-provider evidence gap counts, nearest-to-ready provider, and most-blocked provider
 - Release evidence export records: redacted JSON manifest metadata linked to provider release gates
 - Controlled lab release runbooks: human sign-off, stop-condition, and escalation evidence before future controlled lab adapter release proposals
+- Controlled lab dry-run windows: scheduled evidence-only lab windows linked to runbooks, release exports, lab scope, rollback owners, audit exports, and emergency stop contacts
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -144,6 +146,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Provider release readiness API and Admin Control Plane comparison UI
 - Release evidence export API and Admin Operations manifest UI
 - Controlled lab release runbook API and Admin Operations sign-off UI
+- Controlled lab dry-run window API and Admin Operations readiness UI
 - Production readiness review API and Admin Overview UI
 - Private-cloud lifecycle operation API and Admin Operations UI
 - Audit export readiness API and Admin Operations UI
@@ -191,6 +194,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Provider release readiness summaries are derived views only; they do not authorize provider execution.
 - Release evidence exports contain references and metadata only; inline auth material is redacted before persistence.
 - Controlled lab release runbooks record sign-off and stop-condition evidence only; missing sign-offs block completion and do not enable provider execution.
+- Controlled lab dry-run windows record scheduling evidence only; missing runbook, lab scope, rollback owner, audit export, or emergency contacts block readiness.
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Adapter enablement records review evidence only; an enabled real-adapter switch fails this phase and all mutation operations remain blocked.

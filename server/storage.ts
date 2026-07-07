@@ -142,6 +142,7 @@ export function createDefaultState(): ApiState {
     providerReleaseGateRecords: [],
     releaseEvidenceExports: [],
     controlledLabReleaseRunbooks: [],
+    controlledLabDryRunWindows: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

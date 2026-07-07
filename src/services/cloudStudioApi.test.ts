@@ -5,6 +5,7 @@ import {
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
+  createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
@@ -29,6 +30,7 @@ import {
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
+  fetchControlledLabDryRunWindowsFromApi,
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
@@ -419,12 +421,20 @@ describe("cloudStudioApi", () => {
 
     await fetchControlledLabReleaseRunbooksFromApi();
     await createControlledLabReleaseRunbookViaApi({ provider: "NDB" });
+    await fetchControlledLabDryRunWindowsFromApi();
+    await createControlledLabDryRunWindowViaApi({ provider: "NDB", runbookId: "controlled-lab-runbook-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/controlled-lab-release/runbooks",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("NDB") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/controlled-lab-release/windows", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/controlled-lab-release/windows",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-runbook-ndb-1") })
     );
   });
 

@@ -678,6 +678,28 @@ export type ControlledLabReleaseRunbookRecord = {
   createdAt: string;
 };
 
+export type ControlledLabDryRunWindowRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  status: "Blocked" | "Ready for scheduling review";
+  requestedBy: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  linkedRunbookId?: string;
+  linkedReleaseEvidenceExportId?: string;
+  linkedLabScopeId?: string;
+  rollbackOwner: string;
+  emergencyStopContacts: string[];
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  readinessChecklist: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

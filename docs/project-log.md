@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.13.0-controlled-lab-dry-run-window`.
+- Added controlled lab dry-run window records with scheduled start and end times.
+- Added API endpoints for controlled lab dry-run windows.
+- Added Admin Operations window readiness checklist for linked runbook, release evidence export, lab scope, rollback owner, audit export, and emergency stop contacts.
+- Added tests proving missing evidence blocks window readiness.
+- Planned `v2.14.0-lab-window-evidence-export` for redacted controlled lab window evidence exports.
 - Released `v2.12.0-controlled-lab-release-runbook`.
 - Added controlled lab release runbook records linked to provider release readiness.
 - Added API endpoints for controlled lab release runbooks.
 - Added Admin Operations runbook checklist for required sign-offs, stop conditions, escalation contacts, and disabled execution evidence.
 - Added tests proving missing sign-offs block runbook completion.
-- Planned `v2.13.0-controlled-lab-dry-run-window` for scheduled evidence-only lab dry-run windows.
 - Released `v2.11.0-provider-release-dashboard-hardening`.
 - Added provider release readiness summaries for NCI, NKP, NDB, NUS, and NAI.
 - Added API endpoint for provider release readiness comparison.

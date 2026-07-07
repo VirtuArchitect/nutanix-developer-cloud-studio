@@ -813,6 +813,11 @@ describe("api server", () => {
       body: JSON.stringify({ provider: "NDB" }),
     });
     const runbooks = await requestJson("/api/controlled-lab-release/runbooks");
+    const dryRunWindow = await requestJson("/api/controlled-lab-release/windows", {
+      method: "POST",
+      body: JSON.stringify({ provider: "NDB", runbookId: runbook.data.id, releaseEvidenceExportId: releaseExport.data.id }),
+    });
+    const dryRunWindows = await requestJson("/api/controlled-lab-release/windows");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -913,6 +918,21 @@ describe("api server", () => {
     );
     expect(runbook.data.stopConditions.length).toBeGreaterThanOrEqual(3);
     expect(runbooks.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: runbook.data.id })]));
+    expect(dryRunWindow.data).toMatchObject({
+      provider: "NDB",
+      status: "Blocked",
+      linkedRunbookId: runbook.data.id,
+      linkedReleaseEvidenceExportId: releaseExport.data.id,
+      provisioningEnabled: false,
+    });
+    expect(dryRunWindow.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Controlled runbook ready", passed: false }),
+        expect.objectContaining({ name: "Release evidence export linked", passed: true }),
+        expect.objectContaining({ name: "Real adapter execution disabled", passed: true }),
+      ])
+    );
+    expect(dryRunWindows.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: dryRunWindow.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -920,6 +940,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "provider-release-gate.reviewed", target: "NDB" }),
         expect.objectContaining({ action: "release-evidence.export.prepared", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.runbook.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "controlled-lab-release.window.recorded", target: "NDB" }),
       ])
     );
   });

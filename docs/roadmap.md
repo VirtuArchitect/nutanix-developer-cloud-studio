@@ -279,10 +279,17 @@
 
 ## Phase 35 - Controlled Lab Dry-Run Window (`v2.13.0-controlled-lab-dry-run-window`)
 
-- Add controlled lab dry-run window records with scheduled start/end times - planned
-- Attach runbooks, release evidence exports, lab scope, and rollback owners to the window - planned
-- Add Admin Operations window readiness checklist and emergency stop contacts - planned
-- Keep window scheduling evidence-only and real adapter execution disabled - planned
+- Add controlled lab dry-run window records with scheduled start/end times - done
+- Attach runbooks, release evidence exports, lab scope, and rollback owners to the window - done
+- Add Admin Operations window readiness checklist and emergency stop contacts - done
+- Keep window scheduling evidence-only and real adapter execution disabled - done
+
+## Phase 36 - Lab Window Evidence Export (`v2.14.0-lab-window-evidence-export`)
+
+- Add redacted window evidence export manifests linked to controlled lab dry-run windows - planned
+- Include runbook, release export, lab scope, rollback owner, emergency contacts, checks, and disabled execution state - planned
+- Add Admin Operations export history for lab window evidence - planned
+- Keep exports metadata-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

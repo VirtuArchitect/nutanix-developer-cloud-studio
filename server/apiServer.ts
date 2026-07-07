@@ -45,6 +45,10 @@ import {
   createControlledLabReleaseRunbookRecord,
 } from "./controlledLabReleaseRunbook";
 import {
+  ControlledLabDryRunWindowError,
+  createControlledLabDryRunWindowRecord,
+} from "./controlledLabDryRunWindow";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -118,6 +122,7 @@ import type {
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
   CreateControlledLabReleaseRunbookRequest,
+  CreateControlledLabDryRunWindowRequest,
   CreatePlatformServiceRequest,
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
@@ -257,6 +262,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabReleaseRunbookError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledLabDryRunWindowError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -510,6 +525,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/runbooks") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledLabReleaseRunbooks });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/windows") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledLabDryRunWindows });
     return;
   }
 
@@ -1210,6 +1231,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: runbook });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/windows") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledLabDryRunWindowRequest>(request);
+    const window = createControlledLabDryRunWindowRecord(state, body, context.session.user);
+    state.controlledLabDryRunWindows = [window, ...state.controlledLabDryRunWindows];
+    addAuditEvent(state, "controlled-lab-release.window.recorded", context.session.user, window.provider, {
+      status: window.status,
+      linkedRunbookId: window.linkedRunbookId,
+      linkedLabScopeId: window.linkedLabScopeId,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: window });
     return;
   }
 

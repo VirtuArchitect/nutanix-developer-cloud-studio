@@ -5,6 +5,7 @@ import type {
   AhvCreateAdapterContractReview,
   ControlledProvisioningDecision,
   ControlledLabReleaseRunbookRecord,
+  ControlledLabDryRunWindowRecord,
   ControlledCreateAuthorizationEnvelope,
   ControlledProvisioningGate,
   ControlPlaneJob,
@@ -75,6 +76,7 @@ export type ApiState = {
   providerReleaseGateRecords: ProviderReleaseGateRecord[];
   releaseEvidenceExports: ReleaseEvidenceExportRecord[];
   controlledLabReleaseRunbooks: ControlledLabReleaseRunbookRecord[];
+  controlledLabDryRunWindows: ControlledLabDryRunWindowRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -207,6 +209,17 @@ export type CreateControlledLabReleaseRunbookRequest = {
   labOwnerEvidence?: string;
   stopConditions?: string[];
   escalationContacts?: string[];
+};
+
+export type CreateControlledLabDryRunWindowRequest = {
+  provider?: ProviderReleaseGateRecord["provider"];
+  runbookId?: string;
+  releaseEvidenceExportId?: string;
+  labScopeId?: string;
+  rollbackOwner?: string;
+  scheduledStart?: string;
+  scheduledEnd?: string;
+  emergencyStopContacts?: string[];
 };
 
 export type CreateAdapterEnablementRecordRequest = {

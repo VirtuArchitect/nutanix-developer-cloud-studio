@@ -33,6 +33,7 @@ import {
   type AhvCreateAdapterContractReview,
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
+  type ControlledLabDryRunWindowRecord,
   type ControlledLabReleaseRunbookRecord,
   type CredentialReferenceDiagnostic,
   type Environment,
@@ -97,6 +98,7 @@ import {
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
+  createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
@@ -123,6 +125,7 @@ import {
   fetchControlPlaneJobsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
+  fetchControlledLabDryRunWindowsFromApi,
   fetchControlledLabReleaseRunbooksFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
@@ -217,6 +220,7 @@ export function App() {
   );
   const [releaseEvidenceExports, setReleaseEvidenceExports] = useState<ReleaseEvidenceExportRecord[]>([]);
   const [controlledLabReleaseRunbooks, setControlledLabReleaseRunbooks] = useState<ControlledLabReleaseRunbookRecord[]>([]);
+  const [controlledLabDryRunWindows, setControlledLabDryRunWindows] = useState<ControlledLabDryRunWindowRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -300,6 +304,7 @@ export function App() {
             apiProviderReleaseReadinessSummary,
             apiReleaseEvidenceExports,
             apiControlledLabReleaseRunbooks,
+            apiControlledLabDryRunWindows,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -338,6 +343,7 @@ export function App() {
             fetchProviderReleaseReadinessSummaryFromApi(),
             fetchReleaseEvidenceExportsFromApi(),
             fetchControlledLabReleaseRunbooksFromApi(),
+            fetchControlledLabDryRunWindowsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -378,6 +384,7 @@ export function App() {
             setProviderReleaseReadinessSummary(apiProviderReleaseReadinessSummary);
             setReleaseEvidenceExports(apiReleaseEvidenceExports);
             setControlledLabReleaseRunbooks(apiControlledLabReleaseRunbooks);
+            setControlledLabDryRunWindows(apiControlledLabDryRunWindows);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -538,6 +545,7 @@ export function App() {
       apiProviderReleaseReadinessSummary,
       apiReleaseEvidenceExports,
       apiControlledLabReleaseRunbooks,
+      apiControlledLabDryRunWindows,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -576,6 +584,7 @@ export function App() {
       fetchProviderReleaseReadinessSummaryFromApi(),
       fetchReleaseEvidenceExportsFromApi(),
       fetchControlledLabReleaseRunbooksFromApi(),
+      fetchControlledLabDryRunWindowsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -615,6 +624,7 @@ export function App() {
     setProviderReleaseReadinessSummary(apiProviderReleaseReadinessSummary);
     setReleaseEvidenceExports(apiReleaseEvidenceExports);
     setControlledLabReleaseRunbooks(apiControlledLabReleaseRunbooks);
+    setControlledLabDryRunWindows(apiControlledLabDryRunWindows);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1197,6 +1207,36 @@ export function App() {
     ]);
   }
 
+  async function scheduleControlledLabDryRunWindow() {
+    const provider = controlledLabReleaseRunbooks[0]?.provider ?? providerReleaseReadinessSummary.nearestToReady ?? "NCI";
+    const payload = {
+      provider,
+      runbookId: controlledLabReleaseRunbooks[0]?.id,
+      releaseEvidenceExportId: releaseEvidenceExports.find((item) => item.provider === provider)?.id,
+      labScopeId: labAuthorizationScopes[0]?.id,
+      rollbackOwner: "Cloud Operations",
+    };
+
+    if (apiHealth.mode === "api") {
+      const window = await createControlledLabDryRunWindowViaApi(payload);
+      await refreshApiState();
+      setControlledLabDryRunWindows((current) => [window, ...current.filter((item) => item.id !== window.id)]);
+      return;
+    }
+
+    setControlledLabDryRunWindows((current) => [
+      createMockControlledLabDryRunWindowRecord({
+        provider,
+        actor: session.user,
+        runbook: controlledLabReleaseRunbooks[0],
+        releaseExport: releaseEvidenceExports.find((item) => item.provider === provider),
+        labScope: labAuthorizationScopes[0],
+        auditExports,
+      }),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1420,6 +1460,7 @@ export function App() {
             auditExports={auditExports}
             releaseEvidenceExports={releaseEvidenceExports}
             controlledLabReleaseRunbooks={controlledLabReleaseRunbooks}
+            controlledLabDryRunWindows={controlledLabDryRunWindows}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1448,6 +1489,7 @@ export function App() {
             prepareAuditExport={prepareAuditExport}
             prepareReleaseEvidenceExport={prepareReleaseEvidenceExport}
             prepareControlledLabReleaseRunbook={prepareControlledLabReleaseRunbook}
+            scheduleControlledLabDryRunWindow={scheduleControlledLabDryRunWindow}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -1959,6 +2001,7 @@ function AdminView({
   auditExports,
   releaseEvidenceExports,
   controlledLabReleaseRunbooks,
+  controlledLabDryRunWindows,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -1987,6 +2030,7 @@ function AdminView({
   prepareAuditExport,
   prepareReleaseEvidenceExport,
   prepareControlledLabReleaseRunbook,
+  scheduleControlledLabDryRunWindow,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2029,6 +2073,7 @@ function AdminView({
   auditExports: AuditExportRecord[];
   releaseEvidenceExports: ReleaseEvidenceExportRecord[];
   controlledLabReleaseRunbooks: ControlledLabReleaseRunbookRecord[];
+  controlledLabDryRunWindows: ControlledLabDryRunWindowRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2060,6 +2105,7 @@ function AdminView({
   prepareAuditExport: () => void;
   prepareReleaseEvidenceExport: () => void;
   prepareControlledLabReleaseRunbook: () => void;
+  scheduleControlledLabDryRunWindow: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2292,6 +2338,12 @@ function AdminView({
             <ControlledLabReleaseRunbookPanel
               runbooks={controlledLabReleaseRunbooks}
               prepareControlledLabReleaseRunbook={prepareControlledLabReleaseRunbook}
+            />
+          </Panel>
+          <Panel title="Controlled lab dry-run window" action={`${controlledLabDryRunWindows.length} windows`}>
+            <ControlledLabDryRunWindowPanel
+              windows={controlledLabDryRunWindows}
+              scheduleControlledLabDryRunWindow={scheduleControlledLabDryRunWindow}
             />
           </Panel>
         </div>
@@ -3204,6 +3256,74 @@ function ControlledLabReleaseRunbookPanel({
           <div className="inventoryEvidence">
             <strong>Escalation contacts</strong>
             {latest.escalationContacts.map((contact) => (
+              <span key={contact}>{contact}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledLabDryRunWindowPanel({
+  windows,
+  scheduleControlledLabDryRunWindow,
+}: {
+  windows: ControlledLabDryRunWindowRecord[];
+  scheduleControlledLabDryRunWindow: () => void;
+}) {
+  const latest = windows[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Activity size={18} />
+        <div>
+          <strong>Controlled lab dry-run window</strong>
+          <span>Schedules an evidence-only lab window with linked runbook, release export, scope, rollback owner, and emergency stop contacts.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={scheduleControlledLabDryRunWindow}>
+          <Activity size={15} />
+          Schedule dry-run window
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled lab dry-run window has been scheduled.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.scheduledStart} to {latest.scheduledEnd}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for scheduling review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ScrollText} label="Runbook" value={latest.linkedRunbookId ?? "missing"} passed={Boolean(latest.linkedRunbookId)} />
+            <CheckLine icon={Archive} label="Release export" value={latest.linkedReleaseEvidenceExportId ?? "missing"} passed={Boolean(latest.linkedReleaseEvidenceExportId)} />
+            <CheckLine icon={ShieldCheck} label="Lab scope" value={latest.linkedLabScopeId ?? "missing"} passed={Boolean(latest.linkedLabScopeId)} />
+            <CheckLine icon={LockKeyhole} label="Execution" value="Disabled" passed />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Readiness checklist</strong>
+            {latest.readinessChecklist.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Window checks</strong>
+            {latest.checks.map((check) => (
+              <span key={check.name}>{check.name}: {check.passed ? "passed" : "blocked"} - {check.detail}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Emergency stop contacts</strong>
+            <span>Rollback owner: {latest.rollbackOwner || "missing"}</span>
+            {latest.emergencyStopContacts.map((contact) => (
               <span key={contact}>{contact}</span>
             ))}
           </div>
@@ -5743,6 +5863,91 @@ function createMockControlledLabReleaseRunbookRecord(
     stopConditions,
     escalationContacts: ["cloud-platform-owner", "security-reviewer", "lab-owner"],
     linkedReleaseGateId: gate?.id,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockControlledLabDryRunWindowRecord({
+  provider,
+  actor,
+  runbook,
+  releaseExport,
+  labScope,
+  auditExports,
+}: {
+  provider: ProviderReleaseGateRecord["provider"];
+  actor: string;
+  runbook?: ControlledLabReleaseRunbookRecord;
+  releaseExport?: ReleaseEvidenceExportRecord;
+  labScope?: LabAuthorizationScope;
+  auditExports: AuditExportRecord[];
+}): ControlledLabDryRunWindowRecord {
+  const scheduledStart = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const scheduledEnd = new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString();
+  const rollbackOwner = runbook?.signOffs.find((item) => item.role === "Rollback owner")?.owner ?? "Cloud Operations";
+  const emergencyStopContacts = runbook?.escalationContacts ?? ["cloud-platform-owner", "security-reviewer", "lab-owner"];
+  const checks = [
+    {
+      name: "Controlled runbook ready",
+      passed: runbook?.status === "Ready for controlled lab release review",
+      detail: runbook ? `${runbook.id} is ${runbook.status}.` : `${provider} controlled lab release runbook is required.`,
+    },
+    {
+      name: "Release evidence export linked",
+      passed: Boolean(releaseExport),
+      detail: releaseExport ? `${releaseExport.id} is linked.` : `${provider} release evidence export is required.`,
+    },
+    {
+      name: "Active lab scope linked",
+      passed: Boolean(labScope?.status === "Approved" && labScope.providerCoverage.includes(provider)),
+      detail: labScope ? `${labScope.id} is ${labScope.status}.` : "Approved active lab scope is required.",
+    },
+    {
+      name: "Rollback owner assigned",
+      passed: Boolean(rollbackOwner),
+      detail: rollbackOwner || "Rollback owner is required during the window.",
+    },
+    {
+      name: "Audit export ready",
+      passed: auditExports.length > 0,
+      detail: auditExports.length > 0 ? "Audit export manifest exists." : "Audit export evidence is required.",
+    },
+    {
+      name: "Emergency stop contacts assigned",
+      passed: emergencyStopContacts.length >= 2,
+      detail: `${emergencyStopContacts.length} emergency stop contact(s) assigned.`,
+    },
+    {
+      name: "Window timing valid",
+      passed: true,
+      detail: `${scheduledStart} to ${scheduledEnd}.`,
+    },
+    {
+      name: "Real adapter execution disabled",
+      passed: true,
+      detail: `${provider} window scheduling remains evidence-only.`,
+    },
+  ];
+
+  return {
+    id: `controlled-lab-window-${provider.toLowerCase()}-${Date.now()}`,
+    provider,
+    status: checks.every((check) => check.passed) ? "Ready for scheduling review" : "Blocked",
+    requestedBy: actor,
+    scheduledStart,
+    scheduledEnd,
+    linkedRunbookId: runbook?.id,
+    linkedReleaseEvidenceExportId: releaseExport?.id,
+    linkedLabScopeId: labScope?.id,
+    rollbackOwner,
+    emergencyStopContacts,
+    checks,
+    readinessChecklist: [
+      "Confirm release runbook and release evidence export are approved for the same provider.",
+      "Confirm lab scope, rollback owner, audit export, and emergency contacts are available for the full window.",
+      "Stop the window immediately if any out-of-scope action, provider drift, or audit capture failure is observed.",
+    ],
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };
