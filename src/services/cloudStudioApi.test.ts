@@ -63,6 +63,7 @@ import {
   createProductionExecutionArchiveRetrievalValidationRecordViaApi,
   createProductionExecutionArchiveRecoveryDrillRecordViaApi,
   createProductionExecutionArchiveRecoveryAcceptanceRecordViaApi,
+  createProductionExecutionArchiveRecoveryClosureRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -143,6 +144,7 @@ import {
   fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryDrillRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryAcceptanceRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -684,6 +686,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionArchiveRecoveryAcceptanceRecordViaApi({
       archiveRecoveryDrillRecordId: "production-execution-archive-recovery-drill-record-ndb-1",
     });
+    await fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi();
+    await createProductionExecutionArchiveRecoveryClosureRecordViaApi({
+      archiveRecoveryAcceptanceRecordId: "production-execution-archive-recovery-acceptance-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1168,6 +1174,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-archive-recovery-drill-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      103,
+      "/api/real-adapter/production-execution-archive-recovery-closure-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      104,
+      "/api/real-adapter/production-execution-archive-recovery-closure-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-archive-recovery-acceptance-record-ndb-1"),
       })
     );
   });

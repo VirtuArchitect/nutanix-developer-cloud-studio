@@ -629,10 +629,17 @@
 
 ## Phase 85 - Production Execution Archive Recovery Closure Record (`v2.63.0-production-execution-archive-recovery-closure-record`)
 
-- Add production execution archive recovery closure records linked to archive recovery acceptance records - planned
-- Require closure owner, recovery closure packet, follow-up action register, stakeholder closure notice, and archive recovery closure sign-off - planned
-- Add Admin Operations archive recovery closure panel - planned
-- Keep archive recovery closure records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery closure records linked to archive recovery acceptance records - done
+- Require closure owner, recovery closure packet, follow-up action register, stakeholder closure notice, and archive recovery closure sign-off - done
+- Add Admin Operations archive recovery closure panel - done
+- Keep archive recovery closure records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 86 - Production Execution Archive Recovery Audit Certification Record (`v2.64.0-production-execution-archive-recovery-audit-certification-record`)
+
+- Add production execution archive recovery audit certification records linked to archive recovery closure records - planned
+- Require certification owner, audit evidence manifest, control-mapping review, exception disposition, and audit certification sign-off - planned
+- Add Admin Operations archive recovery audit certification panel - planned
+- Keep archive recovery audit certification records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

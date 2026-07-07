@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.63.0-production-execution-archive-recovery-closure-record`.
+- Added production execution archive recovery closure records linked to production execution archive recovery acceptance records.
+- Added API endpoints for production execution archive recovery closure records.
+- Added Admin Operations production archive recovery closure panel.
+- Added tests proving missing archive recovery acceptance records or incomplete closure evidence block readiness.
+- Planned `v2.64.0-production-execution-archive-recovery-audit-certification-record` for evidence-only archive recovery audit certification records.
 - Released `v2.62.0-production-execution-archive-recovery-acceptance-record`.
 - Added production execution archive recovery acceptance records linked to production execution archive recovery drill records.
 - Added API endpoints for production execution archive recovery acceptance records.

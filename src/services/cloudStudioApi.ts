@@ -73,6 +73,7 @@ import type {
   ProductionExecutionArchiveRetrievalValidationRecord,
   ProductionExecutionArchiveRecoveryDrillRecord,
   ProductionExecutionArchiveRecoveryAcceptanceRecord,
+  ProductionExecutionArchiveRecoveryClosureRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -576,6 +577,12 @@ export async function fetchProductionExecutionArchiveRecoveryDrillRecordsFromApi
 export async function fetchProductionExecutionArchiveRecoveryAcceptanceRecordsFromApi() {
   return fetchJson<ProductionExecutionArchiveRecoveryAcceptanceRecord[]>(
     "/api/real-adapter/production-execution-archive-recovery-acceptance-records"
+  );
+}
+
+export async function fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi() {
+  return fetchJson<ProductionExecutionArchiveRecoveryClosureRecord[]>(
+    "/api/real-adapter/production-execution-archive-recovery-closure-records"
   );
 }
 
@@ -1271,6 +1278,19 @@ export async function createProductionExecutionArchiveRecoveryAcceptanceRecordVi
 }) {
   return fetchJson<ProductionExecutionArchiveRecoveryAcceptanceRecord>(
     "/api/real-adapter/production-execution-archive-recovery-acceptance-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionArchiveRecoveryClosureRecordViaApi(payload: {
+  archiveRecoveryAcceptanceRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionArchiveRecoveryClosureRecord>(
+    "/api/real-adapter/production-execution-archive-recovery-closure-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

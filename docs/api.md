@@ -686,6 +686,15 @@ Production execution archive recovery acceptance records capture acceptance evid
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Closure Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-closure-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-closure-records`
+
+Production execution archive recovery closure records capture closure evidence after archive recovery acceptance and before any future archive recovery audit certification phase. Records require a ready archive recovery acceptance record, closure owner, recovery closure packet, follow-up action register, stakeholder closure notice, archive recovery closure sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

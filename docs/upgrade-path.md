@@ -1429,6 +1429,23 @@ Promotion criteria:
 - Archive recovery closure records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.64.0-production-execution-archive-recovery-audit-certification-record
+
+Goal: record archive recovery audit certification evidence after archive recovery closure without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery audit certification records linked to archive recovery closure records.
+- Require certification owner, audit evidence manifest, control-mapping review, exception disposition, and audit certification sign-off.
+- Add Admin Operations archive recovery audit certification panel with blockers and evidence references.
+- Add tests proving missing ready archive recovery closure records, certification owners, audit evidence manifests, control-mapping reviews, exception dispositions, or audit certification sign-offs block archive recovery audit certification readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery audit certification APIs and UI are tested.
+- Archive recovery audit certification records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:
