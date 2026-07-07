@@ -138,6 +138,7 @@ export function createDefaultState(): ApiState {
     ahvCreateAdapterContractReviews: [],
     ahvControlledProvisioningRuns: [],
     platformServicePreflightRuns: [],
+    platformServiceAdapterContractReviews: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

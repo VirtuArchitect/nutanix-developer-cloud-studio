@@ -267,8 +267,12 @@ Required role: `Developer` or `Platform Admin`.
 
 - `GET /api/platform-services/preflight-runs`
 - `POST /api/platform-services/preflight-runs`
+- `GET /api/platform-services/adapter-contracts`
+- `POST /api/platform-services/adapter-contracts`
 
 The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter readiness against request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state. It records provider-specific blocked mutation operations and returns `provisioningEnabled=false`.
+
+The platform-service adapter contract endpoint maps approved service request fields into disabled future provider payloads for NKP, NDB, NUS, and NAI. Contract reviews include the related preflight run, blocked operations, provider kill switch state, and `provisioningEnabled=false`.
 
 Required role: `Platform Admin`.
 

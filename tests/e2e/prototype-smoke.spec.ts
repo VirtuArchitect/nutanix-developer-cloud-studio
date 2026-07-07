@@ -122,6 +122,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Run service preflight" }).click();
   await expect(page.getByText("Fail-closed service boundary")).toBeVisible();
   await expect(page.getByText("NDB real adapter switch is disabled.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Platform service adapter contracts" })).toBeVisible();
+  await page.getByRole("button", { name: "Review service contract" }).click();
+  await expect(page.getByText("Disabled service adapter contracts")).toBeVisible();
+  await expect(page.getByText("Payload fields approved", { exact: true }).last()).toBeVisible();
+  await expect(page.getByText("create_database", { exact: true }).last()).toBeVisible();
   await expect(page.getByText("smoke-api-dev").first()).toBeVisible();
   await page.getByRole("button", { name: "Advance" }).first().click();
   await expect(page.getByText("Validating")).toBeVisible();

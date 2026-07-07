@@ -792,6 +792,11 @@ describe("api server", () => {
       body: JSON.stringify({ requestId: serviceRequest.data.id }),
     });
     const runs = await requestJson("/api/platform-services/preflight-runs");
+    const contract = await requestJson("/api/platform-services/adapter-contracts", {
+      method: "POST",
+      body: JSON.stringify({ requestId: serviceRequest.data.id }),
+    });
+    const contracts = await requestJson("/api/platform-services/adapter-contracts");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -810,8 +815,35 @@ describe("api server", () => {
     );
     expect(run.data.mutationOperationsBlocked).toContain("create_database");
     expect(runs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: run.data.id })]));
+    expect(contract.data).toMatchObject({
+      requestId: serviceRequest.data.id,
+      preflightRunId: run.data.id,
+      kind: "NDB PostgreSQL",
+      provider: "NDB",
+      adapterMode: "Disabled real adapter",
+      status: "Blocked",
+      provisioningEnabled: false,
+      payload: expect.objectContaining({
+        serviceName: "app-postgres-dev",
+        provider: "NDB",
+        profileId: "ndb-postgres-16-dev",
+      }),
+      blockedOperations: expect.arrayContaining(["create_database", "delete_database"]),
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(contract.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Preflight run recorded", passed: true }),
+        expect.objectContaining({ name: "Payload fields approved", passed: true }),
+        expect.objectContaining({ name: "Execute path disabled", passed: true }),
+      ])
+    );
+    expect(contracts.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: contract.data.id })]));
     expect(auditEvents.data).toEqual(
-      expect.arrayContaining([expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" })])
+      expect.arrayContaining([
+        expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
+        expect.objectContaining({ action: "platform-service.adapter-contract.reviewed", target: "app-postgres-dev" }),
+      ])
     );
   });
 

@@ -52,6 +52,7 @@ import {
   templateRegistry as defaultTemplateRegistry,
   type PlatformSession,
   type PlatformConfig,
+  type PlatformServiceAdapterContractReview,
   type PlatformServiceKind,
   type PlatformServicePreflightRun,
   type PlatformServiceRequest,
@@ -98,6 +99,7 @@ import {
   createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
   createPlatformServiceRequestViaApi,
+  createPlatformServiceAdapterContractReviewViaApi,
   createPlatformServicePreflightRunViaApi,
   createProductionReadinessReviewViaApi,
   createRollbackDestroyProofViaApi,
@@ -124,6 +126,7 @@ import {
   fetchLabAdaptersFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
+  fetchPlatformServiceAdapterContractReviewsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
   fetchPlatformServiceRequestsFromApi,
   fetchPolicyBundlesFromApi,
@@ -196,6 +199,7 @@ export function App() {
   const [controlledCreateAuthorizationEnvelopes, setControlledCreateAuthorizationEnvelopes] = useState<ControlledCreateAuthorizationEnvelope[]>([]);
   const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
+  const [platformServiceAdapterContractReviews, setPlatformServiceAdapterContractReviews] = useState<PlatformServiceAdapterContractReview[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -274,6 +278,7 @@ export function App() {
             apiControlledCreateAuthorizationEnvelopes,
             apiPlatformServiceRequests,
             apiPlatformServicePreflightRuns,
+            apiPlatformServiceAdapterContractReviews,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -307,6 +312,7 @@ export function App() {
             fetchControlledCreateAuthorizationEnvelopesFromApi(),
             fetchPlatformServiceRequestsFromApi(),
             fetchPlatformServicePreflightRunsFromApi(),
+            fetchPlatformServiceAdapterContractReviewsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -342,6 +348,7 @@ export function App() {
             setControlledCreateAuthorizationEnvelopes(apiControlledCreateAuthorizationEnvelopes);
             setPlatformServiceRequests(apiPlatformServiceRequests);
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
+            setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -497,6 +504,7 @@ export function App() {
       apiControlledCreateAuthorizationEnvelopes,
       apiPlatformServiceRequests,
       apiPlatformServicePreflightRuns,
+      apiPlatformServiceAdapterContractReviews,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -530,6 +538,7 @@ export function App() {
       fetchControlledCreateAuthorizationEnvelopesFromApi(),
       fetchPlatformServiceRequestsFromApi(),
       fetchPlatformServicePreflightRunsFromApi(),
+      fetchPlatformServiceAdapterContractReviewsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -564,6 +573,7 @@ export function App() {
     setControlledCreateAuthorizationEnvelopes(apiControlledCreateAuthorizationEnvelopes);
     setPlatformServiceRequests(apiPlatformServiceRequests);
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
+    setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1001,6 +1011,25 @@ export function App() {
     ]);
   }
 
+  async function reviewPlatformServiceAdapterContract() {
+    const serviceRequest = platformServiceRequests[0];
+    if (!serviceRequest) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const review = await createPlatformServiceAdapterContractReviewViaApi({ requestId: serviceRequest.id });
+      await refreshApiState();
+      setPlatformServiceAdapterContractReviews((current) => [review, ...current.filter((item) => item.id !== review.id)]);
+      return;
+    }
+
+    setPlatformServiceAdapterContractReviews((current) => [
+      createMockPlatformServiceAdapterContractReview(serviceRequest, platformServicePreflightRuns, session.user),
+      ...current,
+    ]);
+  }
+
   async function createProductionReadinessReview() {
     if (apiHealth.mode === "api") {
       const review = await createProductionReadinessReviewViaApi();
@@ -1274,6 +1303,7 @@ export function App() {
             controlledCreateAuthorizationEnvelopes={controlledCreateAuthorizationEnvelopes}
             platformServiceRequests={platformServiceRequests}
             platformServicePreflightRuns={platformServicePreflightRuns}
+            platformServiceAdapterContractReviews={platformServiceAdapterContractReviews}
             vmLifecycleProofs={vmLifecycleProofs}
             rollbackDestroyProofs={rollbackDestroyProofs}
             ahvCreateAdapterContractReviews={ahvCreateAdapterContractReviews}
@@ -1302,6 +1332,7 @@ export function App() {
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
+            reviewPlatformServiceAdapterContract={reviewPlatformServiceAdapterContract}
             createProductionReadinessReview={createProductionReadinessReview}
             requestLifecycleOperation={requestLifecycleOperation}
             prepareAuditExport={prepareAuditExport}
@@ -1804,6 +1835,7 @@ function AdminView({
   controlledCreateAuthorizationEnvelopes,
   platformServiceRequests,
   platformServicePreflightRuns,
+  platformServiceAdapterContractReviews,
   vmLifecycleProofs,
   rollbackDestroyProofs,
   ahvCreateAdapterContractReviews,
@@ -1832,6 +1864,7 @@ function AdminView({
   runAhvControlledProvisioningPreflight,
   createPlatformServiceRequest,
   runPlatformServicePreflight,
+  reviewPlatformServiceAdapterContract,
   createProductionReadinessReview,
   requestLifecycleOperation,
   prepareAuditExport,
@@ -1865,6 +1898,7 @@ function AdminView({
   controlledCreateAuthorizationEnvelopes: ControlledCreateAuthorizationEnvelope[];
   platformServiceRequests: PlatformServiceRequest[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
+  platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
   vmLifecycleProofs: VmLifecycleProof[];
   rollbackDestroyProofs: RollbackDestroyProofRecord[];
   ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
@@ -1896,6 +1930,7 @@ function AdminView({
   runAhvControlledProvisioningPreflight: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
+  reviewPlatformServiceAdapterContract: () => void;
   createProductionReadinessReview: () => void;
   requestLifecycleOperation: (operation: LifecycleOperationKind) => void;
   prepareAuditExport: () => void;
@@ -2078,6 +2113,12 @@ function AdminView({
             <PlatformServicePreflightPanel
               runs={platformServicePreflightRuns}
               runPlatformServicePreflight={runPlatformServicePreflight}
+            />
+          </Panel>
+          <Panel title="Platform service adapter contracts" action={`${platformServiceAdapterContractReviews.length} reviews`}>
+            <PlatformServiceAdapterContractPanel
+              reviews={platformServiceAdapterContractReviews}
+              reviewPlatformServiceAdapterContract={reviewPlatformServiceAdapterContract}
             />
           </Panel>
           <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
@@ -3480,6 +3521,82 @@ function PlatformServicePreflightPanel({
   );
 }
 
+function PlatformServiceAdapterContractPanel({
+  reviews,
+  reviewPlatformServiceAdapterContract,
+}: {
+  reviews: PlatformServiceAdapterContractReview[];
+  reviewPlatformServiceAdapterContract: () => void;
+}) {
+  const latest = reviews[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Code2 size={18} />
+        <div>
+          <strong>Disabled service adapter contracts</strong>
+          <span>Maps NKP, NDB, NUS, and NAI request payloads while execute, poll, and rollback remain blocked.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={reviewPlatformServiceAdapterContract}>
+          <Play size={15} />
+          Review service contract
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No platform service adapter contract review has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.serviceName}</strong>
+              <span>
+                {latest.kind} / {latest.provider} / {latest.adapterMode}
+              </span>
+            </div>
+            <span className={`status ${latest.status === "Payload ready but execution disabled" ? "approval" : "failed"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Layers3} label="Provider" value={latest.payload.provider} passed />
+            <CheckLine icon={ShieldCheck} label="Profile" value={latest.payload.profileName} passed />
+            <CheckLine icon={UserRound} label="Owner" value={latest.payload.owner} passed />
+            <CheckLine icon={CircleDollarSign} label="Cost" value={`$${latest.payload.estimatedMonthlyCost}/mo`} passed />
+            <CheckLine icon={LockKeyhole} label="Kill switch" value={`${latest.killSwitch.name}: ${latest.killSwitch.enabled ? "enabled" : "disabled"}`} passed={!latest.killSwitch.enabled} />
+            <CheckLine icon={Gauge} label="Blocked ops" value={`${latest.blockedOperations.length}`} passed={false} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Blocked service operations</strong>
+            {latest.blockedOperations.map((operation) => (
+              <span key={operation}>{operation}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Payload evidence</strong>
+            <span>Environment: {latest.payload.environmentName}</span>
+            <span>Profile ID: {latest.payload.profileId}</span>
+            <span>Approval required: {latest.payload.approvalRequired ? "yes" : "no"}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProvisioningAdapterPanel({
   adapters,
   platformConfig,
@@ -4857,6 +4974,87 @@ function createMockPlatformServicePreflightRun(
     checks,
     requestedBy: actor,
     mutationOperationsBlocked: blockedPlatformServiceOperations(serviceRequest.kind),
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockPlatformServiceAdapterContractReview(
+  serviceRequest: PlatformServiceRequest,
+  preflightRuns: PlatformServicePreflightRun[],
+  actor: string
+): PlatformServiceAdapterContractReview {
+  const preflightRun = preflightRuns.find((run) => run.requestId === serviceRequest.id);
+  const payload = {
+    kind: serviceRequest.kind,
+    provider: serviceRequest.provider,
+    serviceName: serviceRequest.serviceName,
+    environmentName: serviceRequest.environmentName,
+    owner: serviceRequest.owner,
+    profileId: serviceRequest.profileId,
+    profileName: serviceRequest.profileName,
+    estimatedMonthlyCost: serviceRequest.estimatedMonthlyCost,
+    approvalRequired: serviceRequest.approvalRequired,
+    rollbackPlan: serviceRequest.rollbackPlan,
+    cleanupPlan: serviceRequest.cleanupPlan,
+  };
+  const approvedFields = [
+    "kind",
+    "provider",
+    "serviceName",
+    "environmentName",
+    "owner",
+    "profileId",
+    "profileName",
+    "estimatedMonthlyCost",
+    "approvalRequired",
+    "rollbackPlan",
+    "cleanupPlan",
+  ];
+  const disallowedFields = Object.keys(payload).filter((field) => !approvedFields.includes(field));
+  const checks = [
+    {
+      name: "Request validations passed",
+      passed: serviceRequest.validations.every((validation) => validation.passed),
+      detail: `Request status is ${serviceRequest.status}.`,
+    },
+    {
+      name: "Preflight run recorded",
+      passed: Boolean(preflightRun),
+      detail: preflightRun ? `Preflight status is ${preflightRun.status}.` : "Service preflight must be recorded.",
+    },
+    {
+      name: "Payload fields approved",
+      passed: disallowedFields.length === 0,
+      detail:
+        disallowedFields.length === 0
+          ? "Mapped payload only uses approved service fields."
+          : `Disallowed fields: ${disallowedFields.join(", ")}.`,
+    },
+    {
+      name: "Execute path disabled",
+      passed: true,
+      detail: "Execute, poll, and rollback remain disabled.",
+    },
+  ];
+
+  return {
+    id: `service-contract-${serviceRequest.provider.toLowerCase()}-${serviceRequest.serviceName}-${Date.now()}`,
+    requestId: serviceRequest.id,
+    preflightRunId: preflightRun?.id,
+    kind: serviceRequest.kind,
+    serviceName: serviceRequest.serviceName,
+    provider: serviceRequest.provider,
+    adapterMode: "Disabled real adapter",
+    status: checks.every((check) => check.passed) ? "Payload ready but execution disabled" : "Blocked",
+    requestedBy: actor,
+    payload,
+    checks,
+    blockedOperations: blockedPlatformServiceOperations(serviceRequest.kind),
+    killSwitch: {
+      name: `NDC_${serviceRequest.provider}_REAL_ADAPTER_ENABLED`,
+      enabled: false,
+    },
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

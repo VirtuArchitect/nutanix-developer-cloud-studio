@@ -499,6 +499,23 @@ Exit gate:
 - Payload mappings contain only approved request fields.
 - NKP, NDB, NUS, and NAI execute paths remain disabled without authorized scope and explicit adapter release.
 
+### v2.9.0-provider-release-gate-evidence
+
+Goal: define the evidence envelope required before any provider adapter can be considered for a controlled lab release.
+
+Build:
+
+- Provider release gate records for NCI, NKP, NDB, NUS, and NAI.
+- Checks for active lab scope, credential reference diagnostics, lifecycle proof, provider-specific preflight, adapter contract review, audit export, rollback owner, and explicit release approver.
+- Admin Control Plane view that summarizes which provider is closest to a controlled lab release.
+- Tests proving missing evidence blocks release and all real adapter switches remain disabled.
+
+Exit gate:
+
+- Provider release gate APIs and UI are tested.
+- Missing authorization, evidence, or approver data blocks release.
+- Real adapter execution remains disabled unless a future authorized implementation phase explicitly changes it.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

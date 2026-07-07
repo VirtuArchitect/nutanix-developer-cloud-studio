@@ -48,6 +48,10 @@ import {
 } from "./mockPlatform";
 import { createPlatformServiceRequest, PlatformServiceError } from "./platformServices";
 import {
+  createDisabledPlatformServiceAdapterContract,
+  PlatformServiceAdapterContractError,
+} from "./platformServiceAdapterContract";
+import {
   createDisabledPlatformServicePreflightAdapter,
   PlatformServicePreflightError,
 } from "./platformServicePreflight";
@@ -101,6 +105,7 @@ import type {
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
   CreatePlatformServiceRequest,
+  CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
   CreateRollbackDestroyProofRequest,
   CreateVmLifecycleProofRequest,
@@ -196,6 +201,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof AhvCreateAdapterContractError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof PlatformServiceAdapterContractError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -419,6 +434,12 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/platform-services/preflight-runs") {
     sendJson(response, 200, { data: state.platformServicePreflightRuns });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/platform-services/adapter-contracts") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.platformServiceAdapterContractReviews });
     return;
   }
 
@@ -1052,6 +1073,25 @@ async function routeApi(
       }
       throw error;
     }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/platform-services/adapter-contracts") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreatePlatformServiceAdapterContractReviewRequest>(request);
+    const adapter = createDisabledPlatformServiceAdapterContract(context.session.user);
+    const review = adapter.validate(state, body);
+    state.platformServiceAdapterContractReviews = [review, ...state.platformServiceAdapterContractReviews];
+    addAuditEvent(state, "platform-service.adapter-contract.reviewed", context.session.user, review.serviceName, {
+      kind: review.kind,
+      provider: review.provider,
+      status: review.status,
+      checksPassed: review.checks.every((check) => check.passed),
+      blockedOperations: review.blockedOperations,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: review });
     return;
   }
 

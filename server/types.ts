@@ -16,6 +16,7 @@ import type {
   LifecycleOperationKind,
   LifecycleOperationRecord,
   PlatformConfig,
+  PlatformServiceAdapterContractReview,
   PlatformServiceKind,
   PlatformServicePreflightRun,
   PlatformServiceRequest,
@@ -66,6 +67,7 @@ export type ApiState = {
   ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
+  platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -167,6 +169,11 @@ export type CreatePlatformServiceRequest = {
 };
 
 export type CreatePlatformServicePreflightRunRequest = {
+  requestId?: string;
+  kind?: PlatformServiceKind;
+};
+
+export type CreatePlatformServiceAdapterContractReviewRequest = {
   requestId?: string;
   kind?: PlatformServiceKind;
 };

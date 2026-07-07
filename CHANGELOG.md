@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.7.0-controlled-create-adapter-contract`.
+This project uses release tags for public milestones. The current release is `v2.8.0-platform-service-adapter-contracts`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.8.0-platform-service-adapter-contracts] - 2026-07-07
+
+### Added
+
+- Disabled platform-service adapter contracts for NKP, NDB, NUS, and NAI request payloads.
+- API endpoints for listing and recording service adapter contract reviews.
+- Admin Control Plane panel for service payload preview, contract checks, blocked operations, and per-provider kill switch state.
+- Tests proving service payload fields stay allowlisted and execute/poll/rollback remain disabled.
+
+### Notes
+
+- This phase defines service adapter contract boundaries only.
+- NKP, NDB, NUS, and NAI execute, poll, and rollback calls remain disabled.
+- Future live service adapters still require authorized scope, VM lifecycle proof, service preflight, and explicit adapter release.
 
 ## [v2.7.0-controlled-create-adapter-contract] - 2026-07-07
 

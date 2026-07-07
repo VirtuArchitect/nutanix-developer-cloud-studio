@@ -549,6 +549,43 @@ export type PlatformServicePreflightRun = {
   createdAt: string;
 };
 
+export type PlatformServiceAdapterContractReview = {
+  id: string;
+  requestId: string;
+  preflightRunId?: string;
+  kind: PlatformServiceKind;
+  serviceName: string;
+  provider: ProvisioningAdapterName;
+  adapterMode: "Disabled real adapter";
+  status: "Blocked" | "Payload ready but execution disabled";
+  requestedBy: string;
+  payload: {
+    kind: PlatformServiceKind;
+    provider: ProvisioningAdapterName;
+    serviceName: string;
+    environmentName: string;
+    owner: string;
+    profileId: string;
+    profileName: string;
+    estimatedMonthlyCost: number;
+    approvalRequired: boolean;
+    rollbackPlan: string[];
+    cleanupPlan: string[];
+  };
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  blockedOperations: string[];
+  killSwitch: {
+    name: string;
+    enabled: boolean;
+  };
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

@@ -244,10 +244,17 @@
 
 ## Phase 30 - Platform Service Adapter Contracts (`v2.8.0-platform-service-adapter-contracts`)
 
-- Define disabled adapter contracts for NKP, NDB, NUS, and NAI - planned
-- Map service planning records into future provider payload previews - planned
-- Add per-provider blocked operations and kill switch status - planned
-- Add API/UI/tests proving service execute paths remain disabled - planned
+- Define disabled adapter contracts for NKP, NDB, NUS, and NAI - done
+- Map service planning records into future provider payload previews - done
+- Add per-provider blocked operations and kill switch status - done
+- Add API/UI/tests proving service execute paths remain disabled - done
+
+## Phase 31 - Provider Release Gate Evidence (`v2.9.0-provider-release-gate-evidence`)
+
+- Add provider release gate records for NCI, NKP, NDB, NUS, and NAI - planned
+- Check lab scope, credential references, lifecycle proof, preflight, contract review, audit export, rollback owner, and release approver - planned
+- Add Admin Control Plane provider release readiness summary - planned
+- Keep real adapter switches disabled unless a future authorized implementation phase explicitly changes them - planned
 
 ## Gated Promotion
 

@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.8.0-platform-service-adapter-contracts`.
+- Added disabled platform-service adapter contracts for NKP, NDB, NUS, and NAI.
+- Added API endpoints for platform-service adapter contract reviews.
+- Added Admin Control Plane service payload preview with checks, blocked operations, and per-provider kill switch status.
+- Added tests proving service payload fields are allowlisted and execute/poll/rollback remain disabled.
+- Planned `v2.9.0-provider-release-gate-evidence` to define the evidence envelope before any provider adapter can be considered for controlled lab release.
 - Released `v2.7.0-controlled-create-adapter-contract`.
 - Added a disabled AHV create adapter contract for validate, dry-run payload mapping, execute, poll, and rollback boundaries.
 - Added API endpoints for AHV create contract reviews.

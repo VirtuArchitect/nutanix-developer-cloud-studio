@@ -18,6 +18,7 @@ import type {
   LifecycleOperationKind,
   LifecycleOperationRecord,
   PlatformConfig,
+  PlatformServiceAdapterContractReview,
   PlatformServiceKind,
   PlatformServicePreflightRun,
   PlatformServiceRequest,
@@ -266,6 +267,10 @@ export async function fetchPlatformServicePreflightRunsFromApi() {
   return fetchJson<PlatformServicePreflightRun[]>("/api/platform-services/preflight-runs");
 }
 
+export async function fetchPlatformServiceAdapterContractReviewsFromApi() {
+  return fetchJson<PlatformServiceAdapterContractReview[]>("/api/platform-services/adapter-contracts");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -348,6 +353,16 @@ export async function createPlatformServicePreflightRunViaApi(payload: {
   kind?: PlatformServiceKind;
 }) {
   return fetchJson<PlatformServicePreflightRun>("/api/platform-services/preflight-runs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createPlatformServiceAdapterContractReviewViaApi(payload: {
+  requestId?: string;
+  kind?: PlatformServiceKind;
+}) {
+  return fetchJson<PlatformServiceAdapterContractReview>("/api/platform-services/adapter-contracts", {
     method: "POST",
     body: JSON.stringify(payload),
   });

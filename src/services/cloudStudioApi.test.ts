@@ -11,6 +11,7 @@ import {
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
   createPlatformServiceRequestViaApi,
+  createPlatformServiceAdapterContractReviewViaApi,
   createPlatformServicePreflightRunViaApi,
   createProductionReadinessReviewViaApi,
   createRollbackDestroyProofViaApi,
@@ -33,6 +34,7 @@ import {
   fetchPolicyBundlesFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
+  fetchPlatformServiceAdapterContractReviewsFromApi,
   fetchPlatformServiceRequestsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
   fetchPrismInventoryFromApi,
@@ -349,6 +351,21 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/platform-services/preflight-runs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("platform-service-1") })
+    );
+  });
+
+  it("fetches and creates platform service adapter contract reviews", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchPlatformServiceAdapterContractReviewsFromApi();
+    await createPlatformServiceAdapterContractReviewViaApi({ requestId: "platform-service-1" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/platform-services/adapter-contracts", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/platform-services/adapter-contracts",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("platform-service-1") })
     );
   });
