@@ -601,6 +601,23 @@ Exit gate:
 - Exports contain no inline auth material.
 - Real adapter execution remains disabled.
 
+### v2.15.0-lab-evidence-review-queue
+
+Goal: add a human review queue for controlled lab window evidence packages before any future lab execution proposal.
+
+Build:
+
+- Lab evidence review records linked to lab window evidence exports.
+- Reviewer decisions for platform owner, security reviewer, and operations reviewer.
+- Admin Operations review queue showing accepted, rejected, and blocked evidence packages.
+- Tests proving missing reviewer decisions block review completion.
+
+Exit gate:
+
+- Review APIs and UI are tested.
+- Review records remain evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

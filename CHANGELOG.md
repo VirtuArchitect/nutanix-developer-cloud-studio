@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.13.0-controlled-lab-dry-run-window`.
+This project uses release tags for public milestones. The current release is `v2.14.0-lab-window-evidence-export`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.14.0-lab-window-evidence-export] - 2026-07-07
+
+### Added
+
+- Lab window evidence export records linked to controlled lab dry-run windows.
+- Redacted JSON manifest metadata for runbook, release export, lab scope, rollback owner, emergency contacts, readiness checks, and disabled execution state.
+- API endpoints for listing and preparing lab window evidence exports.
+- Admin Operations export history for lab window evidence.
+- Tests proving exports contain references and metadata only.
+
+### Notes
+
+- Lab window exports are metadata-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.13.0-controlled-lab-dry-run-window] - 2026-07-07
 

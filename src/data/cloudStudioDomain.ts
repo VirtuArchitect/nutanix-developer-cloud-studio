@@ -700,6 +700,39 @@ export type ControlledLabDryRunWindowRecord = {
   createdAt: string;
 };
 
+export type LabWindowEvidenceExportRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  windowId: string;
+  status: "Prepared";
+  requestedBy: string;
+  format: "JSON";
+  checksumAlgorithm: "sha256";
+  checksum: string;
+  manifest: {
+    exportId: string;
+    windowId: string;
+    provider: ProviderReleaseGateRecord["provider"];
+    windowStatus: ControlledLabDryRunWindowRecord["status"];
+    generatedAt: string;
+    scheduledStart: string;
+    scheduledEnd: string;
+    linkedRunbookId?: string;
+    linkedReleaseEvidenceExportId?: string;
+    linkedLabScopeId?: string;
+    rollbackOwner: string;
+    emergencyStopContacts: string[];
+    checkCount: number;
+    passedChecks: number;
+    readinessChecklist: string[];
+    provisioningEnabled: false;
+  };
+  redactionBoundary: string;
+  storageBoundary: string;
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

@@ -43,6 +43,7 @@ import {
   type ControlPlaneJob,
   type Integration,
   type IntegrationConfig,
+  type LabWindowEvidenceExportRecord,
   type JobState,
   type LabAdapterSnapshot,
   type LabAuthorizationScope,
@@ -100,6 +101,7 @@ import {
   createAuditExportViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
+  createLabWindowEvidenceExportViaApi,
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
   createControlledProvisioningGateViaApi,
@@ -133,6 +135,7 @@ import {
   fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
   fetchLabAdaptersFromApi,
   fetchLifecycleOperationsFromApi,
@@ -221,6 +224,7 @@ export function App() {
   const [releaseEvidenceExports, setReleaseEvidenceExports] = useState<ReleaseEvidenceExportRecord[]>([]);
   const [controlledLabReleaseRunbooks, setControlledLabReleaseRunbooks] = useState<ControlledLabReleaseRunbookRecord[]>([]);
   const [controlledLabDryRunWindows, setControlledLabDryRunWindows] = useState<ControlledLabDryRunWindowRecord[]>([]);
+  const [labWindowEvidenceExports, setLabWindowEvidenceExports] = useState<LabWindowEvidenceExportRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -305,6 +309,7 @@ export function App() {
             apiReleaseEvidenceExports,
             apiControlledLabReleaseRunbooks,
             apiControlledLabDryRunWindows,
+            apiLabWindowEvidenceExports,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -344,6 +349,7 @@ export function App() {
             fetchReleaseEvidenceExportsFromApi(),
             fetchControlledLabReleaseRunbooksFromApi(),
             fetchControlledLabDryRunWindowsFromApi(),
+            fetchLabWindowEvidenceExportsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -385,6 +391,7 @@ export function App() {
             setReleaseEvidenceExports(apiReleaseEvidenceExports);
             setControlledLabReleaseRunbooks(apiControlledLabReleaseRunbooks);
             setControlledLabDryRunWindows(apiControlledLabDryRunWindows);
+            setLabWindowEvidenceExports(apiLabWindowEvidenceExports);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -546,6 +553,7 @@ export function App() {
       apiReleaseEvidenceExports,
       apiControlledLabReleaseRunbooks,
       apiControlledLabDryRunWindows,
+      apiLabWindowEvidenceExports,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -585,6 +593,7 @@ export function App() {
       fetchReleaseEvidenceExportsFromApi(),
       fetchControlledLabReleaseRunbooksFromApi(),
       fetchControlledLabDryRunWindowsFromApi(),
+      fetchLabWindowEvidenceExportsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -625,6 +634,7 @@ export function App() {
     setReleaseEvidenceExports(apiReleaseEvidenceExports);
     setControlledLabReleaseRunbooks(apiControlledLabReleaseRunbooks);
     setControlledLabDryRunWindows(apiControlledLabDryRunWindows);
+    setLabWindowEvidenceExports(apiLabWindowEvidenceExports);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1237,6 +1247,25 @@ export function App() {
     ]);
   }
 
+  async function prepareLabWindowEvidenceExport() {
+    const window = controlledLabDryRunWindows[0];
+    if (!window) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const exportRecord = await createLabWindowEvidenceExportViaApi({ windowId: window.id });
+      await refreshApiState();
+      setLabWindowEvidenceExports((current) => [exportRecord, ...current.filter((item) => item.id !== exportRecord.id)]);
+      return;
+    }
+
+    setLabWindowEvidenceExports((current) => [
+      createMockLabWindowEvidenceExportRecord(window, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1461,6 +1490,7 @@ export function App() {
             releaseEvidenceExports={releaseEvidenceExports}
             controlledLabReleaseRunbooks={controlledLabReleaseRunbooks}
             controlledLabDryRunWindows={controlledLabDryRunWindows}
+            labWindowEvidenceExports={labWindowEvidenceExports}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1490,6 +1520,7 @@ export function App() {
             prepareReleaseEvidenceExport={prepareReleaseEvidenceExport}
             prepareControlledLabReleaseRunbook={prepareControlledLabReleaseRunbook}
             scheduleControlledLabDryRunWindow={scheduleControlledLabDryRunWindow}
+            prepareLabWindowEvidenceExport={prepareLabWindowEvidenceExport}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2002,6 +2033,7 @@ function AdminView({
   releaseEvidenceExports,
   controlledLabReleaseRunbooks,
   controlledLabDryRunWindows,
+  labWindowEvidenceExports,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2031,6 +2063,7 @@ function AdminView({
   prepareReleaseEvidenceExport,
   prepareControlledLabReleaseRunbook,
   scheduleControlledLabDryRunWindow,
+  prepareLabWindowEvidenceExport,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2074,6 +2107,7 @@ function AdminView({
   releaseEvidenceExports: ReleaseEvidenceExportRecord[];
   controlledLabReleaseRunbooks: ControlledLabReleaseRunbookRecord[];
   controlledLabDryRunWindows: ControlledLabDryRunWindowRecord[];
+  labWindowEvidenceExports: LabWindowEvidenceExportRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2106,6 +2140,7 @@ function AdminView({
   prepareReleaseEvidenceExport: () => void;
   prepareControlledLabReleaseRunbook: () => void;
   scheduleControlledLabDryRunWindow: () => void;
+  prepareLabWindowEvidenceExport: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2344,6 +2379,12 @@ function AdminView({
             <ControlledLabDryRunWindowPanel
               windows={controlledLabDryRunWindows}
               scheduleControlledLabDryRunWindow={scheduleControlledLabDryRunWindow}
+            />
+          </Panel>
+          <Panel title="Lab window evidence exports" action={`${labWindowEvidenceExports.length} exports`}>
+            <LabWindowEvidenceExportPanel
+              exports={labWindowEvidenceExports}
+              prepareLabWindowEvidenceExport={prepareLabWindowEvidenceExport}
             />
           </Panel>
         </div>
@@ -3326,6 +3367,65 @@ function ControlledLabDryRunWindowPanel({
             {latest.emergencyStopContacts.map((contact) => (
               <span key={contact}>{contact}</span>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LabWindowEvidenceExportPanel({
+  exports,
+  prepareLabWindowEvidenceExport,
+}: {
+  exports: LabWindowEvidenceExportRecord[];
+  prepareLabWindowEvidenceExport: () => void;
+}) {
+  const latest = exports[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Lab window evidence manifest</strong>
+          <span>Exports controlled lab window evidence as redacted metadata for operations and security review.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareLabWindowEvidenceExport}>
+          <Archive size={15} />
+          Prepare window evidence
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No lab window evidence export has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.id}</span>
+            </div>
+            <span className="status ready">{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Activity} label="Window" value={latest.manifest.windowStatus} passed={latest.manifest.windowStatus === "Ready for scheduling review"} />
+            <CheckLine icon={Gauge} label="Checks" value={`${latest.manifest.passedChecks}/${latest.manifest.checkCount} passed`} passed={latest.manifest.passedChecks === latest.manifest.checkCount} />
+            <CheckLine icon={LockKeyhole} label="Execution" value="Disabled" passed />
+            <CheckLine icon={Archive} label="Checksum" value={latest.checksum.slice(0, 12)} passed />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Linked evidence</strong>
+            <span>Runbook: {latest.manifest.linkedRunbookId ?? "missing"}</span>
+            <span>Release export: {latest.manifest.linkedReleaseEvidenceExportId ?? "missing"}</span>
+            <span>Lab scope: {latest.manifest.linkedLabScopeId ?? "missing"}</span>
+            <span>Rollback owner: {latest.manifest.rollbackOwner || "missing"}</span>
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Redaction boundary</strong>
+            <span>{latest.redactionBoundary}</span>
+            <span>{latest.storageBoundary}</span>
           </div>
         </div>
       )}
@@ -5950,6 +6050,49 @@ function createMockControlledLabDryRunWindowRecord({
     ],
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockLabWindowEvidenceExportRecord(
+  window: ControlledLabDryRunWindowRecord,
+  actor: string
+): LabWindowEvidenceExportRecord {
+  const createdAt = new Date().toISOString();
+  const manifest: LabWindowEvidenceExportRecord["manifest"] = {
+    exportId: `lab-window-evidence-export-${window.provider.toLowerCase()}-${Date.now()}`,
+    windowId: window.id,
+    provider: window.provider,
+    windowStatus: window.status,
+    generatedAt: createdAt,
+    scheduledStart: window.scheduledStart,
+    scheduledEnd: window.scheduledEnd,
+    linkedRunbookId: window.linkedRunbookId,
+    linkedReleaseEvidenceExportId: window.linkedReleaseEvidenceExportId,
+    linkedLabScopeId: window.linkedLabScopeId,
+    rollbackOwner: window.rollbackOwner,
+    emergencyStopContacts: window.emergencyStopContacts.map((contact) =>
+      contact.replace(/:\/\/[^/\s]*@/g, "://redacted@").replace(/([?&](?:key|sig|cred)=)[^&\s]+/gi, "$1redacted")
+    ),
+    checkCount: window.checks.length,
+    passedChecks: window.checks.filter((check) => check.passed).length,
+    readinessChecklist: window.readinessChecklist,
+    provisioningEnabled: false,
+  };
+
+  return {
+    id: manifest.exportId,
+    provider: window.provider,
+    windowId: window.id,
+    status: "Prepared",
+    requestedBy: actor,
+    format: "JSON",
+    checksumAlgorithm: "sha256",
+    checksum: `mock-${window.provider.toLowerCase()}-${manifest.checkCount}-${manifest.passedChecks}`,
+    manifest,
+    redactionBoundary: "Lab window evidence exports contain references and metadata only; sensitive material is not persisted.",
+    storageBoundary: "Export record is metadata only; configure external evidence storage before controlled lab operations.",
+    provisioningEnabled: false,
+    createdAt,
   };
 }
 

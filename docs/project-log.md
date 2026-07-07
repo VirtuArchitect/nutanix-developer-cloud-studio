@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.14.0-lab-window-evidence-export`.
+- Added lab window evidence export records linked to controlled lab dry-run windows.
+- Added API endpoints for lab window evidence exports.
+- Added Admin Operations export history for lab window evidence.
+- Added tests proving exports contain references and metadata only.
+- Planned `v2.15.0-lab-evidence-review-queue` for human review of exported evidence packages.
 - Released `v2.13.0-controlled-lab-dry-run-window`.
 - Added controlled lab dry-run window records with scheduled start and end times.
 - Added API endpoints for controlled lab dry-run windows.
 - Added Admin Operations window readiness checklist for linked runbook, release evidence export, lab scope, rollback owner, audit export, and emergency stop contacts.
 - Added tests proving missing evidence blocks window readiness.
-- Planned `v2.14.0-lab-window-evidence-export` for redacted controlled lab window evidence exports.
 - Released `v2.12.0-controlled-lab-release-runbook`.
 - Added controlled lab release runbook records linked to provider release readiness.
 - Added API endpoints for controlled lab release runbooks.

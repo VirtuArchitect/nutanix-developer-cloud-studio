@@ -164,6 +164,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Schedule dry-run window" }).click();
   await expect(page.getByText("Readiness checklist")).toBeVisible();
   await expect(page.getByText("Emergency stop contacts", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab window evidence exports" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare window evidence" }).click();
+  await expect(page.getByText("Lab window evidence manifest")).toBeVisible();
+  await expect(page.getByText("Linked evidence")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

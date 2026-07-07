@@ -818,6 +818,11 @@ describe("api server", () => {
       body: JSON.stringify({ provider: "NDB", runbookId: runbook.data.id, releaseEvidenceExportId: releaseExport.data.id }),
     });
     const dryRunWindows = await requestJson("/api/controlled-lab-release/windows");
+    const windowExport = await requestJson("/api/controlled-lab-release/window-exports", {
+      method: "POST",
+      body: JSON.stringify({ windowId: dryRunWindow.data.id }),
+    });
+    const windowExports = await requestJson("/api/controlled-lab-release/window-exports");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -933,6 +938,21 @@ describe("api server", () => {
       ])
     );
     expect(dryRunWindows.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: dryRunWindow.data.id })]));
+    expect(windowExport.data).toMatchObject({
+      provider: "NDB",
+      windowId: dryRunWindow.data.id,
+      status: "Prepared",
+      checksumAlgorithm: "sha256",
+      provisioningEnabled: false,
+      manifest: expect.objectContaining({
+        windowId: dryRunWindow.data.id,
+        linkedRunbookId: runbook.data.id,
+        linkedReleaseEvidenceExportId: releaseExport.data.id,
+        provisioningEnabled: false,
+      }),
+    });
+    expect(windowExport.data.checksum).toMatch(/^[a-f0-9]{64}$/);
+    expect(windowExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: windowExport.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -941,6 +961,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "release-evidence.export.prepared", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.runbook.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.window.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "controlled-lab-release.window-evidence.exported", target: "NDB" }),
       ])
     );
   });

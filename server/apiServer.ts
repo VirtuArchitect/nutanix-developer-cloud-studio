@@ -49,6 +49,10 @@ import {
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
 import {
+  createLabWindowEvidenceExportRecord,
+  LabWindowEvidenceExportError,
+} from "./labWindowEvidenceExport";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -123,6 +127,7 @@ import type {
   CreateControlledProvisioningGateRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
+  CreateLabWindowEvidenceExportRequest,
   CreatePlatformServiceRequest,
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
@@ -272,6 +277,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabDryRunWindowError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof LabWindowEvidenceExportError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -531,6 +546,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/windows") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledLabDryRunWindows });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/window-exports") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labWindowEvidenceExports });
     return;
   }
 
@@ -1247,6 +1268,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: window });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/window-exports") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabWindowEvidenceExportRequest>(request);
+    const exportRecord = createLabWindowEvidenceExportRecord(state, body, context.session.user);
+    state.labWindowEvidenceExports = [exportRecord, ...state.labWindowEvidenceExports];
+    addAuditEvent(state, "controlled-lab-release.window-evidence.exported", context.session.user, exportRecord.provider, {
+      windowId: exportRecord.windowId,
+      checksumAlgorithm: exportRecord.checksumAlgorithm,
+      checksum: exportRecord.checksum,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: exportRecord });
     return;
   }
 

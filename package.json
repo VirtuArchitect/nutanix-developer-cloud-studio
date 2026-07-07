@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.13.0-controlled-lab-dry-run-window",
+  "version": "2.14.0-lab-window-evidence-export",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

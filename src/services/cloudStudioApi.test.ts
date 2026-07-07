@@ -7,6 +7,7 @@ import {
   createAuditExportViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
+  createLabWindowEvidenceExportViaApi,
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
@@ -36,6 +37,7 @@ import {
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
   fetchPolicyBundlesFromApi,
   fetchLifecycleOperationsFromApi,
@@ -423,6 +425,8 @@ describe("cloudStudioApi", () => {
     await createControlledLabReleaseRunbookViaApi({ provider: "NDB" });
     await fetchControlledLabDryRunWindowsFromApi();
     await createControlledLabDryRunWindowViaApi({ provider: "NDB", runbookId: "controlled-lab-runbook-ndb-1" });
+    await fetchLabWindowEvidenceExportsFromApi();
+    await createLabWindowEvidenceExportViaApi({ windowId: "controlled-lab-window-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -435,6 +439,12 @@ describe("cloudStudioApi", () => {
       4,
       "/api/controlled-lab-release/windows",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-runbook-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/controlled-lab-release/window-exports", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      6,
+      "/api/controlled-lab-release/window-exports",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-window-ndb-1") })
     );
   });
 

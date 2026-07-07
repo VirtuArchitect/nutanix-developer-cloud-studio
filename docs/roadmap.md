@@ -286,10 +286,17 @@
 
 ## Phase 36 - Lab Window Evidence Export (`v2.14.0-lab-window-evidence-export`)
 
-- Add redacted window evidence export manifests linked to controlled lab dry-run windows - planned
-- Include runbook, release export, lab scope, rollback owner, emergency contacts, checks, and disabled execution state - planned
-- Add Admin Operations export history for lab window evidence - planned
-- Keep exports metadata-only and real adapter execution disabled - planned
+- Add redacted window evidence export manifests linked to controlled lab dry-run windows - done
+- Include runbook, release export, lab scope, rollback owner, emergency contacts, checks, and disabled execution state - done
+- Add Admin Operations export history for lab window evidence - done
+- Keep exports metadata-only and real adapter execution disabled - done
+
+## Phase 37 - Lab Evidence Review Queue (`v2.15.0-lab-evidence-review-queue`)
+
+- Add review records for lab window evidence exports - planned
+- Track platform owner, security reviewer, and operations reviewer decisions - planned
+- Add Admin Operations review queue for accepted, rejected, and blocked evidence packages - planned
+- Keep review records evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

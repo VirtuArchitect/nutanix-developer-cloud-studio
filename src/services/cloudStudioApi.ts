@@ -14,6 +14,7 @@ import type {
   Environment,
   Integration,
   IntegrationConfig,
+  LabWindowEvidenceExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
   LabScopeDiagnostics,
@@ -296,6 +297,10 @@ export async function fetchControlledLabDryRunWindowsFromApi() {
   return fetchJson<ControlledLabDryRunWindowRecord[]>("/api/controlled-lab-release/windows");
 }
 
+export async function fetchLabWindowEvidenceExportsFromApi() {
+  return fetchJson<LabWindowEvidenceExportRecord[]>("/api/controlled-lab-release/window-exports");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -434,6 +439,16 @@ export async function createControlledLabDryRunWindowViaApi(payload: {
   rollbackOwner?: string;
 }) {
   return fetchJson<ControlledLabDryRunWindowRecord>("/api/controlled-lab-release/windows", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createLabWindowEvidenceExportViaApi(payload: {
+  windowId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<LabWindowEvidenceExportRecord>("/api/controlled-lab-release/window-exports", {
     method: "POST",
     body: JSON.stringify(payload),
   });

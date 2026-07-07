@@ -13,6 +13,7 @@ import type {
   Integration,
   IntegrationConfig,
   AuditExportRecord,
+  LabWindowEvidenceExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
   LifecycleOperationKind,
@@ -77,6 +78,7 @@ export type ApiState = {
   releaseEvidenceExports: ReleaseEvidenceExportRecord[];
   controlledLabReleaseRunbooks: ControlledLabReleaseRunbookRecord[];
   controlledLabDryRunWindows: ControlledLabDryRunWindowRecord[];
+  labWindowEvidenceExports: LabWindowEvidenceExportRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -220,6 +222,11 @@ export type CreateControlledLabDryRunWindowRequest = {
   scheduledStart?: string;
   scheduledEnd?: string;
   emergencyStopContacts?: string[];
+};
+
+export type CreateLabWindowEvidenceExportRequest = {
+  windowId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
 };
 
 export type CreateAdapterEnablementRecordRequest = {
