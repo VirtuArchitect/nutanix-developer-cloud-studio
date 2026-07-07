@@ -209,6 +209,10 @@ import {
   ProductionExecutionFinalAcceptanceArchiveRecordError,
 } from "./productionExecutionFinalAcceptanceArchiveRecord";
 import {
+  createProductionExecutionReadinessArchiveHandoffRecord,
+  ProductionExecutionReadinessArchiveHandoffRecordError,
+} from "./productionExecutionReadinessArchiveHandoffRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -342,6 +346,7 @@ import type {
   CreateProductionExecutionPostImplementationReviewRecordRequest,
   CreateProductionExecutionImprovementClosureRecordRequest,
   CreateProductionExecutionFinalAcceptanceArchiveRecordRequest,
+  CreateProductionExecutionReadinessArchiveHandoffRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -897,6 +902,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionFinalAcceptanceArchiveRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionReadinessArchiveHandoffRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1521,6 +1536,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionFinalAcceptanceArchiveRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-readiness-archive-handoff-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionReadinessArchiveHandoffRecords });
     return;
   }
 
@@ -3152,6 +3176,34 @@ async function routeApi(
       record.provider,
       {
         improvementClosureRecordId: record.improvementClosureRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-readiness-archive-handoff-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionReadinessArchiveHandoffRecordRequest>(request);
+    const record = createProductionExecutionReadinessArchiveHandoffRecord(state, body, context.session.user);
+    state.productionExecutionReadinessArchiveHandoffRecords = [
+      record,
+      ...state.productionExecutionReadinessArchiveHandoffRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-readiness-archive-handoff.recorded",
+      context.session.user,
+      record.provider,
+      {
+        finalAcceptanceArchiveRecordId: record.finalAcceptanceArchiveRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

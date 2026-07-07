@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.59.0-production-execution-readiness-archive-handoff-record` adds evidence-only readiness archive handoff records linked to final acceptance archive records and an Admin Operations readiness archive handoff panel.
 - `v2.58.0-production-execution-final-acceptance-archive-record` adds evidence-only final acceptance archive records linked to improvement closure records and an Admin Operations final acceptance archive panel.
 - `v2.57.0-production-execution-improvement-closure-record` adds evidence-only improvement closure records linked to post-implementation review records and an Admin Operations improvement closure panel.
 - `v2.56.0-production-execution-post-implementation-review-record` adds evidence-only post-implementation review records linked to operational closure records and an Admin Operations post-implementation review panel.

@@ -2216,6 +2216,58 @@ export type ProductionExecutionFinalAcceptanceArchiveRecord = {
   createdAt: string;
 };
 
+export type ProductionExecutionReadinessArchiveHandoffRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  finalAcceptanceArchiveRecordId: string;
+  improvementClosureRecordId: string;
+  postImplementationReviewRecordId: string;
+  operationalClosureRecordId: string;
+  finalTurnoverRecordId: string;
+  serviceAcceptanceRecordId: string;
+  supportReadinessRecordId: string;
+  operationsHandoverRecordId: string;
+  completionDossierRecordId: string;
+  finalArchiveCertificationRecordId: string;
+  retentionAttestationRecordId: string;
+  archivalHandoffRecordId: string;
+  closurePacketRecordId: string;
+  closureAuthorizationRecordId: string;
+  outcomeAuthorizationRecordId: string;
+  executionHoldPointRecordId: string;
+  finalExecutionPacketRecordId: string;
+  changeTicketLockRecordId: string;
+  executionAuthorizationRecordId: string;
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production execution readiness archive handoff review";
+  requestedBy: string;
+  handoffOwner: string;
+  archiveRepositoryReference: string;
+  retrievalRunbookReference: string;
+  archiveAccessReviewReference: string;
+  archiveCustodyReceiptReference: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionFinalAcceptanceArchiveRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

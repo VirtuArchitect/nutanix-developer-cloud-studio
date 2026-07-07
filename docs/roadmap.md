@@ -601,10 +601,17 @@
 
 ## Phase 81 - Production Execution Readiness Archive Handoff Record (`v2.59.0-production-execution-readiness-archive-handoff-record`)
 
-- Add production execution readiness archive handoff records linked to final acceptance archive records - planned
-- Require handoff owner, archive repository reference, retrieval runbook, archive access review, and archive custody receipt - planned
-- Add Admin Operations readiness archive handoff panel - planned
-- Keep readiness archive handoff records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution readiness archive handoff records linked to final acceptance archive records - done
+- Require handoff owner, archive repository reference, retrieval runbook, archive access review, and archive custody receipt - done
+- Add Admin Operations readiness archive handoff panel - done
+- Keep readiness archive handoff records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 82 - Production Execution Archive Retrieval Validation Record (`v2.60.0-production-execution-archive-retrieval-validation-record`)
+
+- Add production execution archive retrieval validation records linked to readiness archive handoff records - planned
+- Require retrieval operator, sample retrieval proof, checksum verification, access audit, and recovery SLA witness - planned
+- Add Admin Operations archive retrieval validation panel - planned
+- Keep archive retrieval validation records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

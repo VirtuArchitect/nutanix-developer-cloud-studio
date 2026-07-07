@@ -102,6 +102,7 @@ import {
   type ProductionExecutionPostImplementationReviewRecord,
   type ProductionExecutionImprovementClosureRecord,
   type ProductionExecutionFinalAcceptanceArchiveRecord,
+  type ProductionExecutionReadinessArchiveHandoffRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -166,6 +167,7 @@ import {
   createProductionExecutionPostImplementationReviewRecordViaApi,
   createProductionExecutionImprovementClosureRecordViaApi,
   createProductionExecutionFinalAcceptanceArchiveRecordViaApi,
+  createProductionExecutionReadinessArchiveHandoffRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -235,6 +237,7 @@ import {
   fetchProductionExecutionPostImplementationReviewRecordsFromApi,
   fetchProductionExecutionImprovementClosureRecordsFromApi,
   fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi,
+  fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -434,6 +437,10 @@ export function App() {
     productionExecutionFinalAcceptanceArchiveRecords,
     setProductionExecutionFinalAcceptanceArchiveRecords,
   ] = useState<ProductionExecutionFinalAcceptanceArchiveRecord[]>([]);
+  const [
+    productionExecutionReadinessArchiveHandoffRecords,
+    setProductionExecutionReadinessArchiveHandoffRecords,
+  ] = useState<ProductionExecutionReadinessArchiveHandoffRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -563,6 +570,7 @@ export function App() {
             apiProductionExecutionPostImplementationReviewRecords,
             apiProductionExecutionImprovementClosureRecords,
             apiProductionExecutionFinalAcceptanceArchiveRecords,
+            apiProductionExecutionReadinessArchiveHandoffRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -647,6 +655,7 @@ export function App() {
             fetchProductionExecutionPostImplementationReviewRecordsFromApi(),
             fetchProductionExecutionImprovementClosureRecordsFromApi(),
             fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi(),
+            fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -738,6 +747,9 @@ export function App() {
             setProductionExecutionImprovementClosureRecords(apiProductionExecutionImprovementClosureRecords);
             setProductionExecutionFinalAcceptanceArchiveRecords(
               apiProductionExecutionFinalAcceptanceArchiveRecords
+            );
+            setProductionExecutionReadinessArchiveHandoffRecords(
+              apiProductionExecutionReadinessArchiveHandoffRecords
             );
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -945,6 +957,7 @@ export function App() {
       apiProductionExecutionPostImplementationReviewRecords,
       apiProductionExecutionImprovementClosureRecords,
       apiProductionExecutionFinalAcceptanceArchiveRecords,
+      apiProductionExecutionReadinessArchiveHandoffRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -1029,6 +1042,7 @@ export function App() {
       fetchProductionExecutionPostImplementationReviewRecordsFromApi(),
       fetchProductionExecutionImprovementClosureRecordsFromApi(),
       fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi(),
+      fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1114,6 +1128,7 @@ export function App() {
     setProductionExecutionPostImplementationReviewRecords(apiProductionExecutionPostImplementationReviewRecords);
     setProductionExecutionImprovementClosureRecords(apiProductionExecutionImprovementClosureRecords);
     setProductionExecutionFinalAcceptanceArchiveRecords(apiProductionExecutionFinalAcceptanceArchiveRecords);
+    setProductionExecutionReadinessArchiveHandoffRecords(apiProductionExecutionReadinessArchiveHandoffRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2762,6 +2777,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionReadinessArchiveHandoff() {
+    const finalAcceptanceArchiveRecord = productionExecutionFinalAcceptanceArchiveRecords[0];
+    if (!finalAcceptanceArchiveRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionReadinessArchiveHandoffRecordViaApi({
+        finalAcceptanceArchiveRecordId: finalAcceptanceArchiveRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionReadinessArchiveHandoffRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionReadinessArchiveHandoffRecords((current) => [
+      createMockProductionExecutionReadinessArchiveHandoffRecord(finalAcceptanceArchiveRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -3031,6 +3070,7 @@ export function App() {
             productionExecutionPostImplementationReviewRecords={productionExecutionPostImplementationReviewRecords}
             productionExecutionImprovementClosureRecords={productionExecutionImprovementClosureRecords}
             productionExecutionFinalAcceptanceArchiveRecords={productionExecutionFinalAcceptanceArchiveRecords}
+            productionExecutionReadinessArchiveHandoffRecords={productionExecutionReadinessArchiveHandoffRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -3105,6 +3145,7 @@ export function App() {
             recordProductionExecutionPostImplementationReview={recordProductionExecutionPostImplementationReview}
             recordProductionExecutionImprovementClosure={recordProductionExecutionImprovementClosure}
             recordProductionExecutionFinalAcceptanceArchive={recordProductionExecutionFinalAcceptanceArchive}
+            recordProductionExecutionReadinessArchiveHandoff={recordProductionExecutionReadinessArchiveHandoff}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3662,6 +3703,7 @@ function AdminView({
   productionExecutionPostImplementationReviewRecords,
   productionExecutionImprovementClosureRecords,
   productionExecutionFinalAcceptanceArchiveRecords,
+  productionExecutionReadinessArchiveHandoffRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3736,6 +3778,7 @@ function AdminView({
   recordProductionExecutionPostImplementationReview,
   recordProductionExecutionImprovementClosure,
   recordProductionExecutionFinalAcceptanceArchive,
+  recordProductionExecutionReadinessArchiveHandoff,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3824,6 +3867,7 @@ function AdminView({
   productionExecutionPostImplementationReviewRecords: ProductionExecutionPostImplementationReviewRecord[];
   productionExecutionImprovementClosureRecords: ProductionExecutionImprovementClosureRecord[];
   productionExecutionFinalAcceptanceArchiveRecords: ProductionExecutionFinalAcceptanceArchiveRecord[];
+  productionExecutionReadinessArchiveHandoffRecords: ProductionExecutionReadinessArchiveHandoffRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3901,6 +3945,7 @@ function AdminView({
   recordProductionExecutionPostImplementationReview: () => void;
   recordProductionExecutionImprovementClosure: () => void;
   recordProductionExecutionFinalAcceptanceArchive: () => void;
+  recordProductionExecutionReadinessArchiveHandoff: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4454,6 +4499,15 @@ function AdminView({
             <ProductionExecutionFinalAcceptanceArchiveRecordPanel
               records={productionExecutionFinalAcceptanceArchiveRecords}
               recordProductionExecutionFinalAcceptanceArchive={recordProductionExecutionFinalAcceptanceArchive}
+            />
+          </Panel>
+          <Panel
+            title="Production readiness archive handoff"
+            action={`${productionExecutionReadinessArchiveHandoffRecords.length} records`}
+          >
+            <ProductionExecutionReadinessArchiveHandoffRecordPanel
+              records={productionExecutionReadinessArchiveHandoffRecords}
+              recordProductionExecutionReadinessArchiveHandoff={recordProductionExecutionReadinessArchiveHandoff}
             />
           </Panel>
         </div>
@@ -8454,6 +8508,73 @@ function ProductionExecutionFinalAcceptanceArchiveRecordPanel({
             <span>Stakeholder receipt: {latest.stakeholderReceiptProofReference || "missing"}</span>
             <span>Retrieval owner: {latest.retrievalOwner || "missing"}</span>
             <span>Improvement closure: {latest.improvementClosureRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionReadinessArchiveHandoffRecordPanel({
+  records,
+  recordProductionExecutionReadinessArchiveHandoff,
+}: {
+  records: ProductionExecutionReadinessArchiveHandoffRecord[];
+  recordProductionExecutionReadinessArchiveHandoff: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution readiness archive handoff record</strong>
+          <span>Captures archive repository, retrieval runbook, access review, and custody receipt handoff evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionReadinessArchiveHandoff}>
+          <Archive size={15} />
+          Record readiness archive handoff
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution readiness archive handoff record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.finalAcceptanceArchiveRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution readiness archive handoff review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Handoff owner" value={latest.handoffOwner || "missing"} passed={Boolean(latest.handoffOwner)} />
+            <CheckLine icon={Archive} label="Archive repository" value={latest.archiveRepositoryReference || "missing"} passed={Boolean(latest.archiveRepositoryReference)} />
+            <CheckLine icon={ScrollText} label="Retrieval runbook" value={latest.retrievalRunbookReference || "missing"} passed={Boolean(latest.retrievalRunbookReference)} />
+            <CheckLine icon={ShieldCheck} label="Archive handoff" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution readiness archive handoff evidence</strong>
+            <span>Archive access review: {latest.archiveAccessReviewReference || "missing"}</span>
+            <span>Archive custody receipt: {latest.archiveCustodyReceiptReference || "missing"}</span>
+            <span>Final acceptance archive: {latest.finalAcceptanceArchiveRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -15157,6 +15278,122 @@ function createMockProductionExecutionFinalAcceptanceArchiveRecord(
       }.`,
     ],
     killSwitch: improvementClosureRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionReadinessArchiveHandoffRecord(
+  finalAcceptanceArchiveRecord: ProductionExecutionFinalAcceptanceArchiveRecord,
+  actor: string
+): ProductionExecutionReadinessArchiveHandoffRecord {
+  const providerSlug = finalAcceptanceArchiveRecord.provider.toLowerCase();
+  const handoffOwner = "Production Archive Handoff Owner";
+  const archiveRepositoryReference = `production-readiness-archive-repository-${providerSlug}.md`;
+  const retrievalRunbookReference = `production-readiness-retrieval-runbook-${providerSlug}.md`;
+  const archiveAccessReviewReference = `production-readiness-archive-access-review-${providerSlug}.md`;
+  const archiveCustodyReceiptReference = `production-readiness-archive-custody-receipt-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Final acceptance archive ready",
+      passed:
+        finalAcceptanceArchiveRecord.status ===
+        "Ready for production execution final acceptance archive review",
+      detail: `${finalAcceptanceArchiveRecord.id} is ${finalAcceptanceArchiveRecord.status}.`,
+    },
+    {
+      name: "Handoff owner assigned",
+      passed: Boolean(handoffOwner),
+      detail: handoffOwner,
+    },
+    {
+      name: "Archive repository linked",
+      passed: Boolean(archiveRepositoryReference),
+      detail: archiveRepositoryReference,
+    },
+    {
+      name: "Retrieval runbook linked",
+      passed: Boolean(retrievalRunbookReference),
+      detail: retrievalRunbookReference,
+    },
+    {
+      name: "Archive access review linked",
+      passed: Boolean(archiveAccessReviewReference),
+      detail: archiveAccessReviewReference,
+    },
+    {
+      name: "Archive custody receipt linked",
+      passed: Boolean(archiveCustodyReceiptReference),
+      detail: archiveCustodyReceiptReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !finalAcceptanceArchiveRecord.provisioningEnabled && !finalAcceptanceArchiveRecord.killSwitch.enabled,
+      detail: `${finalAcceptanceArchiveRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-readiness-archive-handoff-record-${providerSlug}-${Date.now()}`,
+    provider: finalAcceptanceArchiveRecord.provider,
+    finalAcceptanceArchiveRecordId: finalAcceptanceArchiveRecord.id,
+    improvementClosureRecordId: finalAcceptanceArchiveRecord.improvementClosureRecordId,
+    postImplementationReviewRecordId: finalAcceptanceArchiveRecord.postImplementationReviewRecordId,
+    operationalClosureRecordId: finalAcceptanceArchiveRecord.operationalClosureRecordId,
+    finalTurnoverRecordId: finalAcceptanceArchiveRecord.finalTurnoverRecordId,
+    serviceAcceptanceRecordId: finalAcceptanceArchiveRecord.serviceAcceptanceRecordId,
+    supportReadinessRecordId: finalAcceptanceArchiveRecord.supportReadinessRecordId,
+    operationsHandoverRecordId: finalAcceptanceArchiveRecord.operationsHandoverRecordId,
+    completionDossierRecordId: finalAcceptanceArchiveRecord.completionDossierRecordId,
+    finalArchiveCertificationRecordId: finalAcceptanceArchiveRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: finalAcceptanceArchiveRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: finalAcceptanceArchiveRecord.archivalHandoffRecordId,
+    closurePacketRecordId: finalAcceptanceArchiveRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: finalAcceptanceArchiveRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: finalAcceptanceArchiveRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: finalAcceptanceArchiveRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: finalAcceptanceArchiveRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: finalAcceptanceArchiveRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: finalAcceptanceArchiveRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: finalAcceptanceArchiveRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: finalAcceptanceArchiveRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: finalAcceptanceArchiveRecord.implementationHoldRecordId,
+    cabDecisionRecordId: finalAcceptanceArchiveRecord.cabDecisionRecordId,
+    cabHandoffPacketId: finalAcceptanceArchiveRecord.cabHandoffPacketId,
+    freezeRecordId: finalAcceptanceArchiveRecord.freezeRecordId,
+    authorizationPacketId: finalAcceptanceArchiveRecord.authorizationPacketId,
+    promotionDossierId: finalAcceptanceArchiveRecord.promotionDossierId,
+    closurePackageId: finalAcceptanceArchiveRecord.closurePackageId,
+    outcomeRecordId: finalAcceptanceArchiveRecord.outcomeRecordId,
+    handoffPackageId: finalAcceptanceArchiveRecord.handoffPackageId,
+    controlledSwitchRequestId: finalAcceptanceArchiveRecord.controlledSwitchRequestId,
+    auditPackageId: finalAcceptanceArchiveRecord.auditPackageId,
+    switchReviewId: finalAcceptanceArchiveRecord.switchReviewId,
+    activationId: finalAcceptanceArchiveRecord.activationId,
+    idempotencyKey: finalAcceptanceArchiveRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution readiness archive handoff review"
+      : "Blocked",
+    requestedBy: actor,
+    handoffOwner,
+    archiveRepositoryReference,
+    retrievalRunbookReference,
+    archiveAccessReviewReference,
+    archiveCustodyReceiptReference,
+    checks,
+    evidence: [
+      `Final acceptance archive record: ${finalAcceptanceArchiveRecord.id}.`,
+      `Improvement closure record: ${finalAcceptanceArchiveRecord.improvementClosureRecordId}.`,
+      `Handoff owner: ${handoffOwner}.`,
+      `Archive repository: ${archiveRepositoryReference}.`,
+      `Retrieval runbook: ${retrievalRunbookReference}.`,
+      `Archive access review: ${archiveAccessReviewReference}.`,
+      `Archive custody receipt: ${archiveCustodyReceiptReference}.`,
+      `Kill switch: ${finalAcceptanceArchiveRecord.killSwitch.name}=${
+        finalAcceptanceArchiveRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: finalAcceptanceArchiveRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

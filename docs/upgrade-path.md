@@ -1363,6 +1363,22 @@ Promotion criteria:
 
 - Production execution readiness archive handoff APIs and UI are tested.
 - Readiness archive handoff records are evidence-only.
+
+### v2.60.0-production-execution-archive-retrieval-validation-record
+
+Goal: validate archive retrievability after readiness archive handoff without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive retrieval validation records linked to readiness archive handoff records.
+- Require retrieval operator, sample retrieval proof, checksum verification, access audit, and recovery SLA witness.
+- Add Admin Operations archive retrieval validation panel with blockers and evidence references.
+- Add tests proving missing ready readiness archive handoff records, retrieval operators, sample retrieval proof, checksum verification, access audits, or recovery SLA witnesses block archive retrieval validation.
+
+Promotion criteria:
+
+- Production execution archive retrieval validation APIs and UI are tested.
+- Archive retrieval validation records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
 ## Automatic Implementation Rule

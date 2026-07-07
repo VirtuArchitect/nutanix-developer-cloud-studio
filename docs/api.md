@@ -650,6 +650,15 @@ Production execution final acceptance archive records capture final archive evid
 
 Required role: `Platform Admin`.
 
+### Production Execution Readiness Archive Handoff Records
+
+- `GET /api/real-adapter/production-execution-readiness-archive-handoff-records`
+- `POST /api/real-adapter/production-execution-readiness-archive-handoff-records`
+
+Production execution readiness archive handoff records capture archive handoff evidence after final acceptance archive and before any future archive retrieval validation phase. Records require a ready final acceptance archive record, handoff owner, archive repository reference, retrieval runbook, archive access review, archive custody receipt, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

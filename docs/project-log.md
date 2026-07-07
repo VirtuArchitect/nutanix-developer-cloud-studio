@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.59.0-production-execution-readiness-archive-handoff-record`.
+- Added production execution readiness archive handoff records linked to production execution final acceptance archive records.
+- Added API endpoints for production execution readiness archive handoff records.
+- Added Admin Operations production readiness archive handoff panel.
+- Added tests proving missing final acceptance archive records or incomplete handoff evidence block readiness.
+- Planned `v2.60.0-production-execution-archive-retrieval-validation-record` for evidence-only archive retrieval validation records.
 - Released `v2.58.0-production-execution-final-acceptance-archive-record`.
 - Added production execution final acceptance archive records linked to production execution improvement closure records.
 - Added API endpoints for production execution final acceptance archive records.

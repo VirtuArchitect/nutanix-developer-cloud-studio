@@ -385,6 +385,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution final acceptance archive record")).toBeVisible();
   await expect(page.getByText("Execution final acceptance archive evidence")).toBeVisible();
   await expect(page.getByText("Improvement closure ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production readiness archive handoff" })).toBeVisible();
+  await page.getByRole("button", { name: "Record readiness archive handoff" }).click();
+  await expect(page.getByText("Production execution readiness archive handoff record")).toBeVisible();
+  await expect(page.getByText("Execution readiness archive handoff evidence")).toBeVisible();
+  await expect(page.getByText("Final acceptance archive ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

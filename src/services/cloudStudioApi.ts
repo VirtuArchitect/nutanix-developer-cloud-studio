@@ -69,6 +69,7 @@ import type {
   ProductionExecutionPostImplementationReviewRecord,
   ProductionExecutionImprovementClosureRecord,
   ProductionExecutionFinalAcceptanceArchiveRecord,
+  ProductionExecutionReadinessArchiveHandoffRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -548,6 +549,12 @@ export async function fetchProductionExecutionImprovementClosureRecordsFromApi()
 export async function fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi() {
   return fetchJson<ProductionExecutionFinalAcceptanceArchiveRecord[]>(
     "/api/real-adapter/production-execution-final-acceptance-archive-records"
+  );
+}
+
+export async function fetchProductionExecutionReadinessArchiveHandoffRecordsFromApi() {
+  return fetchJson<ProductionExecutionReadinessArchiveHandoffRecord[]>(
+    "/api/real-adapter/production-execution-readiness-archive-handoff-records"
   );
 }
 
@@ -1191,6 +1198,19 @@ export async function createProductionExecutionFinalAcceptanceArchiveRecordViaAp
 }) {
   return fetchJson<ProductionExecutionFinalAcceptanceArchiveRecord>(
     "/api/real-adapter/production-execution-final-acceptance-archive-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionReadinessArchiveHandoffRecordViaApi(payload: {
+  finalAcceptanceArchiveRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionReadinessArchiveHandoffRecord>(
+    "/api/real-adapter/production-execution-readiness-archive-handoff-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.58.0-production-execution-final-acceptance-archive-record`.
+This project uses release tags for public milestones. The current release is `v2.59.0-production-execution-readiness-archive-handoff-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution readiness archive handoff records after final acceptance archive records are complete.
+- Add production execution archive retrieval validation records after readiness archive handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.59.0-production-execution-readiness-archive-handoff-record] - 2026-07-07
+
+### Added
+
+- Production execution readiness archive handoff records linked to production execution final acceptance archive records.
+- API endpoints for listing and recording production execution readiness archive handoff records.
+- Admin Operations production readiness archive handoff panel.
+- Handoff owner, archive repository, retrieval runbook, archive access review, and archive custody receipt checks.
+- Tests proving missing final acceptance archive records or incomplete archive handoff evidence block readiness archive handoff.
+
+### Notes
+
+- Production execution readiness archive handoff records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.58.0-production-execution-final-acceptance-archive-record] - 2026-07-07
 
