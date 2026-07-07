@@ -835,6 +835,34 @@ export type ControlledLabExecutionApprovalGate = {
   createdAt: string;
 };
 
+export type ControlledLabExecutionRehearsalPacket = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  approvalGateId: string;
+  proposalExportId: string;
+  envelopeId: string;
+  status: "Blocked" | "Ready for rehearsal review";
+  requestedBy: string;
+  frozenReferences: {
+    runbookId?: string;
+    rollbackOwner: string;
+    emergencyStopContacts: string[];
+    stopConditions: string[];
+    proposalExportId: string;
+    auditExportIds: string[];
+    approvalEvidence: string[];
+  };
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ControlledLabExecutionApprovalGate["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

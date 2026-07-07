@@ -49,6 +49,10 @@ import {
   createControlledLabExecutionApprovalGate,
 } from "./controlledLabExecutionApproval";
 import {
+  ControlledLabExecutionRehearsalPacketError,
+  createControlledLabExecutionRehearsalPacket,
+} from "./controlledLabExecutionRehearsalPacket";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -142,6 +146,7 @@ import type {
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
   CreateControlledLabExecutionApprovalGateRequest,
+  CreateControlledLabExecutionRehearsalPacketRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -297,6 +302,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabExecutionApprovalError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledLabExecutionRehearsalPacketError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -636,6 +651,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/execution-approvals") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledLabExecutionApprovals });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/rehearsal-packets") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledLabExecutionRehearsalPackets });
     return;
   }
 
@@ -1433,6 +1454,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: approval });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/rehearsal-packets") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledLabExecutionRehearsalPacketRequest>(request);
+    const packet = createControlledLabExecutionRehearsalPacket(state, body, context.session.user);
+    state.controlledLabExecutionRehearsalPackets = [packet, ...state.controlledLabExecutionRehearsalPackets];
+    addAuditEvent(state, "controlled-lab-release.rehearsal-packet.recorded", context.session.user, packet.provider, {
+      approvalGateId: packet.approvalGateId,
+      proposalExportId: packet.proposalExportId,
+      status: packet.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: packet });
     return;
   }
 

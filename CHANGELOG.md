@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.18.0-controlled-lab-execution-approval-gate`.
+This project uses release tags for public milestones. The current release is `v2.19.0-controlled-lab-execution-rehearsal-packet`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add execution runbook freeze and rehearsal packets before any future live-lab execution phase.
+- Add final controlled lab dry-run execution checklists before any future live-lab execution phase.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.19.0-controlled-lab-execution-rehearsal-packet] - 2026-07-07
+
+### Added
+
+- Controlled lab execution rehearsal packet records linked to approval gates.
+- API endpoints for listing and preparing rehearsal packets.
+- Admin Operations rehearsal packet panel.
+- Frozen runbook, rollback owner, stop condition, emergency contact, proposal export, audit export, and approval evidence references.
+- Tests proving missing approval gates or incomplete frozen evidence block packet readiness.
+
+### Notes
+
+- Rehearsal packets are evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.18.0-controlled-lab-execution-approval-gate] - 2026-07-07
 

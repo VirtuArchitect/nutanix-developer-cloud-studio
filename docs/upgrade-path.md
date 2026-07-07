@@ -686,6 +686,23 @@ Exit gate:
 - Rehearsal packets remain evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.20.0-controlled-lab-dry-run-execution-checklist
+
+Goal: add a final dry-run execution checklist before any future live-lab adapter operation can be considered.
+
+Build:
+
+- Controlled lab dry-run execution checklist records linked to rehearsal packets.
+- Operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution state checks.
+- Admin Operations dry-run checklist panel with blockers and evidence references.
+- Tests proving missing rehearsal packets or checklist evidence block readiness.
+
+Exit gate:
+
+- Dry-run checklist APIs and UI are tested.
+- Checklists remain evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

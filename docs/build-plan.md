@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.19.0-controlled-lab-execution-rehearsal-packet` adds evidence-only rehearsal packets linked to approved execution gates and an Admin Operations packet panel.
 - `v2.18.0-controlled-lab-execution-approval-gate` adds evidence-only approval gates linked to proposal exports and an Admin Operations approval panel.
 - `v2.17.0-lab-execution-proposal-export` adds metadata-only proposal export manifests linked to lab execution proposal envelopes and an Admin Operations export history panel.
 - `v2.16.0-lab-execution-proposal-envelope` adds evidence-only execution proposal envelopes linked to lab evidence reviews and an Admin Operations proposal readiness panel.
@@ -350,6 +351,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Gates track platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions.
 - Admin Operations surfaces approval decisions, blockers, evidence references, and disabled execution state.
 - Missing or rejected approvals block advancement.
+- Real adapter execution remains disabled.
+
+## Current Controlled Lab Execution Rehearsal Packet Slice
+
+- API records controlled lab execution rehearsal packets linked to execution approval gates.
+- Packets freeze runbook, rollback owner, emergency contacts, stop conditions, proposal export, audit export, and approval evidence references.
+- Admin Operations surfaces packet readiness, frozen references, stop conditions, and blockers.
+- Missing approved gates or incomplete frozen evidence blocks packet readiness.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack

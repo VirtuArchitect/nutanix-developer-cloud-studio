@@ -6,6 +6,7 @@ import type {
   AuditExportRecord,
   AuditRetentionDiagnostics,
   ControlledLabExecutionApprovalGate,
+  ControlledLabExecutionRehearsalPacket,
   ControlledLabDryRunWindowRecord,
   ControlledLabReleaseRunbookRecord,
   CredentialReferenceDiagnostic,
@@ -321,6 +322,10 @@ export async function fetchControlledLabExecutionApprovalsFromApi() {
   return fetchJson<ControlledLabExecutionApprovalGate[]>("/api/controlled-lab-release/execution-approvals");
 }
 
+export async function fetchControlledLabExecutionRehearsalPacketsFromApi() {
+  return fetchJson<ControlledLabExecutionRehearsalPacket[]>("/api/controlled-lab-release/rehearsal-packets");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -517,6 +522,16 @@ export async function createControlledLabExecutionApprovalViaApi(payload: {
   executiveSponsorDecision?: "Accepted" | "Rejected";
 }) {
   return fetchJson<ControlledLabExecutionApprovalGate>("/api/controlled-lab-release/execution-approvals", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createControlledLabExecutionRehearsalPacketViaApi(payload: {
+  approvalGateId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ControlledLabExecutionRehearsalPacket>("/api/controlled-lab-release/rehearsal-packets", {
     method: "POST",
     body: JSON.stringify(payload),
   });

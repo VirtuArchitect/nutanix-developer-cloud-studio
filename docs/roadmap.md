@@ -321,10 +321,17 @@
 
 ## Phase 41 - Controlled Lab Execution Rehearsal Packet (`v2.19.0-controlled-lab-execution-rehearsal-packet`)
 
-- Add rehearsal packet records linked to approved execution gates - planned
-- Freeze runbook, rollback, stop condition, contact, and evidence export references - planned
-- Add Admin Operations rehearsal packet panel - planned
-- Keep packets evidence-only and real adapter execution disabled - planned
+- Add rehearsal packet records linked to approved execution gates - done
+- Freeze runbook, rollback, stop condition, contact, and evidence export references - done
+- Add Admin Operations rehearsal packet panel - done
+- Keep packets evidence-only and real adapter execution disabled - done
+
+## Phase 42 - Controlled Lab Dry-Run Execution Checklist (`v2.20.0-controlled-lab-dry-run-execution-checklist`)
+
+- Add final dry-run execution checklist records linked to rehearsal packets - planned
+- Check operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution state - planned
+- Add Admin Operations dry-run checklist panel - planned
+- Keep checklists evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

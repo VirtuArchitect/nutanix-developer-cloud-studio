@@ -185,6 +185,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Controlled execution approval gate")).toBeVisible();
   await expect(page.getByText("Approval decisions")).toBeVisible();
   await expect(page.getByText("All approvers accepted")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Controlled lab rehearsal packets" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare rehearsal packet" }).click();
+  await expect(page.getByText("Execution rehearsal packet")).toBeVisible();
+  await expect(page.getByText("Frozen references")).toBeVisible();
+  await expect(page.getByText("Runbook frozen")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

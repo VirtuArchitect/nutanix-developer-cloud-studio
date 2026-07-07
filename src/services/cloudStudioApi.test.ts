@@ -6,6 +6,7 @@ import {
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
   createControlledLabExecutionApprovalViaApi,
+  createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createLabEvidenceReviewViaApi,
@@ -34,6 +35,7 @@ import {
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlledLabExecutionApprovalsFromApi,
+  fetchControlledLabExecutionRehearsalPacketsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchControlledLabDryRunWindowsFromApi,
@@ -443,6 +445,8 @@ describe("cloudStudioApi", () => {
     await createLabExecutionProposalExportViaApi({ envelopeId: "lab-execution-proposal-ndb-1" });
     await fetchControlledLabExecutionApprovalsFromApi();
     await createControlledLabExecutionApprovalViaApi({ proposalExportId: "lab-execution-proposal-export-ndb-1" });
+    await fetchControlledLabExecutionRehearsalPacketsFromApi();
+    await createControlledLabExecutionRehearsalPacketViaApi({ approvalGateId: "controlled-lab-execution-approval-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -485,6 +489,12 @@ describe("cloudStudioApi", () => {
       14,
       "/api/controlled-lab-release/execution-approvals",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("lab-execution-proposal-export-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(15, "/api/controlled-lab-release/rehearsal-packets", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      16,
+      "/api/controlled-lab-release/rehearsal-packets",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-execution-approval-ndb-1") })
     );
   });
 

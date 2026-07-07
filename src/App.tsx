@@ -34,6 +34,7 @@ import {
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
   type ControlledLabExecutionApprovalGate,
+  type ControlledLabExecutionRehearsalPacket,
   type ControlledLabDryRunWindowRecord,
   type ControlledLabReleaseRunbookRecord,
   type CredentialReferenceDiagnostic,
@@ -104,6 +105,7 @@ import {
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
   createControlledLabExecutionApprovalViaApi,
+  createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createLabEvidenceReviewViaApi,
@@ -134,6 +136,7 @@ import {
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledLabExecutionApprovalsFromApi,
+  fetchControlledLabExecutionRehearsalPacketsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchControlledLabDryRunWindowsFromApi,
@@ -241,6 +244,7 @@ export function App() {
   const [labExecutionProposalEnvelopes, setLabExecutionProposalEnvelopes] = useState<LabExecutionProposalEnvelope[]>([]);
   const [labExecutionProposalExports, setLabExecutionProposalExports] = useState<LabExecutionProposalExportRecord[]>([]);
   const [controlledLabExecutionApprovals, setControlledLabExecutionApprovals] = useState<ControlledLabExecutionApprovalGate[]>([]);
+  const [controlledLabExecutionRehearsalPackets, setControlledLabExecutionRehearsalPackets] = useState<ControlledLabExecutionRehearsalPacket[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -330,6 +334,7 @@ export function App() {
             apiLabExecutionProposalEnvelopes,
             apiLabExecutionProposalExports,
             apiControlledLabExecutionApprovals,
+            apiControlledLabExecutionRehearsalPackets,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -374,6 +379,7 @@ export function App() {
             fetchLabExecutionProposalEnvelopesFromApi(),
             fetchLabExecutionProposalExportsFromApi(),
             fetchControlledLabExecutionApprovalsFromApi(),
+            fetchControlledLabExecutionRehearsalPacketsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -420,6 +426,7 @@ export function App() {
             setLabExecutionProposalEnvelopes(apiLabExecutionProposalEnvelopes);
             setLabExecutionProposalExports(apiLabExecutionProposalExports);
             setControlledLabExecutionApprovals(apiControlledLabExecutionApprovals);
+            setControlledLabExecutionRehearsalPackets(apiControlledLabExecutionRehearsalPackets);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -586,6 +593,7 @@ export function App() {
       apiLabExecutionProposalEnvelopes,
       apiLabExecutionProposalExports,
       apiControlledLabExecutionApprovals,
+      apiControlledLabExecutionRehearsalPackets,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -630,6 +638,7 @@ export function App() {
       fetchLabExecutionProposalEnvelopesFromApi(),
       fetchLabExecutionProposalExportsFromApi(),
       fetchControlledLabExecutionApprovalsFromApi(),
+      fetchControlledLabExecutionRehearsalPacketsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -675,6 +684,7 @@ export function App() {
     setLabExecutionProposalEnvelopes(apiLabExecutionProposalEnvelopes);
     setLabExecutionProposalExports(apiLabExecutionProposalExports);
     setControlledLabExecutionApprovals(apiControlledLabExecutionApprovals);
+    setControlledLabExecutionRehearsalPackets(apiControlledLabExecutionRehearsalPackets);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1390,6 +1400,33 @@ export function App() {
     ]);
   }
 
+  async function prepareControlledLabExecutionRehearsalPacket() {
+    const approvalGate = controlledLabExecutionApprovals[0];
+    if (!approvalGate) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const packet = await createControlledLabExecutionRehearsalPacketViaApi({ approvalGateId: approvalGate.id });
+      await refreshApiState();
+      setControlledLabExecutionRehearsalPackets((current) => [packet, ...current.filter((item) => item.id !== packet.id)]);
+      return;
+    }
+
+    setControlledLabExecutionRehearsalPackets((current) => [
+      createMockControlledLabExecutionRehearsalPacket({
+        approvalGate,
+        proposalExport: labExecutionProposalExports.find((item) => item.id === approvalGate.proposalExportId),
+        envelope: labExecutionProposalEnvelopes.find((item) => item.id === approvalGate.envelopeId),
+        windows: controlledLabDryRunWindows,
+        runbooks: controlledLabReleaseRunbooks,
+        auditExports,
+        actor: session.user,
+      }),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1619,6 +1656,7 @@ export function App() {
             labExecutionProposalEnvelopes={labExecutionProposalEnvelopes}
             labExecutionProposalExports={labExecutionProposalExports}
             controlledLabExecutionApprovals={controlledLabExecutionApprovals}
+            controlledLabExecutionRehearsalPackets={controlledLabExecutionRehearsalPackets}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1653,6 +1691,7 @@ export function App() {
             reviewLabExecutionProposalEnvelope={reviewLabExecutionProposalEnvelope}
             prepareLabExecutionProposalExport={prepareLabExecutionProposalExport}
             recordControlledLabExecutionApproval={recordControlledLabExecutionApproval}
+            prepareControlledLabExecutionRehearsalPacket={prepareControlledLabExecutionRehearsalPacket}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2170,6 +2209,7 @@ function AdminView({
   labExecutionProposalEnvelopes,
   labExecutionProposalExports,
   controlledLabExecutionApprovals,
+  controlledLabExecutionRehearsalPackets,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2204,6 +2244,7 @@ function AdminView({
   reviewLabExecutionProposalEnvelope,
   prepareLabExecutionProposalExport,
   recordControlledLabExecutionApproval,
+  prepareControlledLabExecutionRehearsalPacket,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2252,6 +2293,7 @@ function AdminView({
   labExecutionProposalEnvelopes: LabExecutionProposalEnvelope[];
   labExecutionProposalExports: LabExecutionProposalExportRecord[];
   controlledLabExecutionApprovals: ControlledLabExecutionApprovalGate[];
+  controlledLabExecutionRehearsalPackets: ControlledLabExecutionRehearsalPacket[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2289,6 +2331,7 @@ function AdminView({
   reviewLabExecutionProposalEnvelope: () => void;
   prepareLabExecutionProposalExport: () => void;
   recordControlledLabExecutionApproval: () => void;
+  prepareControlledLabExecutionRehearsalPacket: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2557,6 +2600,12 @@ function AdminView({
             <ControlledLabExecutionApprovalPanel
               approvals={controlledLabExecutionApprovals}
               recordControlledLabExecutionApproval={recordControlledLabExecutionApproval}
+            />
+          </Panel>
+          <Panel title="Controlled lab rehearsal packets" action={`${controlledLabExecutionRehearsalPackets.length} packets`}>
+            <ControlledLabExecutionRehearsalPacketPanel
+              packets={controlledLabExecutionRehearsalPackets}
+              prepareControlledLabExecutionRehearsalPacket={prepareControlledLabExecutionRehearsalPacket}
             />
           </Panel>
         </div>
@@ -3854,6 +3903,85 @@ function ControlledLabExecutionApprovalPanel({
           <div className="inventoryEvidence">
             <strong>Approval evidence</strong>
             {latest.evidence.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledLabExecutionRehearsalPacketPanel({
+  packets,
+  prepareControlledLabExecutionRehearsalPacket,
+}: {
+  packets: ControlledLabExecutionRehearsalPacket[];
+  prepareControlledLabExecutionRehearsalPacket: () => void;
+}) {
+  const latest = packets[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ScrollText size={18} />
+        <div>
+          <strong>Execution rehearsal packet</strong>
+          <span>Freezes runbook, rollback, stop condition, contact, export, and approval evidence before any future live-lab adapter operation.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareControlledLabExecutionRehearsalPacket}>
+          <ScrollText size={15} />
+          Prepare rehearsal packet
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled lab execution rehearsal packet has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.approvalGateId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for rehearsal review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Approval gate" value={latest.approvalGateId} passed />
+            <CheckLine icon={ScrollText} label="Runbook" value={latest.frozenReferences.runbookId ?? "missing"} passed={Boolean(latest.frozenReferences.runbookId)} />
+            <CheckLine icon={Archive} label="Audit exports" value={`${latest.frozenReferences.auditExportIds.length} frozen`} passed={latest.frozenReferences.auditExportIds.length > 0} />
+            <CheckLine icon={LockKeyhole} label="Execution" value="Disabled" passed={!latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Frozen references</strong>
+            <span>Proposal export: {latest.frozenReferences.proposalExportId}</span>
+            <span>Rollback owner: {latest.frozenReferences.rollbackOwner || "missing"}</span>
+            <span>Emergency contacts: {latest.frozenReferences.emergencyStopContacts.join(", ") || "missing"}</span>
+            <span>Audit exports: {latest.frozenReferences.auditExportIds.join(", ") || "missing"}</span>
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Stop conditions</strong>
+            {latest.frozenReferences.stopConditions.map((condition) => (
+              <span key={condition}>{condition}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Approval evidence</strong>
+            {latest.frozenReferences.approvalEvidence.map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
@@ -6830,6 +6958,116 @@ function createMockControlledLabExecutionApproval(
       `Kill switch: ${proposalExport.manifest.killSwitch.name}=${proposalExport.manifest.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: proposalExport.manifest.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockControlledLabExecutionRehearsalPacket({
+  approvalGate,
+  proposalExport,
+  envelope,
+  windows,
+  runbooks,
+  auditExports,
+  actor,
+}: {
+  approvalGate: ControlledLabExecutionApprovalGate;
+  proposalExport?: LabExecutionProposalExportRecord;
+  envelope?: LabExecutionProposalEnvelope;
+  windows: ControlledLabDryRunWindowRecord[];
+  runbooks: ControlledLabReleaseRunbookRecord[];
+  auditExports: AuditExportRecord[];
+  actor: string;
+}): ControlledLabExecutionRehearsalPacket {
+  const window = envelope ? windows.find((item) => item.id === envelope.windowId) : undefined;
+  const runbook = window?.linkedRunbookId ? runbooks.find((item) => item.id === window.linkedRunbookId) : undefined;
+  const frozenReferences: ControlledLabExecutionRehearsalPacket["frozenReferences"] = {
+    runbookId: runbook?.id ?? window?.linkedRunbookId,
+    rollbackOwner: window?.rollbackOwner ?? proposalExport?.manifest.rollbackOwner ?? "",
+    emergencyStopContacts: window?.emergencyStopContacts ?? proposalExport?.manifest.emergencyStopContacts ?? [],
+    stopConditions: runbook?.stopConditions ?? [],
+    proposalExportId: approvalGate.proposalExportId,
+    auditExportIds: auditExports.map((item) => item.id),
+    approvalEvidence: approvalGate.decisions.map((decision) => `${decision.role}: ${decision.evidence}`),
+  };
+  const checks = [
+    {
+      name: "Execution approval gate approved",
+      passed: approvalGate.status === "Approved for controlled lab execution review",
+      detail: `${approvalGate.id} is ${approvalGate.status}.`,
+    },
+    {
+      name: "Proposal export frozen",
+      passed: Boolean(proposalExport),
+      detail: proposalExport ? `${proposalExport.id} is frozen.` : "Proposal export is required.",
+    },
+    {
+      name: "Execution envelope frozen",
+      passed: Boolean(envelope),
+      detail: envelope ? `${envelope.id} is frozen.` : "Execution proposal envelope is required.",
+    },
+    {
+      name: "Runbook frozen",
+      passed: Boolean(frozenReferences.runbookId && runbook),
+      detail: runbook ? `${runbook.id} stop conditions frozen.` : "Controlled lab release runbook is required.",
+    },
+    {
+      name: "Rollback owner frozen",
+      passed: Boolean(frozenReferences.rollbackOwner),
+      detail: frozenReferences.rollbackOwner || "Rollback owner is required.",
+    },
+    {
+      name: "Emergency contacts frozen",
+      passed: frozenReferences.emergencyStopContacts.length >= 2,
+      detail: `${frozenReferences.emergencyStopContacts.length} emergency stop contact(s) frozen.`,
+    },
+    {
+      name: "Stop conditions frozen",
+      passed: frozenReferences.stopConditions.length >= 3,
+      detail: `${frozenReferences.stopConditions.length} stop condition(s) frozen.`,
+    },
+    {
+      name: "Audit export frozen",
+      passed: frozenReferences.auditExportIds.length > 0,
+      detail:
+        frozenReferences.auditExportIds.length > 0
+          ? `${frozenReferences.auditExportIds.length} audit export(s) frozen.`
+          : "Audit export evidence is required.",
+    },
+    {
+      name: "Approval evidence frozen",
+      passed:
+        approvalGate.decisions.length >= 5 &&
+        approvalGate.decisions.every((decision) => decision.decision === "Accepted" && !/required/i.test(decision.evidence)),
+      detail: `${approvalGate.decisions.filter((decision) => decision.decision === "Accepted").length}/${approvalGate.decisions.length} accepted decisions frozen.`,
+    },
+    {
+      name: "Real adapter execution disabled",
+      passed: !approvalGate.killSwitch.enabled,
+      detail: `${approvalGate.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `controlled-lab-rehearsal-packet-${approvalGate.provider.toLowerCase()}-${Date.now()}`,
+    provider: approvalGate.provider,
+    approvalGateId: approvalGate.id,
+    proposalExportId: approvalGate.proposalExportId,
+    envelopeId: approvalGate.envelopeId,
+    status: checks.every((check) => check.passed) ? "Ready for rehearsal review" : "Blocked",
+    requestedBy: actor,
+    frozenReferences,
+    checks,
+    evidence: [
+      `Approval gate: ${approvalGate.id}.`,
+      `Proposal export: ${approvalGate.proposalExportId}.`,
+      `Proposal envelope: ${approvalGate.envelopeId}.`,
+      `Runbook: ${frozenReferences.runbookId ?? "missing"}.`,
+      `Audit exports: ${frozenReferences.auditExportIds.length}.`,
+      `Kill switch: ${approvalGate.killSwitch.name}=${approvalGate.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: approvalGate.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };
