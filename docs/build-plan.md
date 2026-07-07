@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.64.0-production-execution-archive-recovery-audit-certification-record` adds evidence-only archive recovery audit certification records linked to archive recovery closure records and an Admin Operations archive recovery audit certification panel.
 - `v2.63.0-production-execution-archive-recovery-closure-record` adds evidence-only archive recovery closure records linked to archive recovery acceptance records and an Admin Operations archive recovery closure panel.
 - `v2.62.0-production-execution-archive-recovery-acceptance-record` adds evidence-only archive recovery acceptance records linked to archive recovery drill records and an Admin Operations archive recovery acceptance panel.
 - `v2.61.0-production-execution-archive-recovery-drill-record` adds evidence-only archive recovery drill records linked to archive retrieval validation records and an Admin Operations archive recovery drill panel.

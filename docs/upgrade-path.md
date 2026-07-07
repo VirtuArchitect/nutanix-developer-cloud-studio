@@ -1446,6 +1446,23 @@ Promotion criteria:
 - Archive recovery audit certification records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.65.0-production-execution-archive-recovery-final-compliance-archive-record
+
+Goal: record final compliance archive evidence after archive recovery audit certification without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery final compliance archive records linked to archive recovery audit certification records.
+- Require compliance archive owner, final compliance archive index, evidence retention proof, audit witness receipt, and final compliance archive sign-off.
+- Add Admin Operations archive recovery final compliance archive panel with blockers and evidence references.
+- Add tests proving missing ready archive recovery audit certification records, compliance archive owners, final archive indexes, retention proof, witness receipts, or final sign-offs block final compliance archive readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery final compliance archive APIs and UI are tested.
+- Archive recovery final compliance archive records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

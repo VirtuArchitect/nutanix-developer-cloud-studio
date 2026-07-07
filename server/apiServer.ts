@@ -229,6 +229,10 @@ import {
   ProductionExecutionArchiveRecoveryClosureRecordError,
 } from "./productionExecutionArchiveRecoveryClosureRecord";
 import {
+  createProductionExecutionArchiveRecoveryAuditCertificationRecord,
+  ProductionExecutionArchiveRecoveryAuditCertificationRecordError,
+} from "./productionExecutionArchiveRecoveryAuditCertificationRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -367,6 +371,7 @@ import type {
   CreateProductionExecutionArchiveRecoveryDrillRecordRequest,
   CreateProductionExecutionArchiveRecoveryAcceptanceRecordRequest,
   CreateProductionExecutionArchiveRecoveryClosureRecordRequest,
+  CreateProductionExecutionArchiveRecoveryAuditCertificationRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -972,6 +977,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionArchiveRecoveryClosureRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionArchiveRecoveryAuditCertificationRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1641,6 +1656,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryClosureRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-audit-certification-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryAuditCertificationRecords });
     return;
   }
 
@@ -3412,6 +3436,34 @@ async function routeApi(
       record.provider,
       {
         archiveRecoveryAcceptanceRecordId: record.archiveRecoveryAcceptanceRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-audit-certification-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionArchiveRecoveryAuditCertificationRecordRequest>(request);
+    const record = createProductionExecutionArchiveRecoveryAuditCertificationRecord(state, body, context.session.user);
+    state.productionExecutionArchiveRecoveryAuditCertificationRecords = [
+      record,
+      ...state.productionExecutionArchiveRecoveryAuditCertificationRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-archive-recovery-audit-certification.recorded",
+      context.session.user,
+      record.provider,
+      {
+        archiveRecoveryClosureRecordId: record.archiveRecoveryClosureRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

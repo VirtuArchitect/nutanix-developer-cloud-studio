@@ -636,10 +636,17 @@
 
 ## Phase 86 - Production Execution Archive Recovery Audit Certification Record (`v2.64.0-production-execution-archive-recovery-audit-certification-record`)
 
-- Add production execution archive recovery audit certification records linked to archive recovery closure records - planned
-- Require certification owner, audit evidence manifest, control-mapping review, exception disposition, and audit certification sign-off - planned
-- Add Admin Operations archive recovery audit certification panel - planned
-- Keep archive recovery audit certification records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery audit certification records linked to archive recovery closure records - done
+- Require certification owner, audit evidence manifest, control-mapping review, exception disposition, and audit certification sign-off - done
+- Add Admin Operations archive recovery audit certification panel - done
+- Keep archive recovery audit certification records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 87 - Production Execution Archive Recovery Final Compliance Archive Record (`v2.65.0-production-execution-archive-recovery-final-compliance-archive-record`)
+
+- Add production execution archive recovery final compliance archive records linked to archive recovery audit certification records - planned
+- Require compliance archive owner, final compliance archive index, evidence retention proof, audit witness receipt, and final compliance archive sign-off - planned
+- Add Admin Operations archive recovery final compliance archive panel - planned
+- Keep archive recovery final compliance archive records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

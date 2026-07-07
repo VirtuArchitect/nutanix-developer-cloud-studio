@@ -410,6 +410,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution archive recovery closure record")).toBeVisible();
   await expect(page.getByText("Execution archive recovery closure evidence")).toBeVisible();
   await expect(page.getByText("Archive recovery acceptance ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production archive recovery audit certification" })).toBeVisible();
+  await page.getByRole("button", { name: "Record audit certification" }).click();
+  await expect(page.getByText("Production execution archive recovery audit certification record")).toBeVisible();
+  await expect(page.getByText("Execution archive recovery audit certification evidence")).toBeVisible();
+  await expect(page.getByText("Archive recovery closure ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

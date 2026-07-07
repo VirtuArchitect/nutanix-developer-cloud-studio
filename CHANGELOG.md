@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.63.0-production-execution-archive-recovery-closure-record`.
+This project uses release tags for public milestones. The current release is `v2.64.0-production-execution-archive-recovery-audit-certification-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery audit certification records after archive recovery closure records are complete.
+- Add production execution archive recovery final compliance archive records after archive recovery audit certification records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.64.0-production-execution-archive-recovery-audit-certification-record] - 2026-07-07
+
+### Added
+
+- Production execution archive recovery audit certification records linked to production execution archive recovery closure records.
+- API endpoints for listing and recording production execution archive recovery audit certification records.
+- Admin Operations production archive recovery audit certification panel.
+- Certification owner, audit evidence manifest, control-mapping review, exception disposition, and audit certification sign-off checks.
+- Tests proving missing archive recovery closure records or incomplete audit certification evidence block archive recovery audit certification readiness.
+
+### Notes
+
+- Production execution archive recovery audit certification records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.63.0-production-execution-archive-recovery-closure-record] - 2026-07-07
 

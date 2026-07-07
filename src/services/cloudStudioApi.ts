@@ -74,6 +74,7 @@ import type {
   ProductionExecutionArchiveRecoveryDrillRecord,
   ProductionExecutionArchiveRecoveryAcceptanceRecord,
   ProductionExecutionArchiveRecoveryClosureRecord,
+  ProductionExecutionArchiveRecoveryAuditCertificationRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -583,6 +584,12 @@ export async function fetchProductionExecutionArchiveRecoveryAcceptanceRecordsFr
 export async function fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi() {
   return fetchJson<ProductionExecutionArchiveRecoveryClosureRecord[]>(
     "/api/real-adapter/production-execution-archive-recovery-closure-records"
+  );
+}
+
+export async function fetchProductionExecutionArchiveRecoveryAuditCertificationRecordsFromApi() {
+  return fetchJson<ProductionExecutionArchiveRecoveryAuditCertificationRecord[]>(
+    "/api/real-adapter/production-execution-archive-recovery-audit-certification-records"
   );
 }
 
@@ -1291,6 +1298,19 @@ export async function createProductionExecutionArchiveRecoveryClosureRecordViaAp
 }) {
   return fetchJson<ProductionExecutionArchiveRecoveryClosureRecord>(
     "/api/real-adapter/production-execution-archive-recovery-closure-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionArchiveRecoveryAuditCertificationRecordViaApi(payload: {
+  archiveRecoveryClosureRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionArchiveRecoveryAuditCertificationRecord>(
+    "/api/real-adapter/production-execution-archive-recovery-audit-certification-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

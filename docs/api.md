@@ -695,6 +695,15 @@ Production execution archive recovery closure records capture closure evidence a
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Audit Certification Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-audit-certification-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-audit-certification-records`
+
+Production execution archive recovery audit certification records capture audit certification evidence after archive recovery closure and before any future final compliance archive phase. Records require a ready archive recovery closure record, certification owner, audit evidence manifest, control-mapping review, exception disposition, audit certification sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`
