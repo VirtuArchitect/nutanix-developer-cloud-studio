@@ -921,6 +921,11 @@ describe("api server", () => {
       body: JSON.stringify({ promotionDossierId: adapterPromotionDossier.data.id }),
     });
     const productionAuthorizationPackets = await requestJson("/api/real-adapter/production-authorization-packets");
+    const productionChangeFreezeRecord = await requestJson("/api/real-adapter/production-change-freeze-records", {
+      method: "POST",
+      body: JSON.stringify({ authorizationPacketId: productionAuthorizationPacket.data.id }),
+    });
+    const productionChangeFreezeRecords = await requestJson("/api/real-adapter/production-change-freeze-records");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1367,6 +1372,23 @@ describe("api server", () => {
     expect(productionAuthorizationPackets.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: productionAuthorizationPacket.data.id })])
     );
+    expect(productionChangeFreezeRecord.data).toMatchObject({
+      provider: "NDB",
+      authorizationPacketId: productionAuthorizationPacket.data.id,
+      promotionDossierId: adapterPromotionDossier.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionChangeFreezeRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Authorization packet ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not promote adapter", passed: true }),
+      ])
+    );
+    expect(productionChangeFreezeRecords.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: productionChangeFreezeRecord.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1395,6 +1417,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "real-adapter.switch-closure.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.adapter-promotion-dossier.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.production-authorization.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.production-change-freeze.recorded", target: "NDB" }),
       ])
     );
   });

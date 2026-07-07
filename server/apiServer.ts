@@ -109,6 +109,10 @@ import {
   ProductionAdapterAuthorizationPacketError,
 } from "./productionAdapterAuthorizationPacket";
 import {
+  createProductionChangeFreezeRecord,
+  ProductionChangeFreezeRecordError,
+} from "./productionChangeFreezeRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -217,6 +221,7 @@ import type {
   CreateSwitchClosureRetentionPackageRequest,
   CreateAdapterPromotionReadinessDossierRequest,
   CreateProductionAdapterAuthorizationPacketRequest,
+  CreateProductionChangeFreezeRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -522,6 +527,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionAdapterAuthorizationPacketError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionChangeFreezeRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -951,6 +966,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/production-authorization-packets") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionAdapterAuthorizationPackets });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/production-change-freeze-records") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionChangeFreezeRecords });
     return;
   }
 
@@ -2012,6 +2033,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: packet });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/production-change-freeze-records") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionChangeFreezeRecordRequest>(request);
+    const record = createProductionChangeFreezeRecord(state, body, context.session.user);
+    state.productionChangeFreezeRecords = [record, ...state.productionChangeFreezeRecords];
+    addAuditEvent(state, "real-adapter.production-change-freeze.recorded", context.session.user, record.provider, {
+      authorizationPacketId: record.authorizationPacketId,
+      idempotencyKey: record.idempotencyKey,
+      status: record.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
     return;
   }
 

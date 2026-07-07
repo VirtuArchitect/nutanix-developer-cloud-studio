@@ -260,6 +260,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production adapter authorization packet")).toBeVisible();
   await expect(page.getByText("Production authorization evidence")).toBeVisible();
   await expect(page.getByText("Prototype does not authorize promotion")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production change freeze" })).toBeVisible();
+  await page.getByRole("button", { name: "Record change freeze" }).click();
+  await expect(page.getByText("Production change freeze record")).toBeVisible();
+  await expect(page.getByText("Production freeze evidence")).toBeVisible();
+  await expect(page.getByText("Prototype does not promote adapter").last()).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

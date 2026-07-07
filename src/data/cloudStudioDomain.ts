@@ -1221,6 +1221,37 @@ export type ProductionAdapterAuthorizationPacket = {
   createdAt: string;
 };
 
+export type ProductionChangeFreezeRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production change freeze review";
+  requestedBy: string;
+  freezeOwner: string;
+  freezeWindowReference: string;
+  stakeholderNotificationReference: string;
+  rollbackStandbyReference: string;
+  noChangeExceptionPlanReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ProductionAdapterAuthorizationPacket["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

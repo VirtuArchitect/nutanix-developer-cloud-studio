@@ -51,6 +51,7 @@ import type {
   SwitchClosureRetentionPackage,
   AdapterPromotionReadinessDossier,
   ProductionAdapterAuthorizationPacket,
+  ProductionChangeFreezeRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -117,6 +118,7 @@ export type ApiState = {
   switchClosureRetentionPackages: SwitchClosureRetentionPackage[];
   adapterPromotionReadinessDossiers: AdapterPromotionReadinessDossier[];
   productionAdapterAuthorizationPackets: ProductionAdapterAuthorizationPacket[];
+  productionChangeFreezeRecords: ProductionChangeFreezeRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -444,6 +446,16 @@ export type CreateProductionAdapterAuthorizationPacketRequest = {
   releaseWindowReference?: string;
   emergencyRollbackAuthorization?: string;
   complianceAcceptanceReference?: string;
+};
+
+export type CreateProductionChangeFreezeRecordRequest = {
+  authorizationPacketId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  freezeOwner?: string;
+  freezeWindowReference?: string;
+  stakeholderNotificationReference?: string;
+  rollbackStandbyReference?: string;
+  noChangeExceptionPlanReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

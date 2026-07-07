@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.33.0-production-adapter-authorization-packet",
+  "version": "2.34.0-production-change-freeze-record",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.34.0-production-change-freeze-record`.
+- Added production change freeze records linked to production adapter authorization packets.
+- Added API endpoints for production change freeze records.
+- Added Admin Operations production change freeze panel.
+- Added tests proving missing authorization packets or incomplete freeze evidence block readiness.
+- Planned `v2.35.0-production-cab-handoff-packet` for evidence-only CAB handoff packets.
 - Released `v2.33.0-production-adapter-authorization-packet`.
 - Added production adapter authorization packets linked to adapter promotion dossiers.
 - Added API endpoints for production authorization packets.
 - Added Admin Operations production adapter authorization panel.
 - Added tests proving missing promotion dossiers or incomplete production authorization evidence block readiness.
-- Planned `v2.34.0-production-change-freeze-record` for evidence-only production change freeze records.
 - Released `v2.32.0-adapter-promotion-readiness-dossier`.
 - Added adapter promotion readiness dossiers linked to switch closure packages.
 - Added API endpoints for adapter promotion dossiers.

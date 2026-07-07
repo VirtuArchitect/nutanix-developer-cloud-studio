@@ -77,6 +77,7 @@ import {
   type PrismInventoryRecord,
   type ProvisioningAdapterReadiness,
   type ProductionAdapterAuthorizationPacket,
+  type ProductionChangeFreezeRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -116,6 +117,7 @@ import {
   checkApiHealth,
   createAdapterPromotionReadinessDossierViaApi,
   createProductionAdapterAuthorizationPacketViaApi,
+  createProductionChangeFreezeRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -160,6 +162,7 @@ import {
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
   fetchProductionAdapterAuthorizationPacketsFromApi,
+  fetchProductionChangeFreezeRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -301,6 +304,7 @@ export function App() {
   const [switchClosureRetentionPackages, setSwitchClosureRetentionPackages] = useState<SwitchClosureRetentionPackage[]>([]);
   const [adapterPromotionReadinessDossiers, setAdapterPromotionReadinessDossiers] = useState<AdapterPromotionReadinessDossier[]>([]);
   const [productionAdapterAuthorizationPackets, setProductionAdapterAuthorizationPackets] = useState<ProductionAdapterAuthorizationPacket[]>([]);
+  const [productionChangeFreezeRecords, setProductionChangeFreezeRecords] = useState<ProductionChangeFreezeRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -405,6 +409,7 @@ export function App() {
             apiSwitchClosureRetentionPackages,
             apiAdapterPromotionReadinessDossiers,
             apiProductionAdapterAuthorizationPackets,
+            apiProductionChangeFreezeRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -464,6 +469,7 @@ export function App() {
             fetchSwitchClosureRetentionPackagesFromApi(),
             fetchAdapterPromotionReadinessDossiersFromApi(),
             fetchProductionAdapterAuthorizationPacketsFromApi(),
+            fetchProductionChangeFreezeRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -525,6 +531,7 @@ export function App() {
             setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
             setAdapterPromotionReadinessDossiers(apiAdapterPromotionReadinessDossiers);
             setProductionAdapterAuthorizationPackets(apiProductionAdapterAuthorizationPackets);
+            setProductionChangeFreezeRecords(apiProductionChangeFreezeRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -706,6 +713,7 @@ export function App() {
       apiSwitchClosureRetentionPackages,
       apiAdapterPromotionReadinessDossiers,
       apiProductionAdapterAuthorizationPackets,
+      apiProductionChangeFreezeRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -765,6 +773,7 @@ export function App() {
       fetchSwitchClosureRetentionPackagesFromApi(),
       fetchAdapterPromotionReadinessDossiersFromApi(),
       fetchProductionAdapterAuthorizationPacketsFromApi(),
+      fetchProductionChangeFreezeRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -825,6 +834,7 @@ export function App() {
     setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
     setAdapterPromotionReadinessDossiers(apiAdapterPromotionReadinessDossiers);
     setProductionAdapterAuthorizationPackets(apiProductionAdapterAuthorizationPackets);
+    setProductionChangeFreezeRecords(apiProductionChangeFreezeRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1875,6 +1885,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionChangeFreeze() {
+    const authorizationPacket = productionAdapterAuthorizationPackets[0];
+    if (!authorizationPacket) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionChangeFreezeRecordViaApi({
+        authorizationPacketId: authorizationPacket.id,
+      });
+      await refreshApiState();
+      setProductionChangeFreezeRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionChangeFreezeRecords((current) => [
+      createMockProductionChangeFreezeRecord(authorizationPacket, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2119,6 +2153,7 @@ export function App() {
             switchClosureRetentionPackages={switchClosureRetentionPackages}
             adapterPromotionReadinessDossiers={adapterPromotionReadinessDossiers}
             productionAdapterAuthorizationPackets={productionAdapterAuthorizationPackets}
+            productionChangeFreezeRecords={productionChangeFreezeRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2168,6 +2203,7 @@ export function App() {
             prepareSwitchClosureRetentionPackage={prepareSwitchClosureRetentionPackage}
             prepareAdapterPromotionReadinessDossier={prepareAdapterPromotionReadinessDossier}
             prepareProductionAdapterAuthorizationPacket={prepareProductionAdapterAuthorizationPacket}
+            recordProductionChangeFreeze={recordProductionChangeFreeze}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2700,6 +2736,7 @@ function AdminView({
   switchClosureRetentionPackages,
   adapterPromotionReadinessDossiers,
   productionAdapterAuthorizationPackets,
+  productionChangeFreezeRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2749,6 +2786,7 @@ function AdminView({
   prepareSwitchClosureRetentionPackage,
   prepareAdapterPromotionReadinessDossier,
   prepareProductionAdapterAuthorizationPacket,
+  recordProductionChangeFreeze,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2812,6 +2850,7 @@ function AdminView({
   switchClosureRetentionPackages: SwitchClosureRetentionPackage[];
   adapterPromotionReadinessDossiers: AdapterPromotionReadinessDossier[];
   productionAdapterAuthorizationPackets: ProductionAdapterAuthorizationPacket[];
+  productionChangeFreezeRecords: ProductionChangeFreezeRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2864,6 +2903,7 @@ function AdminView({
   prepareSwitchClosureRetentionPackage: () => void;
   prepareAdapterPromotionReadinessDossier: () => void;
   prepareProductionAdapterAuthorizationPacket: () => void;
+  recordProductionChangeFreeze: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3222,6 +3262,12 @@ function AdminView({
             <ProductionAdapterAuthorizationPacketPanel
               packets={productionAdapterAuthorizationPackets}
               prepareProductionAdapterAuthorizationPacket={prepareProductionAdapterAuthorizationPacket}
+            />
+          </Panel>
+          <Panel title="Production change freeze" action={`${productionChangeFreezeRecords.length} records`}>
+            <ProductionChangeFreezeRecordPanel
+              records={productionChangeFreezeRecords}
+              recordProductionChangeFreeze={recordProductionChangeFreeze}
             />
           </Panel>
         </div>
@@ -5547,6 +5593,73 @@ function ProductionAdapterAuthorizationPacketPanel({
             <span>Emergency rollback: {latest.emergencyRollbackAuthorization || "missing"}</span>
             <span>Compliance acceptance: {latest.complianceAcceptanceReference || "missing"}</span>
             <span>Closure package: {latest.closurePackageId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionChangeFreezeRecordPanel({
+  records,
+  recordProductionChangeFreeze,
+}: {
+  records: ProductionChangeFreezeRecord[];
+  recordProductionChangeFreeze: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production change freeze record</strong>
+          <span>Freezes production change evidence before any external CAB or change process can promote adapters.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionChangeFreeze}>
+          <Archive size={15} />
+          Record change freeze
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production change freeze record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.authorizationPacketId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production change freeze review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Owner" value={latest.freezeOwner || "missing"} passed={Boolean(latest.freezeOwner)} />
+            <CheckLine icon={Archive} label="Window" value={latest.freezeWindowReference || "missing"} passed={Boolean(latest.freezeWindowReference)} />
+            <CheckLine icon={ScrollText} label="Notify" value={latest.stakeholderNotificationReference || "missing"} passed={Boolean(latest.stakeholderNotificationReference)} />
+            <CheckLine icon={LockKeyhole} label="Freeze" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Production freeze evidence</strong>
+            <span>Rollback standby: {latest.rollbackStandbyReference || "missing"}</span>
+            <span>No-change exception plan: {latest.noChangeExceptionPlanReference || "missing"}</span>
+            <span>Authorization packet: {latest.authorizationPacketId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -9726,6 +9839,93 @@ function createMockProductionAdapterAuthorizationPacket(
       `Kill switch: ${promotionDossier.killSwitch.name}=${promotionDossier.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: promotionDossier.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionChangeFreezeRecord(
+  authorizationPacket: ProductionAdapterAuthorizationPacket,
+  actor: string
+): ProductionChangeFreezeRecord {
+  const providerSlug = authorizationPacket.provider.toLowerCase();
+  const freezeOwner = "Production Change Manager";
+  const freezeWindowReference = `production-change-freeze-window-${providerSlug}.md`;
+  const stakeholderNotificationReference = `stakeholder-notification-${providerSlug}.md`;
+  const rollbackStandbyReference = `rollback-standby-roster-${providerSlug}.md`;
+  const noChangeExceptionPlanReference = `no-change-exception-plan-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Authorization packet ready",
+      passed: authorizationPacket.status === "Ready for production adapter authorization review",
+      detail: `${authorizationPacket.id} is ${authorizationPacket.status}.`,
+    },
+    {
+      name: "Freeze owner assigned",
+      passed: Boolean(freezeOwner),
+      detail: freezeOwner,
+    },
+    {
+      name: "Freeze window linked",
+      passed: Boolean(freezeWindowReference),
+      detail: freezeWindowReference,
+    },
+    {
+      name: "Stakeholder notification linked",
+      passed: Boolean(stakeholderNotificationReference),
+      detail: stakeholderNotificationReference,
+    },
+    {
+      name: "Rollback standby linked",
+      passed: Boolean(rollbackStandbyReference),
+      detail: rollbackStandbyReference,
+    },
+    {
+      name: "No-change exception plan linked",
+      passed: Boolean(noChangeExceptionPlanReference),
+      detail: noChangeExceptionPlanReference,
+    },
+    {
+      name: "Prototype does not promote adapter",
+      passed: !authorizationPacket.provisioningEnabled && !authorizationPacket.killSwitch.enabled,
+      detail: `${authorizationPacket.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-change-freeze-record-${providerSlug}-${Date.now()}`,
+    provider: authorizationPacket.provider,
+    authorizationPacketId: authorizationPacket.id,
+    promotionDossierId: authorizationPacket.promotionDossierId,
+    closurePackageId: authorizationPacket.closurePackageId,
+    outcomeRecordId: authorizationPacket.outcomeRecordId,
+    handoffPackageId: authorizationPacket.handoffPackageId,
+    controlledSwitchRequestId: authorizationPacket.controlledSwitchRequestId,
+    auditPackageId: authorizationPacket.auditPackageId,
+    switchReviewId: authorizationPacket.switchReviewId,
+    activationId: authorizationPacket.activationId,
+    idempotencyKey: authorizationPacket.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production change freeze review"
+      : "Blocked",
+    requestedBy: actor,
+    freezeOwner,
+    freezeWindowReference,
+    stakeholderNotificationReference,
+    rollbackStandbyReference,
+    noChangeExceptionPlanReference,
+    checks,
+    evidence: [
+      `Authorization packet: ${authorizationPacket.id}.`,
+      `Promotion dossier: ${authorizationPacket.promotionDossierId}.`,
+      `Freeze owner: ${freezeOwner}.`,
+      `Freeze window: ${freezeWindowReference}.`,
+      `Stakeholder notification: ${stakeholderNotificationReference}.`,
+      `Rollback standby: ${rollbackStandbyReference}.`,
+      `No-change exception plan: ${noChangeExceptionPlanReference}.`,
+      `Kill switch: ${authorizationPacket.killSwitch.name}=${authorizationPacket.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: authorizationPacket.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

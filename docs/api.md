@@ -425,6 +425,15 @@ Production adapter authorization packets assemble evidence after adapter promoti
 
 Required role: `Platform Admin`.
 
+### Production Change Freeze Records
+
+- `GET /api/real-adapter/production-change-freeze-records`
+- `POST /api/real-adapter/production-change-freeze-records`
+
+Production change freeze records assemble freeze evidence after production adapter authorization and before any external CAB or change process. Records require a ready authorization packet, freeze owner, freeze window, stakeholder notification, rollback standby, no-change exception plan, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

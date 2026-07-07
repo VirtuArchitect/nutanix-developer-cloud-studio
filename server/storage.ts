@@ -163,6 +163,7 @@ export function createDefaultState(): ApiState {
     switchClosureRetentionPackages: [],
     adapterPromotionReadinessDossiers: [],
     productionAdapterAuthorizationPackets: [],
+    productionChangeFreezeRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

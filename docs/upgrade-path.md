@@ -941,6 +941,23 @@ Exit gate:
 - Freeze records are evidence-only.
 - No adapter is promoted by the prototype.
 
+### v2.35.0-production-cab-handoff-packet
+
+Goal: prepare a production CAB handoff packet after change freeze readiness without promoting adapters from the prototype.
+
+Build:
+
+- Production CAB handoff packet records linked to production change freeze records.
+- CAB owner, agenda reference, risk acceptance, rollback representation, and final go/no-go agenda checks.
+- Admin Operations CAB handoff panel with blockers and evidence references.
+- Tests proving missing ready freeze records, CAB owners, agenda references, risk acceptance, rollback representation, or go/no-go agenda evidence block CAB handoff readiness.
+
+Exit gate:
+
+- Production CAB handoff APIs and UI are tested.
+- CAB handoff packets are evidence-only.
+- No adapter is promoted by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

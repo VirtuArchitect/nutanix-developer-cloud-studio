@@ -44,6 +44,7 @@ import type {
   PrismInventoryRecord,
   ProvisioningAdapterReadiness,
   ProductionAdapterAuthorizationPacket,
+  ProductionChangeFreezeRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -396,6 +397,10 @@ export async function fetchProductionAdapterAuthorizationPacketsFromApi() {
   return fetchJson<ProductionAdapterAuthorizationPacket[]>("/api/real-adapter/production-authorization-packets");
 }
 
+export async function fetchProductionChangeFreezeRecordsFromApi() {
+  return fetchJson<ProductionChangeFreezeRecord[]>("/api/real-adapter/production-change-freeze-records");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -743,6 +748,16 @@ export async function createProductionAdapterAuthorizationPacketViaApi(payload: 
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ProductionAdapterAuthorizationPacket>("/api/real-adapter/production-authorization-packets", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionChangeFreezeRecordViaApi(payload: {
+  authorizationPacketId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionChangeFreezeRecord>("/api/real-adapter/production-change-freeze-records", {
     method: "POST",
     body: JSON.stringify(payload),
   });

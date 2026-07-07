@@ -480,6 +480,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready promotion dossiers, approvers, change tickets, release windows, rollback authorization, or compliance acceptance block readiness.
 - The prototype does not authorize, promote, or enable real adapters.
 
+## Current Production Change Freeze Record Slice
+
+- API records production change freeze records linked to production authorization packets.
+- Freeze records require freeze owner, freeze window, stakeholder notification, rollback standby, and no-change exception plan.
+- Admin Operations surfaces production freeze readiness, evidence references, and blockers.
+- Missing ready authorization packets, freeze owners, freeze windows, stakeholder notifications, rollback standby, or exception plans block readiness.
+- The prototype does not promote or enable real adapters.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

@@ -426,10 +426,17 @@
 
 ## Phase 56 - Production Change Freeze Record (`v2.34.0-production-change-freeze-record`)
 
-- Add production change freeze records linked to authorization packets - planned
-- Require freeze owner, freeze window, stakeholder notification, rollback standby, and no-change exception plan - planned
-- Add Admin Operations production freeze panel - planned
-- Keep freeze records evidence-only and require external CAB/change process before adapter promotion - planned
+- Add production change freeze records linked to authorization packets - done
+- Require freeze owner, freeze window, stakeholder notification, rollback standby, and no-change exception plan - done
+- Add Admin Operations production freeze panel - done
+- Keep freeze records evidence-only and require external CAB/change process before adapter promotion - done
+
+## Phase 57 - Production CAB Handoff Packet (`v2.35.0-production-cab-handoff-packet`)
+
+- Add production CAB handoff packets linked to change freeze records - planned
+- Require CAB owner, agenda reference, risk acceptance, rollback representation, and final go/no-go agenda - planned
+- Add Admin Operations CAB handoff panel - planned
+- Keep CAB handoff packets evidence-only and require external CAB approval before adapter promotion - planned
 
 ## Gated Promotion
 

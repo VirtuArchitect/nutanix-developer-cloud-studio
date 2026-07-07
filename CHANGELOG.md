@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.33.0-production-adapter-authorization-packet`.
+This project uses release tags for public milestones. The current release is `v2.34.0-production-change-freeze-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production change freeze records after production authorization packets are complete.
+- Add production CAB handoff packets after production change freeze records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.34.0-production-change-freeze-record] - 2026-07-07
+
+### Added
+
+- Production change freeze records linked to production adapter authorization packets.
+- API endpoints for listing and recording production change freeze records.
+- Admin Operations production change freeze panel.
+- Freeze owner, freeze window, stakeholder notification, rollback standby, and no-change exception plan checks.
+- Tests proving missing authorization packets or incomplete freeze evidence block freeze readiness.
+
+### Notes
+
+- Production change freeze records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.33.0-production-adapter-authorization-packet] - 2026-07-07
 
