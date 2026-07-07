@@ -733,6 +733,28 @@ export type LabWindowEvidenceExportRecord = {
   createdAt: string;
 };
 
+export type LabEvidenceReviewRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  exportId: string;
+  windowId: string;
+  status: "Blocked" | "Accepted" | "Rejected";
+  requestedBy: string;
+  decisions: Array<{
+    role: "Platform owner" | "Security reviewer" | "Operations reviewer";
+    reviewer: string;
+    decision: "Pending" | "Accepted" | "Rejected";
+    evidence: string;
+  }>;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

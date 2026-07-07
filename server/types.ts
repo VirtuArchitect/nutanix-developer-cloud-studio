@@ -14,6 +14,7 @@ import type {
   IntegrationConfig,
   AuditExportRecord,
   LabWindowEvidenceExportRecord,
+  LabEvidenceReviewRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
   LifecycleOperationKind,
@@ -79,6 +80,7 @@ export type ApiState = {
   controlledLabReleaseRunbooks: ControlledLabReleaseRunbookRecord[];
   controlledLabDryRunWindows: ControlledLabDryRunWindowRecord[];
   labWindowEvidenceExports: LabWindowEvidenceExportRecord[];
+  labEvidenceReviews: LabEvidenceReviewRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -227,6 +229,17 @@ export type CreateControlledLabDryRunWindowRequest = {
 export type CreateLabWindowEvidenceExportRequest = {
   windowId?: string;
   provider?: ProviderReleaseGateRecord["provider"];
+};
+
+export type CreateLabEvidenceReviewRequest = {
+  exportId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  platformOwnerDecision?: "Accepted" | "Rejected";
+  securityReviewerDecision?: "Accepted" | "Rejected";
+  operationsReviewerDecision?: "Accepted" | "Rejected";
+  platformOwnerEvidence?: string;
+  securityReviewerEvidence?: string;
+  operationsReviewerEvidence?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

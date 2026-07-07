@@ -168,6 +168,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Prepare window evidence" }).click();
   await expect(page.getByText("Lab window evidence manifest")).toBeVisible();
   await expect(page.getByText("Linked evidence")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab evidence review queue" })).toBeVisible();
+  await page.getByRole("button", { name: "Review evidence package" }).click();
+  await expect(page.getByText("Reviewer decisions", { exact: true })).toBeVisible();
+  await expect(page.getByText("Reviewer decisions complete")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

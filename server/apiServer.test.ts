@@ -823,6 +823,11 @@ describe("api server", () => {
       body: JSON.stringify({ windowId: dryRunWindow.data.id }),
     });
     const windowExports = await requestJson("/api/controlled-lab-release/window-exports");
+    const evidenceReview = await requestJson("/api/controlled-lab-release/evidence-reviews", {
+      method: "POST",
+      body: JSON.stringify({ exportId: windowExport.data.id }),
+    });
+    const evidenceReviews = await requestJson("/api/controlled-lab-release/evidence-reviews");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -953,6 +958,21 @@ describe("api server", () => {
     });
     expect(windowExport.data.checksum).toMatch(/^[a-f0-9]{64}$/);
     expect(windowExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: windowExport.data.id })]));
+    expect(evidenceReview.data).toMatchObject({
+      provider: "NDB",
+      exportId: windowExport.data.id,
+      windowId: dryRunWindow.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+    });
+    expect(evidenceReview.data.decisions).toHaveLength(3);
+    expect(evidenceReview.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Reviewer decisions complete", passed: false }),
+        expect.objectContaining({ name: "Execution remains disabled", passed: true }),
+      ])
+    );
+    expect(evidenceReviews.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: evidenceReview.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -962,6 +982,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "controlled-lab-release.runbook.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.window.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.window-evidence.exported", target: "NDB" }),
+        expect.objectContaining({ action: "controlled-lab-release.evidence-review.recorded", target: "NDB" }),
       ])
     );
   });

@@ -618,6 +618,23 @@ Exit gate:
 - Review records remain evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.16.0-lab-execution-proposal-envelope
+
+Goal: create the final evidence envelope for a future controlled lab execution proposal without enabling adapter execution.
+
+Build:
+
+- Lab execution proposal envelope records linked to accepted lab evidence reviews.
+- Checks for lab scope, runbook, dry-run window, window evidence export, review acceptance, rollback owner, audit export, and emergency contacts.
+- Admin Operations proposal readiness panel.
+- Tests proving missing or rejected review evidence blocks proposal readiness.
+
+Exit gate:
+
+- Proposal envelope APIs and UI are tested.
+- Proposal envelopes remain evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

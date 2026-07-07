@@ -14,6 +14,7 @@ import type {
   Environment,
   Integration,
   IntegrationConfig,
+  LabEvidenceReviewRecord,
   LabWindowEvidenceExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
@@ -301,6 +302,10 @@ export async function fetchLabWindowEvidenceExportsFromApi() {
   return fetchJson<LabWindowEvidenceExportRecord[]>("/api/controlled-lab-release/window-exports");
 }
 
+export async function fetchLabEvidenceReviewsFromApi() {
+  return fetchJson<LabEvidenceReviewRecord[]>("/api/controlled-lab-release/evidence-reviews");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -449,6 +454,19 @@ export async function createLabWindowEvidenceExportViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<LabWindowEvidenceExportRecord>("/api/controlled-lab-release/window-exports", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createLabEvidenceReviewViaApi(payload: {
+  exportId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  platformOwnerDecision?: "Accepted" | "Rejected";
+  securityReviewerDecision?: "Accepted" | "Rejected";
+  operationsReviewerDecision?: "Accepted" | "Rejected";
+}) {
+  return fetchJson<LabEvidenceReviewRecord>("/api/controlled-lab-release/evidence-reviews", {
     method: "POST",
     body: JSON.stringify(payload),
   });

@@ -53,6 +53,10 @@ import {
   LabWindowEvidenceExportError,
 } from "./labWindowEvidenceExport";
 import {
+  createLabEvidenceReviewRecord,
+  LabEvidenceReviewError,
+} from "./labEvidenceReview";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -128,6 +132,7 @@ import type {
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
+  CreateLabEvidenceReviewRequest,
   CreatePlatformServiceRequest,
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
@@ -287,6 +292,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof LabWindowEvidenceExportError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof LabEvidenceReviewError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -552,6 +567,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/window-exports") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.labWindowEvidenceExports });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/evidence-reviews") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labEvidenceReviews });
     return;
   }
 
@@ -1284,6 +1305,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: exportRecord });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/evidence-reviews") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabEvidenceReviewRequest>(request);
+    const review = createLabEvidenceReviewRecord(state, body, context.session.user);
+    state.labEvidenceReviews = [review, ...state.labEvidenceReviews];
+    addAuditEvent(state, "controlled-lab-release.evidence-review.recorded", context.session.user, review.provider, {
+      exportId: review.exportId,
+      windowId: review.windowId,
+      status: review.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: review });
     return;
   }
 

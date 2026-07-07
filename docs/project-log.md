@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.15.0-lab-evidence-review-queue`.
+- Added lab evidence review records linked to lab window evidence exports.
+- Added API endpoints for lab evidence reviews.
+- Added Admin Operations review queue for platform, security, and operations reviewer decisions.
+- Added tests proving missing reviewer decisions block review completion.
+- Planned `v2.16.0-lab-execution-proposal-envelope` for final evidence envelopes before any future lab execution proposal.
 - Released `v2.14.0-lab-window-evidence-export`.
 - Added lab window evidence export records linked to controlled lab dry-run windows.
 - Added API endpoints for lab window evidence exports.
 - Added Admin Operations export history for lab window evidence.
 - Added tests proving exports contain references and metadata only.
-- Planned `v2.15.0-lab-evidence-review-queue` for human review of exported evidence packages.
 - Released `v2.13.0-controlled-lab-dry-run-window`.
 - Added controlled lab dry-run window records with scheduled start and end times.
 - Added API endpoints for controlled lab dry-run windows.

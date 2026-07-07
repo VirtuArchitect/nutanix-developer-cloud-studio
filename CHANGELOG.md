@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.14.0-lab-window-evidence-export`.
+This project uses release tags for public milestones. The current release is `v2.15.0-lab-evidence-review-queue`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.15.0-lab-evidence-review-queue] - 2026-07-07
+
+### Added
+
+- Lab evidence review records linked to lab window evidence exports.
+- Reviewer decisions for platform owner, security reviewer, and operations reviewer.
+- API endpoints for listing and recording lab evidence reviews.
+- Admin Operations review queue for accepted, rejected, and blocked evidence packages.
+- Tests proving missing reviewer decisions block review completion.
+
+### Notes
+
+- Review records are evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.14.0-lab-window-evidence-export] - 2026-07-07
 

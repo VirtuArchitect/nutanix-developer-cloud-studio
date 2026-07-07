@@ -293,10 +293,17 @@
 
 ## Phase 37 - Lab Evidence Review Queue (`v2.15.0-lab-evidence-review-queue`)
 
-- Add review records for lab window evidence exports - planned
-- Track platform owner, security reviewer, and operations reviewer decisions - planned
-- Add Admin Operations review queue for accepted, rejected, and blocked evidence packages - planned
-- Keep review records evidence-only and real adapter execution disabled - planned
+- Add review records for lab window evidence exports - done
+- Track platform owner, security reviewer, and operations reviewer decisions - done
+- Add Admin Operations review queue for accepted, rejected, and blocked evidence packages - done
+- Keep review records evidence-only and real adapter execution disabled - done
+
+## Phase 38 - Lab Execution Proposal Envelope (`v2.16.0-lab-execution-proposal-envelope`)
+
+- Add execution proposal envelopes linked to accepted lab evidence reviews - planned
+- Check lab scope, runbook, window, export, review, rollback owner, audit export, and emergency contacts - planned
+- Add Admin Operations proposal readiness panel - planned
+- Keep proposal envelopes evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 
