@@ -510,10 +510,17 @@
 
 ## Phase 68 - Production Execution Closure Packet Record (`v2.46.0-production-execution-closure-packet-record`)
 
-- Add production execution closure packet records linked to closure authorization records - planned
-- Require closure packet manifest, evidence bundle reference, audit export reference, stakeholder notification proof, and retention handoff confirmation - planned
-- Add Admin Operations execution closure packet panel - planned
-- Keep execution closure packet records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution closure packet records linked to closure authorization records - done
+- Require closure packet manifest, evidence bundle reference, audit export reference, stakeholder notification proof, and retention handoff confirmation - done
+- Add Admin Operations execution closure packet panel - done
+- Keep execution closure packet records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 69 - Production Execution Archival Handoff Record (`v2.47.0-production-execution-archival-handoff-record`)
+
+- Add production execution archival handoff records linked to closure packet records - planned
+- Require archive owner, retention policy reference, immutable storage proof, audit index reference, and retrieval test reference - planned
+- Add Admin Operations execution archival handoff panel - planned
+- Keep execution archival handoff records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

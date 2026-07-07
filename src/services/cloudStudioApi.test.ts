@@ -46,6 +46,7 @@ import {
   createProductionExecutionHoldPointRecordViaApi,
   createProductionExecutionOutcomeAuthorizationRecordViaApi,
   createProductionExecutionClosureAuthorizationRecordViaApi,
+  createProductionExecutionClosurePacketRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -109,6 +110,7 @@ import {
   fetchProductionExecutionHoldPointRecordsFromApi,
   fetchProductionExecutionOutcomeAuthorizationRecordsFromApi,
   fetchProductionExecutionClosureAuthorizationRecordsFromApi,
+  fetchProductionExecutionClosurePacketRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -582,6 +584,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionClosureAuthorizationRecordViaApi({
       outcomeAuthorizationRecordId: "production-execution-outcome-authorization-record-ndb-1",
     });
+    await fetchProductionExecutionClosurePacketRecordsFromApi();
+    await createProductionExecutionClosurePacketRecordViaApi({
+      closureAuthorizationRecordId: "production-execution-closure-authorization-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -845,6 +851,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-outcome-authorization-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      69,
+      "/api/real-adapter/production-execution-closure-packet-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      70,
+      "/api/real-adapter/production-execution-closure-packet-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-closure-authorization-record-ndb-1"),
       })
     );
   });

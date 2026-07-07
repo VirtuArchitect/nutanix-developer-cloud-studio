@@ -504,12 +504,12 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready handoff packets, CAB decisions, authorities, condition lists, rollback approvals, or decision minutes block readiness.
 - The prototype does not promote or enable real adapters.
 
-## Current Production Execution Closure Authorization Record Slice
+## Current Production Execution Closure Packet Record Slice
 
-- API records production execution closure authorization records linked to production execution outcome authorization records.
-- Execution closure authorization records require closure authority, success criteria, rollback closure criteria, incident closure criteria, and audit capture confirmation.
-- Admin Operations surfaces execution closure authorization readiness, evidence references, and blockers.
-- Missing ready outcome authorization records, closure authorities, success criteria, rollback closure criteria, incident closure criteria, or audit capture confirmations block readiness.
+- API records production execution closure packet records linked to production execution closure authorization records.
+- Execution closure packet records require closure packet manifest, evidence bundle reference, audit export reference, stakeholder notification proof, and retention handoff confirmation.
+- Admin Operations surfaces execution closure packet readiness, evidence references, and blockers.
+- Missing ready closure authorization records, closure packet manifests, evidence bundle references, audit export references, stakeholder notification proofs, or retention handoff confirmations block readiness.
 - The prototype does not promote, enable, or execute real adapters.
 
 ## Suggested Tech Stack

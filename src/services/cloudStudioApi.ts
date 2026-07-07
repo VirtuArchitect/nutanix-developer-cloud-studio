@@ -56,6 +56,7 @@ import type {
   ProductionExecutionHoldPointRecord,
   ProductionExecutionOutcomeAuthorizationRecord,
   ProductionExecutionClosureAuthorizationRecord,
+  ProductionExecutionClosurePacketRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -457,6 +458,12 @@ export async function fetchProductionExecutionOutcomeAuthorizationRecordsFromApi
 export async function fetchProductionExecutionClosureAuthorizationRecordsFromApi() {
   return fetchJson<ProductionExecutionClosureAuthorizationRecord[]>(
     "/api/real-adapter/production-execution-closure-authorization-records"
+  );
+}
+
+export async function fetchProductionExecutionClosurePacketRecordsFromApi() {
+  return fetchJson<ProductionExecutionClosurePacketRecord[]>(
+    "/api/real-adapter/production-execution-closure-packet-records"
   );
 }
 
@@ -931,6 +938,19 @@ export async function createProductionExecutionClosureAuthorizationRecordViaApi(
 }) {
   return fetchJson<ProductionExecutionClosureAuthorizationRecord>(
     "/api/real-adapter/production-execution-closure-authorization-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionClosurePacketRecordViaApi(payload: {
+  closureAuthorizationRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionClosurePacketRecord>(
+    "/api/real-adapter/production-execution-closure-packet-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

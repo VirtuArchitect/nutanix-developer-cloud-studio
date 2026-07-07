@@ -1145,6 +1145,23 @@ Exit gate:
 - Execution closure packet records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.47.0-production-execution-archival-handoff-record
+
+Goal: record production execution archival handoff evidence after closure packet readiness without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production execution archival handoff records linked to closure packet records.
+- Archive owner, retention policy reference, immutable storage proof, audit index reference, and retrieval test reference checks.
+- Admin Operations execution archival handoff panel with blockers and evidence references.
+- Tests proving missing ready closure packet records, archive owners, retention policy references, immutable storage proofs, audit index references, or retrieval test references block execution archival handoff readiness.
+
+Exit gate:
+
+- Production execution archival handoff APIs and UI are tested.
+- Execution archival handoff records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

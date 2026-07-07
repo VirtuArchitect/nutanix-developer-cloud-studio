@@ -157,6 +157,10 @@ import {
   ProductionExecutionClosureAuthorizationRecordError,
 } from "./productionExecutionClosureAuthorizationRecord";
 import {
+  createProductionExecutionClosurePacketRecord,
+  ProductionExecutionClosurePacketRecordError,
+} from "./productionExecutionClosurePacketRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -277,6 +281,7 @@ import type {
   CreateProductionExecutionHoldPointRecordRequest,
   CreateProductionExecutionOutcomeAuthorizationRecordRequest,
   CreateProductionExecutionClosureAuthorizationRecordRequest,
+  CreateProductionExecutionClosurePacketRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -702,6 +707,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionClosureAuthorizationRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionClosurePacketRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1209,6 +1224,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionClosureAuthorizationRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-closure-packet-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionClosurePacketRecords });
     return;
   }
 
@@ -2479,6 +2503,31 @@ async function routeApi(
       record.provider,
       {
         outcomeAuthorizationRecordId: record.outcomeAuthorizationRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-closure-packet-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionClosurePacketRecordRequest>(request);
+    const record = createProductionExecutionClosurePacketRecord(state, body, context.session.user);
+    state.productionExecutionClosurePacketRecords = [record, ...state.productionExecutionClosurePacketRecords];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-closure-packet.recorded",
+      context.session.user,
+      record.provider,
+      {
+        closureAuthorizationRecordId: record.closureAuthorizationRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

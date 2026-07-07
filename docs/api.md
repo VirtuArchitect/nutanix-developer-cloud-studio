@@ -533,6 +533,15 @@ Production execution closure authorization records capture closure handling evid
 
 Required role: `Platform Admin`.
 
+### Production Execution Closure Packet Records
+
+- `GET /api/real-adapter/production-execution-closure-packet-records`
+- `POST /api/real-adapter/production-execution-closure-packet-records`
+
+Production execution closure packet records capture closure packet evidence after closure authorization and before any future archival handoff phase. Records require a ready closure authorization record, closure packet manifest, evidence bundle reference, audit export reference, stakeholder notification proof, retention handoff confirmation, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`
