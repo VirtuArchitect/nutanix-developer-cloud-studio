@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.49.0-production-execution-final-archive-certification-record`.
+- Added production execution final archive certification records linked to production execution retention attestation records.
+- Added API endpoints for production execution final archive certification records.
+- Added Admin Operations production final archive certification panel.
+- Added tests proving missing retention attestation records or incomplete final archive certification evidence block readiness.
+- Planned `v2.50.0-production-execution-completion-dossier-record` for evidence-only completion dossier records.
 - Released `v2.48.0-production-execution-retention-attestation-record`.
 - Added production execution retention attestation records linked to production execution archival handoff records.
 - Added API endpoints for production execution retention attestation records.

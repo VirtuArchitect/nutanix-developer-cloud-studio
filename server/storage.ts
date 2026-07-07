@@ -178,6 +178,7 @@ export function createDefaultState(): ApiState {
     productionExecutionClosurePacketRecords: [],
     productionExecutionArchivalHandoffRecords: [],
     productionExecutionRetentionAttestationRecords: [],
+    productionExecutionFinalArchiveCertificationRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

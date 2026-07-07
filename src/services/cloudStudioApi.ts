@@ -59,6 +59,7 @@ import type {
   ProductionExecutionClosurePacketRecord,
   ProductionExecutionArchivalHandoffRecord,
   ProductionExecutionRetentionAttestationRecord,
+  ProductionExecutionFinalArchiveCertificationRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -478,6 +479,12 @@ export async function fetchProductionExecutionArchivalHandoffRecordsFromApi() {
 export async function fetchProductionExecutionRetentionAttestationRecordsFromApi() {
   return fetchJson<ProductionExecutionRetentionAttestationRecord[]>(
     "/api/real-adapter/production-execution-retention-attestation-records"
+  );
+}
+
+export async function fetchProductionExecutionFinalArchiveCertificationRecordsFromApi() {
+  return fetchJson<ProductionExecutionFinalArchiveCertificationRecord[]>(
+    "/api/real-adapter/production-execution-final-archive-certification-records"
   );
 }
 
@@ -991,6 +998,19 @@ export async function createProductionExecutionRetentionAttestationRecordViaApi(
 }) {
   return fetchJson<ProductionExecutionRetentionAttestationRecord>(
     "/api/real-adapter/production-execution-retention-attestation-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionFinalArchiveCertificationRecordViaApi(payload: {
+  retentionAttestationRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionFinalArchiveCertificationRecord>(
+    "/api/real-adapter/production-execution-final-archive-certification-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

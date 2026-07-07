@@ -1196,6 +1196,23 @@ Exit gate:
 - Final archive certification records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.50.0-production-execution-completion-dossier-record
+
+Goal: record production execution completion dossier evidence after final archive certification readiness without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production execution completion dossier records linked to final archive certification records.
+- Dossier owner, final evidence index, audit export reference, operations acceptance, and compliance closure proof checks.
+- Admin Operations completion dossier panel with blockers and evidence references.
+- Tests proving missing ready final archive certification records, dossier owners, final evidence indexes, audit export references, operations acceptance, or compliance closure proofs block completion dossier readiness.
+
+Exit gate:
+
+- Production execution completion dossier APIs and UI are tested.
+- Completion dossier records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

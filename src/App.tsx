@@ -92,6 +92,7 @@ import {
   type ProductionExecutionClosurePacketRecord,
   type ProductionExecutionArchivalHandoffRecord,
   type ProductionExecutionRetentionAttestationRecord,
+  type ProductionExecutionFinalArchiveCertificationRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -146,6 +147,7 @@ import {
   createProductionExecutionClosurePacketRecordViaApi,
   createProductionExecutionArchivalHandoffRecordViaApi,
   createProductionExecutionRetentionAttestationRecordViaApi,
+  createProductionExecutionFinalArchiveCertificationRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -205,6 +207,7 @@ import {
   fetchProductionExecutionClosurePacketRecordsFromApi,
   fetchProductionExecutionArchivalHandoffRecordsFromApi,
   fetchProductionExecutionRetentionAttestationRecordsFromApi,
+  fetchProductionExecutionFinalArchiveCertificationRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -371,6 +374,10 @@ export function App() {
   const [productionExecutionRetentionAttestationRecords, setProductionExecutionRetentionAttestationRecords] = useState<
     ProductionExecutionRetentionAttestationRecord[]
   >([]);
+  const [
+    productionExecutionFinalArchiveCertificationRecords,
+    setProductionExecutionFinalArchiveCertificationRecords,
+  ] = useState<ProductionExecutionFinalArchiveCertificationRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -490,6 +497,7 @@ export function App() {
             apiProductionExecutionClosurePacketRecords,
             apiProductionExecutionArchivalHandoffRecords,
             apiProductionExecutionRetentionAttestationRecords,
+            apiProductionExecutionFinalArchiveCertificationRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -564,6 +572,7 @@ export function App() {
             fetchProductionExecutionClosurePacketRecordsFromApi(),
             fetchProductionExecutionArchivalHandoffRecordsFromApi(),
             fetchProductionExecutionRetentionAttestationRecordsFromApi(),
+            fetchProductionExecutionFinalArchiveCertificationRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -640,6 +649,9 @@ export function App() {
             setProductionExecutionClosurePacketRecords(apiProductionExecutionClosurePacketRecords);
             setProductionExecutionArchivalHandoffRecords(apiProductionExecutionArchivalHandoffRecords);
             setProductionExecutionRetentionAttestationRecords(apiProductionExecutionRetentionAttestationRecords);
+            setProductionExecutionFinalArchiveCertificationRecords(
+              apiProductionExecutionFinalArchiveCertificationRecords
+            );
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -836,6 +848,7 @@ export function App() {
       apiProductionExecutionClosurePacketRecords,
       apiProductionExecutionArchivalHandoffRecords,
       apiProductionExecutionRetentionAttestationRecords,
+      apiProductionExecutionFinalArchiveCertificationRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -910,6 +923,7 @@ export function App() {
       fetchProductionExecutionClosurePacketRecordsFromApi(),
       fetchProductionExecutionArchivalHandoffRecordsFromApi(),
       fetchProductionExecutionRetentionAttestationRecordsFromApi(),
+      fetchProductionExecutionFinalArchiveCertificationRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -985,6 +999,7 @@ export function App() {
     setProductionExecutionClosurePacketRecords(apiProductionExecutionClosurePacketRecords);
     setProductionExecutionArchivalHandoffRecords(apiProductionExecutionArchivalHandoffRecords);
     setProductionExecutionRetentionAttestationRecords(apiProductionExecutionRetentionAttestationRecords);
+    setProductionExecutionFinalArchiveCertificationRecords(apiProductionExecutionFinalArchiveCertificationRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2393,6 +2408,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionFinalArchiveCertification() {
+    const retentionAttestationRecord = productionExecutionRetentionAttestationRecords[0];
+    if (!retentionAttestationRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionFinalArchiveCertificationRecordViaApi({
+        retentionAttestationRecordId: retentionAttestationRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionFinalArchiveCertificationRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionFinalArchiveCertificationRecords((current) => [
+      createMockProductionExecutionFinalArchiveCertificationRecord(retentionAttestationRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2652,6 +2691,7 @@ export function App() {
             productionExecutionClosurePacketRecords={productionExecutionClosurePacketRecords}
             productionExecutionArchivalHandoffRecords={productionExecutionArchivalHandoffRecords}
             productionExecutionRetentionAttestationRecords={productionExecutionRetentionAttestationRecords}
+            productionExecutionFinalArchiveCertificationRecords={productionExecutionFinalArchiveCertificationRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2716,6 +2756,7 @@ export function App() {
             recordProductionExecutionClosurePacket={recordProductionExecutionClosurePacket}
             recordProductionExecutionArchivalHandoff={recordProductionExecutionArchivalHandoff}
             recordProductionExecutionRetentionAttestation={recordProductionExecutionRetentionAttestation}
+            recordProductionExecutionFinalArchiveCertification={recordProductionExecutionFinalArchiveCertification}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3263,6 +3304,7 @@ function AdminView({
   productionExecutionClosurePacketRecords,
   productionExecutionArchivalHandoffRecords,
   productionExecutionRetentionAttestationRecords,
+  productionExecutionFinalArchiveCertificationRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3327,6 +3369,7 @@ function AdminView({
   recordProductionExecutionClosurePacket,
   recordProductionExecutionArchivalHandoff,
   recordProductionExecutionRetentionAttestation,
+  recordProductionExecutionFinalArchiveCertification,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3405,6 +3448,7 @@ function AdminView({
   productionExecutionClosurePacketRecords: ProductionExecutionClosurePacketRecord[];
   productionExecutionArchivalHandoffRecords: ProductionExecutionArchivalHandoffRecord[];
   productionExecutionRetentionAttestationRecords: ProductionExecutionRetentionAttestationRecord[];
+  productionExecutionFinalArchiveCertificationRecords: ProductionExecutionFinalArchiveCertificationRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3472,6 +3516,7 @@ function AdminView({
   recordProductionExecutionClosurePacket: () => void;
   recordProductionExecutionArchivalHandoff: () => void;
   recordProductionExecutionRetentionAttestation: () => void;
+  recordProductionExecutionFinalArchiveCertification: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3935,6 +3980,15 @@ function AdminView({
             <ProductionExecutionRetentionAttestationRecordPanel
               records={productionExecutionRetentionAttestationRecords}
               recordProductionExecutionRetentionAttestation={recordProductionExecutionRetentionAttestation}
+            />
+          </Panel>
+          <Panel
+            title="Production final archive certification"
+            action={`${productionExecutionFinalArchiveCertificationRecords.length} records`}
+          >
+            <ProductionExecutionFinalArchiveCertificationRecordPanel
+              records={productionExecutionFinalArchiveCertificationRecords}
+              recordProductionExecutionFinalArchiveCertification={recordProductionExecutionFinalArchiveCertification}
             />
           </Panel>
         </div>
@@ -7265,6 +7319,73 @@ function ProductionExecutionRetentionAttestationRecordPanel({
             <span>Deletion exceptions: {latest.deletionExceptionRegisterReference || "missing"}</span>
             <span>Retrieval SLA: {latest.retrievalSlaProofReference || "missing"}</span>
             <span>Archival handoff: {latest.archivalHandoffRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionFinalArchiveCertificationRecordPanel({
+  records,
+  recordProductionExecutionFinalArchiveCertification,
+}: {
+  records: ProductionExecutionFinalArchiveCertificationRecord[];
+  recordProductionExecutionFinalArchiveCertification: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution final archive certification record</strong>
+          <span>Captures final archive manifest, retention lock proof, compliance sign-off, and retrieval witness proof.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionFinalArchiveCertification}>
+          <Archive size={15} />
+          Record final archive certification
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution final archive certification record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.retentionAttestationRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution final archive certification review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Certification owner" value={latest.certificationOwner || "missing"} passed={Boolean(latest.certificationOwner)} />
+            <CheckLine icon={ScrollText} label="Final archive manifest" value={latest.finalArchiveManifestReference || "missing"} passed={Boolean(latest.finalArchiveManifestReference)} />
+            <CheckLine icon={LockKeyhole} label="Retention lock proof" value={latest.retentionLockProofReference || "missing"} passed={Boolean(latest.retentionLockProofReference)} />
+            <CheckLine icon={ShieldCheck} label="Archive certification" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution final archive certification evidence</strong>
+            <span>Compliance sign-off: {latest.complianceSignOffReference || "missing"}</span>
+            <span>Retrieval witness: {latest.retrievalWitnessProofReference || "missing"}</span>
+            <span>Retention attestation: {latest.retentionAttestationRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -12862,6 +12983,112 @@ function createMockProductionExecutionRetentionAttestationRecord(
       }.`,
     ],
     killSwitch: archivalHandoffRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionFinalArchiveCertificationRecord(
+  retentionAttestationRecord: ProductionExecutionRetentionAttestationRecord,
+  actor: string
+): ProductionExecutionFinalArchiveCertificationRecord {
+  const providerSlug = retentionAttestationRecord.provider.toLowerCase();
+  const certificationOwner = "Production Archive Certifier";
+  const finalArchiveManifestReference = `production-final-archive-manifest-${providerSlug}.md`;
+  const retentionLockProofReference = `production-retention-lock-proof-${providerSlug}.md`;
+  const complianceSignOffReference = `production-compliance-signoff-${providerSlug}.md`;
+  const retrievalWitnessProofReference = `production-retrieval-witness-proof-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Retention attestation ready",
+      passed:
+        retentionAttestationRecord.status ===
+        "Ready for production execution retention attestation review",
+      detail: `${retentionAttestationRecord.id} is ${retentionAttestationRecord.status}.`,
+    },
+    {
+      name: "Certification owner assigned",
+      passed: Boolean(certificationOwner),
+      detail: certificationOwner,
+    },
+    {
+      name: "Final archive manifest linked",
+      passed: Boolean(finalArchiveManifestReference),
+      detail: finalArchiveManifestReference,
+    },
+    {
+      name: "Retention lock proof linked",
+      passed: Boolean(retentionLockProofReference),
+      detail: retentionLockProofReference,
+    },
+    {
+      name: "Compliance sign-off linked",
+      passed: Boolean(complianceSignOffReference),
+      detail: complianceSignOffReference,
+    },
+    {
+      name: "Retrieval witness proof linked",
+      passed: Boolean(retrievalWitnessProofReference),
+      detail: retrievalWitnessProofReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !retentionAttestationRecord.provisioningEnabled && !retentionAttestationRecord.killSwitch.enabled,
+      detail: `${retentionAttestationRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-final-archive-certification-record-${providerSlug}-${Date.now()}`,
+    provider: retentionAttestationRecord.provider,
+    retentionAttestationRecordId: retentionAttestationRecord.id,
+    archivalHandoffRecordId: retentionAttestationRecord.archivalHandoffRecordId,
+    closurePacketRecordId: retentionAttestationRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: retentionAttestationRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: retentionAttestationRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: retentionAttestationRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: retentionAttestationRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: retentionAttestationRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: retentionAttestationRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: retentionAttestationRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: retentionAttestationRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: retentionAttestationRecord.implementationHoldRecordId,
+    cabDecisionRecordId: retentionAttestationRecord.cabDecisionRecordId,
+    cabHandoffPacketId: retentionAttestationRecord.cabHandoffPacketId,
+    freezeRecordId: retentionAttestationRecord.freezeRecordId,
+    authorizationPacketId: retentionAttestationRecord.authorizationPacketId,
+    promotionDossierId: retentionAttestationRecord.promotionDossierId,
+    closurePackageId: retentionAttestationRecord.closurePackageId,
+    outcomeRecordId: retentionAttestationRecord.outcomeRecordId,
+    handoffPackageId: retentionAttestationRecord.handoffPackageId,
+    controlledSwitchRequestId: retentionAttestationRecord.controlledSwitchRequestId,
+    auditPackageId: retentionAttestationRecord.auditPackageId,
+    switchReviewId: retentionAttestationRecord.switchReviewId,
+    activationId: retentionAttestationRecord.activationId,
+    idempotencyKey: retentionAttestationRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution final archive certification review"
+      : "Blocked",
+    requestedBy: actor,
+    certificationOwner,
+    finalArchiveManifestReference,
+    retentionLockProofReference,
+    complianceSignOffReference,
+    retrievalWitnessProofReference,
+    checks,
+    evidence: [
+      `Retention attestation record: ${retentionAttestationRecord.id}.`,
+      `Archival handoff record: ${retentionAttestationRecord.archivalHandoffRecordId}.`,
+      `Certification owner: ${certificationOwner}.`,
+      `Final archive manifest: ${finalArchiveManifestReference}.`,
+      `Retention lock proof: ${retentionLockProofReference}.`,
+      `Compliance sign-off: ${complianceSignOffReference}.`,
+      `Retrieval witness proof: ${retrievalWitnessProofReference}.`,
+      `Kill switch: ${retentionAttestationRecord.killSwitch.name}=${
+        retentionAttestationRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: retentionAttestationRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

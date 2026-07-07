@@ -28,6 +28,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.49.0-production-execution-final-archive-certification-record` adds evidence-only final archive certification records linked to retention attestations and an Admin Operations final archive certification panel.
+- `v2.48.0-production-execution-retention-attestation-record` adds evidence-only retention attestation records linked to archival handoffs and an Admin Operations retention attestation panel.
+- `v2.47.0-production-execution-archival-handoff-record` adds evidence-only archival handoff records linked to closure packets and an Admin Operations archival handoff panel.
+- `v2.46.0-production-execution-closure-packet-record` adds evidence-only closure packet records linked to closure authorizations and an Admin Operations closure packet panel.
+- `v2.45.0-production-execution-closure-authorization-record` adds evidence-only closure authorization records linked to outcome authorizations and an Admin Operations closure authorization panel.
+- `v2.44.0-production-execution-outcome-authorization-record` adds evidence-only outcome authorization records linked to hold-points and an Admin Operations outcome authorization panel.
+- `v2.43.0-production-execution-hold-point-record` adds evidence-only hold-point records linked to final execution packets and an Admin Operations hold-point panel.
+- `v2.42.0-production-final-execution-packet-record` adds evidence-only final execution packet records linked to change-ticket locks and an Admin Operations final packet panel.
 - `v2.26.0-manual-real-adapter-switch-review` adds evidence-only switch reviews linked to lab scope activations and an Admin Operations switch review panel.
 - `v2.25.0-real-adapter-lab-scope-activation` adds manual-switch-review activation evidence linked to dispatch approvals and an Admin Operations activation panel.
 - `v2.24.0-execution-broker-dispatch-approval` adds non-executing dispatch approvals linked to broker queue records and an Admin Operations dispatch approval panel.

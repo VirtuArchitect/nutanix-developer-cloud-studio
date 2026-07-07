@@ -1751,6 +1751,48 @@ export type ProductionExecutionRetentionAttestationRecord = {
   createdAt: string;
 };
 
+export type ProductionExecutionFinalArchiveCertificationRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  retentionAttestationRecordId: string;
+  archivalHandoffRecordId: string;
+  closurePacketRecordId: string;
+  closureAuthorizationRecordId: string;
+  outcomeAuthorizationRecordId: string;
+  executionHoldPointRecordId: string;
+  finalExecutionPacketRecordId: string;
+  changeTicketLockRecordId: string;
+  executionAuthorizationRecordId: string;
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production execution final archive certification review";
+  requestedBy: string;
+  certificationOwner: string;
+  finalArchiveManifestReference: string;
+  retentionLockProofReference: string;
+  complianceSignOffReference: string;
+  retrievalWitnessProofReference: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionRetentionAttestationRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

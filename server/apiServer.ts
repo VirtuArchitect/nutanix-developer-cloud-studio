@@ -169,6 +169,10 @@ import {
   ProductionExecutionRetentionAttestationRecordError,
 } from "./productionExecutionRetentionAttestationRecord";
 import {
+  createProductionExecutionFinalArchiveCertificationRecord,
+  ProductionExecutionFinalArchiveCertificationRecordError,
+} from "./productionExecutionFinalArchiveCertificationRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -292,6 +296,7 @@ import type {
   CreateProductionExecutionClosurePacketRecordRequest,
   CreateProductionExecutionArchivalHandoffRecordRequest,
   CreateProductionExecutionRetentionAttestationRecordRequest,
+  CreateProductionExecutionFinalArchiveCertificationRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -747,6 +752,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionRetentionAttestationRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionFinalArchiveCertificationRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1281,6 +1296,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionRetentionAttestationRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-final-archive-certification-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionFinalArchiveCertificationRecords });
     return;
   }
 
@@ -2632,6 +2656,34 @@ async function routeApi(
       record.provider,
       {
         archivalHandoffRecordId: record.archivalHandoffRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-final-archive-certification-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionFinalArchiveCertificationRecordRequest>(request);
+    const record = createProductionExecutionFinalArchiveCertificationRecord(state, body, context.session.user);
+    state.productionExecutionFinalArchiveCertificationRecords = [
+      record,
+      ...state.productionExecutionFinalArchiveCertificationRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-final-archive-certification.recorded",
+      context.session.user,
+      record.provider,
+      {
+        retentionAttestationRecordId: record.retentionAttestationRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

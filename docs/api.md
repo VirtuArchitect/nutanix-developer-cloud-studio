@@ -560,6 +560,15 @@ Production execution retention attestation records capture retention evidence af
 
 Required role: `Platform Admin`.
 
+### Production Execution Final Archive Certification Records
+
+- `GET /api/real-adapter/production-execution-final-archive-certification-records`
+- `POST /api/real-adapter/production-execution-final-archive-certification-records`
+
+Production execution final archive certification records capture final archive certification evidence after retention attestation readiness and before any future completion dossier phase. Records require a ready retention attestation record, certification owner, final archive manifest, retention lock proof, compliance sign-off, retrieval witness proof, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

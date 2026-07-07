@@ -1064,6 +1064,18 @@ describe("api server", () => {
     const productionExecutionRetentionAttestationRecords = await requestJson(
       "/api/real-adapter/production-execution-retention-attestation-records"
     );
+    const productionExecutionFinalArchiveCertificationRecord = await requestJson(
+      "/api/real-adapter/production-execution-final-archive-certification-records",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          retentionAttestationRecordId: productionExecutionRetentionAttestationRecord.data.id,
+        }),
+      }
+    );
+    const productionExecutionFinalArchiveCertificationRecords = await requestJson(
+      "/api/real-adapter/production-execution-final-archive-certification-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1765,6 +1777,25 @@ describe("api server", () => {
     expect(productionExecutionRetentionAttestationRecords.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: productionExecutionRetentionAttestationRecord.data.id })])
     );
+    expect(productionExecutionFinalArchiveCertificationRecord.data).toMatchObject({
+      provider: "NDB",
+      retentionAttestationRecordId: productionExecutionRetentionAttestationRecord.data.id,
+      archivalHandoffRecordId: productionExecutionArchivalHandoffRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionExecutionFinalArchiveCertificationRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Retention attestation ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not execute adapter", passed: true }),
+      ])
+    );
+    expect(productionExecutionFinalArchiveCertificationRecords.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: productionExecutionFinalArchiveCertificationRecord.data.id }),
+      ])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1821,6 +1852,10 @@ describe("api server", () => {
         }),
         expect.objectContaining({
           action: "real-adapter.production-execution-retention-attestation.recorded",
+          target: "NDB",
+        }),
+        expect.objectContaining({
+          action: "real-adapter.production-execution-final-archive-certification.recorded",
           target: "NDB",
         }),
       ])

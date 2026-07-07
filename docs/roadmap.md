@@ -531,10 +531,17 @@
 
 ## Phase 71 - Production Execution Final Archive Certification Record (`v2.49.0-production-execution-final-archive-certification-record`)
 
-- Add production execution final archive certification records linked to retention attestation records - planned
-- Require certification owner, final archive manifest, retention lock proof, compliance sign-off, and retrieval witness proof - planned
-- Add Admin Operations final archive certification panel - planned
-- Keep final archive certification records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution final archive certification records linked to retention attestation records - done
+- Require certification owner, final archive manifest, retention lock proof, compliance sign-off, and retrieval witness proof - done
+- Add Admin Operations final archive certification panel - done
+- Keep final archive certification records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 72 - Production Execution Completion Dossier Record (`v2.50.0-production-execution-completion-dossier-record`)
+
+- Add production execution completion dossier records linked to final archive certification records - planned
+- Require dossier owner, final evidence index, audit export reference, operations acceptance, and compliance closure proof - planned
+- Add Admin Operations completion dossier panel - planned
+- Keep completion dossier records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 
