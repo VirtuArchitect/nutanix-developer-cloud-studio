@@ -94,6 +94,7 @@ import {
   type ProductionExecutionRetentionAttestationRecord,
   type ProductionExecutionFinalArchiveCertificationRecord,
   type ProductionExecutionCompletionDossierRecord,
+  type ProductionExecutionOperationsHandoverRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -150,6 +151,7 @@ import {
   createProductionExecutionRetentionAttestationRecordViaApi,
   createProductionExecutionFinalArchiveCertificationRecordViaApi,
   createProductionExecutionCompletionDossierRecordViaApi,
+  createProductionExecutionOperationsHandoverRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -211,6 +213,7 @@ import {
   fetchProductionExecutionRetentionAttestationRecordsFromApi,
   fetchProductionExecutionFinalArchiveCertificationRecordsFromApi,
   fetchProductionExecutionCompletionDossierRecordsFromApi,
+  fetchProductionExecutionOperationsHandoverRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -384,6 +387,9 @@ export function App() {
   const [productionExecutionCompletionDossierRecords, setProductionExecutionCompletionDossierRecords] = useState<
     ProductionExecutionCompletionDossierRecord[]
   >([]);
+  const [productionExecutionOperationsHandoverRecords, setProductionExecutionOperationsHandoverRecords] = useState<
+    ProductionExecutionOperationsHandoverRecord[]
+  >([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -505,6 +511,7 @@ export function App() {
             apiProductionExecutionRetentionAttestationRecords,
             apiProductionExecutionFinalArchiveCertificationRecords,
             apiProductionExecutionCompletionDossierRecords,
+            apiProductionExecutionOperationsHandoverRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -581,6 +588,7 @@ export function App() {
             fetchProductionExecutionRetentionAttestationRecordsFromApi(),
             fetchProductionExecutionFinalArchiveCertificationRecordsFromApi(),
             fetchProductionExecutionCompletionDossierRecordsFromApi(),
+            fetchProductionExecutionOperationsHandoverRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -661,6 +669,7 @@ export function App() {
               apiProductionExecutionFinalArchiveCertificationRecords
             );
             setProductionExecutionCompletionDossierRecords(apiProductionExecutionCompletionDossierRecords);
+            setProductionExecutionOperationsHandoverRecords(apiProductionExecutionOperationsHandoverRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -859,6 +868,7 @@ export function App() {
       apiProductionExecutionRetentionAttestationRecords,
       apiProductionExecutionFinalArchiveCertificationRecords,
       apiProductionExecutionCompletionDossierRecords,
+      apiProductionExecutionOperationsHandoverRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -935,6 +945,7 @@ export function App() {
       fetchProductionExecutionRetentionAttestationRecordsFromApi(),
       fetchProductionExecutionFinalArchiveCertificationRecordsFromApi(),
       fetchProductionExecutionCompletionDossierRecordsFromApi(),
+      fetchProductionExecutionOperationsHandoverRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1012,6 +1023,7 @@ export function App() {
     setProductionExecutionRetentionAttestationRecords(apiProductionExecutionRetentionAttestationRecords);
     setProductionExecutionFinalArchiveCertificationRecords(apiProductionExecutionFinalArchiveCertificationRecords);
     setProductionExecutionCompletionDossierRecords(apiProductionExecutionCompletionDossierRecords);
+    setProductionExecutionOperationsHandoverRecords(apiProductionExecutionOperationsHandoverRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2468,6 +2480,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionOperationsHandover() {
+    const completionDossierRecord = productionExecutionCompletionDossierRecords[0];
+    if (!completionDossierRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionOperationsHandoverRecordViaApi({
+        completionDossierRecordId: completionDossierRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionOperationsHandoverRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionOperationsHandoverRecords((current) => [
+      createMockProductionExecutionOperationsHandoverRecord(completionDossierRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2729,6 +2765,7 @@ export function App() {
             productionExecutionRetentionAttestationRecords={productionExecutionRetentionAttestationRecords}
             productionExecutionFinalArchiveCertificationRecords={productionExecutionFinalArchiveCertificationRecords}
             productionExecutionCompletionDossierRecords={productionExecutionCompletionDossierRecords}
+            productionExecutionOperationsHandoverRecords={productionExecutionOperationsHandoverRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2795,6 +2832,7 @@ export function App() {
             recordProductionExecutionRetentionAttestation={recordProductionExecutionRetentionAttestation}
             recordProductionExecutionFinalArchiveCertification={recordProductionExecutionFinalArchiveCertification}
             recordProductionExecutionCompletionDossier={recordProductionExecutionCompletionDossier}
+            recordProductionExecutionOperationsHandover={recordProductionExecutionOperationsHandover}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3344,6 +3382,7 @@ function AdminView({
   productionExecutionRetentionAttestationRecords,
   productionExecutionFinalArchiveCertificationRecords,
   productionExecutionCompletionDossierRecords,
+  productionExecutionOperationsHandoverRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3410,6 +3449,7 @@ function AdminView({
   recordProductionExecutionRetentionAttestation,
   recordProductionExecutionFinalArchiveCertification,
   recordProductionExecutionCompletionDossier,
+  recordProductionExecutionOperationsHandover,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3490,6 +3530,7 @@ function AdminView({
   productionExecutionRetentionAttestationRecords: ProductionExecutionRetentionAttestationRecord[];
   productionExecutionFinalArchiveCertificationRecords: ProductionExecutionFinalArchiveCertificationRecord[];
   productionExecutionCompletionDossierRecords: ProductionExecutionCompletionDossierRecord[];
+  productionExecutionOperationsHandoverRecords: ProductionExecutionOperationsHandoverRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3559,6 +3600,7 @@ function AdminView({
   recordProductionExecutionRetentionAttestation: () => void;
   recordProductionExecutionFinalArchiveCertification: () => void;
   recordProductionExecutionCompletionDossier: () => void;
+  recordProductionExecutionOperationsHandover: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4040,6 +4082,15 @@ function AdminView({
             <ProductionExecutionCompletionDossierRecordPanel
               records={productionExecutionCompletionDossierRecords}
               recordProductionExecutionCompletionDossier={recordProductionExecutionCompletionDossier}
+            />
+          </Panel>
+          <Panel
+            title="Production operations handover"
+            action={`${productionExecutionOperationsHandoverRecords.length} records`}
+          >
+            <ProductionExecutionOperationsHandoverRecordPanel
+              records={productionExecutionOperationsHandoverRecords}
+              recordProductionExecutionOperationsHandover={recordProductionExecutionOperationsHandover}
             />
           </Panel>
         </div>
@@ -7504,6 +7555,73 @@ function ProductionExecutionCompletionDossierRecordPanel({
             <span>Operations acceptance: {latest.operationsAcceptanceReference || "missing"}</span>
             <span>Compliance closure: {latest.complianceClosureProofReference || "missing"}</span>
             <span>Final archive certification: {latest.finalArchiveCertificationRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionOperationsHandoverRecordPanel({
+  records,
+  recordProductionExecutionOperationsHandover,
+}: {
+  records: ProductionExecutionOperationsHandoverRecord[];
+  recordProductionExecutionOperationsHandover: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution operations handover record</strong>
+          <span>Captures support model, monitoring handover proof, escalation route, and service desk acceptance.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionOperationsHandover}>
+          <Archive size={15} />
+          Record operations handover
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution operations handover record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.completionDossierRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution operations handover review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Operations owner" value={latest.operationsOwner || "missing"} passed={Boolean(latest.operationsOwner)} />
+            <CheckLine icon={ScrollText} label="Support model" value={latest.supportModelReference || "missing"} passed={Boolean(latest.supportModelReference)} />
+            <CheckLine icon={Gauge} label="Monitoring handover" value={latest.monitoringHandoverProofReference || "missing"} passed={Boolean(latest.monitoringHandoverProofReference)} />
+            <CheckLine icon={ShieldCheck} label="Operations handover" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution operations handover evidence</strong>
+            <span>Escalation route: {latest.escalationRouteReference || "missing"}</span>
+            <span>Service desk acceptance: {latest.serviceDeskAcceptanceReference || "missing"}</span>
+            <span>Completion dossier: {latest.completionDossierRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -13314,6 +13432,114 @@ function createMockProductionExecutionCompletionDossierRecord(
       }.`,
     ],
     killSwitch: finalArchiveCertificationRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionOperationsHandoverRecord(
+  completionDossierRecord: ProductionExecutionCompletionDossierRecord,
+  actor: string
+): ProductionExecutionOperationsHandoverRecord {
+  const providerSlug = completionDossierRecord.provider.toLowerCase();
+  const operationsOwner = "Production Operations Owner";
+  const supportModelReference = `production-support-model-${providerSlug}.md`;
+  const monitoringHandoverProofReference = `production-monitoring-handover-${providerSlug}.md`;
+  const escalationRouteReference = `production-escalation-route-${providerSlug}.md`;
+  const serviceDeskAcceptanceReference = `production-service-desk-acceptance-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Completion dossier ready",
+      passed:
+        completionDossierRecord.status ===
+        "Ready for production execution completion dossier review",
+      detail: `${completionDossierRecord.id} is ${completionDossierRecord.status}.`,
+    },
+    {
+      name: "Operations owner assigned",
+      passed: Boolean(operationsOwner),
+      detail: operationsOwner,
+    },
+    {
+      name: "Support model linked",
+      passed: Boolean(supportModelReference),
+      detail: supportModelReference,
+    },
+    {
+      name: "Monitoring handover proof linked",
+      passed: Boolean(monitoringHandoverProofReference),
+      detail: monitoringHandoverProofReference,
+    },
+    {
+      name: "Escalation route linked",
+      passed: Boolean(escalationRouteReference),
+      detail: escalationRouteReference,
+    },
+    {
+      name: "Service desk acceptance linked",
+      passed: Boolean(serviceDeskAcceptanceReference),
+      detail: serviceDeskAcceptanceReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !completionDossierRecord.provisioningEnabled && !completionDossierRecord.killSwitch.enabled,
+      detail: `${completionDossierRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-operations-handover-record-${providerSlug}-${Date.now()}`,
+    provider: completionDossierRecord.provider,
+    completionDossierRecordId: completionDossierRecord.id,
+    finalArchiveCertificationRecordId: completionDossierRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: completionDossierRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: completionDossierRecord.archivalHandoffRecordId,
+    closurePacketRecordId: completionDossierRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: completionDossierRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: completionDossierRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: completionDossierRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: completionDossierRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: completionDossierRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: completionDossierRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: completionDossierRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: completionDossierRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: completionDossierRecord.implementationHoldRecordId,
+    cabDecisionRecordId: completionDossierRecord.cabDecisionRecordId,
+    cabHandoffPacketId: completionDossierRecord.cabHandoffPacketId,
+    freezeRecordId: completionDossierRecord.freezeRecordId,
+    authorizationPacketId: completionDossierRecord.authorizationPacketId,
+    promotionDossierId: completionDossierRecord.promotionDossierId,
+    closurePackageId: completionDossierRecord.closurePackageId,
+    outcomeRecordId: completionDossierRecord.outcomeRecordId,
+    handoffPackageId: completionDossierRecord.handoffPackageId,
+    controlledSwitchRequestId: completionDossierRecord.controlledSwitchRequestId,
+    auditPackageId: completionDossierRecord.auditPackageId,
+    switchReviewId: completionDossierRecord.switchReviewId,
+    activationId: completionDossierRecord.activationId,
+    idempotencyKey: completionDossierRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution operations handover review"
+      : "Blocked",
+    requestedBy: actor,
+    operationsOwner,
+    supportModelReference,
+    monitoringHandoverProofReference,
+    escalationRouteReference,
+    serviceDeskAcceptanceReference,
+    checks,
+    evidence: [
+      `Completion dossier record: ${completionDossierRecord.id}.`,
+      `Final archive certification record: ${completionDossierRecord.finalArchiveCertificationRecordId}.`,
+      `Operations owner: ${operationsOwner}.`,
+      `Support model: ${supportModelReference}.`,
+      `Monitoring handover proof: ${monitoringHandoverProofReference}.`,
+      `Escalation route: ${escalationRouteReference}.`,
+      `Service desk acceptance: ${serviceDeskAcceptanceReference}.`,
+      `Kill switch: ${completionDossierRecord.killSwitch.name}=${
+        completionDossierRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: completionDossierRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

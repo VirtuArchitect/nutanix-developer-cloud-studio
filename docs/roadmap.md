@@ -545,10 +545,17 @@
 
 ## Phase 73 - Production Execution Operations Handover Record (`v2.51.0-production-execution-operations-handover-record`)
 
-- Add production execution operations handover records linked to completion dossier records - planned
-- Require operations owner, support model reference, monitoring handover proof, escalation route, and service desk acceptance - planned
-- Add Admin Operations operations handover panel - planned
-- Keep operations handover records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution operations handover records linked to completion dossier records - done
+- Require operations owner, support model reference, monitoring handover proof, escalation route, and service desk acceptance - done
+- Add Admin Operations operations handover panel - done
+- Keep operations handover records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 74 - Production Execution Support Readiness Record (`v2.52.0-production-execution-support-readiness-record`)
+
+- Add production execution support readiness records linked to operations handover records - planned
+- Require support owner, runbook acceptance, alert routing proof, incident process reference, and knowledge base publication - planned
+- Add Admin Operations support readiness panel - planned
+- Keep support readiness records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

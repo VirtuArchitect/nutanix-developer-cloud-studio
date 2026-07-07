@@ -51,6 +51,7 @@ import {
   createProductionExecutionRetentionAttestationRecordViaApi,
   createProductionExecutionFinalArchiveCertificationRecordViaApi,
   createProductionExecutionCompletionDossierRecordViaApi,
+  createProductionExecutionOperationsHandoverRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -119,6 +120,7 @@ import {
   fetchProductionExecutionRetentionAttestationRecordsFromApi,
   fetchProductionExecutionFinalArchiveCertificationRecordsFromApi,
   fetchProductionExecutionCompletionDossierRecordsFromApi,
+  fetchProductionExecutionOperationsHandoverRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -612,6 +614,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionCompletionDossierRecordViaApi({
       finalArchiveCertificationRecordId: "production-execution-final-archive-certification-record-ndb-1",
     });
+    await fetchProductionExecutionOperationsHandoverRecordsFromApi();
+    await createProductionExecutionOperationsHandoverRecordViaApi({
+      completionDossierRecordId: "production-execution-completion-dossier-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -940,6 +946,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-final-archive-certification-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      79,
+      "/api/real-adapter/production-execution-operations-handover-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      80,
+      "/api/real-adapter/production-execution-operations-handover-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-completion-dossier-record-ndb-1"),
       })
     );
   });

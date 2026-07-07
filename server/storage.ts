@@ -180,6 +180,7 @@ export function createDefaultState(): ApiState {
     productionExecutionRetentionAttestationRecords: [],
     productionExecutionFinalArchiveCertificationRecords: [],
     productionExecutionCompletionDossierRecords: [],
+    productionExecutionOperationsHandoverRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

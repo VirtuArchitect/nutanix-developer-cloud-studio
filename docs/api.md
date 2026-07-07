@@ -578,6 +578,15 @@ Production execution completion dossier records capture completion evidence afte
 
 Required role: `Platform Admin`.
 
+### Production Execution Operations Handover Records
+
+- `GET /api/real-adapter/production-execution-operations-handover-records`
+- `POST /api/real-adapter/production-execution-operations-handover-records`
+
+Production execution operations handover records capture handover evidence after completion dossier readiness and before any future support readiness phase. Records require a ready completion dossier record, operations owner, support model reference, monitoring handover proof, escalation route, service desk acceptance, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

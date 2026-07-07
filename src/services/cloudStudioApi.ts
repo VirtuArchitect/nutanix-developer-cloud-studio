@@ -61,6 +61,7 @@ import type {
   ProductionExecutionRetentionAttestationRecord,
   ProductionExecutionFinalArchiveCertificationRecord,
   ProductionExecutionCompletionDossierRecord,
+  ProductionExecutionOperationsHandoverRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -492,6 +493,12 @@ export async function fetchProductionExecutionFinalArchiveCertificationRecordsFr
 export async function fetchProductionExecutionCompletionDossierRecordsFromApi() {
   return fetchJson<ProductionExecutionCompletionDossierRecord[]>(
     "/api/real-adapter/production-execution-completion-dossier-records"
+  );
+}
+
+export async function fetchProductionExecutionOperationsHandoverRecordsFromApi() {
+  return fetchJson<ProductionExecutionOperationsHandoverRecord[]>(
+    "/api/real-adapter/production-execution-operations-handover-records"
   );
 }
 
@@ -1031,6 +1038,19 @@ export async function createProductionExecutionCompletionDossierRecordViaApi(pay
 }) {
   return fetchJson<ProductionExecutionCompletionDossierRecord>(
     "/api/real-adapter/production-execution-completion-dossier-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionOperationsHandoverRecordViaApi(payload: {
+  completionDossierRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionOperationsHandoverRecord>(
+    "/api/real-adapter/production-execution-operations-handover-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

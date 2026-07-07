@@ -177,6 +177,10 @@ import {
   ProductionExecutionCompletionDossierRecordError,
 } from "./productionExecutionCompletionDossierRecord";
 import {
+  createProductionExecutionOperationsHandoverRecord,
+  ProductionExecutionOperationsHandoverRecordError,
+} from "./productionExecutionOperationsHandoverRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -302,6 +306,7 @@ import type {
   CreateProductionExecutionRetentionAttestationRecordRequest,
   CreateProductionExecutionFinalArchiveCertificationRecordRequest,
   CreateProductionExecutionCompletionDossierRecordRequest,
+  CreateProductionExecutionOperationsHandoverRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -777,6 +782,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionCompletionDossierRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionOperationsHandoverRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1329,6 +1344,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionCompletionDossierRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-operations-handover-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionOperationsHandoverRecords });
     return;
   }
 
@@ -2736,6 +2760,34 @@ async function routeApi(
       record.provider,
       {
         finalArchiveCertificationRecordId: record.finalArchiveCertificationRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-operations-handover-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionOperationsHandoverRecordRequest>(request);
+    const record = createProductionExecutionOperationsHandoverRecord(state, body, context.session.user);
+    state.productionExecutionOperationsHandoverRecords = [
+      record,
+      ...state.productionExecutionOperationsHandoverRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-operations-handover.recorded",
+      context.session.user,
+      record.provider,
+      {
+        completionDossierRecordId: record.completionDossierRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

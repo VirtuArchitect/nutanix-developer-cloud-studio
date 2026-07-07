@@ -68,6 +68,7 @@ import type {
   ProductionExecutionRetentionAttestationRecord,
   ProductionExecutionFinalArchiveCertificationRecord,
   ProductionExecutionCompletionDossierRecord,
+  ProductionExecutionOperationsHandoverRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -151,6 +152,7 @@ export type ApiState = {
   productionExecutionRetentionAttestationRecords: ProductionExecutionRetentionAttestationRecord[];
   productionExecutionFinalArchiveCertificationRecords: ProductionExecutionFinalArchiveCertificationRecord[];
   productionExecutionCompletionDossierRecords: ProductionExecutionCompletionDossierRecord[];
+  productionExecutionOperationsHandoverRecords: ProductionExecutionOperationsHandoverRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -648,6 +650,16 @@ export type CreateProductionExecutionCompletionDossierRecordRequest = {
   auditExportReference?: string;
   operationsAcceptanceReference?: string;
   complianceClosureProofReference?: string;
+};
+
+export type CreateProductionExecutionOperationsHandoverRecordRequest = {
+  completionDossierRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  operationsOwner?: string;
+  supportModelReference?: string;
+  monitoringHandoverProofReference?: string;
+  escalationRouteReference?: string;
+  serviceDeskAcceptanceReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {
