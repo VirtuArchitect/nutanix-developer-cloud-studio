@@ -517,10 +517,17 @@
 
 ## Phase 69 - Production Execution Archival Handoff Record (`v2.47.0-production-execution-archival-handoff-record`)
 
-- Add production execution archival handoff records linked to closure packet records - planned
-- Require archive owner, retention policy reference, immutable storage proof, audit index reference, and retrieval test reference - planned
-- Add Admin Operations execution archival handoff panel - planned
-- Keep execution archival handoff records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archival handoff records linked to closure packet records - done
+- Require archive owner, retention policy reference, immutable storage proof, audit index reference, and retrieval test reference - done
+- Add Admin Operations execution archival handoff panel - done
+- Keep execution archival handoff records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 70 - Production Execution Retention Attestation Record (`v2.48.0-production-execution-retention-attestation-record`)
+
+- Add production execution retention attestation records linked to archival handoff records - planned
+- Require retention owner, retention schedule proof, legal hold check, deletion exception register, and retrieval SLA proof - planned
+- Add Admin Operations execution retention attestation panel - planned
+- Keep execution retention attestation records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

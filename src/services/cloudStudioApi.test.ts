@@ -47,6 +47,7 @@ import {
   createProductionExecutionOutcomeAuthorizationRecordViaApi,
   createProductionExecutionClosureAuthorizationRecordViaApi,
   createProductionExecutionClosurePacketRecordViaApi,
+  createProductionExecutionArchivalHandoffRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -111,6 +112,7 @@ import {
   fetchProductionExecutionOutcomeAuthorizationRecordsFromApi,
   fetchProductionExecutionClosureAuthorizationRecordsFromApi,
   fetchProductionExecutionClosurePacketRecordsFromApi,
+  fetchProductionExecutionArchivalHandoffRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -588,6 +590,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionClosurePacketRecordViaApi({
       closureAuthorizationRecordId: "production-execution-closure-authorization-record-ndb-1",
     });
+    await fetchProductionExecutionArchivalHandoffRecordsFromApi();
+    await createProductionExecutionArchivalHandoffRecordViaApi({
+      closurePacketRecordId: "production-execution-closure-packet-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -864,6 +870,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-closure-authorization-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      71,
+      "/api/real-adapter/production-execution-archival-handoff-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      72,
+      "/api/real-adapter/production-execution-archival-handoff-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-closure-packet-record-ndb-1"),
       })
     );
   });

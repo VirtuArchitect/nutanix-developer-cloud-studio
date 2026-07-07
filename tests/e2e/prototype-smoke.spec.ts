@@ -325,6 +325,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution closure packet record")).toBeVisible();
   await expect(page.getByText("Execution closure packet evidence")).toBeVisible();
   await expect(page.getByText("Closure authorization ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production archival handoff" })).toBeVisible();
+  await page.getByRole("button", { name: "Record archival handoff" }).click();
+  await expect(page.getByText("Production execution archival handoff record")).toBeVisible();
+  await expect(page.getByText("Execution archival handoff evidence")).toBeVisible();
+  await expect(page.getByText("Closure packet ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

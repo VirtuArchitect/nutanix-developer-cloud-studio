@@ -542,6 +542,15 @@ Production execution closure packet records capture closure packet evidence afte
 
 Required role: `Platform Admin`.
 
+### Production Execution Archival Handoff Records
+
+- `GET /api/real-adapter/production-execution-archival-handoff-records`
+- `POST /api/real-adapter/production-execution-archival-handoff-records`
+
+Production execution archival handoff records capture archive handoff evidence after closure packet readiness and before any future retention attestation phase. Records require a ready closure packet record, archive owner, retention policy reference, immutable storage proof, audit index reference, retrieval test reference, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.47.0-production-execution-archival-handoff-record`.
+- Added production execution archival handoff records linked to production execution closure packet records.
+- Added API endpoints for production execution archival handoff records.
+- Added Admin Operations production archival handoff panel.
+- Added tests proving missing closure packet records or incomplete archival handoff evidence block readiness.
+- Planned `v2.48.0-production-execution-retention-attestation-record` for evidence-only execution retention attestation records.
 - Released `v2.46.0-production-execution-closure-packet-record`.
 - Added production execution closure packet records linked to production execution closure authorization records.
 - Added API endpoints for production execution closure packet records.

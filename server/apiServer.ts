@@ -161,6 +161,10 @@ import {
   ProductionExecutionClosurePacketRecordError,
 } from "./productionExecutionClosurePacketRecord";
 import {
+  createProductionExecutionArchivalHandoffRecord,
+  ProductionExecutionArchivalHandoffRecordError,
+} from "./productionExecutionArchivalHandoffRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -282,6 +286,7 @@ import type {
   CreateProductionExecutionOutcomeAuthorizationRecordRequest,
   CreateProductionExecutionClosureAuthorizationRecordRequest,
   CreateProductionExecutionClosurePacketRecordRequest,
+  CreateProductionExecutionArchivalHandoffRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -717,6 +722,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionClosurePacketRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionArchivalHandoffRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1233,6 +1248,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionClosurePacketRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-archival-handoff-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionArchivalHandoffRecords });
     return;
   }
 
@@ -2528,6 +2552,34 @@ async function routeApi(
       record.provider,
       {
         closureAuthorizationRecordId: record.closureAuthorizationRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-archival-handoff-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionArchivalHandoffRecordRequest>(request);
+    const record = createProductionExecutionArchivalHandoffRecord(state, body, context.session.user);
+    state.productionExecutionArchivalHandoffRecords = [
+      record,
+      ...state.productionExecutionArchivalHandoffRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-archival-handoff.recorded",
+      context.session.user,
+      record.provider,
+      {
+        closurePacketRecordId: record.closurePacketRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,
