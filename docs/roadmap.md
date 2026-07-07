@@ -356,10 +356,17 @@
 
 ## Phase 46 - Execution Broker Dispatch Approval (`v2.24.0-execution-broker-dispatch-approval`)
 
-- Add dispatch approval records linked to broker queue records - planned
-- Require rollback proof, operator approver, and pentest evidence references - planned
-- Add Admin Operations dispatch approval panel - planned
-- Keep dispatch approval records non-executing until an authorized real-adapter lab scope exists - planned
+- Add dispatch approval records linked to broker queue records - done
+- Require rollback proof, operator approver, and pentest evidence references - done
+- Add Admin Operations dispatch approval panel - done
+- Keep dispatch approval records non-executing until an authorized real-adapter lab scope exists - done
+
+## Phase 47 - Real Adapter Lab Scope Activation (`v2.25.0-real-adapter-lab-scope-activation`)
+
+- Add explicit real-adapter lab scope activation records linked to dispatch approvals - planned
+- Require authorized scope, pentest completion evidence, rollback owner, and bounded provider target references - planned
+- Add Admin Operations lab scope activation panel - planned
+- Keep real adapter switches disabled until activation evidence and manual operator controls are complete - planned
 
 ## Gated Promotion
 

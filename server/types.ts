@@ -14,6 +14,7 @@ import type {
   ControlledCreateAuthorizationEnvelope,
   ControlledProvisioningGate,
   ControlPlaneJob,
+  ExecutionBrokerDispatchApproval,
   ExecutionBrokerQueueRecord,
   Environment,
   Integration,
@@ -97,6 +98,7 @@ export type ApiState = {
   controlledLabExecutionEvidenceLedgers: ControlledLabExecutionEvidenceLedger[];
   controlledLabExecutionReadinessAttestations: ControlledLabExecutionReadinessAttestation[];
   executionBrokerQueueRecords: ExecutionBrokerQueueRecord[];
+  executionBrokerDispatchApprovals: ExecutionBrokerDispatchApproval[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -325,6 +327,15 @@ export type CreateExecutionBrokerQueueRecordRequest = {
   provider?: ProviderReleaseGateRecord["provider"];
   idempotencyKey?: string;
   approvalEvidenceLinks?: string[];
+};
+
+export type CreateExecutionBrokerDispatchApprovalRequest = {
+  brokerRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  operatorApprover?: string;
+  rollbackProofReference?: string;
+  pentestEvidenceReference?: string;
+  dispatchWindowReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

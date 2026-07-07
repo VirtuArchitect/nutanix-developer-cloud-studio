@@ -335,8 +335,12 @@ Required role: `Platform Admin`.
 
 - `GET /api/execution-broker/queue`
 - `POST /api/execution-broker/queue`
+- `GET /api/execution-broker/dispatch-approvals`
+- `POST /api/execution-broker/dispatch-approvals`
 
 Execution broker queue records create a hardened intake boundary for future controlled adapter work. Records require a ready execution attestation, a unique idempotency key, linked approval evidence, a disabled provider kill switch, and `provisioningEnabled=false`. Passing records are queued for operator review only and do not execute adapters.
+
+Execution broker dispatch approvals record the final non-executing evidence boundary for future lab dispatch review. They require a queued broker record, operator approver, rollback proof, pentest evidence, dispatch window reference, disabled kill switch, and `provisioningEnabled=false`.
 
 Required role: `Platform Admin`.
 

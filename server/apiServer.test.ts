@@ -871,6 +871,11 @@ describe("api server", () => {
       }),
     });
     const brokerRecords = await requestJson("/api/execution-broker/queue");
+    const dispatchApproval = await requestJson("/api/execution-broker/dispatch-approvals", {
+      method: "POST",
+      body: JSON.stringify({ brokerRecordId: brokerRecord.data.id }),
+    });
+    const dispatchApprovals = await requestJson("/api/execution-broker/dispatch-approvals");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1147,6 +1152,24 @@ describe("api server", () => {
       ])
     );
     expect(brokerRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: brokerRecord.data.id })]));
+    expect(dispatchApproval.data).toMatchObject({
+      provider: "NDB",
+      brokerRecordId: brokerRecord.data.id,
+      readinessAttestationId: readinessAttestation.data.id,
+      idempotencyKey: "ndb-controlled-lab-001",
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(dispatchApproval.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Broker record queued", passed: false }),
+        expect.objectContaining({ name: "Real adapter execution disabled", passed: true }),
+      ])
+    );
+    expect(dispatchApprovals.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: dispatchApproval.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1165,6 +1188,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "controlled-lab-release.evidence-ledger.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.readiness-attestation.recorded", target: "NDB" }),
         expect.objectContaining({ action: "execution-broker.queue.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "execution-broker.dispatch-approval.recorded", target: "NDB" }),
       ])
     );
   });

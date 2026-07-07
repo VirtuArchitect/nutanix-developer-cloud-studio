@@ -771,6 +771,23 @@ Exit gate:
 - Dispatch approval records remain non-executing.
 - Real adapter execution remains disabled unless an authorized real-adapter lab scope exists.
 
+### v2.25.0-real-adapter-lab-scope-activation
+
+Goal: add explicit lab-scope activation evidence before any real-adapter switch can be considered.
+
+Build:
+
+- Real-adapter lab scope activation records linked to dispatch approvals.
+- Authorized scope, pentest completion evidence, rollback owner, bounded provider target references, and manual operator controls.
+- Admin Operations lab scope activation panel with blockers and evidence references.
+- Tests proving missing dispatch approvals, pentest completion evidence, rollback ownership, or bounded targets block activation readiness.
+
+Exit gate:
+
+- Lab scope activation APIs and UI are tested.
+- Real adapter switches remain disabled until activation evidence is complete.
+- No production infrastructure mutation is possible from the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

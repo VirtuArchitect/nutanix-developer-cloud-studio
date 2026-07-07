@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.24.0-execution-broker-dispatch-approval`.
+- Added execution broker dispatch approval records linked to broker queue records.
+- Added API endpoints for dispatch approvals.
+- Added Admin Operations dispatch approval panel.
+- Added tests proving missing broker records or incomplete dispatch evidence block readiness.
+- Planned `v2.25.0-real-adapter-lab-scope-activation` for explicit real-adapter lab scope activation evidence.
 - Released `v2.23.0-execution-broker-hardening`.
 - Added execution broker queue records linked to readiness attestations.
 - Added API endpoints for broker queue records.
 - Added Admin Operations execution broker panel.
 - Added tests proving missing attestations, duplicate idempotency keys, or incomplete evidence block broker readiness.
-- Planned `v2.24.0-execution-broker-dispatch-approval` for the next non-executing dispatch approval boundary.
 - Released `v2.22.0-controlled-lab-execution-readiness-attestation`.
 - Added controlled lab execution readiness attestation records linked to evidence ledgers.
 - Added API endpoints for readiness attestations.

@@ -12,6 +12,7 @@ import {
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
+  createExecutionBrokerDispatchApprovalViaApi,
   createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
   createLabExecutionProposalEnvelopeViaApi,
@@ -49,6 +50,7 @@ import {
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
+  fetchExecutionBrokerDispatchApprovalsFromApi,
   fetchExecutionBrokerQueueRecordsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
@@ -466,6 +468,8 @@ describe("cloudStudioApi", () => {
       readinessAttestationId: "controlled-lab-readiness-attestation-ndb-1",
       idempotencyKey: "ndb-controlled-lab-001",
     });
+    await fetchExecutionBrokerDispatchApprovalsFromApi();
+    await createExecutionBrokerDispatchApprovalViaApi({ brokerRecordId: "execution-broker-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -538,6 +542,12 @@ describe("cloudStudioApi", () => {
       24,
       "/api/execution-broker/queue",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("ndb-controlled-lab-001") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(25, "/api/execution-broker/dispatch-approvals", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      26,
+      "/api/execution-broker/dispatch-approvals",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("execution-broker-ndb-1") })
     );
   });
 

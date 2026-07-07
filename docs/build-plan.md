@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.24.0-execution-broker-dispatch-approval` adds non-executing dispatch approvals linked to broker queue records and an Admin Operations dispatch approval panel.
 - `v2.23.0-execution-broker-hardening` adds operator-review-only execution broker queue records linked to readiness attestations and an Admin Operations broker panel.
 - `v2.22.0-controlled-lab-execution-readiness-attestation` adds evidence-only readiness attestations linked to evidence ledgers and an Admin Operations attestation panel.
 - `v2.21.0-controlled-lab-execution-evidence-ledger` adds evidence-only ledgers linked to dry-run checklists and an Admin Operations ledger panel.
@@ -395,6 +396,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Broker records require unique idempotency keys, approval evidence links, disabled kill switches, and operator-review-only mode.
 - Admin Operations surfaces broker queue readiness, evidence references, and blockers.
 - Missing readiness attestations, duplicate idempotency keys, or incomplete evidence block broker readiness.
+- Real adapter execution remains disabled.
+
+## Current Execution Broker Dispatch Approval Slice
+
+- API records execution broker dispatch approvals linked to broker queue records.
+- Dispatch approvals require rollback proof, pentest evidence, operator approver, and dispatch window references.
+- Admin Operations surfaces dispatch approval readiness, evidence references, and blockers.
+- Missing broker queue records or incomplete dispatch evidence block readiness.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack

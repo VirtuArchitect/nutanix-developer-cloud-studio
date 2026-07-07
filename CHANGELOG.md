@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.23.0-execution-broker-hardening`.
+This project uses release tags for public milestones. The current release is `v2.24.0-execution-broker-dispatch-approval`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add execution broker dispatch approvals and rollback proof binding before any real adapter path.
+- Add real-adapter lab scope activation only after dispatch approval, rollback proof, and authorized pentest evidence are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.24.0-execution-broker-dispatch-approval] - 2026-07-07
+
+### Added
+
+- Execution broker dispatch approval records linked to broker queue records.
+- API endpoints for listing and recording dispatch approvals.
+- Admin Operations dispatch approval panel.
+- Rollback proof, operator approver, pentest evidence, and dispatch window checks.
+- Tests proving missing broker records or incomplete dispatch evidence block readiness.
+
+### Notes
+
+- Dispatch approvals are non-executing evidence records.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.23.0-execution-broker-hardening] - 2026-07-07
 

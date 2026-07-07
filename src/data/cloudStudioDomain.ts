@@ -961,6 +961,29 @@ export type ExecutionBrokerQueueRecord = {
   createdAt: string;
 };
 
+export type ExecutionBrokerDispatchApproval = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  brokerRecordId: string;
+  readinessAttestationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for authorized lab dispatch review";
+  requestedBy: string;
+  operatorApprover: string;
+  rollbackProofReference: string;
+  pentestEvidenceReference: string;
+  dispatchWindowReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ExecutionBrokerQueueRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

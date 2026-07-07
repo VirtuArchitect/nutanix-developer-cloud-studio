@@ -69,6 +69,10 @@ import {
   ExecutionBrokerError,
 } from "./executionBroker";
 import {
+  createExecutionBrokerDispatchApproval,
+  ExecutionBrokerDispatchApprovalError,
+} from "./executionBrokerDispatchApproval";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -166,6 +170,7 @@ import type {
   CreateControlledLabExecutionEvidenceLedgerRequest,
   CreateControlledLabExecutionReadinessAttestationRequest,
   CreateControlledLabExecutionRehearsalPacketRequest,
+  CreateExecutionBrokerDispatchApprovalRequest,
   CreateExecutionBrokerQueueRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
@@ -372,6 +377,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ExecutionBrokerError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ExecutionBrokerDispatchApprovalError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -741,6 +756,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/execution-broker/queue") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.executionBrokerQueueRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/execution-broker/dispatch-approvals") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.executionBrokerDispatchApprovals });
     return;
   }
 
@@ -1627,6 +1648,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: brokerRecord });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/execution-broker/dispatch-approvals") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateExecutionBrokerDispatchApprovalRequest>(request);
+    const dispatchApproval = createExecutionBrokerDispatchApproval(state, body, context.session.user);
+    state.executionBrokerDispatchApprovals = [dispatchApproval, ...state.executionBrokerDispatchApprovals];
+    addAuditEvent(state, "execution-broker.dispatch-approval.recorded", context.session.user, dispatchApproval.provider, {
+      brokerRecordId: dispatchApproval.brokerRecordId,
+      idempotencyKey: dispatchApproval.idempotencyKey,
+      status: dispatchApproval.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: dispatchApproval });
     return;
   }
 

@@ -153,6 +153,7 @@ export function createDefaultState(): ApiState {
     controlledLabExecutionEvidenceLedgers: [],
     controlledLabExecutionReadinessAttestations: [],
     executionBrokerQueueRecords: [],
+    executionBrokerDispatchApprovals: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.23.0-execution-broker-hardening",
+  "version": "2.24.0-execution-broker-dispatch-approval",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
