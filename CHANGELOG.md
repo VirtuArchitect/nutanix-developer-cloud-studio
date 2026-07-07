@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.64.0-production-execution-archive-recovery-audit-certification-record`.
+This project uses release tags for public milestones. The current release is `v2.65.0-production-execution-archive-recovery-final-compliance-archive-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery final compliance archive records after archive recovery audit certification records are complete.
+- Add production execution archive recovery evidence custody closure records after final compliance archive records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.65.0-production-execution-archive-recovery-final-compliance-archive-record] - 2026-07-07
+
+### Added
+
+- Production execution archive recovery final compliance archive records linked to production execution archive recovery audit certification records.
+- API endpoints for listing and recording production execution archive recovery final compliance archive records.
+- Admin Operations production archive recovery final compliance archive panel.
+- Compliance archive owner, final compliance archive index, evidence retention proof, audit witness receipt, and final compliance archive sign-off checks.
+- Tests proving missing archive recovery audit certification records or incomplete final compliance archive evidence block readiness.
+
+### Notes
+
+- Production execution archive recovery final compliance archive records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.64.0-production-execution-archive-recovery-audit-certification-record] - 2026-07-07
 

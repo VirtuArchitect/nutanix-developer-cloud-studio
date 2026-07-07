@@ -82,6 +82,7 @@ import type {
   ProductionExecutionArchiveRecoveryAcceptanceRecord,
   ProductionExecutionArchiveRecoveryClosureRecord,
   ProductionExecutionArchiveRecoveryAuditCertificationRecord,
+  ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -179,6 +180,7 @@ export type ApiState = {
   productionExecutionArchiveRecoveryAcceptanceRecords: ProductionExecutionArchiveRecoveryAcceptanceRecord[];
   productionExecutionArchiveRecoveryClosureRecords: ProductionExecutionArchiveRecoveryClosureRecord[];
   productionExecutionArchiveRecoveryAuditCertificationRecords: ProductionExecutionArchiveRecoveryAuditCertificationRecord[];
+  productionExecutionArchiveRecoveryFinalComplianceArchiveRecords: ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -816,6 +818,16 @@ export type CreateProductionExecutionArchiveRecoveryAuditCertificationRecordRequ
   controlMappingReviewReference?: string;
   exceptionDispositionReference?: string;
   auditCertificationSignOffReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordRequest = {
+  archiveRecoveryAuditCertificationRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  complianceArchiveOwner?: string;
+  finalComplianceArchiveIndexReference?: string;
+  evidenceRetentionProofReference?: string;
+  auditWitnessReceiptReference?: string;
+  finalComplianceArchiveSignOffReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

@@ -233,6 +233,10 @@ import {
   ProductionExecutionArchiveRecoveryAuditCertificationRecordError,
 } from "./productionExecutionArchiveRecoveryAuditCertificationRecord";
 import {
+  createProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord,
+  ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordError,
+} from "./productionExecutionArchiveRecoveryFinalComplianceArchiveRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -372,6 +376,7 @@ import type {
   CreateProductionExecutionArchiveRecoveryAcceptanceRecordRequest,
   CreateProductionExecutionArchiveRecoveryClosureRecordRequest,
   CreateProductionExecutionArchiveRecoveryAuditCertificationRecordRequest,
+  CreateProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -987,6 +992,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionArchiveRecoveryAuditCertificationRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1665,6 +1680,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryAuditCertificationRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-final-compliance-archive-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryFinalComplianceArchiveRecords });
     return;
   }
 
@@ -3464,6 +3488,38 @@ async function routeApi(
       record.provider,
       {
         archiveRecoveryClosureRecordId: record.archiveRecoveryClosureRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-final-compliance-archive-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordRequest>(request);
+    const record = createProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord(
+      state,
+      body,
+      context.session.user
+    );
+    state.productionExecutionArchiveRecoveryFinalComplianceArchiveRecords = [
+      record,
+      ...state.productionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-archive-recovery-final-compliance-archive.recorded",
+      context.session.user,
+      record.provider,
+      {
+        archiveRecoveryAuditCertificationRecordId: record.archiveRecoveryAuditCertificationRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

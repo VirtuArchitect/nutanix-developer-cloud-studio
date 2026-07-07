@@ -643,10 +643,17 @@
 
 ## Phase 87 - Production Execution Archive Recovery Final Compliance Archive Record (`v2.65.0-production-execution-archive-recovery-final-compliance-archive-record`)
 
-- Add production execution archive recovery final compliance archive records linked to archive recovery audit certification records - planned
-- Require compliance archive owner, final compliance archive index, evidence retention proof, audit witness receipt, and final compliance archive sign-off - planned
-- Add Admin Operations archive recovery final compliance archive panel - planned
-- Keep archive recovery final compliance archive records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery final compliance archive records linked to archive recovery audit certification records - done
+- Require compliance archive owner, final compliance archive index, evidence retention proof, audit witness receipt, and final compliance archive sign-off - done
+- Add Admin Operations archive recovery final compliance archive panel - done
+- Keep archive recovery final compliance archive records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 88 - Production Execution Archive Recovery Evidence Custody Closure Record (`v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record`)
+
+- Add production execution archive recovery evidence custody closure records linked to final compliance archive records - planned
+- Require custody owner, final custody ledger, evidence transfer receipt, retention lock confirmation, and custody closure sign-off - planned
+- Add Admin Operations archive recovery evidence custody closure panel - planned
+- Keep archive recovery evidence custody closure records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

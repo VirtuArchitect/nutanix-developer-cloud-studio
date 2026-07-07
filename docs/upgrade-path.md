@@ -1463,6 +1463,23 @@ Promotion criteria:
 - Archive recovery final compliance archive records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record
+
+Goal: record evidence custody closure after final compliance archive without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery evidence custody closure records linked to final compliance archive records.
+- Require custody owner, final custody ledger, evidence transfer receipt, retention lock confirmation, and custody closure sign-off.
+- Add Admin Operations archive recovery evidence custody closure panel with blockers and evidence references.
+- Add tests proving missing ready final compliance archive records, custody owners, custody ledgers, transfer receipts, retention lock confirmations, or closure sign-offs block evidence custody closure readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery evidence custody closure APIs and UI are tested.
+- Archive recovery evidence custody closure records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

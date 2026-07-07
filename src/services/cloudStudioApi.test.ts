@@ -65,6 +65,7 @@ import {
   createProductionExecutionArchiveRecoveryAcceptanceRecordViaApi,
   createProductionExecutionArchiveRecoveryClosureRecordViaApi,
   createProductionExecutionArchiveRecoveryAuditCertificationRecordViaApi,
+  createProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -147,6 +148,7 @@ import {
   fetchProductionExecutionArchiveRecoveryAcceptanceRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryAuditCertificationRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -696,6 +698,11 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionArchiveRecoveryAuditCertificationRecordViaApi({
       archiveRecoveryClosureRecordId: "production-execution-archive-recovery-closure-record-ndb-1",
     });
+    await fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi();
+    await createProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordViaApi({
+      archiveRecoveryAuditCertificationRecordId:
+        "production-execution-archive-recovery-audit-certification-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1206,6 +1213,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-archive-recovery-closure-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      107,
+      "/api/real-adapter/production-execution-archive-recovery-final-compliance-archive-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      108,
+      "/api/real-adapter/production-execution-archive-recovery-final-compliance-archive-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-archive-recovery-audit-certification-record-ndb-1"),
       })
     );
   });
