@@ -524,6 +524,15 @@ Production execution outcome authorization records capture outcome handling evid
 
 Required role: `Platform Admin`.
 
+### Production Execution Closure Authorization Records
+
+- `GET /api/real-adapter/production-execution-closure-authorization-records`
+- `POST /api/real-adapter/production-execution-closure-authorization-records`
+
+Production execution closure authorization records capture closure handling evidence after outcome authorization and before any future closure packet phase. Records require a ready outcome authorization record, closure authority, success criteria, rollback closure criteria, incident closure criteria, audit capture confirmation, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

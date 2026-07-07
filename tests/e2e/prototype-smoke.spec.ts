@@ -315,6 +315,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution outcome authorization record")).toBeVisible();
   await expect(page.getByText("Execution outcome authorization evidence")).toBeVisible();
   await expect(page.getByText("Execution hold-point ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production closure authorization" })).toBeVisible();
+  await page.getByRole("button", { name: "Record closure authorization" }).click();
+  await expect(page.getByText("Production execution closure authorization record")).toBeVisible();
+  await expect(page.getByText("Execution closure authorization evidence")).toBeVisible();
+  await expect(page.getByText("Outcome authorization ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

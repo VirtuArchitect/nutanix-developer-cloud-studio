@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.45.0-production-execution-closure-authorization-record`.
+- Added production execution closure authorization records linked to production execution outcome authorization records.
+- Added API endpoints for production execution closure authorization records.
+- Added Admin Operations production closure authorization panel.
+- Added tests proving missing outcome authorization records or incomplete closure authorization evidence block readiness.
+- Planned `v2.46.0-production-execution-closure-packet-record` for evidence-only execution closure packet records.
 - Released `v2.44.0-production-execution-outcome-authorization-record`.
 - Added production execution outcome authorization records linked to production execution hold-point records.
 - Added API endpoints for production execution outcome authorization records.
