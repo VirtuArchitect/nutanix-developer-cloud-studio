@@ -802,6 +802,11 @@ describe("api server", () => {
       body: JSON.stringify({ provider: "NDB", releaseApprover: "platform.owner" }),
     });
     const releaseGates = await requestJson("/api/provider-release-gates");
+    const releaseExport = await requestJson("/api/release-evidence-exports", {
+      method: "POST",
+      body: JSON.stringify({ gateId: releaseGate.data.id }),
+    });
+    const releaseExports = await requestJson("/api/release-evidence-exports");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -860,11 +865,28 @@ describe("api server", () => {
       ])
     );
     expect(releaseGates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: releaseGate.data.id })]));
+    expect(releaseExport.data).toMatchObject({
+      provider: "NDB",
+      gateId: releaseGate.data.id,
+      status: "Prepared",
+      format: "JSON",
+      checksumAlgorithm: "sha256",
+      provisioningEnabled: false,
+      manifest: expect.objectContaining({
+        provider: "NDB",
+        gateId: releaseGate.data.id,
+        blockedOperations: expect.arrayContaining(["create_database"]),
+      }),
+    });
+    expect(releaseExport.data.checksum).toMatch(/^[a-f0-9]{64}$/);
+    expect(releaseExport.data.redactionBoundary).toContain("metadata only");
+    expect(releaseExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: releaseExport.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
         expect.objectContaining({ action: "platform-service.adapter-contract.reviewed", target: "app-postgres-dev" }),
         expect.objectContaining({ action: "provider-release-gate.reviewed", target: "NDB" }),
+        expect.objectContaining({ action: "release-evidence.export.prepared", target: "NDB" }),
       ])
     );
   });

@@ -258,10 +258,17 @@
 
 ## Phase 32 - Release Evidence Export Hardening (`v2.10.0-release-evidence-export-hardening`)
 
-- Add release evidence export records linked to provider release gates - planned
-- Generate redacted JSON manifests for checks, approver, blocked operations, and kill switch state - planned
-- Add Admin Operations release evidence export history - planned
-- Prove exports contain references and metadata only - planned
+- Add release evidence export records linked to provider release gates - done
+- Generate redacted JSON manifests for checks, approver, blocked operations, and kill switch state - done
+- Add Admin Operations release evidence export history - done
+- Prove exports contain references and metadata only - done
+
+## Phase 33 - Provider Release Dashboard Hardening (`v2.11.0-provider-release-dashboard-hardening`)
+
+- Add provider release readiness summary grouped by provider - planned
+- Add evidence gap counts across release gate categories - planned
+- Add Admin dashboard cards for nearest-to-ready and most-blocked provider - planned
+- Keep release readiness evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

@@ -27,6 +27,7 @@ import type {
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
+  ReleaseEvidenceExportRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -70,6 +71,7 @@ export type ApiState = {
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
   providerReleaseGateRecords: ProviderReleaseGateRecord[];
+  releaseEvidenceExports: ReleaseEvidenceExportRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -183,6 +185,11 @@ export type CreatePlatformServiceAdapterContractReviewRequest = {
 export type CreateProviderReleaseGateRecordRequest = {
   provider?: ProviderReleaseGateRecord["provider"];
   releaseApprover?: string;
+};
+
+export type CreateReleaseEvidenceExportRequest = {
+  gateId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
 };
 
 export type CreateAdapterEnablementRecordRequest = {

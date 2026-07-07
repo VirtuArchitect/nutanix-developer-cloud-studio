@@ -15,6 +15,7 @@ import {
   createPlatformServicePreflightRunViaApi,
   createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
+  createReleaseEvidenceExportViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
@@ -42,6 +43,7 @@ import {
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
+  fetchReleaseEvidenceExportsFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
@@ -384,6 +386,21 @@ describe("cloudStudioApi", () => {
       2,
       "/api/provider-release-gates",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("platform.owner") })
+    );
+  });
+
+  it("fetches and creates release evidence exports", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchReleaseEvidenceExportsFromApi();
+    await createReleaseEvidenceExportViaApi({ gateId: "provider-release-ndb-1" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/release-evidence-exports", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/release-evidence-exports",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("provider-release-ndb-1") })
     );
   });
 

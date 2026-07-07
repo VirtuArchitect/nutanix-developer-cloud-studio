@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.10.0-release-evidence-export-hardening`.
+- Added release evidence export records linked to provider release gates.
+- Added redacted JSON manifest metadata for provider, gate status, check counts, blocked operations, kill switch state, and evidence references.
+- Added Admin Operations release evidence export history.
+- Added tests proving release evidence exports contain references and metadata only.
+- Planned `v2.11.0-provider-release-dashboard-hardening` to compare release readiness across providers.
 - Released `v2.9.0-provider-release-gate-evidence`.
 - Added provider release gate records for NCI, NKP, NDB, NUS, and NAI.
 - Added API endpoints for provider release gate reviews.

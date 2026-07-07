@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.9.0-provider-release-gate-evidence`.
+This project uses release tags for public milestones. The current release is `v2.10.0-release-evidence-export-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.10.0-release-evidence-export-hardening] - 2026-07-07
+
+### Added
+
+- Release evidence export records linked to provider release gates.
+- API endpoints for listing and preparing release evidence exports.
+- Admin Operations panel for release evidence export manifests.
+- Tests proving release evidence exports are redacted metadata-only manifests with checksums.
+
+### Notes
+
+- Release evidence exports contain references and metadata only.
+- Inline auth material is redacted before manifest persistence.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.9.0-provider-release-gate-evidence] - 2026-07-07
 

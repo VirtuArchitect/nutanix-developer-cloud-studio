@@ -66,6 +66,10 @@ import {
   ProviderReleaseGateError,
 } from "./providerReleaseGate";
 import {
+  createReleaseEvidenceExportRecord,
+  ReleaseEvidenceExportError,
+} from "./releaseEvidenceExport";
+import {
   createRollbackDestroyProofRecord,
   RollbackDestroyProofError,
 } from "./rollbackDestroyProof";
@@ -112,6 +116,7 @@ import type {
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
   CreateProviderReleaseGateRecordRequest,
+  CreateReleaseEvidenceExportRequest,
   CreateRollbackDestroyProofRequest,
   CreateVmLifecycleProofRequest,
   CreateVmSandboxDryRunRequest,
@@ -226,6 +231,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProviderReleaseGateError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ReleaseEvidenceExportError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -461,6 +476,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/provider-release-gates") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.providerReleaseGateRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/release-evidence-exports") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.releaseEvidenceExports });
     return;
   }
 
@@ -1129,6 +1150,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/release-evidence-exports") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateReleaseEvidenceExportRequest>(request);
+    const exportRecord = createReleaseEvidenceExportRecord(state, body, context.session.user);
+    state.releaseEvidenceExports = [exportRecord, ...state.releaseEvidenceExports];
+    addAuditEvent(state, "release-evidence.export.prepared", context.session.user, exportRecord.provider, {
+      gateId: exportRecord.gateId,
+      checksumAlgorithm: exportRecord.checksumAlgorithm,
+      checksum: exportRecord.checksum,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: exportRecord });
     return;
   }
 

@@ -29,6 +29,7 @@ import type {
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
+  ReleaseEvidenceExportRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
   SessionDiagnostics,
@@ -276,6 +277,10 @@ export async function fetchProviderReleaseGateRecordsFromApi() {
   return fetchJson<ProviderReleaseGateRecord[]>("/api/provider-release-gates");
 }
 
+export async function fetchReleaseEvidenceExportsFromApi() {
+  return fetchJson<ReleaseEvidenceExportRecord[]>("/api/release-evidence-exports");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -378,6 +383,16 @@ export async function createProviderReleaseGateRecordViaApi(payload: {
   releaseApprover?: string;
 }) {
   return fetchJson<ProviderReleaseGateRecord>("/api/provider-release-gates", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createReleaseEvidenceExportViaApi(payload: {
+  gateId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ReleaseEvidenceExportRecord>("/api/release-evidence-exports", {
     method: "POST",
     body: JSON.stringify(payload),
   });

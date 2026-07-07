@@ -149,6 +149,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Sensitive credential material is excluded from audit events.")).toBeVisible();
   await expect(page.getByText("retention window", { exact: true })).toBeVisible();
   await expect(page.getByText("Manifest destination: browser-mock")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Release evidence exports" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare release evidence" }).click();
+  await expect(page.getByText("Release evidence manifest")).toBeVisible();
+  await expect(page.getByText("Release evidence exports contain references and metadata only; no inline auth material.")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

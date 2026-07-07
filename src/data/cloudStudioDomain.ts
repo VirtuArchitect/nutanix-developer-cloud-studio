@@ -608,6 +608,34 @@ export type ProviderReleaseGateRecord = {
   createdAt: string;
 };
 
+export type ReleaseEvidenceExportRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  gateId: string;
+  status: "Prepared";
+  requestedBy: string;
+  format: "JSON";
+  checksumAlgorithm: "sha256";
+  checksum: string;
+  manifest: {
+    exportId: string;
+    gateId: string;
+    provider: ProviderReleaseGateRecord["provider"];
+    gateStatus: ProviderReleaseGateRecord["status"];
+    generatedAt: string;
+    releaseApprover: string;
+    checkCount: number;
+    passedChecks: number;
+    blockedOperations: string[];
+    killSwitch: ProviderReleaseGateRecord["killSwitch"];
+    evidenceReferences: string[];
+  };
+  redactionBoundary: string;
+  storageBoundary: string;
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

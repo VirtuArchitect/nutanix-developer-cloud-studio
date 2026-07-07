@@ -44,6 +44,7 @@ flowchart LR
     Api --> AhvCreateContract["Disabled AHV Create Contract"]
     Api --> ServiceContracts["Disabled Service Contracts"]
     Api --> ProviderRelease["Provider Release Gates"]
+    Api --> ReleaseEvidence["Release Evidence Exports"]
     Api --> Details["Environment Detail"]
     Api --> Audit["Audit Events"]
 ```
@@ -71,6 +72,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Platform-service preflight runs: fail-closed adapter readiness records for NKP, NDB, NUS, and NAI
 - Platform-service adapter contract reviews: disabled provider payload previews, blocked operations, and per-provider kill switch state for NKP, NDB, NUS, and NAI
 - Provider release gate records: evidence envelopes before NCI, NKP, NDB, NUS, or NAI can be considered for controlled lab release
+- Release evidence export records: redacted JSON manifest metadata linked to provider release gates
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -135,6 +137,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Platform-service preflight adapter boundary and Admin Control Plane UI for service readiness checks
 - Disabled platform-service adapter contract API and Admin Control Plane payload preview UI
 - Provider release gate API and Admin Control Plane evidence envelope UI
+- Release evidence export API and Admin Operations manifest UI
 - Production readiness review API and Admin Overview UI
 - Private-cloud lifecycle operation API and Admin Operations UI
 - Audit export readiness API and Admin Operations UI
@@ -179,6 +182,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Platform-service preflight records check readiness only; NKP, NDB, NUS, and NAI mutation calls remain disabled.
 - Platform-service adapter contract reviews map approved request fields only; execute, poll, and rollback remain disabled.
 - Provider release gate records are release evidence only; they do not enable real adapter switches or provider execution.
+- Release evidence exports contain references and metadata only; inline auth material is redacted before persistence.
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Adapter enablement records review evidence only; an enabled real-adapter switch fails this phase and all mutation operations remain blocked.

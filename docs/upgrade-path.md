@@ -533,6 +533,23 @@ Exit gate:
 - Release evidence exports contain references and metadata only.
 - Real adapter execution remains disabled.
 
+### v2.11.0-provider-release-dashboard-hardening
+
+Goal: make provider release readiness easier to compare across NCI, NKP, NDB, NUS, and NAI.
+
+Build:
+
+- Provider release readiness summary grouped by provider.
+- Evidence gap counts for scope, credential, lifecycle, preflight, contract, audit, and approver checks.
+- Admin dashboard cards for nearest-to-ready and most-blocked provider.
+- Tests proving summary counts match release gate records.
+
+Exit gate:
+
+- Summary APIs and UI are tested.
+- Release readiness remains evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

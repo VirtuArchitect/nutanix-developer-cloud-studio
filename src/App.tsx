@@ -62,6 +62,7 @@ import {
   type ProvisioningAdapterReadiness,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
+  type ReleaseEvidenceExportRecord,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
@@ -104,6 +105,7 @@ import {
   createPlatformServicePreflightRunViaApi,
   createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
+  createReleaseEvidenceExportViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
@@ -136,6 +138,7 @@ import {
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
+  fetchReleaseEvidenceExportsFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
@@ -204,6 +207,7 @@ export function App() {
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [platformServiceAdapterContractReviews, setPlatformServiceAdapterContractReviews] = useState<PlatformServiceAdapterContractReview[]>([]);
   const [providerReleaseGateRecords, setProviderReleaseGateRecords] = useState<ProviderReleaseGateRecord[]>([]);
+  const [releaseEvidenceExports, setReleaseEvidenceExports] = useState<ReleaseEvidenceExportRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -284,6 +288,7 @@ export function App() {
             apiPlatformServicePreflightRuns,
             apiPlatformServiceAdapterContractReviews,
             apiProviderReleaseGateRecords,
+            apiReleaseEvidenceExports,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -319,6 +324,7 @@ export function App() {
             fetchPlatformServicePreflightRunsFromApi(),
             fetchPlatformServiceAdapterContractReviewsFromApi(),
             fetchProviderReleaseGateRecordsFromApi(),
+            fetchReleaseEvidenceExportsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -356,6 +362,7 @@ export function App() {
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
             setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
+            setReleaseEvidenceExports(apiReleaseEvidenceExports);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -513,6 +520,7 @@ export function App() {
       apiPlatformServicePreflightRuns,
       apiPlatformServiceAdapterContractReviews,
       apiProviderReleaseGateRecords,
+      apiReleaseEvidenceExports,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -548,6 +556,7 @@ export function App() {
       fetchPlatformServicePreflightRunsFromApi(),
       fetchPlatformServiceAdapterContractReviewsFromApi(),
       fetchProviderReleaseGateRecordsFromApi(),
+      fetchReleaseEvidenceExportsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -584,6 +593,7 @@ export function App() {
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
     setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
+    setReleaseEvidenceExports(apiReleaseEvidenceExports);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1129,6 +1139,25 @@ export function App() {
     setAuditExports((current) => [createMockAuditExportRecord(session.user, current.length), ...current]);
   }
 
+  async function prepareReleaseEvidenceExport() {
+    const gate = providerReleaseGateRecords[0];
+    if (!gate) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const exportRecord = await createReleaseEvidenceExportViaApi({ gateId: gate.id });
+      await refreshApiState();
+      setReleaseEvidenceExports((current) => [exportRecord, ...current.filter((item) => item.id !== exportRecord.id)]);
+      return;
+    }
+
+    setReleaseEvidenceExports((current) => [
+      createMockReleaseEvidenceExportRecord(gate, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1349,6 +1378,7 @@ export function App() {
             productionReadinessReviews={productionReadinessReviews}
             lifecycleOperations={lifecycleOperations}
             auditExports={auditExports}
+            releaseEvidenceExports={releaseEvidenceExports}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1375,6 +1405,7 @@ export function App() {
             createProductionReadinessReview={createProductionReadinessReview}
             requestLifecycleOperation={requestLifecycleOperation}
             prepareAuditExport={prepareAuditExport}
+            prepareReleaseEvidenceExport={prepareReleaseEvidenceExport}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -1883,6 +1914,7 @@ function AdminView({
   productionReadinessReviews,
   lifecycleOperations,
   auditExports,
+  releaseEvidenceExports,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -1909,6 +1941,7 @@ function AdminView({
   createProductionReadinessReview,
   requestLifecycleOperation,
   prepareAuditExport,
+  prepareReleaseEvidenceExport,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -1948,6 +1981,7 @@ function AdminView({
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
+  releaseEvidenceExports: ReleaseEvidenceExportRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -1977,6 +2011,7 @@ function AdminView({
   createProductionReadinessReview: () => void;
   requestLifecycleOperation: (operation: LifecycleOperationKind) => void;
   prepareAuditExport: () => void;
+  prepareReleaseEvidenceExport: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2194,6 +2229,12 @@ function AdminView({
               auditExports={auditExports}
               auditRetentionDiagnostics={auditRetentionDiagnostics}
               prepareAuditExport={prepareAuditExport}
+            />
+          </Panel>
+          <Panel title="Release evidence exports" action={`${releaseEvidenceExports.length} exports`}>
+            <ReleaseEvidenceExportPanel
+              exports={releaseEvidenceExports}
+              prepareReleaseEvidenceExport={prepareReleaseEvidenceExport}
             />
           </Panel>
         </div>
@@ -2983,6 +3024,64 @@ function RegistryActions({
           <RefreshCw size={15} />
           Restore draft
         </button>
+      )}
+    </div>
+  );
+}
+
+function ReleaseEvidenceExportPanel({
+  exports,
+  prepareReleaseEvidenceExport,
+}: {
+  exports: ReleaseEvidenceExportRecord[];
+  prepareReleaseEvidenceExport: () => void;
+}) {
+  const latest = exports[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Release evidence manifest</strong>
+          <span>Exports provider release gate evidence as redacted metadata for operations and security review.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareReleaseEvidenceExport}>
+          <Archive size={15} />
+          Prepare release evidence
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No release evidence export has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.id}</span>
+            </div>
+            <span className="status ready">{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Gate" value={latest.manifest.gateStatus} passed={latest.manifest.gateStatus === "Ready for release review"} />
+            <CheckLine icon={Gauge} label="Checks" value={`${latest.manifest.passedChecks}/${latest.manifest.checkCount} passed`} passed={latest.manifest.passedChecks === latest.manifest.checkCount} />
+            <CheckLine icon={LockKeyhole} label="Kill switch" value={`${latest.manifest.killSwitch.name}: ${latest.manifest.killSwitch.enabled ? "enabled" : "disabled"}`} passed={!latest.manifest.killSwitch.enabled} />
+            <CheckLine icon={Archive} label="Checksum" value={latest.checksum.slice(0, 12)} passed />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Evidence references</strong>
+            {latest.manifest.evidenceReferences.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Redaction boundary</strong>
+            <span>{latest.redactionBoundary}</span>
+            <span>{latest.storageBoundary}</span>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -5307,6 +5406,47 @@ function createMockProviderReleaseGateRecord({
     },
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockReleaseEvidenceExportRecord(
+  gate: ProviderReleaseGateRecord,
+  actor: string
+): ReleaseEvidenceExportRecord {
+  const createdAt = new Date().toISOString();
+  const evidenceReferences = gate.evidence.map((item) =>
+    item
+      .replace(/:\/\/[^/\s]*@/g, "://redacted@")
+      .replace(/([?&](?:key|sig|cred)=)[^&\s]+/gi, "$1redacted")
+  );
+  const manifest = {
+    exportId: `release-evidence-export-${gate.provider.toLowerCase()}-${Date.now()}`,
+    gateId: gate.id,
+    provider: gate.provider,
+    gateStatus: gate.status,
+    generatedAt: createdAt,
+    releaseApprover: gate.releaseApprover,
+    checkCount: gate.checks.length,
+    passedChecks: gate.checks.filter((check) => check.passed).length,
+    blockedOperations: gate.blockedOperations,
+    killSwitch: gate.killSwitch,
+    evidenceReferences,
+  };
+
+  return {
+    id: manifest.exportId,
+    provider: gate.provider,
+    gateId: gate.id,
+    status: "Prepared",
+    requestedBy: actor,
+    format: "JSON",
+    checksumAlgorithm: "sha256",
+    checksum: `mock-${gate.provider.toLowerCase()}-${manifest.checkCount}-${manifest.passedChecks}`,
+    manifest,
+    redactionBoundary: "Release evidence exports contain references and metadata only; no inline auth material.",
+    storageBoundary: "Export record is metadata only; configure external evidence storage before production release reviews.",
+    provisioningEnabled: false,
+    createdAt,
   };
 }
 
