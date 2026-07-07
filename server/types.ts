@@ -70,6 +70,7 @@ import type {
   ProductionExecutionCompletionDossierRecord,
   ProductionExecutionOperationsHandoverRecord,
   ProductionExecutionSupportReadinessRecord,
+  ProductionExecutionServiceAcceptanceRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -155,6 +156,7 @@ export type ApiState = {
   productionExecutionCompletionDossierRecords: ProductionExecutionCompletionDossierRecord[];
   productionExecutionOperationsHandoverRecords: ProductionExecutionOperationsHandoverRecord[];
   productionExecutionSupportReadinessRecords: ProductionExecutionSupportReadinessRecord[];
+  productionExecutionServiceAcceptanceRecords: ProductionExecutionServiceAcceptanceRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -672,6 +674,16 @@ export type CreateProductionExecutionSupportReadinessRecordRequest = {
   alertRoutingProofReference?: string;
   incidentProcessReference?: string;
   knowledgeBasePublicationReference?: string;
+};
+
+export type CreateProductionExecutionServiceAcceptanceRecordRequest = {
+  supportReadinessRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  serviceOwner?: string;
+  acceptanceCriteriaReference?: string;
+  operationalSloReference?: string;
+  supportSignOffReference?: string;
+  finalCustomerNotificationReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

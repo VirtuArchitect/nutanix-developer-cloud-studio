@@ -596,6 +596,15 @@ Production execution support readiness records capture support readiness evidenc
 
 Required role: `Platform Admin`.
 
+### Production Execution Service Acceptance Records
+
+- `GET /api/real-adapter/production-execution-service-acceptance-records`
+- `POST /api/real-adapter/production-execution-service-acceptance-records`
+
+Production execution service acceptance records capture service acceptance evidence after support readiness and before any future final turnover phase. Records require a ready support readiness record, service owner, acceptance criteria reference, operational SLO reference, support sign-off, final customer notification, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

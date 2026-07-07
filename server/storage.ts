@@ -182,6 +182,7 @@ export function createDefaultState(): ApiState {
     productionExecutionCompletionDossierRecords: [],
     productionExecutionOperationsHandoverRecords: [],
     productionExecutionSupportReadinessRecords: [],
+    productionExecutionServiceAcceptanceRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

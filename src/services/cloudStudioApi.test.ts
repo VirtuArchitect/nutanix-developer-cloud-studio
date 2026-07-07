@@ -53,6 +53,7 @@ import {
   createProductionExecutionCompletionDossierRecordViaApi,
   createProductionExecutionOperationsHandoverRecordViaApi,
   createProductionExecutionSupportReadinessRecordViaApi,
+  createProductionExecutionServiceAcceptanceRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -123,6 +124,7 @@ import {
   fetchProductionExecutionCompletionDossierRecordsFromApi,
   fetchProductionExecutionOperationsHandoverRecordsFromApi,
   fetchProductionExecutionSupportReadinessRecordsFromApi,
+  fetchProductionExecutionServiceAcceptanceRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -624,6 +626,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionSupportReadinessRecordViaApi({
       operationsHandoverRecordId: "production-execution-operations-handover-record-ndb-1",
     });
+    await fetchProductionExecutionServiceAcceptanceRecordsFromApi();
+    await createProductionExecutionServiceAcceptanceRecordViaApi({
+      supportReadinessRecordId: "production-execution-support-readiness-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -978,6 +984,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-operations-handover-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      83,
+      "/api/real-adapter/production-execution-service-acceptance-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      84,
+      "/api/real-adapter/production-execution-service-acceptance-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-support-readiness-record-ndb-1"),
       })
     );
   });

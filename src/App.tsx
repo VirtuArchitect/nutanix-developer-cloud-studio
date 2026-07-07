@@ -96,6 +96,7 @@ import {
   type ProductionExecutionCompletionDossierRecord,
   type ProductionExecutionOperationsHandoverRecord,
   type ProductionExecutionSupportReadinessRecord,
+  type ProductionExecutionServiceAcceptanceRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -154,6 +155,7 @@ import {
   createProductionExecutionCompletionDossierRecordViaApi,
   createProductionExecutionOperationsHandoverRecordViaApi,
   createProductionExecutionSupportReadinessRecordViaApi,
+  createProductionExecutionServiceAcceptanceRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -217,6 +219,7 @@ import {
   fetchProductionExecutionCompletionDossierRecordsFromApi,
   fetchProductionExecutionOperationsHandoverRecordsFromApi,
   fetchProductionExecutionSupportReadinessRecordsFromApi,
+  fetchProductionExecutionServiceAcceptanceRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -396,6 +399,9 @@ export function App() {
   const [productionExecutionSupportReadinessRecords, setProductionExecutionSupportReadinessRecords] = useState<
     ProductionExecutionSupportReadinessRecord[]
   >([]);
+  const [productionExecutionServiceAcceptanceRecords, setProductionExecutionServiceAcceptanceRecords] = useState<
+    ProductionExecutionServiceAcceptanceRecord[]
+  >([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -519,6 +525,7 @@ export function App() {
             apiProductionExecutionCompletionDossierRecords,
             apiProductionExecutionOperationsHandoverRecords,
             apiProductionExecutionSupportReadinessRecords,
+            apiProductionExecutionServiceAcceptanceRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -597,6 +604,7 @@ export function App() {
             fetchProductionExecutionCompletionDossierRecordsFromApi(),
             fetchProductionExecutionOperationsHandoverRecordsFromApi(),
             fetchProductionExecutionSupportReadinessRecordsFromApi(),
+            fetchProductionExecutionServiceAcceptanceRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -679,6 +687,7 @@ export function App() {
             setProductionExecutionCompletionDossierRecords(apiProductionExecutionCompletionDossierRecords);
             setProductionExecutionOperationsHandoverRecords(apiProductionExecutionOperationsHandoverRecords);
             setProductionExecutionSupportReadinessRecords(apiProductionExecutionSupportReadinessRecords);
+            setProductionExecutionServiceAcceptanceRecords(apiProductionExecutionServiceAcceptanceRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -879,6 +888,7 @@ export function App() {
       apiProductionExecutionCompletionDossierRecords,
       apiProductionExecutionOperationsHandoverRecords,
       apiProductionExecutionSupportReadinessRecords,
+      apiProductionExecutionServiceAcceptanceRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -957,6 +967,7 @@ export function App() {
       fetchProductionExecutionCompletionDossierRecordsFromApi(),
       fetchProductionExecutionOperationsHandoverRecordsFromApi(),
       fetchProductionExecutionSupportReadinessRecordsFromApi(),
+      fetchProductionExecutionServiceAcceptanceRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1036,6 +1047,7 @@ export function App() {
     setProductionExecutionCompletionDossierRecords(apiProductionExecutionCompletionDossierRecords);
     setProductionExecutionOperationsHandoverRecords(apiProductionExecutionOperationsHandoverRecords);
     setProductionExecutionSupportReadinessRecords(apiProductionExecutionSupportReadinessRecords);
+    setProductionExecutionServiceAcceptanceRecords(apiProductionExecutionServiceAcceptanceRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2540,6 +2552,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionServiceAcceptance() {
+    const supportReadinessRecord = productionExecutionSupportReadinessRecords[0];
+    if (!supportReadinessRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionServiceAcceptanceRecordViaApi({
+        supportReadinessRecordId: supportReadinessRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionServiceAcceptanceRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionServiceAcceptanceRecords((current) => [
+      createMockProductionExecutionServiceAcceptanceRecord(supportReadinessRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2803,6 +2839,7 @@ export function App() {
             productionExecutionCompletionDossierRecords={productionExecutionCompletionDossierRecords}
             productionExecutionOperationsHandoverRecords={productionExecutionOperationsHandoverRecords}
             productionExecutionSupportReadinessRecords={productionExecutionSupportReadinessRecords}
+            productionExecutionServiceAcceptanceRecords={productionExecutionServiceAcceptanceRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2871,6 +2908,7 @@ export function App() {
             recordProductionExecutionCompletionDossier={recordProductionExecutionCompletionDossier}
             recordProductionExecutionOperationsHandover={recordProductionExecutionOperationsHandover}
             recordProductionExecutionSupportReadiness={recordProductionExecutionSupportReadiness}
+            recordProductionExecutionServiceAcceptance={recordProductionExecutionServiceAcceptance}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3422,6 +3460,7 @@ function AdminView({
   productionExecutionCompletionDossierRecords,
   productionExecutionOperationsHandoverRecords,
   productionExecutionSupportReadinessRecords,
+  productionExecutionServiceAcceptanceRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3490,6 +3529,7 @@ function AdminView({
   recordProductionExecutionCompletionDossier,
   recordProductionExecutionOperationsHandover,
   recordProductionExecutionSupportReadiness,
+  recordProductionExecutionServiceAcceptance,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3572,6 +3612,7 @@ function AdminView({
   productionExecutionCompletionDossierRecords: ProductionExecutionCompletionDossierRecord[];
   productionExecutionOperationsHandoverRecords: ProductionExecutionOperationsHandoverRecord[];
   productionExecutionSupportReadinessRecords: ProductionExecutionSupportReadinessRecord[];
+  productionExecutionServiceAcceptanceRecords: ProductionExecutionServiceAcceptanceRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3643,6 +3684,7 @@ function AdminView({
   recordProductionExecutionCompletionDossier: () => void;
   recordProductionExecutionOperationsHandover: () => void;
   recordProductionExecutionSupportReadiness: () => void;
+  recordProductionExecutionServiceAcceptance: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4142,6 +4184,15 @@ function AdminView({
             <ProductionExecutionSupportReadinessRecordPanel
               records={productionExecutionSupportReadinessRecords}
               recordProductionExecutionSupportReadiness={recordProductionExecutionSupportReadiness}
+            />
+          </Panel>
+          <Panel
+            title="Production service acceptance"
+            action={`${productionExecutionServiceAcceptanceRecords.length} records`}
+          >
+            <ProductionExecutionServiceAcceptanceRecordPanel
+              records={productionExecutionServiceAcceptanceRecords}
+              recordProductionExecutionServiceAcceptance={recordProductionExecutionServiceAcceptance}
             />
           </Panel>
         </div>
@@ -7740,6 +7791,73 @@ function ProductionExecutionSupportReadinessRecordPanel({
             <span>Incident process: {latest.incidentProcessReference || "missing"}</span>
             <span>Knowledge base: {latest.knowledgeBasePublicationReference || "missing"}</span>
             <span>Operations handover: {latest.operationsHandoverRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionServiceAcceptanceRecordPanel({
+  records,
+  recordProductionExecutionServiceAcceptance,
+}: {
+  records: ProductionExecutionServiceAcceptanceRecord[];
+  recordProductionExecutionServiceAcceptance: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution service acceptance record</strong>
+          <span>Captures acceptance criteria, operational SLO, support sign-off, and final customer notification.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionServiceAcceptance}>
+          <Archive size={15} />
+          Record service acceptance
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution service acceptance record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.supportReadinessRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution service acceptance review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Service owner" value={latest.serviceOwner || "missing"} passed={Boolean(latest.serviceOwner)} />
+            <CheckLine icon={ScrollText} label="Acceptance criteria" value={latest.acceptanceCriteriaReference || "missing"} passed={Boolean(latest.acceptanceCriteriaReference)} />
+            <CheckLine icon={Gauge} label="Operational SLO" value={latest.operationalSloReference || "missing"} passed={Boolean(latest.operationalSloReference)} />
+            <CheckLine icon={ShieldCheck} label="Service acceptance" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution service acceptance evidence</strong>
+            <span>Support sign-off: {latest.supportSignOffReference || "missing"}</span>
+            <span>Customer notification: {latest.finalCustomerNotificationReference || "missing"}</span>
+            <span>Support readiness: {latest.supportReadinessRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -13767,6 +13885,116 @@ function createMockProductionExecutionSupportReadinessRecord(
       }.`,
     ],
     killSwitch: operationsHandoverRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionServiceAcceptanceRecord(
+  supportReadinessRecord: ProductionExecutionSupportReadinessRecord,
+  actor: string
+): ProductionExecutionServiceAcceptanceRecord {
+  const providerSlug = supportReadinessRecord.provider.toLowerCase();
+  const serviceOwner = "Production Service Owner";
+  const acceptanceCriteriaReference = `production-acceptance-criteria-${providerSlug}.md`;
+  const operationalSloReference = `production-operational-slo-${providerSlug}.md`;
+  const supportSignOffReference = `production-support-signoff-${providerSlug}.md`;
+  const finalCustomerNotificationReference = `production-final-customer-notification-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Support readiness ready",
+      passed:
+        supportReadinessRecord.status ===
+        "Ready for production execution support readiness review",
+      detail: `${supportReadinessRecord.id} is ${supportReadinessRecord.status}.`,
+    },
+    {
+      name: "Service owner assigned",
+      passed: Boolean(serviceOwner),
+      detail: serviceOwner,
+    },
+    {
+      name: "Acceptance criteria linked",
+      passed: Boolean(acceptanceCriteriaReference),
+      detail: acceptanceCriteriaReference,
+    },
+    {
+      name: "Operational SLO linked",
+      passed: Boolean(operationalSloReference),
+      detail: operationalSloReference,
+    },
+    {
+      name: "Support sign-off linked",
+      passed: Boolean(supportSignOffReference),
+      detail: supportSignOffReference,
+    },
+    {
+      name: "Customer notification linked",
+      passed: Boolean(finalCustomerNotificationReference),
+      detail: finalCustomerNotificationReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !supportReadinessRecord.provisioningEnabled && !supportReadinessRecord.killSwitch.enabled,
+      detail: `${supportReadinessRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-service-acceptance-record-${providerSlug}-${Date.now()}`,
+    provider: supportReadinessRecord.provider,
+    supportReadinessRecordId: supportReadinessRecord.id,
+    operationsHandoverRecordId: supportReadinessRecord.operationsHandoverRecordId,
+    completionDossierRecordId: supportReadinessRecord.completionDossierRecordId,
+    finalArchiveCertificationRecordId: supportReadinessRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: supportReadinessRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: supportReadinessRecord.archivalHandoffRecordId,
+    closurePacketRecordId: supportReadinessRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: supportReadinessRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: supportReadinessRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: supportReadinessRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: supportReadinessRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: supportReadinessRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: supportReadinessRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: supportReadinessRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: supportReadinessRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: supportReadinessRecord.implementationHoldRecordId,
+    cabDecisionRecordId: supportReadinessRecord.cabDecisionRecordId,
+    cabHandoffPacketId: supportReadinessRecord.cabHandoffPacketId,
+    freezeRecordId: supportReadinessRecord.freezeRecordId,
+    authorizationPacketId: supportReadinessRecord.authorizationPacketId,
+    promotionDossierId: supportReadinessRecord.promotionDossierId,
+    closurePackageId: supportReadinessRecord.closurePackageId,
+    outcomeRecordId: supportReadinessRecord.outcomeRecordId,
+    handoffPackageId: supportReadinessRecord.handoffPackageId,
+    controlledSwitchRequestId: supportReadinessRecord.controlledSwitchRequestId,
+    auditPackageId: supportReadinessRecord.auditPackageId,
+    switchReviewId: supportReadinessRecord.switchReviewId,
+    activationId: supportReadinessRecord.activationId,
+    idempotencyKey: supportReadinessRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution service acceptance review"
+      : "Blocked",
+    requestedBy: actor,
+    serviceOwner,
+    acceptanceCriteriaReference,
+    operationalSloReference,
+    supportSignOffReference,
+    finalCustomerNotificationReference,
+    checks,
+    evidence: [
+      `Support readiness record: ${supportReadinessRecord.id}.`,
+      `Operations handover record: ${supportReadinessRecord.operationsHandoverRecordId}.`,
+      `Service owner: ${serviceOwner}.`,
+      `Acceptance criteria: ${acceptanceCriteriaReference}.`,
+      `Operational SLO: ${operationalSloReference}.`,
+      `Support sign-off: ${supportSignOffReference}.`,
+      `Final customer notification: ${finalCustomerNotificationReference}.`,
+      `Kill switch: ${supportReadinessRecord.killSwitch.name}=${
+        supportReadinessRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: supportReadinessRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

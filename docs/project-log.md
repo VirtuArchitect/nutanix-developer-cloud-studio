@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.53.0-production-execution-service-acceptance-record`.
+- Added production execution service acceptance records linked to production execution support readiness records.
+- Added API endpoints for production execution service acceptance records.
+- Added Admin Operations production service acceptance panel.
+- Added tests proving missing support readiness records or incomplete service acceptance evidence block readiness.
+- Planned `v2.54.0-production-execution-final-turnover-record` for evidence-only final turnover records.
 - Released `v2.52.0-production-execution-support-readiness-record`.
 - Added production execution support readiness records linked to production execution operations handover records.
 - Added API endpoints for production execution support readiness records.

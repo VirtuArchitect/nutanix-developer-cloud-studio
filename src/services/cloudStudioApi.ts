@@ -63,6 +63,7 @@ import type {
   ProductionExecutionCompletionDossierRecord,
   ProductionExecutionOperationsHandoverRecord,
   ProductionExecutionSupportReadinessRecord,
+  ProductionExecutionServiceAcceptanceRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -506,6 +507,12 @@ export async function fetchProductionExecutionOperationsHandoverRecordsFromApi()
 export async function fetchProductionExecutionSupportReadinessRecordsFromApi() {
   return fetchJson<ProductionExecutionSupportReadinessRecord[]>(
     "/api/real-adapter/production-execution-support-readiness-records"
+  );
+}
+
+export async function fetchProductionExecutionServiceAcceptanceRecordsFromApi() {
+  return fetchJson<ProductionExecutionServiceAcceptanceRecord[]>(
+    "/api/real-adapter/production-execution-service-acceptance-records"
   );
 }
 
@@ -1071,6 +1078,19 @@ export async function createProductionExecutionSupportReadinessRecordViaApi(payl
 }) {
   return fetchJson<ProductionExecutionSupportReadinessRecord>(
     "/api/real-adapter/production-execution-support-readiness-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionServiceAcceptanceRecordViaApi(payload: {
+  supportReadinessRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionServiceAcceptanceRecord>(
+    "/api/real-adapter/production-execution-service-acceptance-records",
     {
       method: "POST",
       body: JSON.stringify(payload),
