@@ -1060,6 +1060,23 @@ Exit gate:
 - Change ticket lock records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.42.0-production-final-execution-packet-record
+
+Goal: prepare final production execution packet evidence after change ticket lock without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production final execution packet records linked to change ticket lock records.
+- Final packet manifest, operator run sheet, communications proof, observation window, and final rollback standby confirmation checks.
+- Admin Operations final execution packet panel with blockers and evidence references.
+- Tests proving missing ready change ticket lock records, final packet manifests, operator run sheets, communications proofs, observation windows, or final rollback standby confirmations block final execution packet readiness.
+
+Exit gate:
+
+- Production final execution packet APIs and UI are tested.
+- Final execution packet records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

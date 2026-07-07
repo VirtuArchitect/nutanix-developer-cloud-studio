@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.40.0-production-execution-authorization-record`.
+This project uses release tags for public milestones. The current release is `v2.41.0-production-change-ticket-lock-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution change ticket lock records after execution authorization records are complete.
+- Add production final execution packet records after change ticket lock records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.41.0-production-change-ticket-lock-record] - 2026-07-07
+
+### Added
+
+- Production change ticket lock records linked to production execution authorization records.
+- API endpoints for listing and recording production change ticket lock records.
+- Admin Operations production change ticket lock panel.
+- Change ticket lock, release window lock, approver roster lock, rollback bridge lock, and monitoring bridge lock checks.
+- Tests proving missing execution authorization records or incomplete lock evidence block change ticket lock readiness.
+
+### Notes
+
+- Production change ticket lock records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.40.0-production-execution-authorization-record] - 2026-07-07
 

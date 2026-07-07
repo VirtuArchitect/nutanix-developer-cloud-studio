@@ -84,6 +84,7 @@ import {
   type ProductionOperatorAssignmentRecord,
   type ProductionExecutionReadinessRecord,
   type ProductionExecutionAuthorizationRecord,
+  type ProductionChangeTicketLockRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -130,6 +131,7 @@ import {
   createProductionOperatorAssignmentRecordViaApi,
   createProductionExecutionReadinessRecordViaApi,
   createProductionExecutionAuthorizationRecordViaApi,
+  createProductionChangeTicketLockRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -181,6 +183,7 @@ import {
   fetchProductionOperatorAssignmentRecordsFromApi,
   fetchProductionExecutionReadinessRecordsFromApi,
   fetchProductionExecutionAuthorizationRecordsFromApi,
+  fetchProductionChangeTicketLockRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -329,6 +332,7 @@ export function App() {
   const [productionOperatorAssignmentRecords, setProductionOperatorAssignmentRecords] = useState<ProductionOperatorAssignmentRecord[]>([]);
   const [productionExecutionReadinessRecords, setProductionExecutionReadinessRecords] = useState<ProductionExecutionReadinessRecord[]>([]);
   const [productionExecutionAuthorizationRecords, setProductionExecutionAuthorizationRecords] = useState<ProductionExecutionAuthorizationRecord[]>([]);
+  const [productionChangeTicketLockRecords, setProductionChangeTicketLockRecords] = useState<ProductionChangeTicketLockRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -440,6 +444,7 @@ export function App() {
             apiProductionOperatorAssignmentRecords,
             apiProductionExecutionReadinessRecords,
             apiProductionExecutionAuthorizationRecords,
+            apiProductionChangeTicketLockRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -506,6 +511,7 @@ export function App() {
             fetchProductionOperatorAssignmentRecordsFromApi(),
             fetchProductionExecutionReadinessRecordsFromApi(),
             fetchProductionExecutionAuthorizationRecordsFromApi(),
+            fetchProductionChangeTicketLockRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -574,6 +580,7 @@ export function App() {
             setProductionOperatorAssignmentRecords(apiProductionOperatorAssignmentRecords);
             setProductionExecutionReadinessRecords(apiProductionExecutionReadinessRecords);
             setProductionExecutionAuthorizationRecords(apiProductionExecutionAuthorizationRecords);
+            setProductionChangeTicketLockRecords(apiProductionChangeTicketLockRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -762,6 +769,7 @@ export function App() {
       apiProductionOperatorAssignmentRecords,
       apiProductionExecutionReadinessRecords,
       apiProductionExecutionAuthorizationRecords,
+      apiProductionChangeTicketLockRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -828,6 +836,7 @@ export function App() {
       fetchProductionOperatorAssignmentRecordsFromApi(),
       fetchProductionExecutionReadinessRecordsFromApi(),
       fetchProductionExecutionAuthorizationRecordsFromApi(),
+      fetchProductionChangeTicketLockRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -895,6 +904,7 @@ export function App() {
     setProductionOperatorAssignmentRecords(apiProductionOperatorAssignmentRecords);
     setProductionExecutionReadinessRecords(apiProductionExecutionReadinessRecords);
     setProductionExecutionAuthorizationRecords(apiProductionExecutionAuthorizationRecords);
+    setProductionChangeTicketLockRecords(apiProductionChangeTicketLockRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2111,6 +2121,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionChangeTicketLock() {
+    const authorizationRecord = productionExecutionAuthorizationRecords[0];
+    if (!authorizationRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionChangeTicketLockRecordViaApi({
+        executionAuthorizationRecordId: authorizationRecord.id,
+      });
+      await refreshApiState();
+      setProductionChangeTicketLockRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionChangeTicketLockRecords((current) => [
+      createMockProductionChangeTicketLockRecord(authorizationRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2362,6 +2396,7 @@ export function App() {
             productionOperatorAssignmentRecords={productionOperatorAssignmentRecords}
             productionExecutionReadinessRecords={productionExecutionReadinessRecords}
             productionExecutionAuthorizationRecords={productionExecutionAuthorizationRecords}
+            productionChangeTicketLockRecords={productionChangeTicketLockRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2418,6 +2453,7 @@ export function App() {
             recordProductionOperatorAssignment={recordProductionOperatorAssignment}
             recordProductionExecutionReadiness={recordProductionExecutionReadiness}
             recordProductionExecutionAuthorization={recordProductionExecutionAuthorization}
+            recordProductionChangeTicketLock={recordProductionChangeTicketLock}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2957,6 +2993,7 @@ function AdminView({
   productionOperatorAssignmentRecords,
   productionExecutionReadinessRecords,
   productionExecutionAuthorizationRecords,
+  productionChangeTicketLockRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3013,6 +3050,7 @@ function AdminView({
   recordProductionOperatorAssignment,
   recordProductionExecutionReadiness,
   recordProductionExecutionAuthorization,
+  recordProductionChangeTicketLock,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3083,6 +3121,7 @@ function AdminView({
   productionOperatorAssignmentRecords: ProductionOperatorAssignmentRecord[];
   productionExecutionReadinessRecords: ProductionExecutionReadinessRecord[];
   productionExecutionAuthorizationRecords: ProductionExecutionAuthorizationRecord[];
+  productionChangeTicketLockRecords: ProductionChangeTicketLockRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3142,6 +3181,7 @@ function AdminView({
   recordProductionOperatorAssignment: () => void;
   recordProductionExecutionReadiness: () => void;
   recordProductionExecutionAuthorization: () => void;
+  recordProductionChangeTicketLock: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3542,6 +3582,12 @@ function AdminView({
             <ProductionExecutionAuthorizationRecordPanel
               records={productionExecutionAuthorizationRecords}
               recordProductionExecutionAuthorization={recordProductionExecutionAuthorization}
+            />
+          </Panel>
+          <Panel title="Production change ticket lock" action={`${productionChangeTicketLockRecords.length} records`}>
+            <ProductionChangeTicketLockRecordPanel
+              records={productionChangeTicketLockRecords}
+              recordProductionChangeTicketLock={recordProductionChangeTicketLock}
             />
           </Panel>
         </div>
@@ -6336,6 +6382,73 @@ function ProductionExecutionAuthorizationRecordPanel({
             <span>Monitoring bridge: {latest.monitoringBridgeConfirmationReference || "missing"}</span>
             <span>Emergency stop authority: {latest.emergencyStopAuthority || "missing"}</span>
             <span>Execution readiness: {latest.executionReadinessRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionChangeTicketLockRecordPanel({
+  records,
+  recordProductionChangeTicketLock,
+}: {
+  records: ProductionChangeTicketLockRecord[];
+  recordProductionChangeTicketLock: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production change ticket lock record</strong>
+          <span>Captures locked change ticket, release window, approver roster, rollback bridge, and monitoring bridge evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionChangeTicketLock}>
+          <LockKeyhole size={15} />
+          Record change ticket lock
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production change ticket lock record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.executionAuthorizationRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production change ticket lock review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ScrollText} label="Ticket lock" value={latest.changeTicketLockReference || "missing"} passed={Boolean(latest.changeTicketLockReference)} />
+            <CheckLine icon={Archive} label="Window lock" value={latest.releaseWindowLockReference || "missing"} passed={Boolean(latest.releaseWindowLockReference)} />
+            <CheckLine icon={UserRound} label="Roster lock" value={latest.approverRosterLockReference || "missing"} passed={Boolean(latest.approverRosterLockReference)} />
+            <CheckLine icon={LockKeyhole} label="Lock" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Change ticket lock evidence</strong>
+            <span>Rollback bridge lock: {latest.rollbackBridgeLockReference || "missing"}</span>
+            <span>Monitoring bridge lock: {latest.monitoringBridgeLockReference || "missing"}</span>
+            <span>Execution authorization: {latest.executionAuthorizationRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -11141,6 +11254,100 @@ function createMockProductionExecutionAuthorizationRecord(
       `Kill switch: ${readinessRecord.killSwitch.name}=${readinessRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: readinessRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionChangeTicketLockRecord(
+  authorizationRecord: ProductionExecutionAuthorizationRecord,
+  actor: string
+): ProductionChangeTicketLockRecord {
+  const providerSlug = authorizationRecord.provider.toLowerCase();
+  const changeTicketLockReference = `production-change-ticket-lock-${providerSlug}.md`;
+  const releaseWindowLockReference = `production-release-window-lock-${providerSlug}.md`;
+  const approverRosterLockReference = `production-approver-roster-lock-${providerSlug}.md`;
+  const rollbackBridgeLockReference = `production-rollback-bridge-lock-${providerSlug}.md`;
+  const monitoringBridgeLockReference = `production-monitoring-bridge-lock-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Execution authorization ready",
+      passed: authorizationRecord.status === "Ready for production execution authorization review",
+      detail: `${authorizationRecord.id} is ${authorizationRecord.status}.`,
+    },
+    {
+      name: "Change ticket locked",
+      passed: Boolean(changeTicketLockReference),
+      detail: changeTicketLockReference,
+    },
+    {
+      name: "Release window locked",
+      passed: Boolean(releaseWindowLockReference),
+      detail: releaseWindowLockReference,
+    },
+    {
+      name: "Approver roster locked",
+      passed: Boolean(approverRosterLockReference),
+      detail: approverRosterLockReference,
+    },
+    {
+      name: "Rollback bridge locked",
+      passed: Boolean(rollbackBridgeLockReference),
+      detail: rollbackBridgeLockReference,
+    },
+    {
+      name: "Monitoring bridge locked",
+      passed: Boolean(monitoringBridgeLockReference),
+      detail: monitoringBridgeLockReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !authorizationRecord.provisioningEnabled && !authorizationRecord.killSwitch.enabled,
+      detail: `${authorizationRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-change-ticket-lock-record-${providerSlug}-${Date.now()}`,
+    provider: authorizationRecord.provider,
+    executionAuthorizationRecordId: authorizationRecord.id,
+    executionReadinessRecordId: authorizationRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: authorizationRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: authorizationRecord.implementationHoldRecordId,
+    cabDecisionRecordId: authorizationRecord.cabDecisionRecordId,
+    cabHandoffPacketId: authorizationRecord.cabHandoffPacketId,
+    freezeRecordId: authorizationRecord.freezeRecordId,
+    authorizationPacketId: authorizationRecord.authorizationPacketId,
+    promotionDossierId: authorizationRecord.promotionDossierId,
+    closurePackageId: authorizationRecord.closurePackageId,
+    outcomeRecordId: authorizationRecord.outcomeRecordId,
+    handoffPackageId: authorizationRecord.handoffPackageId,
+    controlledSwitchRequestId: authorizationRecord.controlledSwitchRequestId,
+    auditPackageId: authorizationRecord.auditPackageId,
+    switchReviewId: authorizationRecord.switchReviewId,
+    activationId: authorizationRecord.activationId,
+    idempotencyKey: authorizationRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production change ticket lock review"
+      : "Blocked",
+    requestedBy: actor,
+    changeTicketLockReference,
+    releaseWindowLockReference,
+    approverRosterLockReference,
+    rollbackBridgeLockReference,
+    monitoringBridgeLockReference,
+    checks,
+    evidence: [
+      `Execution authorization record: ${authorizationRecord.id}.`,
+      `Execution readiness record: ${authorizationRecord.executionReadinessRecordId}.`,
+      `Change ticket lock: ${changeTicketLockReference}.`,
+      `Release window lock: ${releaseWindowLockReference}.`,
+      `Approver roster lock: ${approverRosterLockReference}.`,
+      `Rollback bridge lock: ${rollbackBridgeLockReference}.`,
+      `Monitoring bridge lock: ${monitoringBridgeLockReference}.`,
+      `Kill switch: ${authorizationRecord.killSwitch.name}=${authorizationRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: authorizationRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

@@ -1451,6 +1451,40 @@ export type ProductionExecutionAuthorizationRecord = {
   createdAt: string;
 };
 
+export type ProductionChangeTicketLockRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  executionAuthorizationRecordId: string;
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production change ticket lock review";
+  requestedBy: string;
+  changeTicketLockReference: string;
+  releaseWindowLockReference: string;
+  approverRosterLockReference: string;
+  rollbackBridgeLockReference: string;
+  monitoringBridgeLockReference: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionAuthorizationRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

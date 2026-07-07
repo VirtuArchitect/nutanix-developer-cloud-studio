@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.41.0-production-change-ticket-lock-record`.
+- Added production change ticket lock records linked to production execution authorization records.
+- Added API endpoints for production change ticket lock records.
+- Added Admin Operations production change ticket lock panel.
+- Added tests proving missing execution authorization records or incomplete lock evidence block readiness.
+- Planned `v2.42.0-production-final-execution-packet-record` for evidence-only final execution packet records.
 - Released `v2.40.0-production-execution-authorization-record`.
 - Added production execution authorization records linked to production execution readiness records.
 - Added API endpoints for production execution authorization records.

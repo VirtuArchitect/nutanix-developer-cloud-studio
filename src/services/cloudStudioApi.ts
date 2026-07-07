@@ -51,6 +51,7 @@ import type {
   ProductionOperatorAssignmentRecord,
   ProductionExecutionReadinessRecord,
   ProductionExecutionAuthorizationRecord,
+  ProductionChangeTicketLockRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -429,6 +430,10 @@ export async function fetchProductionExecutionReadinessRecordsFromApi() {
 
 export async function fetchProductionExecutionAuthorizationRecordsFromApi() {
   return fetchJson<ProductionExecutionAuthorizationRecord[]>("/api/real-adapter/production-execution-authorization-records");
+}
+
+export async function fetchProductionChangeTicketLockRecordsFromApi() {
+  return fetchJson<ProductionChangeTicketLockRecord[]>("/api/real-adapter/production-change-ticket-lock-records");
 }
 
 export async function fetchProductionReadinessReviewsFromApi() {
@@ -848,6 +853,16 @@ export async function createProductionExecutionAuthorizationRecordViaApi(payload
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ProductionExecutionAuthorizationRecord>("/api/real-adapter/production-execution-authorization-records", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionChangeTicketLockRecordViaApi(payload: {
+  executionAuthorizationRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionChangeTicketLockRecord>("/api/real-adapter/production-change-ticket-lock-records", {
     method: "POST",
     body: JSON.stringify(payload),
   });

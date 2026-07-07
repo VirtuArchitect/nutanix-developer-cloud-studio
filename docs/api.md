@@ -488,6 +488,15 @@ Production execution authorization records capture final execution authorization
 
 Required role: `Platform Admin`.
 
+### Production Change Ticket Lock Records
+
+- `GET /api/real-adapter/production-change-ticket-lock-records`
+- `POST /api/real-adapter/production-change-ticket-lock-records`
+
+Production change ticket lock records capture locked change evidence after execution authorization and before any future final execution packet phase. Records require a ready execution authorization record, change ticket lock, release window lock, approver roster lock, rollback bridge lock, monitoring bridge lock, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

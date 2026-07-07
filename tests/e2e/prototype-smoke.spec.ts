@@ -295,6 +295,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution authorization record")).toBeVisible();
   await expect(page.getByText("Execution authorization evidence")).toBeVisible();
   await expect(page.getByText("Execution readiness ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production change ticket lock" })).toBeVisible();
+  await page.getByRole("button", { name: "Record change ticket lock" }).click();
+  await expect(page.getByText("Production change ticket lock record")).toBeVisible();
+  await expect(page.getByText("Change ticket lock evidence")).toBeVisible();
+  await expect(page.getByText("Execution authorization ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

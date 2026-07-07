@@ -41,6 +41,7 @@ import {
   createProductionOperatorAssignmentRecordViaApi,
   createProductionExecutionReadinessRecordViaApi,
   createProductionExecutionAuthorizationRecordViaApi,
+  createProductionChangeTicketLockRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -99,6 +100,7 @@ import {
   fetchProductionOperatorAssignmentRecordsFromApi,
   fetchProductionExecutionReadinessRecordsFromApi,
   fetchProductionExecutionAuthorizationRecordsFromApi,
+  fetchProductionChangeTicketLockRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -552,6 +554,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionAuthorizationRecordViaApi({
       executionReadinessRecordId: "production-execution-readiness-record-ndb-1",
     });
+    await fetchProductionChangeTicketLockRecordsFromApi();
+    await createProductionChangeTicketLockRecordViaApi({
+      executionAuthorizationRecordId: "production-execution-authorization-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -750,6 +756,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-readiness-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      59,
+      "/api/real-adapter/production-change-ticket-lock-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      60,
+      "/api/real-adapter/production-change-ticket-lock-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-authorization-record-ndb-1"),
       })
     );
   });

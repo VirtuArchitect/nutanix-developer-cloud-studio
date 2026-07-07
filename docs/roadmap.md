@@ -475,10 +475,17 @@
 
 ## Phase 63 - Production Change Ticket Lock Record (`v2.41.0-production-change-ticket-lock-record`)
 
-- Add production change ticket lock records linked to execution authorization records - planned
-- Require change ticket lock, release window lock, approver roster lock, rollback bridge lock, and monitoring bridge lock - planned
-- Add Admin Operations change ticket lock panel - planned
-- Keep change ticket lock records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production change ticket lock records linked to execution authorization records - done
+- Require change ticket lock, release window lock, approver roster lock, rollback bridge lock, and monitoring bridge lock - done
+- Add Admin Operations change ticket lock panel - done
+- Keep change ticket lock records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 64 - Production Final Execution Packet Record (`v2.42.0-production-final-execution-packet-record`)
+
+- Add production final execution packet records linked to change ticket lock records - planned
+- Require final packet manifest, operator run sheet, communications proof, observation window, and final rollback standby confirmation - planned
+- Add Admin Operations final execution packet panel - planned
+- Keep final execution packet records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 
