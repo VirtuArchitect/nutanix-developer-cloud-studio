@@ -44,6 +44,7 @@ import {
   createProductionChangeTicketLockRecordViaApi,
   createProductionFinalExecutionPacketRecordViaApi,
   createProductionExecutionHoldPointRecordViaApi,
+  createProductionExecutionOutcomeAuthorizationRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -105,6 +106,7 @@ import {
   fetchProductionChangeTicketLockRecordsFromApi,
   fetchProductionFinalExecutionPacketRecordsFromApi,
   fetchProductionExecutionHoldPointRecordsFromApi,
+  fetchProductionExecutionOutcomeAuthorizationRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -570,6 +572,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionHoldPointRecordViaApi({
       finalExecutionPacketRecordId: "production-final-execution-packet-record-ndb-1",
     });
+    await fetchProductionExecutionOutcomeAuthorizationRecordsFromApi();
+    await createProductionExecutionOutcomeAuthorizationRecordViaApi({
+      executionHoldPointRecordId: "production-execution-hold-point-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -807,6 +813,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-final-execution-packet-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      65,
+      "/api/real-adapter/production-execution-outcome-authorization-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      66,
+      "/api/real-adapter/production-execution-outcome-authorization-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-hold-point-record-ndb-1"),
       })
     );
   });

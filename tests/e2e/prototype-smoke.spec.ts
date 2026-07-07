@@ -241,7 +241,7 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Switch handoff evidence")).toBeVisible();
   await expect(page.getByText("Prototype does not execute switch")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Switch execution outcomes" })).toBeVisible();
-  await page.getByRole("button", { name: "Record outcome" }).click();
+  await page.getByRole("button", { name: "Record outcome", exact: true }).click();
   await expect(page.getByText("Switch execution outcome record")).toBeVisible();
   await expect(page.getByText("Switch outcome evidence")).toBeVisible();
   await expect(page.getByText("Prototype records outcome only")).toBeVisible();
@@ -310,6 +310,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution hold-point record")).toBeVisible();
   await expect(page.getByText("Execution hold-point evidence")).toBeVisible();
   await expect(page.getByText("Final execution packet ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production outcome authorization" })).toBeVisible();
+  await page.getByRole("button", { name: "Record outcome authorization" }).click();
+  await expect(page.getByText("Production execution outcome authorization record")).toBeVisible();
+  await expect(page.getByText("Execution outcome authorization evidence")).toBeVisible();
+  await expect(page.getByText("Execution hold-point ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

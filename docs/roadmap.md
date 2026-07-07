@@ -496,10 +496,17 @@
 
 ## Phase 66 - Production Execution Outcome Authorization Record (`v2.44.0-production-execution-outcome-authorization-record`)
 
-- Add production execution outcome authorization records linked to execution hold-point records - planned
-- Require outcome authority, expected result envelope, rollback decision rule, incident declaration rule, and evidence capture rule - planned
-- Add Admin Operations execution outcome authorization panel - planned
-- Keep execution outcome authorization records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution outcome authorization records linked to execution hold-point records - done
+- Require outcome authority, expected result envelope, rollback decision rule, incident declaration rule, and evidence capture rule - done
+- Add Admin Operations execution outcome authorization panel - done
+- Keep execution outcome authorization records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 67 - Production Execution Closure Authorization Record (`v2.45.0-production-execution-closure-authorization-record`)
+
+- Add production execution closure authorization records linked to outcome authorization records - planned
+- Require closure authority, success criteria, rollback closure criteria, incident closure criteria, and audit capture confirmation - planned
+- Add Admin Operations execution closure authorization panel - planned
+- Keep execution closure authorization records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

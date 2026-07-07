@@ -504,12 +504,12 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready handoff packets, CAB decisions, authorities, condition lists, rollback approvals, or decision minutes block readiness.
 - The prototype does not promote or enable real adapters.
 
-## Current Production Execution Hold-Point Record Slice
+## Current Production Execution Outcome Authorization Record Slice
 
-- API records production execution hold-point records linked to production final execution packet records.
-- Execution hold-point records require hold-point owner, final stop/go checkpoint, rollback timer checkpoint, monitoring readiness checkpoint, and incident bridge checkpoint.
-- Admin Operations surfaces execution hold-point readiness, evidence references, and blockers.
-- Missing ready final execution packet records, hold-point owners, final stop/go checkpoints, rollback timer checkpoints, monitoring readiness checkpoints, or incident bridge checkpoints block readiness.
+- API records production execution outcome authorization records linked to production execution hold-point records.
+- Execution outcome authorization records require outcome authority, expected result envelope, rollback decision rule, incident declaration rule, and evidence capture rule.
+- Admin Operations surfaces execution outcome authorization readiness, evidence references, and blockers.
+- Missing ready execution hold-point records, outcome authorities, expected result envelopes, rollback decision rules, incident declaration rules, or evidence capture rules block readiness.
 - The prototype does not promote, enable, or execute real adapters.
 
 ## Suggested Tech Stack

@@ -149,6 +149,10 @@ import {
   ProductionExecutionHoldPointRecordError,
 } from "./productionExecutionHoldPointRecord";
 import {
+  createProductionExecutionOutcomeAuthorizationRecord,
+  ProductionExecutionOutcomeAuthorizationRecordError,
+} from "./productionExecutionOutcomeAuthorizationRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -267,6 +271,7 @@ import type {
   CreateProductionChangeTicketLockRecordRequest,
   CreateProductionFinalExecutionPacketRecordRequest,
   CreateProductionExecutionHoldPointRecordRequest,
+  CreateProductionExecutionOutcomeAuthorizationRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -672,6 +677,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionHoldPointRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionOutcomeAuthorizationRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1161,6 +1176,15 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/production-execution-hold-point-records") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionHoldPointRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-outcome-authorization-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionOutcomeAuthorizationRecords });
     return;
   }
 
@@ -2380,6 +2404,34 @@ async function routeApi(
       status: record.status,
       provisioningEnabled: false,
     });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-outcome-authorization-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionOutcomeAuthorizationRecordRequest>(request);
+    const record = createProductionExecutionOutcomeAuthorizationRecord(state, body, context.session.user);
+    state.productionExecutionOutcomeAuthorizationRecords = [
+      record,
+      ...state.productionExecutionOutcomeAuthorizationRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-outcome-authorization.recorded",
+      context.session.user,
+      record.provider,
+      {
+        executionHoldPointRecordId: record.executionHoldPointRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
     await store.save(state);
     sendJson(response, 201, { data: record });
     return;

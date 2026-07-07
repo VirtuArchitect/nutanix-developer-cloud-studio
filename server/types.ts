@@ -61,6 +61,7 @@ import type {
   ProductionChangeTicketLockRecord,
   ProductionFinalExecutionPacketRecord,
   ProductionExecutionHoldPointRecord,
+  ProductionExecutionOutcomeAuthorizationRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -137,6 +138,7 @@ export type ApiState = {
   productionChangeTicketLockRecords: ProductionChangeTicketLockRecord[];
   productionFinalExecutionPacketRecords: ProductionFinalExecutionPacketRecord[];
   productionExecutionHoldPointRecords: ProductionExecutionHoldPointRecord[];
+  productionExecutionOutcomeAuthorizationRecords: ProductionExecutionOutcomeAuthorizationRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -564,6 +566,16 @@ export type CreateProductionExecutionHoldPointRecordRequest = {
   rollbackTimerCheckpointReference?: string;
   monitoringReadinessCheckpointReference?: string;
   incidentBridgeCheckpointReference?: string;
+};
+
+export type CreateProductionExecutionOutcomeAuthorizationRecordRequest = {
+  executionHoldPointRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  outcomeAuthority?: string;
+  expectedResultEnvelopeReference?: string;
+  rollbackDecisionRuleReference?: string;
+  incidentDeclarationRuleReference?: string;
+  evidenceCaptureRuleReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

@@ -515,6 +515,15 @@ Production execution hold-point records capture final hold-point evidence after 
 
 Required role: `Platform Admin`.
 
+### Production Execution Outcome Authorization Records
+
+- `GET /api/real-adapter/production-execution-outcome-authorization-records`
+- `POST /api/real-adapter/production-execution-outcome-authorization-records`
+
+Production execution outcome authorization records capture outcome handling evidence after the execution hold-point and before any future closure authorization phase. Records require a ready execution hold-point record, outcome authority, expected result envelope, rollback decision rule, incident declaration rule, evidence capture rule, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

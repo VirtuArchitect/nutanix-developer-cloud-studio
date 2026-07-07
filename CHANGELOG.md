@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.43.0-production-execution-hold-point-record`.
+This project uses release tags for public milestones. The current release is `v2.44.0-production-execution-outcome-authorization-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution outcome authorization records after execution hold-point records are complete.
+- Add production execution closure authorization records after execution outcome authorization records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.44.0-production-execution-outcome-authorization-record] - 2026-07-07
+
+### Added
+
+- Production execution outcome authorization records linked to production execution hold-point records.
+- API endpoints for listing and recording production execution outcome authorization records.
+- Admin Operations production outcome authorization panel.
+- Outcome authority, expected result envelope, rollback decision rule, incident declaration rule, and evidence capture rule checks.
+- Tests proving missing execution hold-point records or incomplete outcome authorization evidence block outcome authorization readiness.
+
+### Notes
+
+- Production execution outcome authorization records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.43.0-production-execution-hold-point-record] - 2026-07-07
 

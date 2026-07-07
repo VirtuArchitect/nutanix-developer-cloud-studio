@@ -87,6 +87,7 @@ import {
   type ProductionChangeTicketLockRecord,
   type ProductionFinalExecutionPacketRecord,
   type ProductionExecutionHoldPointRecord,
+  type ProductionExecutionOutcomeAuthorizationRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -136,6 +137,7 @@ import {
   createProductionChangeTicketLockRecordViaApi,
   createProductionFinalExecutionPacketRecordViaApi,
   createProductionExecutionHoldPointRecordViaApi,
+  createProductionExecutionOutcomeAuthorizationRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -190,6 +192,7 @@ import {
   fetchProductionChangeTicketLockRecordsFromApi,
   fetchProductionFinalExecutionPacketRecordsFromApi,
   fetchProductionExecutionHoldPointRecordsFromApi,
+  fetchProductionExecutionOutcomeAuthorizationRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -341,6 +344,9 @@ export function App() {
   const [productionChangeTicketLockRecords, setProductionChangeTicketLockRecords] = useState<ProductionChangeTicketLockRecord[]>([]);
   const [productionFinalExecutionPacketRecords, setProductionFinalExecutionPacketRecords] = useState<ProductionFinalExecutionPacketRecord[]>([]);
   const [productionExecutionHoldPointRecords, setProductionExecutionHoldPointRecords] = useState<ProductionExecutionHoldPointRecord[]>([]);
+  const [productionExecutionOutcomeAuthorizationRecords, setProductionExecutionOutcomeAuthorizationRecords] = useState<
+    ProductionExecutionOutcomeAuthorizationRecord[]
+  >([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -455,6 +461,7 @@ export function App() {
             apiProductionChangeTicketLockRecords,
             apiProductionFinalExecutionPacketRecords,
             apiProductionExecutionHoldPointRecords,
+            apiProductionExecutionOutcomeAuthorizationRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -524,6 +531,7 @@ export function App() {
             fetchProductionChangeTicketLockRecordsFromApi(),
             fetchProductionFinalExecutionPacketRecordsFromApi(),
             fetchProductionExecutionHoldPointRecordsFromApi(),
+            fetchProductionExecutionOutcomeAuthorizationRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -595,6 +603,7 @@ export function App() {
             setProductionChangeTicketLockRecords(apiProductionChangeTicketLockRecords);
             setProductionFinalExecutionPacketRecords(apiProductionFinalExecutionPacketRecords);
             setProductionExecutionHoldPointRecords(apiProductionExecutionHoldPointRecords);
+            setProductionExecutionOutcomeAuthorizationRecords(apiProductionExecutionOutcomeAuthorizationRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -786,6 +795,7 @@ export function App() {
       apiProductionChangeTicketLockRecords,
       apiProductionFinalExecutionPacketRecords,
       apiProductionExecutionHoldPointRecords,
+      apiProductionExecutionOutcomeAuthorizationRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -855,6 +865,7 @@ export function App() {
       fetchProductionChangeTicketLockRecordsFromApi(),
       fetchProductionFinalExecutionPacketRecordsFromApi(),
       fetchProductionExecutionHoldPointRecordsFromApi(),
+      fetchProductionExecutionOutcomeAuthorizationRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -925,6 +936,7 @@ export function App() {
     setProductionChangeTicketLockRecords(apiProductionChangeTicketLockRecords);
     setProductionFinalExecutionPacketRecords(apiProductionFinalExecutionPacketRecords);
     setProductionExecutionHoldPointRecords(apiProductionExecutionHoldPointRecords);
+    setProductionExecutionOutcomeAuthorizationRecords(apiProductionExecutionOutcomeAuthorizationRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2213,6 +2225,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionOutcomeAuthorization() {
+    const holdPointRecord = productionExecutionHoldPointRecords[0];
+    if (!holdPointRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionOutcomeAuthorizationRecordViaApi({
+        executionHoldPointRecordId: holdPointRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionOutcomeAuthorizationRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionOutcomeAuthorizationRecords((current) => [
+      createMockProductionExecutionOutcomeAuthorizationRecord(holdPointRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2467,6 +2503,7 @@ export function App() {
             productionChangeTicketLockRecords={productionChangeTicketLockRecords}
             productionFinalExecutionPacketRecords={productionFinalExecutionPacketRecords}
             productionExecutionHoldPointRecords={productionExecutionHoldPointRecords}
+            productionExecutionOutcomeAuthorizationRecords={productionExecutionOutcomeAuthorizationRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2526,6 +2563,7 @@ export function App() {
             recordProductionChangeTicketLock={recordProductionChangeTicketLock}
             recordProductionFinalExecutionPacket={recordProductionFinalExecutionPacket}
             recordProductionExecutionHoldPoint={recordProductionExecutionHoldPoint}
+            recordProductionExecutionOutcomeAuthorization={recordProductionExecutionOutcomeAuthorization}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3068,6 +3106,7 @@ function AdminView({
   productionChangeTicketLockRecords,
   productionFinalExecutionPacketRecords,
   productionExecutionHoldPointRecords,
+  productionExecutionOutcomeAuthorizationRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3127,6 +3166,7 @@ function AdminView({
   recordProductionChangeTicketLock,
   recordProductionFinalExecutionPacket,
   recordProductionExecutionHoldPoint,
+  recordProductionExecutionOutcomeAuthorization,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3200,6 +3240,7 @@ function AdminView({
   productionChangeTicketLockRecords: ProductionChangeTicketLockRecord[];
   productionFinalExecutionPacketRecords: ProductionFinalExecutionPacketRecord[];
   productionExecutionHoldPointRecords: ProductionExecutionHoldPointRecord[];
+  productionExecutionOutcomeAuthorizationRecords: ProductionExecutionOutcomeAuthorizationRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3262,6 +3303,7 @@ function AdminView({
   recordProductionChangeTicketLock: () => void;
   recordProductionFinalExecutionPacket: () => void;
   recordProductionExecutionHoldPoint: () => void;
+  recordProductionExecutionOutcomeAuthorization: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3680,6 +3722,15 @@ function AdminView({
             <ProductionExecutionHoldPointRecordPanel
               records={productionExecutionHoldPointRecords}
               recordProductionExecutionHoldPoint={recordProductionExecutionHoldPoint}
+            />
+          </Panel>
+          <Panel
+            title="Production outcome authorization"
+            action={`${productionExecutionOutcomeAuthorizationRecords.length} records`}
+          >
+            <ProductionExecutionOutcomeAuthorizationRecordPanel
+              records={productionExecutionOutcomeAuthorizationRecords}
+              recordProductionExecutionOutcomeAuthorization={recordProductionExecutionOutcomeAuthorization}
             />
           </Panel>
         </div>
@@ -6675,6 +6726,73 @@ function ProductionExecutionHoldPointRecordPanel({
             <span>Monitoring readiness: {latest.monitoringReadinessCheckpointReference || "missing"}</span>
             <span>Incident bridge: {latest.incidentBridgeCheckpointReference || "missing"}</span>
             <span>Final packet: {latest.finalExecutionPacketRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionOutcomeAuthorizationRecordPanel({
+  records,
+  recordProductionExecutionOutcomeAuthorization,
+}: {
+  records: ProductionExecutionOutcomeAuthorizationRecord[];
+  recordProductionExecutionOutcomeAuthorization: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution outcome authorization record</strong>
+          <span>Captures the expected result envelope, rollback decision rule, incident declaration rule, and evidence capture rule before outcome handling.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionOutcomeAuthorization}>
+          <ScrollText size={15} />
+          Record outcome authorization
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution outcome authorization record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.executionHoldPointRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution outcome authorization review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Authority" value={latest.outcomeAuthority || "missing"} passed={Boolean(latest.outcomeAuthority)} />
+            <CheckLine icon={Archive} label="Expected result" value={latest.expectedResultEnvelopeReference || "missing"} passed={Boolean(latest.expectedResultEnvelopeReference)} />
+            <CheckLine icon={Gauge} label="Rollback rule" value={latest.rollbackDecisionRuleReference || "missing"} passed={Boolean(latest.rollbackDecisionRuleReference)} />
+            <CheckLine icon={LockKeyhole} label="Authorization" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution outcome authorization evidence</strong>
+            <span>Incident rule: {latest.incidentDeclarationRuleReference || "missing"}</span>
+            <span>Evidence capture: {latest.evidenceCaptureRuleReference || "missing"}</span>
+            <span>Hold-point: {latest.executionHoldPointRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -11765,6 +11883,103 @@ function createMockProductionExecutionHoldPointRecord(
       `Kill switch: ${packetRecord.killSwitch.name}=${packetRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: packetRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionOutcomeAuthorizationRecord(
+  holdPointRecord: ProductionExecutionHoldPointRecord,
+  actor: string
+): ProductionExecutionOutcomeAuthorizationRecord {
+  const providerSlug = holdPointRecord.provider.toLowerCase();
+  const outcomeAuthority = "Production Outcome Authority";
+  const expectedResultEnvelopeReference = `production-expected-result-envelope-${providerSlug}.md`;
+  const rollbackDecisionRuleReference = `production-rollback-decision-rule-${providerSlug}.md`;
+  const incidentDeclarationRuleReference = `production-incident-declaration-rule-${providerSlug}.md`;
+  const evidenceCaptureRuleReference = `production-evidence-capture-rule-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Execution hold-point ready",
+      passed: holdPointRecord.status === "Ready for production execution hold-point review",
+      detail: `${holdPointRecord.id} is ${holdPointRecord.status}.`,
+    },
+    {
+      name: "Outcome authority assigned",
+      passed: Boolean(outcomeAuthority),
+      detail: outcomeAuthority,
+    },
+    {
+      name: "Expected result envelope linked",
+      passed: Boolean(expectedResultEnvelopeReference),
+      detail: expectedResultEnvelopeReference,
+    },
+    {
+      name: "Rollback decision rule linked",
+      passed: Boolean(rollbackDecisionRuleReference),
+      detail: rollbackDecisionRuleReference,
+    },
+    {
+      name: "Incident declaration rule linked",
+      passed: Boolean(incidentDeclarationRuleReference),
+      detail: incidentDeclarationRuleReference,
+    },
+    {
+      name: "Evidence capture rule linked",
+      passed: Boolean(evidenceCaptureRuleReference),
+      detail: evidenceCaptureRuleReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !holdPointRecord.provisioningEnabled && !holdPointRecord.killSwitch.enabled,
+      detail: `${holdPointRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-outcome-authorization-record-${providerSlug}-${Date.now()}`,
+    provider: holdPointRecord.provider,
+    executionHoldPointRecordId: holdPointRecord.id,
+    finalExecutionPacketRecordId: holdPointRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: holdPointRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: holdPointRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: holdPointRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: holdPointRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: holdPointRecord.implementationHoldRecordId,
+    cabDecisionRecordId: holdPointRecord.cabDecisionRecordId,
+    cabHandoffPacketId: holdPointRecord.cabHandoffPacketId,
+    freezeRecordId: holdPointRecord.freezeRecordId,
+    authorizationPacketId: holdPointRecord.authorizationPacketId,
+    promotionDossierId: holdPointRecord.promotionDossierId,
+    closurePackageId: holdPointRecord.closurePackageId,
+    outcomeRecordId: holdPointRecord.outcomeRecordId,
+    handoffPackageId: holdPointRecord.handoffPackageId,
+    controlledSwitchRequestId: holdPointRecord.controlledSwitchRequestId,
+    auditPackageId: holdPointRecord.auditPackageId,
+    switchReviewId: holdPointRecord.switchReviewId,
+    activationId: holdPointRecord.activationId,
+    idempotencyKey: holdPointRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution outcome authorization review"
+      : "Blocked",
+    requestedBy: actor,
+    outcomeAuthority,
+    expectedResultEnvelopeReference,
+    rollbackDecisionRuleReference,
+    incidentDeclarationRuleReference,
+    evidenceCaptureRuleReference,
+    checks,
+    evidence: [
+      `Execution hold-point record: ${holdPointRecord.id}.`,
+      `Final execution packet record: ${holdPointRecord.finalExecutionPacketRecordId}.`,
+      `Outcome authority: ${outcomeAuthority}.`,
+      `Expected result envelope: ${expectedResultEnvelopeReference}.`,
+      `Rollback decision rule: ${rollbackDecisionRuleReference}.`,
+      `Incident declaration rule: ${incidentDeclarationRuleReference}.`,
+      `Evidence capture rule: ${evidenceCaptureRuleReference}.`,
+      `Kill switch: ${holdPointRecord.killSwitch.name}=${holdPointRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: holdPointRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };
