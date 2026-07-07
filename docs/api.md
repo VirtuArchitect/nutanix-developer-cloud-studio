@@ -380,6 +380,15 @@ Controlled switch configuration requests record evidence after switch-state audi
 
 Required role: `Platform Admin`.
 
+### Switch Execution Handoff Packages
+
+- `GET /api/real-adapter/switch-handoff-packages`
+- `POST /api/real-adapter/switch-handoff-packages`
+
+Switch execution handoff packages prepare an out-of-band operator handoff after controlled switch request readiness. Packages require a ready controlled switch request, operator run sheet, communications plan, observation window, rollback-owner acceptance, execution freeze proof, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -87,6 +87,7 @@ import {
   type RollbackDestroyProofRecord,
   type SessionDiagnostics,
   type SystemStatus,
+  type SwitchExecutionHandoffPackage,
   type TemplateRegistryEntry,
   type Target,
   type Template,
@@ -121,6 +122,7 @@ import {
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createControlledSwitchConfigurationRequestViaApi,
+  createSwitchExecutionHandoffPackageViaApi,
   createExecutionBrokerDispatchApprovalViaApi,
   createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
@@ -163,6 +165,7 @@ import {
   fetchControlledLabDryRunWindowsFromApi,
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlledSwitchConfigurationRequestsFromApi,
+  fetchSwitchExecutionHandoffPackagesFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
@@ -281,6 +284,7 @@ export function App() {
   const [manualRealAdapterSwitchReviews, setManualRealAdapterSwitchReviews] = useState<ManualRealAdapterSwitchReview[]>([]);
   const [realAdapterSwitchStateAuditPackages, setRealAdapterSwitchStateAuditPackages] = useState<RealAdapterSwitchStateAuditPackage[]>([]);
   const [controlledSwitchConfigurationRequests, setControlledSwitchConfigurationRequests] = useState<ControlledSwitchConfigurationRequest[]>([]);
+  const [switchExecutionHandoffPackages, setSwitchExecutionHandoffPackages] = useState<SwitchExecutionHandoffPackage[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -380,6 +384,7 @@ export function App() {
             apiManualRealAdapterSwitchReviews,
             apiRealAdapterSwitchStateAuditPackages,
             apiControlledSwitchConfigurationRequests,
+            apiSwitchExecutionHandoffPackages,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -434,6 +439,7 @@ export function App() {
             fetchManualRealAdapterSwitchReviewsFromApi(),
             fetchRealAdapterSwitchStateAuditPackagesFromApi(),
             fetchControlledSwitchConfigurationRequestsFromApi(),
+            fetchSwitchExecutionHandoffPackagesFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -490,6 +496,7 @@ export function App() {
             setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
             setRealAdapterSwitchStateAuditPackages(apiRealAdapterSwitchStateAuditPackages);
             setControlledSwitchConfigurationRequests(apiControlledSwitchConfigurationRequests);
+            setSwitchExecutionHandoffPackages(apiSwitchExecutionHandoffPackages);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -666,6 +673,7 @@ export function App() {
       apiManualRealAdapterSwitchReviews,
       apiRealAdapterSwitchStateAuditPackages,
       apiControlledSwitchConfigurationRequests,
+      apiSwitchExecutionHandoffPackages,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -720,6 +728,7 @@ export function App() {
       fetchManualRealAdapterSwitchReviewsFromApi(),
       fetchRealAdapterSwitchStateAuditPackagesFromApi(),
       fetchControlledSwitchConfigurationRequestsFromApi(),
+      fetchSwitchExecutionHandoffPackagesFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -775,6 +784,7 @@ export function App() {
     setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
     setRealAdapterSwitchStateAuditPackages(apiRealAdapterSwitchStateAuditPackages);
     setControlledSwitchConfigurationRequests(apiControlledSwitchConfigurationRequests);
+    setSwitchExecutionHandoffPackages(apiSwitchExecutionHandoffPackages);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1713,6 +1723,30 @@ export function App() {
     ]);
   }
 
+  async function prepareSwitchExecutionHandoffPackage() {
+    const switchRequest = controlledSwitchConfigurationRequests[0];
+    if (!switchRequest) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const handoffPackage = await createSwitchExecutionHandoffPackageViaApi({
+        controlledSwitchRequestId: switchRequest.id,
+      });
+      await refreshApiState();
+      setSwitchExecutionHandoffPackages((current) => [
+        handoffPackage,
+        ...current.filter((item) => item.id !== handoffPackage.id),
+      ]);
+      return;
+    }
+
+    setSwitchExecutionHandoffPackages((current) => [
+      createMockSwitchExecutionHandoffPackage(switchRequest, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1952,6 +1986,7 @@ export function App() {
             manualRealAdapterSwitchReviews={manualRealAdapterSwitchReviews}
             realAdapterSwitchStateAuditPackages={realAdapterSwitchStateAuditPackages}
             controlledSwitchConfigurationRequests={controlledSwitchConfigurationRequests}
+            switchExecutionHandoffPackages={switchExecutionHandoffPackages}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1996,6 +2031,7 @@ export function App() {
             recordManualRealAdapterSwitchReview={recordManualRealAdapterSwitchReview}
             prepareRealAdapterSwitchStateAuditPackage={prepareRealAdapterSwitchStateAuditPackage}
             requestControlledSwitchConfiguration={requestControlledSwitchConfiguration}
+            prepareSwitchExecutionHandoffPackage={prepareSwitchExecutionHandoffPackage}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2523,6 +2559,7 @@ function AdminView({
   manualRealAdapterSwitchReviews,
   realAdapterSwitchStateAuditPackages,
   controlledSwitchConfigurationRequests,
+  switchExecutionHandoffPackages,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2567,6 +2604,7 @@ function AdminView({
   recordManualRealAdapterSwitchReview,
   prepareRealAdapterSwitchStateAuditPackage,
   requestControlledSwitchConfiguration,
+  prepareSwitchExecutionHandoffPackage,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2625,6 +2663,7 @@ function AdminView({
   manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
   realAdapterSwitchStateAuditPackages: RealAdapterSwitchStateAuditPackage[];
   controlledSwitchConfigurationRequests: ControlledSwitchConfigurationRequest[];
+  switchExecutionHandoffPackages: SwitchExecutionHandoffPackage[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2672,6 +2711,7 @@ function AdminView({
   recordManualRealAdapterSwitchReview: () => void;
   prepareRealAdapterSwitchStateAuditPackage: () => void;
   requestControlledSwitchConfiguration: () => void;
+  prepareSwitchExecutionHandoffPackage: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3000,6 +3040,12 @@ function AdminView({
             <ControlledSwitchConfigurationRequestPanel
               requests={controlledSwitchConfigurationRequests}
               requestControlledSwitchConfiguration={requestControlledSwitchConfiguration}
+            />
+          </Panel>
+          <Panel title="Switch execution handoff" action={`${switchExecutionHandoffPackages.length} packages`}>
+            <SwitchExecutionHandoffPackagePanel
+              packages={switchExecutionHandoffPackages}
+              prepareSwitchExecutionHandoffPackage={prepareSwitchExecutionHandoffPackage}
             />
           </Panel>
         </div>
@@ -4990,6 +5036,73 @@ function ControlledSwitchConfigurationRequestPanel({
             <span>Rollback timer: {latest.rollbackTimerMinutes} minutes</span>
             <span>Retention: {latest.retentionReference || "missing"}</span>
             <span>Switch review: {latest.switchReviewId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SwitchExecutionHandoffPackagePanel({
+  packages,
+  prepareSwitchExecutionHandoffPackage,
+}: {
+  packages: SwitchExecutionHandoffPackage[];
+  prepareSwitchExecutionHandoffPackage: () => void;
+}) {
+  const latest = packages[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ScrollText size={18} />
+        <div>
+          <strong>Switch execution handoff package</strong>
+          <span>Prepares operator run sheet, communications, observation, rollback-owner acceptance, and freeze proof.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareSwitchExecutionHandoffPackage}>
+          <ScrollText size={15} />
+          Prepare handoff package
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No switch execution handoff package has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.controlledSwitchRequestId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for switch execution handoff review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ScrollText} label="Run sheet" value={latest.operatorRunSheetReference || "missing"} passed={Boolean(latest.operatorRunSheetReference)} />
+            <CheckLine icon={Network} label="Comms" value={latest.communicationsPlanReference || "missing"} passed={Boolean(latest.communicationsPlanReference)} />
+            <CheckLine icon={Archive} label="Observation" value={latest.observationWindowReference || "missing"} passed={Boolean(latest.observationWindowReference)} />
+            <CheckLine icon={LockKeyhole} label="Switch" value="Out of band" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Switch handoff evidence</strong>
+            <span>Rollback owner: {latest.rollbackOwnerAcceptance || "missing"}</span>
+            <span>Freeze proof: {latest.executionFreezeProofReference || "missing"}</span>
+            <span>Audit package: {latest.auditPackageId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -8761,6 +8874,85 @@ function createMockControlledSwitchConfigurationRequest(
       `Kill switch: ${auditPackage.killSwitch.name}=${auditPackage.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: auditPackage.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockSwitchExecutionHandoffPackage(
+  switchRequest: ControlledSwitchConfigurationRequest,
+  actor: string
+): SwitchExecutionHandoffPackage {
+  const operatorRunSheetReference = `operator-run-sheet-${switchRequest.provider.toLowerCase()}.md`;
+  const communicationsPlanReference = `communications-plan-${switchRequest.provider.toLowerCase()}.md`;
+  const observationWindowReference = `observation-window-${switchRequest.provider.toLowerCase()}.md`;
+  const rollbackOwnerAcceptance = `rollback-owner-acceptance-${switchRequest.provider.toLowerCase()}.md`;
+  const executionFreezeProofReference = `execution-freeze-proof-${switchRequest.provider.toLowerCase()}.json`;
+  const checks = [
+    {
+      name: "Controlled switch request ready",
+      passed: switchRequest.status === "Ready for controlled switch request review",
+      detail: `${switchRequest.id} is ${switchRequest.status}.`,
+    },
+    {
+      name: "Operator run sheet linked",
+      passed: Boolean(operatorRunSheetReference),
+      detail: operatorRunSheetReference,
+    },
+    {
+      name: "Communications plan linked",
+      passed: Boolean(communicationsPlanReference),
+      detail: communicationsPlanReference,
+    },
+    {
+      name: "Observation window linked",
+      passed: Boolean(observationWindowReference),
+      detail: observationWindowReference,
+    },
+    {
+      name: "Rollback owner acceptance linked",
+      passed: Boolean(rollbackOwnerAcceptance),
+      detail: rollbackOwnerAcceptance,
+    },
+    {
+      name: "Execution freeze proof linked",
+      passed: Boolean(executionFreezeProofReference),
+      detail: executionFreezeProofReference,
+    },
+    {
+      name: "Prototype does not execute switch",
+      passed: !switchRequest.provisioningEnabled && !switchRequest.killSwitch.enabled,
+      detail: `${switchRequest.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `switch-execution-handoff-package-${switchRequest.provider.toLowerCase()}-${Date.now()}`,
+    provider: switchRequest.provider,
+    controlledSwitchRequestId: switchRequest.id,
+    auditPackageId: switchRequest.auditPackageId,
+    switchReviewId: switchRequest.switchReviewId,
+    activationId: switchRequest.activationId,
+    idempotencyKey: switchRequest.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for switch execution handoff review" : "Blocked",
+    requestedBy: actor,
+    operatorRunSheetReference,
+    communicationsPlanReference,
+    observationWindowReference,
+    rollbackOwnerAcceptance,
+    executionFreezeProofReference,
+    checks,
+    evidence: [
+      `Controlled switch request: ${switchRequest.id}.`,
+      `Audit package: ${switchRequest.auditPackageId}.`,
+      `Operator run sheet: ${operatorRunSheetReference}.`,
+      `Communications plan: ${communicationsPlanReference}.`,
+      `Observation window: ${observationWindowReference}.`,
+      `Rollback owner acceptance: ${rollbackOwnerAcceptance}.`,
+      `Execution freeze proof: ${executionFreezeProofReference}.`,
+      `Kill switch: ${switchRequest.killSwitch.name}=${switchRequest.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: switchRequest.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

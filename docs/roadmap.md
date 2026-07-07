@@ -391,10 +391,17 @@
 
 ## Phase 51 - Switch Execution Handoff Package (`v2.29.0-switch-execution-handoff-package`)
 
-- Add switch execution handoff packages linked to controlled switch requests - planned
-- Require operator run sheet, communications plan, observation window, rollback owner acceptance, and execution freeze proof - planned
-- Add Admin Operations switch handoff panel - planned
-- Keep handoff packages non-mutating and require out-of-band authorized operator execution - planned
+- Add switch execution handoff packages linked to controlled switch requests - done
+- Require operator run sheet, communications plan, observation window, rollback owner acceptance, and execution freeze proof - done
+- Add Admin Operations switch handoff panel - done
+- Keep handoff packages non-mutating and require out-of-band authorized operator execution - done
+
+## Phase 52 - Switch Execution Outcome Record (`v2.30.0-switch-execution-outcome-record`)
+
+- Add switch execution outcome records linked to handoff packages - planned
+- Require operator result, post-switch validation, rollback decision, incident bridge log, and audit sign-off - planned
+- Add Admin Operations switch outcome panel - planned
+- Keep outcome records evidence-only and record out-of-band execution only - planned
 
 ## Gated Promotion
 

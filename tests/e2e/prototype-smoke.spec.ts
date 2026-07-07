@@ -235,6 +235,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Controlled switch request", { exact: true })).toBeVisible();
   await expect(page.getByText("Controlled switch evidence")).toBeVisible();
   await expect(page.getByText("Prototype remains non-mutating")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Switch execution handoff" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare handoff package" }).click();
+  await expect(page.getByText("Switch execution handoff package")).toBeVisible();
+  await expect(page.getByText("Switch handoff evidence")).toBeVisible();
+  await expect(page.getByText("Prototype does not execute switch")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

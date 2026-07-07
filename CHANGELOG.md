@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.28.0-controlled-switch-configuration-request`.
+This project uses release tags for public milestones. The current release is `v2.29.0-switch-execution-handoff-package`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add switch execution handoff packages after controlled switch request evidence is complete.
+- Add switch execution outcome records after operator handoff packages are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.29.0-switch-execution-handoff-package] - 2026-07-07
+
+### Added
+
+- Switch execution handoff package records linked to controlled switch requests.
+- API endpoints for listing and recording switch handoff packages.
+- Admin Operations switch execution handoff panel.
+- Operator run sheet, communications plan, observation window, rollback-owner acceptance, and execution freeze proof checks.
+- Tests proving missing switch requests or incomplete handoff evidence block readiness.
+
+### Notes
+
+- Switch handoff packages are evidence-only.
+- The prototype does not execute real-adapter switch changes.
 
 ## [v2.28.0-controlled-switch-configuration-request] - 2026-07-07
 

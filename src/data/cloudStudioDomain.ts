@@ -1081,6 +1081,32 @@ export type ControlledSwitchConfigurationRequest = {
   createdAt: string;
 };
 
+export type SwitchExecutionHandoffPackage = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for switch execution handoff review";
+  requestedBy: string;
+  operatorRunSheetReference: string;
+  communicationsPlanReference: string;
+  observationWindowReference: string;
+  rollbackOwnerAcceptance: string;
+  executionFreezeProofReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ControlledSwitchConfigurationRequest["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

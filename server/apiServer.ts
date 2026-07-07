@@ -89,6 +89,10 @@ import {
   ControlledSwitchConfigurationRequestError,
 } from "./controlledSwitchConfigurationRequest";
 import {
+  createSwitchExecutionHandoffPackage,
+  SwitchExecutionHandoffPackageError,
+} from "./switchExecutionHandoffPackage";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -192,6 +196,7 @@ import type {
   CreateManualRealAdapterSwitchReviewRequest,
   CreateRealAdapterSwitchStateAuditPackageRequest,
   CreateControlledSwitchConfigurationRequestRequest,
+  CreateSwitchExecutionHandoffPackageRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -447,6 +452,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledSwitchConfigurationRequestError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof SwitchExecutionHandoffPackageError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -846,6 +861,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/controlled-switch-requests") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledSwitchConfigurationRequests });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-handoff-packages") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.switchExecutionHandoffPackages });
     return;
   }
 
@@ -1815,6 +1836,25 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: switchRequest });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/switch-handoff-packages") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateSwitchExecutionHandoffPackageRequest>(request);
+    const handoffPackage = createSwitchExecutionHandoffPackage(state, body, context.session.user);
+    state.switchExecutionHandoffPackages = [
+      handoffPackage,
+      ...state.switchExecutionHandoffPackages,
+    ];
+    addAuditEvent(state, "real-adapter.switch-handoff-package.recorded", context.session.user, handoffPackage.provider, {
+      controlledSwitchRequestId: handoffPackage.controlledSwitchRequestId,
+      idempotencyKey: handoffPackage.idempotencyKey,
+      status: handoffPackage.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: handoffPackage });
     return;
   }
 

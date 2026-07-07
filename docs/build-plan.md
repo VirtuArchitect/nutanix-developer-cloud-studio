@@ -440,6 +440,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready audit packages, operator confirmation, reviewer acceptance, dry-run proof, or retention references block readiness.
 - The prototype does not change adapter switch configuration.
 
+## Current Switch Execution Handoff Package Slice
+
+- API records switch execution handoff packages linked to controlled switch requests.
+- Handoff packages require operator run sheet, communications plan, observation window, rollback-owner acceptance, and execution freeze proof.
+- Admin Operations surfaces switch handoff readiness, evidence references, and blockers.
+- Missing ready switch requests, run sheets, communications plans, observation windows, rollback-owner acceptance, or freeze proof block readiness.
+- The prototype does not execute adapter switch changes.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

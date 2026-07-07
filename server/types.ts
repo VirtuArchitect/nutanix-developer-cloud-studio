@@ -46,6 +46,7 @@ import type {
   RealAdapterLabScopeActivation,
   RealAdapterSwitchStateAuditPackage,
   ReleaseEvidenceExportRecord,
+  SwitchExecutionHandoffPackage,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -107,6 +108,7 @@ export type ApiState = {
   manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
   realAdapterSwitchStateAuditPackages: RealAdapterSwitchStateAuditPackage[];
   controlledSwitchConfigurationRequests: ControlledSwitchConfigurationRequest[];
+  switchExecutionHandoffPackages: SwitchExecutionHandoffPackage[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -384,6 +386,16 @@ export type CreateControlledSwitchConfigurationRequestRequest = {
   rollbackTimerMinutes?: number;
   finalDryRunProofReference?: string;
   retentionReference?: string;
+};
+
+export type CreateSwitchExecutionHandoffPackageRequest = {
+  controlledSwitchRequestId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  operatorRunSheetReference?: string;
+  communicationsPlanReference?: string;
+  observationWindowReference?: string;
+  rollbackOwnerAcceptance?: string;
+  executionFreezeProofReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {
