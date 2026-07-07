@@ -286,6 +286,8 @@ Required role: `Developer` or `Platform Admin`.
 - `POST /api/controlled-lab-release/proposal-envelopes`
 - `GET /api/controlled-lab-release/proposal-exports`
 - `POST /api/controlled-lab-release/proposal-exports`
+- `GET /api/controlled-lab-release/execution-approvals`
+- `POST /api/controlled-lab-release/execution-approvals`
 
 The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter readiness against request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state. It records provider-specific blocked mutation operations and returns `provisioningEnabled=false`.
 
@@ -308,6 +310,8 @@ Lab evidence reviews record platform owner, security reviewer, and operations re
 Lab execution proposal envelopes roll up accepted lab evidence reviews with the underlying dry-run window, runbook, export, lab scope, rollback owner, audit export readiness, emergency contacts, and disabled adapter kill switch state. Missing or rejected evidence keeps envelopes blocked.
 
 Lab execution proposal exports prepare redacted JSON manifest metadata linked to proposal envelopes. They include proposal checks, evidence references, rollback owner, emergency contacts, disabled kill-switch state, and `provisioningEnabled=false`; they do not deliver provider data or enable adapter execution.
+
+Controlled lab execution approvals record final platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions against exported proposal manifests. Missing or rejected approvals keep the gate blocked, and the record remains evidence-only with real adapter execution disabled.
 
 Required role: `Platform Admin`.
 

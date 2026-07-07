@@ -45,6 +45,10 @@ import {
   createControlledLabReleaseRunbookRecord,
 } from "./controlledLabReleaseRunbook";
 import {
+  ControlledLabExecutionApprovalError,
+  createControlledLabExecutionApprovalGate,
+} from "./controlledLabExecutionApproval";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -137,6 +141,7 @@ import type {
   CreateLifecycleOperationRequest,
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
+  CreateControlledLabExecutionApprovalGateRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -282,6 +287,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabReleaseRunbookError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledLabExecutionApprovalError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -615,6 +630,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/proposal-exports") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.labExecutionProposalExports });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/execution-approvals") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledLabExecutionApprovals });
     return;
   }
 
@@ -1396,6 +1417,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: exportRecord });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/execution-approvals") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledLabExecutionApprovalGateRequest>(request);
+    const approval = createControlledLabExecutionApprovalGate(state, body, context.session.user);
+    state.controlledLabExecutionApprovals = [approval, ...state.controlledLabExecutionApprovals];
+    addAuditEvent(state, "controlled-lab-release.execution-approval.recorded", context.session.user, approval.provider, {
+      proposalExportId: approval.proposalExportId,
+      envelopeId: approval.envelopeId,
+      status: approval.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: approval });
     return;
   }
 

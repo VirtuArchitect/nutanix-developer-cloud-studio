@@ -811,6 +811,30 @@ export type LabExecutionProposalExportRecord = {
   createdAt: string;
 };
 
+export type ControlledLabExecutionApprovalGate = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  proposalExportId: string;
+  envelopeId: string;
+  status: "Blocked" | "Approved for controlled lab execution review";
+  requestedBy: string;
+  decisions: Array<{
+    role: "Platform owner" | "Security reviewer" | "Lab owner" | "Rollback owner" | "Executive sponsor";
+    reviewer: string;
+    decision: "Pending" | "Accepted" | "Rejected";
+    evidence: string;
+  }>;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: LabExecutionProposalExportRecord["manifest"]["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

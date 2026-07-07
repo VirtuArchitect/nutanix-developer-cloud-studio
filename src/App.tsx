@@ -33,6 +33,7 @@ import {
   type AhvCreateAdapterContractReview,
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
+  type ControlledLabExecutionApprovalGate,
   type ControlledLabDryRunWindowRecord,
   type ControlledLabReleaseRunbookRecord,
   type CredentialReferenceDiagnostic,
@@ -102,6 +103,7 @@ import {
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
+  createControlledLabExecutionApprovalViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createLabEvidenceReviewViaApi,
@@ -131,6 +133,7 @@ import {
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlPlaneJobsFromApi,
+  fetchControlledLabExecutionApprovalsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchControlledLabDryRunWindowsFromApi,
@@ -237,6 +240,7 @@ export function App() {
   const [labEvidenceReviews, setLabEvidenceReviews] = useState<LabEvidenceReviewRecord[]>([]);
   const [labExecutionProposalEnvelopes, setLabExecutionProposalEnvelopes] = useState<LabExecutionProposalEnvelope[]>([]);
   const [labExecutionProposalExports, setLabExecutionProposalExports] = useState<LabExecutionProposalExportRecord[]>([]);
+  const [controlledLabExecutionApprovals, setControlledLabExecutionApprovals] = useState<ControlledLabExecutionApprovalGate[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -325,6 +329,7 @@ export function App() {
             apiLabEvidenceReviews,
             apiLabExecutionProposalEnvelopes,
             apiLabExecutionProposalExports,
+            apiControlledLabExecutionApprovals,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -368,6 +373,7 @@ export function App() {
             fetchLabEvidenceReviewsFromApi(),
             fetchLabExecutionProposalEnvelopesFromApi(),
             fetchLabExecutionProposalExportsFromApi(),
+            fetchControlledLabExecutionApprovalsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -413,6 +419,7 @@ export function App() {
             setLabEvidenceReviews(apiLabEvidenceReviews);
             setLabExecutionProposalEnvelopes(apiLabExecutionProposalEnvelopes);
             setLabExecutionProposalExports(apiLabExecutionProposalExports);
+            setControlledLabExecutionApprovals(apiControlledLabExecutionApprovals);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -578,6 +585,7 @@ export function App() {
       apiLabEvidenceReviews,
       apiLabExecutionProposalEnvelopes,
       apiLabExecutionProposalExports,
+      apiControlledLabExecutionApprovals,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -621,6 +629,7 @@ export function App() {
       fetchLabEvidenceReviewsFromApi(),
       fetchLabExecutionProposalEnvelopesFromApi(),
       fetchLabExecutionProposalExportsFromApi(),
+      fetchControlledLabExecutionApprovalsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -665,6 +674,7 @@ export function App() {
     setLabEvidenceReviews(apiLabEvidenceReviews);
     setLabExecutionProposalEnvelopes(apiLabExecutionProposalEnvelopes);
     setLabExecutionProposalExports(apiLabExecutionProposalExports);
+    setControlledLabExecutionApprovals(apiControlledLabExecutionApprovals);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1361,6 +1371,25 @@ export function App() {
     ]);
   }
 
+  async function recordControlledLabExecutionApproval() {
+    const proposalExport = labExecutionProposalExports[0];
+    if (!proposalExport) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const approval = await createControlledLabExecutionApprovalViaApi({ proposalExportId: proposalExport.id });
+      await refreshApiState();
+      setControlledLabExecutionApprovals((current) => [approval, ...current.filter((item) => item.id !== approval.id)]);
+      return;
+    }
+
+    setControlledLabExecutionApprovals((current) => [
+      createMockControlledLabExecutionApproval(proposalExport, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1589,6 +1618,7 @@ export function App() {
             labEvidenceReviews={labEvidenceReviews}
             labExecutionProposalEnvelopes={labExecutionProposalEnvelopes}
             labExecutionProposalExports={labExecutionProposalExports}
+            controlledLabExecutionApprovals={controlledLabExecutionApprovals}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1622,6 +1652,7 @@ export function App() {
             reviewLabEvidencePackage={reviewLabEvidencePackage}
             reviewLabExecutionProposalEnvelope={reviewLabExecutionProposalEnvelope}
             prepareLabExecutionProposalExport={prepareLabExecutionProposalExport}
+            recordControlledLabExecutionApproval={recordControlledLabExecutionApproval}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2138,6 +2169,7 @@ function AdminView({
   labEvidenceReviews,
   labExecutionProposalEnvelopes,
   labExecutionProposalExports,
+  controlledLabExecutionApprovals,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2171,6 +2203,7 @@ function AdminView({
   reviewLabEvidencePackage,
   reviewLabExecutionProposalEnvelope,
   prepareLabExecutionProposalExport,
+  recordControlledLabExecutionApproval,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2218,6 +2251,7 @@ function AdminView({
   labEvidenceReviews: LabEvidenceReviewRecord[];
   labExecutionProposalEnvelopes: LabExecutionProposalEnvelope[];
   labExecutionProposalExports: LabExecutionProposalExportRecord[];
+  controlledLabExecutionApprovals: ControlledLabExecutionApprovalGate[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2254,6 +2288,7 @@ function AdminView({
   reviewLabEvidencePackage: () => void;
   reviewLabExecutionProposalEnvelope: () => void;
   prepareLabExecutionProposalExport: () => void;
+  recordControlledLabExecutionApproval: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2516,6 +2551,12 @@ function AdminView({
             <LabExecutionProposalExportPanel
               exports={labExecutionProposalExports}
               prepareLabExecutionProposalExport={prepareLabExecutionProposalExport}
+            />
+          </Panel>
+          <Panel title="Controlled lab execution approvals" action={`${controlledLabExecutionApprovals.length} approvals`}>
+            <ControlledLabExecutionApprovalPanel
+              approvals={controlledLabExecutionApprovals}
+              recordControlledLabExecutionApproval={recordControlledLabExecutionApproval}
             />
           </Panel>
         </div>
@@ -3754,6 +3795,78 @@ function LabExecutionProposalExportPanel({
             <strong>Redaction boundary</strong>
             <span>{latest.redactionBoundary}</span>
             <span>{latest.storageBoundary}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledLabExecutionApprovalPanel({
+  approvals,
+  recordControlledLabExecutionApproval,
+}: {
+  approvals: ControlledLabExecutionApprovalGate[];
+  recordControlledLabExecutionApproval: () => void;
+}) {
+  const latest = approvals[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Controlled execution approval gate</strong>
+          <span>Records final platform, security, lab, rollback, and sponsor approvals before any future controlled lab execution phase.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordControlledLabExecutionApproval}>
+          <ShieldCheck size={15} />
+          Record approval gate
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled lab execution approval gate has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.proposalExportId}</span>
+            </div>
+            <span className={`status ${latest.status === "Approved for controlled lab execution review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Archive} label="Proposal export" value={latest.proposalExportId} passed />
+            <CheckLine icon={UserRound} label="Approvals" value={`${latest.decisions.filter((item) => item.decision === "Accepted").length}/${latest.decisions.length} accepted`} passed={latest.decisions.every((item) => item.decision === "Accepted")} />
+            <CheckLine icon={ShieldCheck} label="Evidence" value={`${latest.decisions.filter((item) => !/required/i.test(item.evidence)).length}/${latest.decisions.length} recorded`} passed={latest.decisions.every((item) => !/required/i.test(item.evidence))} />
+            <CheckLine icon={LockKeyhole} label="Execution" value="Disabled" passed={!latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Approval decisions</strong>
+            {latest.decisions.map((decision) => (
+              <span key={decision.role}>{decision.role}: {decision.decision} ({decision.reviewer})</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Approval evidence</strong>
+            {latest.evidence.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -6625,6 +6738,100 @@ function createMockLabExecutionProposalExportRecord(
     storageBoundary: "Export record is metadata only; configure external evidence storage before controlled lab execution proposals.",
     provisioningEnabled: false,
     createdAt,
+  };
+}
+
+function createMockControlledLabExecutionApproval(
+  proposalExport: LabExecutionProposalExportRecord,
+  actor: string
+): ControlledLabExecutionApprovalGate {
+  const decisions: ControlledLabExecutionApprovalGate["decisions"] = [
+    {
+      role: "Platform owner",
+      reviewer: "Cloud Platform Owner",
+      decision: "Pending",
+      evidence: "Platform owner execution approval evidence required.",
+    },
+    {
+      role: "Security reviewer",
+      reviewer: "Security Reviewer",
+      decision: "Pending",
+      evidence: "Security execution approval evidence required.",
+    },
+    {
+      role: "Lab owner",
+      reviewer: "Lab Owner",
+      decision: "Pending",
+      evidence: "Lab owner execution approval evidence required.",
+    },
+    {
+      role: "Rollback owner",
+      reviewer: proposalExport.manifest.rollbackOwner || "Rollback Owner",
+      decision: "Pending",
+      evidence: "Rollback owner standby evidence required.",
+    },
+    {
+      role: "Executive sponsor",
+      reviewer: "Executive Sponsor",
+      decision: "Pending",
+      evidence: "Executive sponsor approval evidence required.",
+    },
+  ];
+  const acceptedDecisions = decisions.filter((decision) => decision.decision === "Accepted").length;
+  const evidenceComplete = decisions.filter((decision) => !/required/i.test(decision.evidence)).length;
+  const checks = [
+    {
+      name: "Proposal export linked",
+      passed: true,
+      detail: `${proposalExport.id} is linked.`,
+    },
+    {
+      name: "Proposal envelope ready",
+      passed: proposalExport.manifest.envelopeStatus === "Ready for proposal review",
+      detail: `${proposalExport.manifest.envelopeId} is ${proposalExport.manifest.envelopeStatus}.`,
+    },
+    {
+      name: "All approvers accepted",
+      passed: acceptedDecisions === decisions.length,
+      detail: `${acceptedDecisions}/${decisions.length} approvals accepted.`,
+    },
+    {
+      name: "Approval evidence complete",
+      passed: evidenceComplete === decisions.length,
+      detail: `${evidenceComplete}/${decisions.length} evidence references recorded.`,
+    },
+    {
+      name: "Emergency contacts exported",
+      passed: proposalExport.manifest.emergencyStopContacts.length >= 2,
+      detail: `${proposalExport.manifest.emergencyStopContacts.length} emergency stop contact(s) exported.`,
+    },
+    {
+      name: "Real adapter execution disabled",
+      passed: !proposalExport.manifest.killSwitch.enabled,
+      detail: `${proposalExport.manifest.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `controlled-lab-execution-approval-${proposalExport.provider.toLowerCase()}-${Date.now()}`,
+    provider: proposalExport.provider,
+    proposalExportId: proposalExport.id,
+    envelopeId: proposalExport.envelopeId,
+    status: checks.every((check) => check.passed) ? "Approved for controlled lab execution review" : "Blocked",
+    requestedBy: actor,
+    decisions,
+    checks,
+    evidence: [
+      `Proposal export: ${proposalExport.id}.`,
+      `Proposal envelope: ${proposalExport.envelopeId}.`,
+      `Review: ${proposalExport.manifest.reviewId}.`,
+      `Window: ${proposalExport.manifest.windowId}.`,
+      `Rollback owner: ${proposalExport.manifest.rollbackOwner || "missing"}.`,
+      `Kill switch: ${proposalExport.manifest.killSwitch.name}=${proposalExport.manifest.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: proposalExport.manifest.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
   };
 }
 

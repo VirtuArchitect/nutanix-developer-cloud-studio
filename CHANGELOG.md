@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.17.0-lab-execution-proposal-export`.
+This project uses release tags for public milestones. The current release is `v2.18.0-controlled-lab-execution-approval-gate`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add controlled lab execution proposal approval records before any future live-lab execution phase.
+- Add execution runbook freeze and rehearsal packets before any future live-lab execution phase.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.18.0-controlled-lab-execution-approval-gate] - 2026-07-07
+
+### Added
+
+- Controlled lab execution approval records linked to proposal exports.
+- API endpoints for listing and recording execution approval gates.
+- Admin Operations approval gate panel.
+- Platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions.
+- Tests proving missing approvals block advancement and real adapter execution remains disabled.
+
+### Notes
+
+- Approval gates are evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.17.0-lab-execution-proposal-export] - 2026-07-07
 

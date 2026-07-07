@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.18.0-controlled-lab-execution-approval-gate`.
+- Added controlled lab execution approval records linked to proposal exports.
+- Added API endpoints for execution approval gates.
+- Added Admin Operations approval gate panel.
+- Added tests proving missing approvals block advancement and execution remains disabled.
+- Planned `v2.19.0-controlled-lab-execution-rehearsal-packet` for frozen rehearsal evidence packets before any future live-lab adapter operation.
 - Released `v2.17.0-lab-execution-proposal-export`.
 - Added lab execution proposal export records linked to proposal envelopes.
 - Added API endpoints for proposal exports.
 - Added Admin Operations proposal export manifest panel.
 - Added tests proving proposal exports contain references and metadata only.
-- Planned `v2.18.0-controlled-lab-execution-approval-gate` for final human approvals before any future controlled lab execution phase.
 - Released `v2.16.0-lab-execution-proposal-envelope`.
 - Added lab execution proposal envelope records linked to lab evidence reviews.
 - Added API endpoints for lab execution proposal envelopes.

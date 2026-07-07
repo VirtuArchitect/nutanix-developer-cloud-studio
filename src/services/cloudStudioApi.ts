@@ -5,6 +5,7 @@ import type {
   AhvCreateAdapterContractReview,
   AuditExportRecord,
   AuditRetentionDiagnostics,
+  ControlledLabExecutionApprovalGate,
   ControlledLabDryRunWindowRecord,
   ControlledLabReleaseRunbookRecord,
   CredentialReferenceDiagnostic,
@@ -316,6 +317,10 @@ export async function fetchLabExecutionProposalExportsFromApi() {
   return fetchJson<LabExecutionProposalExportRecord[]>("/api/controlled-lab-release/proposal-exports");
 }
 
+export async function fetchControlledLabExecutionApprovalsFromApi() {
+  return fetchJson<ControlledLabExecutionApprovalGate[]>("/api/controlled-lab-release/execution-approvals");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -497,6 +502,21 @@ export async function createLabExecutionProposalExportViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<LabExecutionProposalExportRecord>("/api/controlled-lab-release/proposal-exports", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createControlledLabExecutionApprovalViaApi(payload: {
+  proposalExportId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  platformOwnerDecision?: "Accepted" | "Rejected";
+  securityReviewerDecision?: "Accepted" | "Rejected";
+  labOwnerDecision?: "Accepted" | "Rejected";
+  rollbackOwnerDecision?: "Accepted" | "Rejected";
+  executiveSponsorDecision?: "Accepted" | "Rejected";
+}) {
+  return fetchJson<ControlledLabExecutionApprovalGate>("/api/controlled-lab-release/execution-approvals", {
     method: "POST",
     body: JSON.stringify(payload),
   });

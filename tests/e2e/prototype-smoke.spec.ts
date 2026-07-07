@@ -180,6 +180,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Prepare proposal export" }).click();
   await expect(page.getByText("Proposal export manifest")).toBeVisible();
   await expect(page.getByText("Proposal export evidence", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Controlled lab execution approvals" })).toBeVisible();
+  await page.getByRole("button", { name: "Record approval gate" }).click();
+  await expect(page.getByText("Controlled execution approval gate")).toBeVisible();
+  await expect(page.getByText("Approval decisions")).toBeVisible();
+  await expect(page.getByText("All approvers accepted")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

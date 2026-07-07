@@ -5,6 +5,7 @@ import type {
   AhvCreateAdapterContractReview,
   ControlledProvisioningDecision,
   ControlledLabReleaseRunbookRecord,
+  ControlledLabExecutionApprovalGate,
   ControlledLabDryRunWindowRecord,
   ControlledCreateAuthorizationEnvelope,
   ControlledProvisioningGate,
@@ -85,6 +86,7 @@ export type ApiState = {
   labEvidenceReviews: LabEvidenceReviewRecord[];
   labExecutionProposalEnvelopes: LabExecutionProposalEnvelope[];
   labExecutionProposalExports: LabExecutionProposalExportRecord[];
+  controlledLabExecutionApprovals: ControlledLabExecutionApprovalGate[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -254,6 +256,21 @@ export type CreateLabExecutionProposalEnvelopeRequest = {
 export type CreateLabExecutionProposalExportRequest = {
   envelopeId?: string;
   provider?: ProviderReleaseGateRecord["provider"];
+};
+
+export type CreateControlledLabExecutionApprovalGateRequest = {
+  proposalExportId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  platformOwnerDecision?: "Accepted" | "Rejected";
+  securityReviewerDecision?: "Accepted" | "Rejected";
+  labOwnerDecision?: "Accepted" | "Rejected";
+  rollbackOwnerDecision?: "Accepted" | "Rejected";
+  executiveSponsorDecision?: "Accepted" | "Rejected";
+  platformOwnerEvidence?: string;
+  securityReviewerEvidence?: string;
+  labOwnerEvidence?: string;
+  rollbackOwnerEvidence?: string;
+  executiveSponsorEvidence?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

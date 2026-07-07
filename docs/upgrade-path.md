@@ -669,6 +669,23 @@ Exit gate:
 - Approval records remain evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.19.0-controlled-lab-execution-rehearsal-packet
+
+Goal: freeze the approved execution evidence into a rehearsal packet before any future live-lab adapter operation.
+
+Build:
+
+- Controlled lab execution rehearsal packet records linked to approved execution gates.
+- Frozen references for runbook, rollback owner, emergency contacts, stop conditions, proposal export, audit export, and approval evidence.
+- Admin Operations rehearsal packet panel with blockers and evidence references.
+- Tests proving missing approval gates or incomplete evidence block packet readiness.
+
+Exit gate:
+
+- Rehearsal packet APIs and UI are tested.
+- Rehearsal packets remain evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

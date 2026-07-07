@@ -5,6 +5,7 @@ import {
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
+  createControlledLabExecutionApprovalViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createLabEvidenceReviewViaApi,
@@ -32,6 +33,7 @@ import {
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
+  fetchControlledLabExecutionApprovalsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
   fetchControlledLabDryRunWindowsFromApi,
@@ -439,6 +441,8 @@ describe("cloudStudioApi", () => {
     await createLabExecutionProposalEnvelopeViaApi({ reviewId: "lab-evidence-review-ndb-1" });
     await fetchLabExecutionProposalExportsFromApi();
     await createLabExecutionProposalExportViaApi({ envelopeId: "lab-execution-proposal-ndb-1" });
+    await fetchControlledLabExecutionApprovalsFromApi();
+    await createControlledLabExecutionApprovalViaApi({ proposalExportId: "lab-execution-proposal-export-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -475,6 +479,12 @@ describe("cloudStudioApi", () => {
       12,
       "/api/controlled-lab-release/proposal-exports",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("lab-execution-proposal-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(13, "/api/controlled-lab-release/execution-approvals", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      14,
+      "/api/controlled-lab-release/execution-approvals",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("lab-execution-proposal-export-ndb-1") })
     );
   });
 

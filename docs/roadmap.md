@@ -314,10 +314,17 @@
 
 ## Phase 40 - Controlled Lab Execution Approval Gate (`v2.18.0-controlled-lab-execution-approval-gate`)
 
-- Add approval records linked to proposal exports - planned
-- Track platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions - planned
-- Add Admin Operations approval gate panel - planned
-- Keep approvals evidence-only and real adapter execution disabled - planned
+- Add approval records linked to proposal exports - done
+- Track platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions - done
+- Add Admin Operations approval gate panel - done
+- Keep approvals evidence-only and real adapter execution disabled - done
+
+## Phase 41 - Controlled Lab Execution Rehearsal Packet (`v2.19.0-controlled-lab-execution-rehearsal-packet`)
+
+- Add rehearsal packet records linked to approved execution gates - planned
+- Freeze runbook, rollback, stop condition, contact, and evidence export references - planned
+- Add Admin Operations rehearsal packet panel - planned
+- Keep packets evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

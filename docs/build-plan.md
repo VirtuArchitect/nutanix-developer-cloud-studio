@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.18.0-controlled-lab-execution-approval-gate` adds evidence-only approval gates linked to proposal exports and an Admin Operations approval panel.
 - `v2.17.0-lab-execution-proposal-export` adds metadata-only proposal export manifests linked to lab execution proposal envelopes and an Admin Operations export history panel.
 - `v2.16.0-lab-execution-proposal-envelope` adds evidence-only execution proposal envelopes linked to lab evidence reviews and an Admin Operations proposal readiness panel.
 - `v2.15.0-lab-evidence-review-queue` adds evidence-only human review records for lab window evidence exports and an Admin Operations review queue.
@@ -341,6 +342,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Manifests include proposal check counts, evidence references, rollback owner, emergency contacts, kill switch state, checksum, and disabled execution state.
 - Admin Operations surfaces proposal export history and redaction/storage boundaries.
 - Exports contain references and metadata only.
+- Real adapter execution remains disabled.
+
+## Current Controlled Lab Execution Approval Gate Slice
+
+- API records controlled lab execution approval gates linked to proposal exports.
+- Gates track platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions.
+- Admin Operations surfaces approval decisions, blockers, evidence references, and disabled execution state.
+- Missing or rejected approvals block advancement.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack
