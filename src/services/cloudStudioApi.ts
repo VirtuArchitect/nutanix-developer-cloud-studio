@@ -49,6 +49,7 @@ import type {
   ProductionCabDecisionRecord,
   ProductionImplementationHoldRecord,
   ProductionOperatorAssignmentRecord,
+  ProductionExecutionReadinessRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -419,6 +420,10 @@ export async function fetchProductionImplementationHoldRecordsFromApi() {
 
 export async function fetchProductionOperatorAssignmentRecordsFromApi() {
   return fetchJson<ProductionOperatorAssignmentRecord[]>("/api/real-adapter/production-operator-assignment-records");
+}
+
+export async function fetchProductionExecutionReadinessRecordsFromApi() {
+  return fetchJson<ProductionExecutionReadinessRecord[]>("/api/real-adapter/production-execution-readiness-records");
 }
 
 export async function fetchProductionReadinessReviewsFromApi() {
@@ -818,6 +823,16 @@ export async function createProductionOperatorAssignmentRecordViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ProductionOperatorAssignmentRecord>("/api/real-adapter/production-operator-assignment-records", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionExecutionReadinessRecordViaApi(payload: {
+  operatorAssignmentRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionReadinessRecord>("/api/real-adapter/production-execution-readiness-records", {
     method: "POST",
     body: JSON.stringify(payload),
   });

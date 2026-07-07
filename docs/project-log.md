@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.39.0-production-execution-readiness-record`.
+- Added production execution readiness records linked to production operator assignment records.
+- Added API endpoints for production execution readiness records.
+- Added Admin Operations production execution readiness panel.
+- Added tests proving missing operator assignment records or incomplete execution readiness evidence block readiness.
+- Planned `v2.40.0-production-execution-authorization-record` for evidence-only execution authorization records.
 - Released `v2.38.0-production-operator-assignment-record`.
 - Added production operator assignment records linked to production implementation hold records.
 - Added API endpoints for production operator assignment records.

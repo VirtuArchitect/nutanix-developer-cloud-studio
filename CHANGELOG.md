@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.38.0-production-operator-assignment-record`.
+This project uses release tags for public milestones. The current release is `v2.39.0-production-execution-readiness-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution readiness records after operator assignment records are complete.
+- Add production execution authorization records after execution readiness records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.39.0-production-execution-readiness-record] - 2026-07-07
+
+### Added
+
+- Production execution readiness records linked to production operator assignment records.
+- API endpoints for listing and recording production execution readiness records.
+- Admin Operations production execution readiness panel.
+- Execution owner, pre-execution checklist, rollback bridge, monitoring observer, and implementation timer checks.
+- Tests proving missing operator assignment records or incomplete execution readiness evidence block readiness.
+
+### Notes
+
+- Production execution readiness records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.38.0-production-operator-assignment-record] - 2026-07-07
 

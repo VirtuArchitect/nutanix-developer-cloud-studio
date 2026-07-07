@@ -112,6 +112,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Production CAB decision records: CAB decision, decision authority, condition list, rollback approval, and decision minutes linked to CAB handoff packets
 - Production implementation hold records: implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment linked to CAB decision records
 - Production operator assignment records: primary operator, secondary operator, execution channel, rollback operator, and privileged access confirmation linked to implementation hold records
+- Production execution readiness records: execution owner, pre-execution checklist, rollback bridge, monitoring observer, and implementation timer linked to operator assignment records
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -152,7 +153,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Production CAB decision record API and Admin Operations CAB decision UI
 - Production implementation hold record API and Admin Operations implementation hold UI
 - Production operator assignment record API and Admin Operations operator assignment UI
-- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, promotion dossiers, production authorization packets, production change freeze records, CAB handoff packets, CAB decision records, implementation hold records, and operator assignment records are evidence-only records; the prototype does not change switch configuration or promote adapters.
+- Production execution readiness record API and Admin Operations execution readiness UI
+- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, promotion dossiers, production authorization packets, production change freeze records, CAB handoff packets, CAB decision records, implementation hold records, operator assignment records, and execution readiness records are evidence-only records; the prototype does not change switch configuration or promote adapters.
 - Admin template governance edits persisted in browser local storage
 - Timed mock provisioning state transitions exposed through the provisioning service
 - Template details view for golden-path outcomes and readiness notes

@@ -470,6 +470,15 @@ Production operator assignment records capture named execution ownership after i
 
 Required role: `Platform Admin`.
 
+### Production Execution Readiness Records
+
+- `GET /api/real-adapter/production-execution-readiness-records`
+- `POST /api/real-adapter/production-execution-readiness-records`
+
+Production execution readiness records capture final execution readiness evidence after operator assignment and before any future production execution authorization step. Records require a ready operator assignment record, execution owner, pre-execution checklist, rollback bridge, monitoring observer, implementation timer, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

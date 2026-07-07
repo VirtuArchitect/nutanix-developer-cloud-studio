@@ -461,10 +461,17 @@
 
 ## Phase 61 - Production Execution Readiness Record (`v2.39.0-production-execution-readiness-record`)
 
-- Add production execution readiness records linked to operator assignment records - planned
-- Require execution owner, pre-execution checklist, rollback bridge, monitoring observer, and implementation timer - planned
-- Add Admin Operations execution readiness panel - planned
-- Keep execution readiness records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution readiness records linked to operator assignment records - done
+- Require execution owner, pre-execution checklist, rollback bridge, monitoring observer, and implementation timer - done
+- Add Admin Operations execution readiness panel - done
+- Keep execution readiness records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 62 - Production Execution Authorization Record (`v2.40.0-production-execution-authorization-record`)
+
+- Add production execution authorization records linked to execution readiness records - planned
+- Require authorization authority, final go/no-go decision, rollback bridge confirmation, monitoring bridge confirmation, and emergency stop authority - planned
+- Add Admin Operations execution authorization panel - planned
+- Keep execution authorization records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

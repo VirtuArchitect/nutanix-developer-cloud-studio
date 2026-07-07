@@ -39,6 +39,7 @@ import {
   createProductionCabDecisionRecordViaApi,
   createProductionImplementationHoldRecordViaApi,
   createProductionOperatorAssignmentRecordViaApi,
+  createProductionExecutionReadinessRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -95,6 +96,7 @@ import {
   fetchProductionCabDecisionRecordsFromApi,
   fetchProductionImplementationHoldRecordsFromApi,
   fetchProductionOperatorAssignmentRecordsFromApi,
+  fetchProductionExecutionReadinessRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -540,6 +542,10 @@ describe("cloudStudioApi", () => {
     await createProductionOperatorAssignmentRecordViaApi({
       implementationHoldRecordId: "production-implementation-hold-record-ndb-1",
     });
+    await fetchProductionExecutionReadinessRecordsFromApi();
+    await createProductionExecutionReadinessRecordViaApi({
+      operatorAssignmentRecordId: "production-operator-assignment-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -712,6 +718,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-implementation-hold-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      55,
+      "/api/real-adapter/production-execution-readiness-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      56,
+      "/api/real-adapter/production-execution-readiness-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-operator-assignment-record-ndb-1"),
       })
     );
   });

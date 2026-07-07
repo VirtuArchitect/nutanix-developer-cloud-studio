@@ -1026,6 +1026,23 @@ Exit gate:
 - Execution readiness records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.40.0-production-execution-authorization-record
+
+Goal: record production execution authorization after execution readiness without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production execution authorization records linked to execution readiness records.
+- Authorization authority, final go/no-go decision, rollback bridge confirmation, monitoring bridge confirmation, and emergency stop authority checks.
+- Admin Operations execution authorization panel with blockers and evidence references.
+- Tests proving missing ready execution readiness records, authorization authorities, final decisions, rollback bridge confirmations, monitoring bridge confirmations, or emergency stop authorities block execution authorization.
+
+Exit gate:
+
+- Production execution authorization APIs and UI are tested.
+- Execution authorization records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:
