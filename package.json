@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.41.0-production-change-ticket-lock-record",
+  "version": "2.42.0-production-final-execution-packet-record",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

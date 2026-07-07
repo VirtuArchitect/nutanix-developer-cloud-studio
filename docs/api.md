@@ -497,6 +497,15 @@ Production change ticket lock records capture locked change evidence after execu
 
 Required role: `Platform Admin`.
 
+### Production Final Execution Packet Records
+
+- `GET /api/real-adapter/production-final-execution-packet-records`
+- `POST /api/real-adapter/production-final-execution-packet-records`
+
+Production final execution packet records capture final packet evidence after change ticket lock and before any future execution hold-point phase. Records require a ready change ticket lock record, final packet manifest, operator run sheet, communications proof, observation window, final rollback standby confirmation, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

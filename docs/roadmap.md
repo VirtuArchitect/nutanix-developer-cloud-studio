@@ -482,10 +482,17 @@
 
 ## Phase 64 - Production Final Execution Packet Record (`v2.42.0-production-final-execution-packet-record`)
 
-- Add production final execution packet records linked to change ticket lock records - planned
-- Require final packet manifest, operator run sheet, communications proof, observation window, and final rollback standby confirmation - planned
-- Add Admin Operations final execution packet panel - planned
-- Keep final execution packet records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production final execution packet records linked to change ticket lock records - done
+- Require final packet manifest, operator run sheet, communications proof, observation window, and final rollback standby confirmation - done
+- Add Admin Operations final execution packet panel - done
+- Keep final execution packet records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 65 - Production Execution Hold-Point Record (`v2.43.0-production-execution-hold-point-record`)
+
+- Add production execution hold-point records linked to final execution packet records - planned
+- Require hold-point owner, final stop/go checkpoint, rollback timer checkpoint, monitoring readiness checkpoint, and incident bridge checkpoint - planned
+- Add Admin Operations execution hold-point panel - planned
+- Keep execution hold-point records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

@@ -141,6 +141,10 @@ import {
   ProductionChangeTicketLockRecordError,
 } from "./productionChangeTicketLockRecord";
 import {
+  createProductionFinalExecutionPacketRecord,
+  ProductionFinalExecutionPacketRecordError,
+} from "./productionFinalExecutionPacketRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -257,6 +261,7 @@ import type {
   CreateProductionExecutionReadinessRecordRequest,
   CreateProductionExecutionAuthorizationRecordRequest,
   CreateProductionChangeTicketLockRecordRequest,
+  CreateProductionFinalExecutionPacketRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -642,6 +647,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionChangeTicketLockRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionFinalExecutionPacketRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1119,6 +1134,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/production-change-ticket-lock-records") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionChangeTicketLockRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/production-final-execution-packet-records") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionFinalExecutionPacketRecords });
     return;
   }
 
@@ -2302,6 +2323,22 @@ async function routeApi(
     state.productionChangeTicketLockRecords = [record, ...state.productionChangeTicketLockRecords];
     addAuditEvent(state, "real-adapter.production-change-ticket-lock.recorded", context.session.user, record.provider, {
       executionAuthorizationRecordId: record.executionAuthorizationRecordId,
+      idempotencyKey: record.idempotencyKey,
+      status: record.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/production-final-execution-packet-records") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionFinalExecutionPacketRecordRequest>(request);
+    const record = createProductionFinalExecutionPacketRecord(state, body, context.session.user);
+    state.productionFinalExecutionPacketRecords = [record, ...state.productionFinalExecutionPacketRecords];
+    addAuditEvent(state, "real-adapter.production-final-execution-packet.recorded", context.session.user, record.provider, {
+      changeTicketLockRecordId: record.changeTicketLockRecordId,
       idempotencyKey: record.idempotencyKey,
       status: record.status,
       provisioningEnabled: false,

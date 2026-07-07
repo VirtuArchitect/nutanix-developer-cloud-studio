@@ -59,6 +59,7 @@ import type {
   ProductionExecutionReadinessRecord,
   ProductionExecutionAuthorizationRecord,
   ProductionChangeTicketLockRecord,
+  ProductionFinalExecutionPacketRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -133,6 +134,7 @@ export type ApiState = {
   productionExecutionReadinessRecords: ProductionExecutionReadinessRecord[];
   productionExecutionAuthorizationRecords: ProductionExecutionAuthorizationRecord[];
   productionChangeTicketLockRecords: ProductionChangeTicketLockRecord[];
+  productionFinalExecutionPacketRecords: ProductionFinalExecutionPacketRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -540,6 +542,16 @@ export type CreateProductionChangeTicketLockRecordRequest = {
   approverRosterLockReference?: string;
   rollbackBridgeLockReference?: string;
   monitoringBridgeLockReference?: string;
+};
+
+export type CreateProductionFinalExecutionPacketRecordRequest = {
+  changeTicketLockRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  finalPacketManifestReference?: string;
+  operatorRunSheetReference?: string;
+  communicationsProofReference?: string;
+  observationWindowReference?: string;
+  finalRollbackStandbyConfirmation?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {
