@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.54.0-production-execution-final-turnover-record` adds evidence-only final turnover records linked to service acceptance records and an Admin Operations final turnover panel.
 - `v2.53.0-production-execution-service-acceptance-record` adds evidence-only service acceptance records linked to support readiness records and an Admin Operations service acceptance panel.
 - `v2.52.0-production-execution-support-readiness-record` adds evidence-only support readiness records linked to operations handovers and an Admin Operations support readiness panel.
 - `v2.51.0-production-execution-operations-handover-record` adds evidence-only operations handover records linked to completion dossiers and an Admin Operations operations handover panel.

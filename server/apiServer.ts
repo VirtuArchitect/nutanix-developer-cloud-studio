@@ -189,6 +189,10 @@ import {
   ProductionExecutionServiceAcceptanceRecordError,
 } from "./productionExecutionServiceAcceptanceRecord";
 import {
+  createProductionExecutionFinalTurnoverRecord,
+  ProductionExecutionFinalTurnoverRecordError,
+} from "./productionExecutionFinalTurnoverRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -317,6 +321,7 @@ import type {
   CreateProductionExecutionOperationsHandoverRecordRequest,
   CreateProductionExecutionSupportReadinessRecordRequest,
   CreateProductionExecutionServiceAcceptanceRecordRequest,
+  CreateProductionExecutionFinalTurnoverRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -822,6 +827,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionServiceAcceptanceRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionFinalTurnoverRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1401,6 +1416,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionServiceAcceptanceRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-final-turnover-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionFinalTurnoverRecords });
     return;
   }
 
@@ -2892,6 +2916,34 @@ async function routeApi(
       record.provider,
       {
         supportReadinessRecordId: record.supportReadinessRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-final-turnover-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionFinalTurnoverRecordRequest>(request);
+    const record = createProductionExecutionFinalTurnoverRecord(state, body, context.session.user);
+    state.productionExecutionFinalTurnoverRecords = [
+      record,
+      ...state.productionExecutionFinalTurnoverRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-final-turnover.recorded",
+      context.session.user,
+      record.provider,
+      {
+        serviceAcceptanceRecordId: record.serviceAcceptanceRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

@@ -1971,6 +1971,53 @@ export type ProductionExecutionServiceAcceptanceRecord = {
   createdAt: string;
 };
 
+export type ProductionExecutionFinalTurnoverRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  serviceAcceptanceRecordId: string;
+  supportReadinessRecordId: string;
+  operationsHandoverRecordId: string;
+  completionDossierRecordId: string;
+  finalArchiveCertificationRecordId: string;
+  retentionAttestationRecordId: string;
+  archivalHandoffRecordId: string;
+  closurePacketRecordId: string;
+  closureAuthorizationRecordId: string;
+  outcomeAuthorizationRecordId: string;
+  executionHoldPointRecordId: string;
+  finalExecutionPacketRecordId: string;
+  changeTicketLockRecordId: string;
+  executionAuthorizationRecordId: string;
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production execution final turnover review";
+  requestedBy: string;
+  turnoverOwner: string;
+  finalServiceCatalogReference: string;
+  ownershipTransferProofReference: string;
+  executiveClosureNoteReference: string;
+  postImplementationReviewScheduleReference: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionServiceAcceptanceRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

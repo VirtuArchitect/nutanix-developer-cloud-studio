@@ -1124,6 +1124,18 @@ describe("api server", () => {
     const productionExecutionServiceAcceptanceRecords = await requestJson(
       "/api/real-adapter/production-execution-service-acceptance-records"
     );
+    const productionExecutionFinalTurnoverRecord = await requestJson(
+      "/api/real-adapter/production-execution-final-turnover-records",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          serviceAcceptanceRecordId: productionExecutionServiceAcceptanceRecord.data.id,
+        }),
+      }
+    );
+    const productionExecutionFinalTurnoverRecords = await requestJson(
+      "/api/real-adapter/production-execution-final-turnover-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1912,6 +1924,23 @@ describe("api server", () => {
     expect(productionExecutionServiceAcceptanceRecords.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: productionExecutionServiceAcceptanceRecord.data.id })])
     );
+    expect(productionExecutionFinalTurnoverRecord.data).toMatchObject({
+      provider: "NDB",
+      serviceAcceptanceRecordId: productionExecutionServiceAcceptanceRecord.data.id,
+      supportReadinessRecordId: productionExecutionSupportReadinessRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionExecutionFinalTurnoverRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Service acceptance ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not execute adapter", passed: true }),
+      ])
+    );
+    expect(productionExecutionFinalTurnoverRecords.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: productionExecutionFinalTurnoverRecord.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1988,6 +2017,10 @@ describe("api server", () => {
         }),
         expect.objectContaining({
           action: "real-adapter.production-execution-service-acceptance.recorded",
+          target: "NDB",
+        }),
+        expect.objectContaining({
+          action: "real-adapter.production-execution-final-turnover.recorded",
           target: "NDB",
         }),
       ])

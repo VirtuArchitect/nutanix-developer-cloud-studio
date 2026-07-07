@@ -605,6 +605,15 @@ Production execution service acceptance records capture service acceptance evide
 
 Required role: `Platform Admin`.
 
+### Production Execution Final Turnover Records
+
+- `GET /api/real-adapter/production-execution-final-turnover-records`
+- `POST /api/real-adapter/production-execution-final-turnover-records`
+
+Production execution final turnover records capture turnover evidence after service acceptance and before any future operational closure phase. Records require a ready service acceptance record, turnover owner, final service catalog reference, ownership transfer proof, executive closure note, post-implementation review schedule, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

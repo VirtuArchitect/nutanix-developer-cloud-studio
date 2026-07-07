@@ -360,6 +360,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution service acceptance record")).toBeVisible();
   await expect(page.getByText("Execution service acceptance evidence")).toBeVisible();
   await expect(page.getByText("Support readiness ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production final turnover" })).toBeVisible();
+  await page.getByRole("button", { name: "Record final turnover" }).click();
+  await expect(page.getByText("Production execution final turnover record")).toBeVisible();
+  await expect(page.getByText("Execution final turnover evidence")).toBeVisible();
+  await expect(page.getByText("Service acceptance ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.53.0-production-execution-service-acceptance-record`.
+This project uses release tags for public milestones. The current release is `v2.54.0-production-execution-final-turnover-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution final turnover records after service acceptance records are complete.
+- Add production execution operational closure records after final turnover records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.54.0-production-execution-final-turnover-record] - 2026-07-07
+
+### Added
+
+- Production execution final turnover records linked to production execution service acceptance records.
+- API endpoints for listing and recording production execution final turnover records.
+- Admin Operations production final turnover panel.
+- Turnover owner, final service catalog reference, ownership transfer proof, executive closure note, and post-implementation review schedule checks.
+- Tests proving missing service acceptance records or incomplete final turnover evidence block final turnover readiness.
+
+### Notes
+
+- Production execution final turnover records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.53.0-production-execution-service-acceptance-record] - 2026-07-07
 

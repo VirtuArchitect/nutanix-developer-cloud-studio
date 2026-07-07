@@ -54,6 +54,7 @@ import {
   createProductionExecutionOperationsHandoverRecordViaApi,
   createProductionExecutionSupportReadinessRecordViaApi,
   createProductionExecutionServiceAcceptanceRecordViaApi,
+  createProductionExecutionFinalTurnoverRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -125,6 +126,7 @@ import {
   fetchProductionExecutionOperationsHandoverRecordsFromApi,
   fetchProductionExecutionSupportReadinessRecordsFromApi,
   fetchProductionExecutionServiceAcceptanceRecordsFromApi,
+  fetchProductionExecutionFinalTurnoverRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -630,6 +632,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionServiceAcceptanceRecordViaApi({
       supportReadinessRecordId: "production-execution-support-readiness-record-ndb-1",
     });
+    await fetchProductionExecutionFinalTurnoverRecordsFromApi();
+    await createProductionExecutionFinalTurnoverRecordViaApi({
+      serviceAcceptanceRecordId: "production-execution-service-acceptance-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -997,6 +1003,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-support-readiness-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      85,
+      "/api/real-adapter/production-execution-final-turnover-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      86,
+      "/api/real-adapter/production-execution-final-turnover-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-service-acceptance-record-ndb-1"),
       })
     );
   });
