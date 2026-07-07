@@ -1252,6 +1252,38 @@ export type ProductionChangeFreezeRecord = {
   createdAt: string;
 };
 
+export type ProductionCabHandoffPacket = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production CAB handoff review";
+  requestedBy: string;
+  cabOwner: string;
+  cabAgendaReference: string;
+  riskAcceptanceReference: string;
+  rollbackRepresentationReference: string;
+  finalGoNoGoAgendaReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ProductionChangeFreezeRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

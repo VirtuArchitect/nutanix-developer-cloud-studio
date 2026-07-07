@@ -113,6 +113,10 @@ import {
   ProductionChangeFreezeRecordError,
 } from "./productionChangeFreezeRecord";
 import {
+  createProductionCabHandoffPacket,
+  ProductionCabHandoffPacketError,
+} from "./productionCabHandoffPacket";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -222,6 +226,7 @@ import type {
   CreateAdapterPromotionReadinessDossierRequest,
   CreateProductionAdapterAuthorizationPacketRequest,
   CreateProductionChangeFreezeRecordRequest,
+  CreateProductionCabHandoffPacketRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -537,6 +542,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionChangeFreezeRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionCabHandoffPacketError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -972,6 +987,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/production-change-freeze-records") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionChangeFreezeRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/production-cab-handoff-packets") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionCabHandoffPackets });
     return;
   }
 
@@ -2049,6 +2070,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/production-cab-handoff-packets") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionCabHandoffPacketRequest>(request);
+    const packet = createProductionCabHandoffPacket(state, body, context.session.user);
+    state.productionCabHandoffPackets = [packet, ...state.productionCabHandoffPackets];
+    addAuditEvent(state, "real-adapter.production-cab-handoff.recorded", context.session.user, packet.provider, {
+      freezeRecordId: packet.freezeRecordId,
+      idempotencyKey: packet.idempotencyKey,
+      status: packet.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: packet });
     return;
   }
 

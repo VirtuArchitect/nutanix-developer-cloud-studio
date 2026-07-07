@@ -45,6 +45,7 @@ import type {
   ProvisioningAdapterReadiness,
   ProductionAdapterAuthorizationPacket,
   ProductionChangeFreezeRecord,
+  ProductionCabHandoffPacket,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -399,6 +400,10 @@ export async function fetchProductionAdapterAuthorizationPacketsFromApi() {
 
 export async function fetchProductionChangeFreezeRecordsFromApi() {
   return fetchJson<ProductionChangeFreezeRecord[]>("/api/real-adapter/production-change-freeze-records");
+}
+
+export async function fetchProductionCabHandoffPacketsFromApi() {
+  return fetchJson<ProductionCabHandoffPacket[]>("/api/real-adapter/production-cab-handoff-packets");
 }
 
 export async function fetchProductionReadinessReviewsFromApi() {
@@ -758,6 +763,16 @@ export async function createProductionChangeFreezeRecordViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ProductionChangeFreezeRecord>("/api/real-adapter/production-change-freeze-records", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionCabHandoffPacketViaApi(payload: {
+  freezeRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionCabHandoffPacket>("/api/real-adapter/production-cab-handoff-packets", {
     method: "POST",
     body: JSON.stringify(payload),
   });

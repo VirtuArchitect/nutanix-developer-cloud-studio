@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.34.0-production-change-freeze-record`.
+This project uses release tags for public milestones. The current release is `v2.35.0-production-cab-handoff-packet`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production CAB handoff packets after production change freeze records are complete.
+- Add production CAB decision records after CAB handoff packets are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.35.0-production-cab-handoff-packet] - 2026-07-07
+
+### Added
+
+- Production CAB handoff packets linked to production change freeze records.
+- API endpoints for listing and recording production CAB handoff packets.
+- Admin Operations production CAB handoff panel.
+- CAB owner, agenda reference, risk acceptance, rollback representation, and final go/no-go agenda checks.
+- Tests proving missing freeze records or incomplete CAB evidence block handoff readiness.
+
+### Notes
+
+- Production CAB handoff packets are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.34.0-production-change-freeze-record] - 2026-07-07
 

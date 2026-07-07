@@ -434,6 +434,15 @@ Production change freeze records assemble freeze evidence after production adapt
 
 Required role: `Platform Admin`.
 
+### Production CAB Handoff Packets
+
+- `GET /api/real-adapter/production-cab-handoff-packets`
+- `POST /api/real-adapter/production-cab-handoff-packets`
+
+Production CAB handoff packets assemble CAB evidence after production change freeze readiness and before any external CAB decision. Packets require a ready freeze record, CAB owner, agenda reference, risk acceptance, rollback representation, final go/no-go agenda, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -265,6 +265,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production change freeze record")).toBeVisible();
   await expect(page.getByText("Production freeze evidence")).toBeVisible();
   await expect(page.getByText("Prototype does not promote adapter").last()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production CAB handoff" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare CAB handoff" }).click();
+  await expect(page.getByText("Production CAB handoff packet")).toBeVisible();
+  await expect(page.getByText("CAB handoff evidence")).toBeVisible();
+  await expect(page.getByText("Change freeze ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

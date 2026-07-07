@@ -958,6 +958,23 @@ Exit gate:
 - CAB handoff packets are evidence-only.
 - No adapter is promoted by the prototype.
 
+### v2.36.0-production-cab-decision-record
+
+Goal: record the external CAB decision after CAB handoff readiness without promoting adapters from the prototype.
+
+Build:
+
+- Production CAB decision records linked to CAB handoff packets.
+- CAB decision, decision authority, condition list, rollback approval, and decision minutes checks.
+- Admin Operations CAB decision panel with blockers and evidence references.
+- Tests proving missing ready CAB handoff packets, CAB decisions, decision authority, condition lists, rollback approval, or decision minutes block decision readiness.
+
+Exit gate:
+
+- Production CAB decision APIs and UI are tested.
+- CAB decision records are evidence-only.
+- No adapter is promoted by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

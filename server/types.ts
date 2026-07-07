@@ -52,6 +52,7 @@ import type {
   AdapterPromotionReadinessDossier,
   ProductionAdapterAuthorizationPacket,
   ProductionChangeFreezeRecord,
+  ProductionCabHandoffPacket,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -119,6 +120,7 @@ export type ApiState = {
   adapterPromotionReadinessDossiers: AdapterPromotionReadinessDossier[];
   productionAdapterAuthorizationPackets: ProductionAdapterAuthorizationPacket[];
   productionChangeFreezeRecords: ProductionChangeFreezeRecord[];
+  productionCabHandoffPackets: ProductionCabHandoffPacket[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -456,6 +458,16 @@ export type CreateProductionChangeFreezeRecordRequest = {
   stakeholderNotificationReference?: string;
   rollbackStandbyReference?: string;
   noChangeExceptionPlanReference?: string;
+};
+
+export type CreateProductionCabHandoffPacketRequest = {
+  freezeRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  cabOwner?: string;
+  cabAgendaReference?: string;
+  riskAcceptanceReference?: string;
+  rollbackRepresentationReference?: string;
+  finalGoNoGoAgendaReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {
