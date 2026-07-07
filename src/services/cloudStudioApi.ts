@@ -45,6 +45,7 @@ import type {
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
+  RealAdapterSwitchStateAuditPackage,
   ReleaseEvidenceExportRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -361,6 +362,10 @@ export async function fetchManualRealAdapterSwitchReviewsFromApi() {
   return fetchJson<ManualRealAdapterSwitchReview[]>("/api/real-adapter/switch-reviews");
 }
 
+export async function fetchRealAdapterSwitchStateAuditPackagesFromApi() {
+  return fetchJson<RealAdapterSwitchStateAuditPackage[]>("/api/real-adapter/switch-state-audit-packages");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -638,6 +643,16 @@ export async function createManualRealAdapterSwitchReviewViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ManualRealAdapterSwitchReview>("/api/real-adapter/switch-reviews", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createRealAdapterSwitchStateAuditPackageViaApi(payload: {
+  switchReviewId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<RealAdapterSwitchStateAuditPackage>("/api/real-adapter/switch-state-audit-packages", {
     method: "POST",
     body: JSON.stringify(payload),
   });

@@ -424,6 +424,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing activations or incomplete switch review evidence block readiness.
 - The prototype does not change adapter switch configuration.
 
+## Current Real Adapter Switch-State Audit Package Slice
+
+- API records real-adapter switch-state audit packages linked to manual switch reviews.
+- Audit packages require pre-change and post-change configuration snapshots, reviewer evidence, rollback timer, and retention references.
+- Admin Operations surfaces switch-state audit readiness, evidence references, and blockers.
+- Missing switch reviews, config snapshots, reviewer evidence, or retention references block readiness.
+- The prototype does not change adapter switch configuration.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

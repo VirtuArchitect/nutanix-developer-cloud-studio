@@ -1032,6 +1032,30 @@ export type ManualRealAdapterSwitchReview = {
   createdAt: string;
 };
 
+export type RealAdapterSwitchStateAuditPackage = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for switch-state audit review";
+  requestedBy: string;
+  preChangeSnapshotReference: string;
+  postChangeSnapshotReference: string;
+  reviewerEvidenceReference: string;
+  rollbackTimerMinutes: number;
+  retentionReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ManualRealAdapterSwitchReview["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

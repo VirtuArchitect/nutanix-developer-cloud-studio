@@ -81,6 +81,10 @@ import {
   ManualRealAdapterSwitchReviewError,
 } from "./manualRealAdapterSwitchReview";
 import {
+  createRealAdapterSwitchStateAuditPackage,
+  RealAdapterSwitchStateAuditPackageError,
+} from "./realAdapterSwitchStateAuditPackage";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -182,6 +186,7 @@ import type {
   CreateExecutionBrokerQueueRecordRequest,
   CreateRealAdapterLabScopeActivationRequest,
   CreateManualRealAdapterSwitchReviewRequest,
+  CreateRealAdapterSwitchStateAuditPackageRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -417,6 +422,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ManualRealAdapterSwitchReviewError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof RealAdapterSwitchStateAuditPackageError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -804,6 +819,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-reviews") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.manualRealAdapterSwitchReviews });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-state-audit-packages") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.realAdapterSwitchStateAuditPackages });
     return;
   }
 
@@ -1738,6 +1759,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: review });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/switch-state-audit-packages") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateRealAdapterSwitchStateAuditPackageRequest>(request);
+    const auditPackage = createRealAdapterSwitchStateAuditPackage(state, body, context.session.user);
+    state.realAdapterSwitchStateAuditPackages = [auditPackage, ...state.realAdapterSwitchStateAuditPackages];
+    addAuditEvent(state, "real-adapter.switch-state-audit.recorded", context.session.user, auditPackage.provider, {
+      switchReviewId: auditPackage.switchReviewId,
+      idempotencyKey: auditPackage.idempotencyKey,
+      status: auditPackage.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: auditPackage });
     return;
   }
 

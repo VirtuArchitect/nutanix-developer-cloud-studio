@@ -362,6 +362,15 @@ Manual real-adapter switch reviews record evidence before an authorized lab oper
 
 Required role: `Platform Admin`.
 
+### Real Adapter Switch-State Audit Packages
+
+- `GET /api/real-adapter/switch-state-audit-packages`
+- `POST /api/real-adapter/switch-state-audit-packages`
+
+Real-adapter switch-state audit packages collect evidence after manual switch review. Packages require a ready switch review, pre-change and post-change configuration snapshot references, reviewer evidence, rollback timer, retention reference, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

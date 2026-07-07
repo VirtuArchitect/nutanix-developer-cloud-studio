@@ -822,6 +822,23 @@ Exit gate:
 - Audit packages are evidence-only records.
 - No switch is changed by the prototype.
 
+### v2.28.0-controlled-switch-configuration-request
+
+Goal: record a controlled switch configuration request after switch-state audit package readiness while the prototype remains non-mutating.
+
+Build:
+
+- Controlled switch configuration request records linked to switch-state audit packages.
+- Operator confirmation, second reviewer acceptance, rollback timer, retention reference, and final dry-run proof checks.
+- Admin Operations controlled switch request panel with blockers and evidence references.
+- Tests proving missing ready audit packages, operator confirmation, reviewer acceptance, dry-run proof, or retention references block request readiness.
+
+Exit gate:
+
+- Controlled switch request APIs and UI are tested.
+- Request records are evidence-only.
+- No switch is changed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

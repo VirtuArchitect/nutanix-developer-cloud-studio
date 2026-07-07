@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.26.0-manual-real-adapter-switch-review`.
+This project uses release tags for public milestones. The current release is `v2.27.0-real-adapter-switch-state-audit-package`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add real-adapter switch state audit package records after manual switch review is complete.
+- Add controlled switch configuration request records after switch-state audit packages are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.27.0-real-adapter-switch-state-audit-package] - 2026-07-07
+
+### Added
+
+- Real-adapter switch-state audit package records linked to manual switch reviews.
+- API endpoints for listing and recording switch-state audit packages.
+- Admin Operations switch-state audit panel.
+- Pre-change snapshot, post-change snapshot, reviewer evidence, rollback timer, and retention reference checks.
+- Tests proving missing switch reviews or incomplete audit evidence block readiness.
+
+### Notes
+
+- Switch-state audit packages are evidence-only.
+- The prototype does not change real-adapter switch state.
 
 ## [v2.26.0-manual-real-adapter-switch-review] - 2026-07-07
 

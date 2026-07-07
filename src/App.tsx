@@ -78,6 +78,7 @@ import {
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
   type RealAdapterLabScopeActivation,
+  type RealAdapterSwitchStateAuditPackage,
   type ReleaseEvidenceExportRecord,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
@@ -136,6 +137,7 @@ import {
   createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
   createRealAdapterLabScopeActivationViaApi,
+  createRealAdapterSwitchStateAuditPackageViaApi,
   createReleaseEvidenceExportViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
@@ -182,6 +184,7 @@ import {
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
+  fetchRealAdapterSwitchStateAuditPackagesFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
@@ -273,6 +276,7 @@ export function App() {
   const [executionBrokerDispatchApprovals, setExecutionBrokerDispatchApprovals] = useState<ExecutionBrokerDispatchApproval[]>([]);
   const [realAdapterLabScopeActivations, setRealAdapterLabScopeActivations] = useState<RealAdapterLabScopeActivation[]>([]);
   const [manualRealAdapterSwitchReviews, setManualRealAdapterSwitchReviews] = useState<ManualRealAdapterSwitchReview[]>([]);
+  const [realAdapterSwitchStateAuditPackages, setRealAdapterSwitchStateAuditPackages] = useState<RealAdapterSwitchStateAuditPackage[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -370,6 +374,7 @@ export function App() {
             apiExecutionBrokerDispatchApprovals,
             apiRealAdapterLabScopeActivations,
             apiManualRealAdapterSwitchReviews,
+            apiRealAdapterSwitchStateAuditPackages,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -422,6 +427,7 @@ export function App() {
             fetchExecutionBrokerDispatchApprovalsFromApi(),
             fetchRealAdapterLabScopeActivationsFromApi(),
             fetchManualRealAdapterSwitchReviewsFromApi(),
+            fetchRealAdapterSwitchStateAuditPackagesFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -476,6 +482,7 @@ export function App() {
             setExecutionBrokerDispatchApprovals(apiExecutionBrokerDispatchApprovals);
             setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
             setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
+            setRealAdapterSwitchStateAuditPackages(apiRealAdapterSwitchStateAuditPackages);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -650,6 +657,7 @@ export function App() {
       apiExecutionBrokerDispatchApprovals,
       apiRealAdapterLabScopeActivations,
       apiManualRealAdapterSwitchReviews,
+      apiRealAdapterSwitchStateAuditPackages,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -702,6 +710,7 @@ export function App() {
       fetchExecutionBrokerDispatchApprovalsFromApi(),
       fetchRealAdapterLabScopeActivationsFromApi(),
       fetchManualRealAdapterSwitchReviewsFromApi(),
+      fetchRealAdapterSwitchStateAuditPackagesFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -755,6 +764,7 @@ export function App() {
     setExecutionBrokerDispatchApprovals(apiExecutionBrokerDispatchApprovals);
     setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
     setManualRealAdapterSwitchReviews(apiManualRealAdapterSwitchReviews);
+    setRealAdapterSwitchStateAuditPackages(apiRealAdapterSwitchStateAuditPackages);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1649,6 +1659,28 @@ export function App() {
     ]);
   }
 
+  async function prepareRealAdapterSwitchStateAuditPackage() {
+    const switchReview = manualRealAdapterSwitchReviews[0];
+    if (!switchReview) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const auditPackage = await createRealAdapterSwitchStateAuditPackageViaApi({ switchReviewId: switchReview.id });
+      await refreshApiState();
+      setRealAdapterSwitchStateAuditPackages((current) => [
+        auditPackage,
+        ...current.filter((item) => item.id !== auditPackage.id),
+      ]);
+      return;
+    }
+
+    setRealAdapterSwitchStateAuditPackages((current) => [
+      createMockRealAdapterSwitchStateAuditPackage(switchReview, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1886,6 +1918,7 @@ export function App() {
             executionBrokerDispatchApprovals={executionBrokerDispatchApprovals}
             realAdapterLabScopeActivations={realAdapterLabScopeActivations}
             manualRealAdapterSwitchReviews={manualRealAdapterSwitchReviews}
+            realAdapterSwitchStateAuditPackages={realAdapterSwitchStateAuditPackages}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1928,6 +1961,7 @@ export function App() {
             recordExecutionBrokerDispatchApproval={recordExecutionBrokerDispatchApproval}
             recordRealAdapterLabScopeActivation={recordRealAdapterLabScopeActivation}
             recordManualRealAdapterSwitchReview={recordManualRealAdapterSwitchReview}
+            prepareRealAdapterSwitchStateAuditPackage={prepareRealAdapterSwitchStateAuditPackage}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2453,6 +2487,7 @@ function AdminView({
   executionBrokerDispatchApprovals,
   realAdapterLabScopeActivations,
   manualRealAdapterSwitchReviews,
+  realAdapterSwitchStateAuditPackages,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2495,6 +2530,7 @@ function AdminView({
   recordExecutionBrokerDispatchApproval,
   recordRealAdapterLabScopeActivation,
   recordManualRealAdapterSwitchReview,
+  prepareRealAdapterSwitchStateAuditPackage,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2551,6 +2587,7 @@ function AdminView({
   executionBrokerDispatchApprovals: ExecutionBrokerDispatchApproval[];
   realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
   manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
+  realAdapterSwitchStateAuditPackages: RealAdapterSwitchStateAuditPackage[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2596,6 +2633,7 @@ function AdminView({
   recordExecutionBrokerDispatchApproval: () => void;
   recordRealAdapterLabScopeActivation: () => void;
   recordManualRealAdapterSwitchReview: () => void;
+  prepareRealAdapterSwitchStateAuditPackage: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2912,6 +2950,12 @@ function AdminView({
             <ManualRealAdapterSwitchReviewPanel
               reviews={manualRealAdapterSwitchReviews}
               recordManualRealAdapterSwitchReview={recordManualRealAdapterSwitchReview}
+            />
+          </Panel>
+          <Panel title="Real adapter switch-state audit" action={`${realAdapterSwitchStateAuditPackages.length} packages`}>
+            <RealAdapterSwitchStateAuditPackagePanel
+              packages={realAdapterSwitchStateAuditPackages}
+              prepareRealAdapterSwitchStateAuditPackage={prepareRealAdapterSwitchStateAuditPackage}
             />
           </Panel>
         </div>
@@ -4768,6 +4812,73 @@ function ManualRealAdapterSwitchReviewPanel({
             <span>Maintenance window: {latest.maintenanceWindowReference || "missing"}</span>
             <span>Switch-state audit: {latest.switchStateAuditReferences.join(", ")}</span>
             <span>Rollback contact: {latest.rollbackContact || "missing"}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RealAdapterSwitchStateAuditPackagePanel({
+  packages,
+  prepareRealAdapterSwitchStateAuditPackage,
+}: {
+  packages: RealAdapterSwitchStateAuditPackage[];
+  prepareRealAdapterSwitchStateAuditPackage: () => void;
+}) {
+  const latest = packages[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Switch-state audit package</strong>
+          <span>Collects pre/post switch-state snapshots, reviewer evidence, rollback timer, and retention references.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareRealAdapterSwitchStateAuditPackage}>
+          <Archive size={15} />
+          Prepare audit package
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No real-adapter switch-state audit package has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.switchReviewId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for switch-state audit review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Archive} label="Pre-change" value={latest.preChangeSnapshotReference || "missing"} passed={Boolean(latest.preChangeSnapshotReference)} />
+            <CheckLine icon={Archive} label="Post-change" value={latest.postChangeSnapshotReference || "missing"} passed={Boolean(latest.postChangeSnapshotReference)} />
+            <CheckLine icon={ShieldCheck} label="Reviewer" value={latest.reviewerEvidenceReference || "missing"} passed={Boolean(latest.reviewerEvidenceReference)} />
+            <CheckLine icon={LockKeyhole} label="Switch" value="Unchanged" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Switch-state audit evidence</strong>
+            <span>Rollback timer: {latest.rollbackTimerMinutes} minutes</span>
+            <span>Retention: {latest.retentionReference || "missing"}</span>
+            <span>Activation: {latest.activationId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -8383,6 +8494,83 @@ function createMockManualRealAdapterSwitchReview(
       `Kill switch: ${activation.killSwitch.name}=${activation.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: activation.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockRealAdapterSwitchStateAuditPackage(
+  switchReview: ManualRealAdapterSwitchReview,
+  actor: string
+): RealAdapterSwitchStateAuditPackage {
+  const preChangeSnapshotReference = `pre-switch-state-${switchReview.provider.toLowerCase()}.json`;
+  const postChangeSnapshotReference = `post-switch-state-${switchReview.provider.toLowerCase()}.json`;
+  const reviewerEvidenceReference = `switch-reviewer-evidence-${switchReview.provider.toLowerCase()}.md`;
+  const rollbackTimerMinutes = 30;
+  const retentionReference = `audit-retention-${switchReview.provider.toLowerCase()}.md`;
+  const checks = [
+    {
+      name: "Switch review ready",
+      passed: switchReview.status === "Ready for manual switch change review",
+      detail: `${switchReview.id} is ${switchReview.status}.`,
+    },
+    {
+      name: "Pre-change snapshot linked",
+      passed: Boolean(preChangeSnapshotReference),
+      detail: preChangeSnapshotReference,
+    },
+    {
+      name: "Post-change snapshot linked",
+      passed: Boolean(postChangeSnapshotReference),
+      detail: postChangeSnapshotReference,
+    },
+    {
+      name: "Reviewer evidence linked",
+      passed: Boolean(reviewerEvidenceReference),
+      detail: reviewerEvidenceReference,
+    },
+    {
+      name: "Rollback timer set",
+      passed: rollbackTimerMinutes >= 15,
+      detail: `${rollbackTimerMinutes} minute rollback timer.`,
+    },
+    {
+      name: "Retention reference linked",
+      passed: Boolean(retentionReference),
+      detail: retentionReference,
+    },
+    {
+      name: "Prototype leaves switch state unchanged",
+      passed: !switchReview.provisioningEnabled && !switchReview.killSwitch.enabled,
+      detail: `${switchReview.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `real-adapter-switch-state-audit-${switchReview.provider.toLowerCase()}-${Date.now()}`,
+    provider: switchReview.provider,
+    switchReviewId: switchReview.id,
+    activationId: switchReview.activationId,
+    idempotencyKey: switchReview.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for switch-state audit review" : "Blocked",
+    requestedBy: actor,
+    preChangeSnapshotReference,
+    postChangeSnapshotReference,
+    reviewerEvidenceReference,
+    rollbackTimerMinutes,
+    retentionReference,
+    checks,
+    evidence: [
+      `Switch review: ${switchReview.id}.`,
+      `Activation: ${switchReview.activationId}.`,
+      `Pre-change snapshot: ${preChangeSnapshotReference}.`,
+      `Post-change snapshot: ${postChangeSnapshotReference}.`,
+      `Reviewer evidence: ${reviewerEvidenceReference}.`,
+      `Rollback timer: ${rollbackTimerMinutes} minutes.`,
+      `Retention reference: ${retentionReference}.`,
+      `Kill switch: ${switchReview.killSwitch.name}=${switchReview.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: switchReview.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

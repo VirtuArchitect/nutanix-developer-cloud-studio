@@ -43,6 +43,7 @@ import type {
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
+  RealAdapterSwitchStateAuditPackage,
   ReleaseEvidenceExportRecord,
   RegistryStatus,
   ResourceProfile,
@@ -103,6 +104,7 @@ export type ApiState = {
   executionBrokerDispatchApprovals: ExecutionBrokerDispatchApproval[];
   realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
   manualRealAdapterSwitchReviews: ManualRealAdapterSwitchReview[];
+  realAdapterSwitchStateAuditPackages: RealAdapterSwitchStateAuditPackage[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -360,6 +362,16 @@ export type CreateManualRealAdapterSwitchReviewRequest = {
   maintenanceWindowReference?: string;
   switchStateAuditReferences?: string[];
   rollbackContact?: string;
+};
+
+export type CreateRealAdapterSwitchStateAuditPackageRequest = {
+  switchReviewId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  preChangeSnapshotReference?: string;
+  postChangeSnapshotReference?: string;
+  reviewerEvidenceReference?: string;
+  rollbackTimerMinutes?: number;
+  retentionReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

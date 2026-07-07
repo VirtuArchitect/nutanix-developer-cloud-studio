@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.27.0-real-adapter-switch-state-audit-package`.
+- Added real-adapter switch-state audit package records linked to manual switch reviews.
+- Added API endpoints for switch-state audit packages.
+- Added Admin Operations switch-state audit panel.
+- Added tests proving missing switch reviews or incomplete switch-state audit evidence block readiness.
+- Planned `v2.28.0-controlled-switch-configuration-request` for evidence-only controlled switch request records.
 - Released `v2.26.0-manual-real-adapter-switch-review`.
 - Added manual real-adapter switch review records linked to lab scope activations.
 - Added API endpoints for switch reviews.
 - Added Admin Operations switch review panel.
 - Added tests proving missing activations or incomplete switch review evidence block readiness.
-- Planned `v2.27.0-real-adapter-switch-state-audit-package` for evidence-only switch-state audit packages.
 - Released `v2.25.0-real-adapter-lab-scope-activation`.
 - Added real-adapter lab scope activation records linked to dispatch approvals.
 - Added API endpoints for lab scope activations.

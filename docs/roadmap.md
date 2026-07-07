@@ -377,10 +377,17 @@
 
 ## Phase 49 - Real Adapter Switch State Audit Package (`v2.27.0-real-adapter-switch-state-audit-package`)
 
-- Add switch-state audit package records linked to manual switch reviews - planned
-- Require pre-change and post-change config snapshots, reviewer evidence, rollback timer, and retention references - planned
-- Add Admin Operations switch-state audit panel - planned
-- Keep audit packages evidence-only and leave adapter switch state unchanged from the prototype - planned
+- Add switch-state audit package records linked to manual switch reviews - done
+- Require pre-change and post-change config snapshots, reviewer evidence, rollback timer, and retention references - done
+- Add Admin Operations switch-state audit panel - done
+- Keep audit packages evidence-only and leave adapter switch state unchanged from the prototype - done
+
+## Phase 50 - Controlled Switch Configuration Request (`v2.28.0-controlled-switch-configuration-request`)
+
+- Add controlled switch configuration request records linked to switch-state audit packages - planned
+- Require operator confirmation, second reviewer acceptance, rollback timer, retention, and final dry-run proof - planned
+- Add Admin Operations controlled switch request panel - planned
+- Keep requests non-mutating unless explicitly executed by an authorized lab operator outside the prototype - planned
 
 ## Gated Promotion
 

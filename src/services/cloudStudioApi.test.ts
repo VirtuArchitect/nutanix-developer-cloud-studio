@@ -31,6 +31,7 @@ import {
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
+  createRealAdapterSwitchStateAuditPackageViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
@@ -75,6 +76,7 @@ import {
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
+  fetchRealAdapterSwitchStateAuditPackagesFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
@@ -478,6 +480,8 @@ describe("cloudStudioApi", () => {
     await createRealAdapterLabScopeActivationViaApi({ dispatchApprovalId: "execution-broker-dispatch-approval-ndb-1" });
     await fetchManualRealAdapterSwitchReviewsFromApi();
     await createManualRealAdapterSwitchReviewViaApi({ activationId: "real-adapter-lab-scope-activation-ndb-1" });
+    await fetchRealAdapterSwitchStateAuditPackagesFromApi();
+    await createRealAdapterSwitchStateAuditPackageViaApi({ switchReviewId: "manual-real-adapter-switch-review-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -568,6 +572,12 @@ describe("cloudStudioApi", () => {
       30,
       "/api/real-adapter/switch-reviews",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("real-adapter-lab-scope-activation-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(31, "/api/real-adapter/switch-state-audit-packages", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      32,
+      "/api/real-adapter/switch-state-audit-packages",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("manual-real-adapter-switch-review-ndb-1") })
     );
   });
 
