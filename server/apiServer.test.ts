@@ -901,6 +901,11 @@ describe("api server", () => {
       body: JSON.stringify({ controlledSwitchRequestId: controlledSwitchRequest.data.id }),
     });
     const switchHandoffPackages = await requestJson("/api/real-adapter/switch-handoff-packages");
+    const switchOutcomeRecord = await requestJson("/api/real-adapter/switch-outcome-records", {
+      method: "POST",
+      body: JSON.stringify({ handoffPackageId: switchHandoffPackage.data.id }),
+    });
+    const switchOutcomeRecords = await requestJson("/api/real-adapter/switch-outcome-records");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1279,6 +1284,23 @@ describe("api server", () => {
     expect(switchHandoffPackages.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: switchHandoffPackage.data.id })])
     );
+    expect(switchOutcomeRecord.data).toMatchObject({
+      provider: "NDB",
+      handoffPackageId: switchHandoffPackage.data.id,
+      controlledSwitchRequestId: controlledSwitchRequest.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(switchOutcomeRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Handoff package ready", passed: false }),
+        expect.objectContaining({ name: "Prototype records outcome only", passed: true }),
+      ])
+    );
+    expect(switchOutcomeRecords.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: switchOutcomeRecord.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1303,6 +1325,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "real-adapter.switch-state-audit.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.controlled-switch-request.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.switch-handoff-package.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.switch-outcome.recorded", target: "NDB" }),
       ])
     );
   });

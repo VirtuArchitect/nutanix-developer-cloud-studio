@@ -93,6 +93,10 @@ import {
   SwitchExecutionHandoffPackageError,
 } from "./switchExecutionHandoffPackage";
 import {
+  createSwitchExecutionOutcomeRecord,
+  SwitchExecutionOutcomeRecordError,
+} from "./switchExecutionOutcomeRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -197,6 +201,7 @@ import type {
   CreateRealAdapterSwitchStateAuditPackageRequest,
   CreateControlledSwitchConfigurationRequestRequest,
   CreateSwitchExecutionHandoffPackageRequest,
+  CreateSwitchExecutionOutcomeRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -462,6 +467,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof SwitchExecutionHandoffPackageError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof SwitchExecutionOutcomeRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -867,6 +882,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-handoff-packages") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.switchExecutionHandoffPackages });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/switch-outcome-records") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.switchExecutionOutcomeRecords });
     return;
   }
 
@@ -1855,6 +1876,25 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: handoffPackage });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/switch-outcome-records") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateSwitchExecutionOutcomeRecordRequest>(request);
+    const outcomeRecord = createSwitchExecutionOutcomeRecord(state, body, context.session.user);
+    state.switchExecutionOutcomeRecords = [
+      outcomeRecord,
+      ...state.switchExecutionOutcomeRecords,
+    ];
+    addAuditEvent(state, "real-adapter.switch-outcome.recorded", context.session.user, outcomeRecord.provider, {
+      handoffPackageId: outcomeRecord.handoffPackageId,
+      idempotencyKey: outcomeRecord.idempotencyKey,
+      status: outcomeRecord.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: outcomeRecord });
     return;
   }
 

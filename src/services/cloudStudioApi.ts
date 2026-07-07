@@ -54,6 +54,7 @@ import type {
   TemplateRegistryEntry,
   SystemStatus,
   SwitchExecutionHandoffPackage,
+  SwitchExecutionOutcomeRecord,
   Target,
   VmSandboxDryRunPlan,
   VmSandboxDryRunRequest,
@@ -376,6 +377,10 @@ export async function fetchSwitchExecutionHandoffPackagesFromApi() {
   return fetchJson<SwitchExecutionHandoffPackage[]>("/api/real-adapter/switch-handoff-packages");
 }
 
+export async function fetchSwitchExecutionOutcomeRecordsFromApi() {
+  return fetchJson<SwitchExecutionOutcomeRecord[]>("/api/real-adapter/switch-outcome-records");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -683,6 +688,16 @@ export async function createSwitchExecutionHandoffPackageViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<SwitchExecutionHandoffPackage>("/api/real-adapter/switch-handoff-packages", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createSwitchExecutionOutcomeRecordViaApi(payload: {
+  handoffPackageId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<SwitchExecutionOutcomeRecord>("/api/real-adapter/switch-outcome-records", {
     method: "POST",
     body: JSON.stringify(payload),
   });

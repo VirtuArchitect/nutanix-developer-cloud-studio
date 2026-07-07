@@ -448,6 +448,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready switch requests, run sheets, communications plans, observation windows, rollback-owner acceptance, or freeze proof block readiness.
 - The prototype does not execute adapter switch changes.
 
+## Current Switch Execution Outcome Record Slice
+
+- API records switch execution outcome records linked to switch handoff packages.
+- Outcome records require operator result, post-switch validation, rollback decision, incident bridge log, and audit sign-off.
+- Admin Operations surfaces switch outcome readiness, evidence references, and blockers.
+- Missing ready handoff packages, result evidence, validation evidence, rollback decisions, bridge logs, or audit sign-off block readiness.
+- The prototype records out-of-band outcomes only and does not execute adapter switch changes.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

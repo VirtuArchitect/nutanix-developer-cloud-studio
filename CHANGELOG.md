@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.29.0-switch-execution-handoff-package`.
+This project uses release tags for public milestones. The current release is `v2.30.0-switch-execution-outcome-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add switch execution outcome records after operator handoff packages are complete.
+- Add switch closure and retention package records after outcome evidence is complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.30.0-switch-execution-outcome-record] - 2026-07-07
+
+### Added
+
+- Switch execution outcome records linked to handoff packages.
+- API endpoints for listing and recording switch outcome records.
+- Admin Operations switch execution outcome panel.
+- Operator result, post-switch validation, rollback decision, incident bridge log, and audit sign-off checks.
+- Tests proving missing handoff packages or incomplete outcome evidence block readiness.
+
+### Notes
+
+- Switch outcome records are evidence-only.
+- The prototype records out-of-band execution outcomes only and does not execute switch changes.
 
 ## [v2.29.0-switch-execution-handoff-package] - 2026-07-07
 

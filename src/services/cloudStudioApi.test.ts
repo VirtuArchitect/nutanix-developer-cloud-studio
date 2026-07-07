@@ -14,6 +14,7 @@ import {
   createControlledLabReleaseRunbookViaApi,
   createControlledSwitchConfigurationRequestViaApi,
   createSwitchExecutionHandoffPackageViaApi,
+  createSwitchExecutionOutcomeRecordViaApi,
   createExecutionBrokerDispatchApprovalViaApi,
   createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
@@ -55,6 +56,7 @@ import {
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlledSwitchConfigurationRequestsFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
+  fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
@@ -492,6 +494,8 @@ describe("cloudStudioApi", () => {
     await createSwitchExecutionHandoffPackageViaApi({
       controlledSwitchRequestId: "controlled-switch-configuration-request-ndb-1",
     });
+    await fetchSwitchExecutionOutcomeRecordsFromApi();
+    await createSwitchExecutionOutcomeRecordViaApi({ handoffPackageId: "switch-execution-handoff-package-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -600,6 +604,12 @@ describe("cloudStudioApi", () => {
       36,
       "/api/real-adapter/switch-handoff-packages",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-switch-configuration-request-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(37, "/api/real-adapter/switch-outcome-records", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      38,
+      "/api/real-adapter/switch-outcome-records",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("switch-execution-handoff-package-ndb-1") })
     );
   });
 

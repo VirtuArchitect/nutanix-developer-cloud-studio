@@ -159,6 +159,7 @@ export function createDefaultState(): ApiState {
     realAdapterSwitchStateAuditPackages: [],
     controlledSwitchConfigurationRequests: [],
     switchExecutionHandoffPackages: [],
+    switchExecutionOutcomeRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

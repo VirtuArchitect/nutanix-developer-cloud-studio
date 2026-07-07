@@ -398,10 +398,17 @@
 
 ## Phase 52 - Switch Execution Outcome Record (`v2.30.0-switch-execution-outcome-record`)
 
-- Add switch execution outcome records linked to handoff packages - planned
-- Require operator result, post-switch validation, rollback decision, incident bridge log, and audit sign-off - planned
-- Add Admin Operations switch outcome panel - planned
-- Keep outcome records evidence-only and record out-of-band execution only - planned
+- Add switch execution outcome records linked to handoff packages - done
+- Require operator result, post-switch validation, rollback decision, incident bridge log, and audit sign-off - done
+- Add Admin Operations switch outcome panel - done
+- Keep outcome records evidence-only and record out-of-band execution only - done
+
+## Phase 53 - Switch Closure Retention Package (`v2.31.0-switch-closure-retention-package`)
+
+- Add switch closure retention packages linked to outcome records - planned
+- Require closure owner, retained evidence manifest, lessons learned, rollback timer closure, and final audit retention confirmation - planned
+- Add Admin Operations switch closure panel - planned
+- Keep closure packages evidence-only and require retained records before future adapter promotion - planned
 
 ## Gated Promotion
 

@@ -873,6 +873,23 @@ Exit gate:
 - Outcome records are evidence-only.
 - No switch is changed by the prototype.
 
+### v2.31.0-switch-closure-retention-package
+
+Goal: close out an out-of-band switch outcome with retained evidence before any future adapter promotion is considered.
+
+Build:
+
+- Switch closure retention package records linked to outcome records.
+- Closure owner, retained evidence manifest, lessons learned, rollback timer closure, and final audit retention confirmation checks.
+- Admin Operations switch closure panel with blockers and evidence references.
+- Tests proving missing ready outcome records, retained manifests, lessons learned, rollback closure, or audit retention confirmation block closure readiness.
+
+Exit gate:
+
+- Switch closure package APIs and UI are tested.
+- Closure packages are evidence-only.
+- No switch is changed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

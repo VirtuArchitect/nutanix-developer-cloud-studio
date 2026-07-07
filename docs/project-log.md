@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.30.0-switch-execution-outcome-record`.
+- Added switch execution outcome records linked to handoff packages.
+- Added API endpoints for switch outcome records.
+- Added Admin Operations switch execution outcome panel.
+- Added tests proving missing handoff packages or incomplete outcome evidence block readiness.
+- Planned `v2.31.0-switch-closure-retention-package` for evidence-only closure and retention packages.
 - Released `v2.29.0-switch-execution-handoff-package`.
 - Added switch execution handoff package records linked to controlled switch requests.
 - Added API endpoints for switch handoff packages.
 - Added Admin Operations switch execution handoff panel.
 - Added tests proving missing switch requests or incomplete handoff evidence block readiness.
-- Planned `v2.30.0-switch-execution-outcome-record` for evidence-only out-of-band execution outcome records.
 - Released `v2.28.0-controlled-switch-configuration-request`.
 - Added controlled switch configuration request records linked to switch-state audit packages.
 - Added API endpoints for controlled switch requests.

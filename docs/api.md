@@ -389,6 +389,15 @@ Switch execution handoff packages prepare an out-of-band operator handoff after 
 
 Required role: `Platform Admin`.
 
+### Switch Execution Outcome Records
+
+- `GET /api/real-adapter/switch-outcome-records`
+- `POST /api/real-adapter/switch-outcome-records`
+
+Switch execution outcome records document the result of an out-of-band operator switch after handoff package readiness. Records require a ready handoff package, operator result, post-switch validation, rollback decision, incident bridge log, audit sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`
