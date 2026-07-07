@@ -79,6 +79,7 @@ import {
   type ProductionAdapterAuthorizationPacket,
   type ProductionChangeFreezeRecord,
   type ProductionCabHandoffPacket,
+  type ProductionCabDecisionRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -120,6 +121,7 @@ import {
   createProductionAdapterAuthorizationPacketViaApi,
   createProductionChangeFreezeRecordViaApi,
   createProductionCabHandoffPacketViaApi,
+  createProductionCabDecisionRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -166,6 +168,7 @@ import {
   fetchProductionAdapterAuthorizationPacketsFromApi,
   fetchProductionChangeFreezeRecordsFromApi,
   fetchProductionCabHandoffPacketsFromApi,
+  fetchProductionCabDecisionRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -309,6 +312,7 @@ export function App() {
   const [productionAdapterAuthorizationPackets, setProductionAdapterAuthorizationPackets] = useState<ProductionAdapterAuthorizationPacket[]>([]);
   const [productionChangeFreezeRecords, setProductionChangeFreezeRecords] = useState<ProductionChangeFreezeRecord[]>([]);
   const [productionCabHandoffPackets, setProductionCabHandoffPackets] = useState<ProductionCabHandoffPacket[]>([]);
+  const [productionCabDecisionRecords, setProductionCabDecisionRecords] = useState<ProductionCabDecisionRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -415,6 +419,7 @@ export function App() {
             apiProductionAdapterAuthorizationPackets,
             apiProductionChangeFreezeRecords,
             apiProductionCabHandoffPackets,
+            apiProductionCabDecisionRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -476,6 +481,7 @@ export function App() {
             fetchProductionAdapterAuthorizationPacketsFromApi(),
             fetchProductionChangeFreezeRecordsFromApi(),
             fetchProductionCabHandoffPacketsFromApi(),
+            fetchProductionCabDecisionRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -539,6 +545,7 @@ export function App() {
             setProductionAdapterAuthorizationPackets(apiProductionAdapterAuthorizationPackets);
             setProductionChangeFreezeRecords(apiProductionChangeFreezeRecords);
             setProductionCabHandoffPackets(apiProductionCabHandoffPackets);
+            setProductionCabDecisionRecords(apiProductionCabDecisionRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -722,6 +729,7 @@ export function App() {
       apiProductionAdapterAuthorizationPackets,
       apiProductionChangeFreezeRecords,
       apiProductionCabHandoffPackets,
+      apiProductionCabDecisionRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -783,6 +791,7 @@ export function App() {
       fetchProductionAdapterAuthorizationPacketsFromApi(),
       fetchProductionChangeFreezeRecordsFromApi(),
       fetchProductionCabHandoffPacketsFromApi(),
+      fetchProductionCabDecisionRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -845,6 +854,7 @@ export function App() {
     setProductionAdapterAuthorizationPackets(apiProductionAdapterAuthorizationPackets);
     setProductionChangeFreezeRecords(apiProductionChangeFreezeRecords);
     setProductionCabHandoffPackets(apiProductionCabHandoffPackets);
+    setProductionCabDecisionRecords(apiProductionCabDecisionRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1941,6 +1951,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionCabDecision() {
+    const handoffPacket = productionCabHandoffPackets[0];
+    if (!handoffPacket) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionCabDecisionRecordViaApi({
+        cabHandoffPacketId: handoffPacket.id,
+      });
+      await refreshApiState();
+      setProductionCabDecisionRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionCabDecisionRecords((current) => [
+      createMockProductionCabDecisionRecord(handoffPacket, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2187,6 +2221,7 @@ export function App() {
             productionAdapterAuthorizationPackets={productionAdapterAuthorizationPackets}
             productionChangeFreezeRecords={productionChangeFreezeRecords}
             productionCabHandoffPackets={productionCabHandoffPackets}
+            productionCabDecisionRecords={productionCabDecisionRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2238,6 +2273,7 @@ export function App() {
             prepareProductionAdapterAuthorizationPacket={prepareProductionAdapterAuthorizationPacket}
             recordProductionChangeFreeze={recordProductionChangeFreeze}
             prepareProductionCabHandoffPacket={prepareProductionCabHandoffPacket}
+            recordProductionCabDecision={recordProductionCabDecision}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2772,6 +2808,7 @@ function AdminView({
   productionAdapterAuthorizationPackets,
   productionChangeFreezeRecords,
   productionCabHandoffPackets,
+  productionCabDecisionRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2823,6 +2860,7 @@ function AdminView({
   prepareProductionAdapterAuthorizationPacket,
   recordProductionChangeFreeze,
   prepareProductionCabHandoffPacket,
+  recordProductionCabDecision,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2888,6 +2926,7 @@ function AdminView({
   productionAdapterAuthorizationPackets: ProductionAdapterAuthorizationPacket[];
   productionChangeFreezeRecords: ProductionChangeFreezeRecord[];
   productionCabHandoffPackets: ProductionCabHandoffPacket[];
+  productionCabDecisionRecords: ProductionCabDecisionRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2942,6 +2981,7 @@ function AdminView({
   prepareProductionAdapterAuthorizationPacket: () => void;
   recordProductionChangeFreeze: () => void;
   prepareProductionCabHandoffPacket: () => void;
+  recordProductionCabDecision: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3312,6 +3352,12 @@ function AdminView({
             <ProductionCabHandoffPacketPanel
               packets={productionCabHandoffPackets}
               prepareProductionCabHandoffPacket={prepareProductionCabHandoffPacket}
+            />
+          </Panel>
+          <Panel title="Production CAB decision" action={`${productionCabDecisionRecords.length} records`}>
+            <ProductionCabDecisionRecordPanel
+              records={productionCabDecisionRecords}
+              recordProductionCabDecision={recordProductionCabDecision}
             />
           </Panel>
         </div>
@@ -5771,6 +5817,73 @@ function ProductionCabHandoffPacketPanel({
             <span>Rollback representation: {latest.rollbackRepresentationReference || "missing"}</span>
             <span>Final go/no-go agenda: {latest.finalGoNoGoAgendaReference || "missing"}</span>
             <span>Freeze record: {latest.freezeRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionCabDecisionRecordPanel({
+  records,
+  recordProductionCabDecision,
+}: {
+  records: ProductionCabDecisionRecord[];
+  recordProductionCabDecision: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production CAB decision record</strong>
+          <span>Captures the external CAB decision, conditions, rollback approval, and decision minutes.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionCabDecision}>
+          <CheckCircle2 size={15} />
+          Record CAB decision
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production CAB decision record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.cabHandoffPacketId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production CAB decision review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={CheckCircle2} label="Decision" value={latest.cabDecision} passed={latest.cabDecision === "Approved with conditions"} />
+            <CheckLine icon={UserRound} label="Authority" value={latest.decisionAuthority || "missing"} passed={Boolean(latest.decisionAuthority)} />
+            <CheckLine icon={ScrollText} label="Conditions" value={latest.conditionListReference || "missing"} passed={Boolean(latest.conditionListReference)} />
+            <CheckLine icon={LockKeyhole} label="Decision" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>CAB decision evidence</strong>
+            <span>Rollback approval: {latest.rollbackApprovalReference || "missing"}</span>
+            <span>Decision minutes: {latest.decisionMinutesReference || "missing"}</span>
+            <span>CAB handoff packet: {latest.cabHandoffPacketId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -10123,6 +10236,93 @@ function createMockProductionCabHandoffPacket(
       `Kill switch: ${freezeRecord.killSwitch.name}=${freezeRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: freezeRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionCabDecisionRecord(
+  handoffPacket: ProductionCabHandoffPacket,
+  actor: string
+): ProductionCabDecisionRecord {
+  const providerSlug = handoffPacket.provider.toLowerCase();
+  const cabDecision = "Approved with conditions";
+  const decisionAuthority = "Production CAB";
+  const conditionListReference = `cab-condition-list-${providerSlug}.md`;
+  const rollbackApprovalReference = `cab-rollback-approval-${providerSlug}.md`;
+  const decisionMinutesReference = `cab-decision-minutes-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "CAB handoff ready",
+      passed: handoffPacket.status === "Ready for production CAB handoff review",
+      detail: `${handoffPacket.id} is ${handoffPacket.status}.`,
+    },
+    {
+      name: "CAB decision recorded",
+      passed: cabDecision === "Approved with conditions",
+      detail: cabDecision,
+    },
+    {
+      name: "Decision authority assigned",
+      passed: Boolean(decisionAuthority),
+      detail: decisionAuthority,
+    },
+    {
+      name: "Condition list linked",
+      passed: Boolean(conditionListReference),
+      detail: conditionListReference,
+    },
+    {
+      name: "Rollback approval linked",
+      passed: Boolean(rollbackApprovalReference),
+      detail: rollbackApprovalReference,
+    },
+    {
+      name: "Decision minutes linked",
+      passed: Boolean(decisionMinutesReference),
+      detail: decisionMinutesReference,
+    },
+    {
+      name: "Prototype does not promote adapter",
+      passed: !handoffPacket.provisioningEnabled && !handoffPacket.killSwitch.enabled,
+      detail: `${handoffPacket.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-cab-decision-record-${providerSlug}-${Date.now()}`,
+    provider: handoffPacket.provider,
+    cabHandoffPacketId: handoffPacket.id,
+    freezeRecordId: handoffPacket.freezeRecordId,
+    authorizationPacketId: handoffPacket.authorizationPacketId,
+    promotionDossierId: handoffPacket.promotionDossierId,
+    closurePackageId: handoffPacket.closurePackageId,
+    outcomeRecordId: handoffPacket.outcomeRecordId,
+    handoffPackageId: handoffPacket.handoffPackageId,
+    controlledSwitchRequestId: handoffPacket.controlledSwitchRequestId,
+    auditPackageId: handoffPacket.auditPackageId,
+    switchReviewId: handoffPacket.switchReviewId,
+    activationId: handoffPacket.activationId,
+    idempotencyKey: handoffPacket.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for production CAB decision review" : "Blocked",
+    requestedBy: actor,
+    cabDecision,
+    decisionAuthority,
+    conditionListReference,
+    rollbackApprovalReference,
+    decisionMinutesReference,
+    checks,
+    evidence: [
+      `CAB handoff packet: ${handoffPacket.id}.`,
+      `Freeze record: ${handoffPacket.freezeRecordId}.`,
+      `CAB decision: ${cabDecision}.`,
+      `Decision authority: ${decisionAuthority}.`,
+      `Condition list: ${conditionListReference}.`,
+      `Rollback approval: ${rollbackApprovalReference}.`,
+      `Decision minutes: ${decisionMinutesReference}.`,
+      `Kill switch: ${handoffPacket.killSwitch.name}=${handoffPacket.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: handoffPacket.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

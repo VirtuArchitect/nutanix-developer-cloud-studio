@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.36.0-production-cab-decision-record`.
+- Added production CAB decision records linked to production CAB handoff packets.
+- Added API endpoints for production CAB decision records.
+- Added Admin Operations production CAB decision panel.
+- Added tests proving missing CAB handoff packets or incomplete decision evidence block readiness.
+- Planned `v2.37.0-production-implementation-hold-record` for evidence-only implementation hold records.
 - Released `v2.35.0-production-cab-handoff-packet`.
 - Added production CAB handoff packets linked to production change freeze records.
 - Added API endpoints for production CAB handoff packets.
 - Added Admin Operations production CAB handoff panel.
 - Added tests proving missing freeze records or incomplete CAB evidence block handoff readiness.
-- Planned `v2.36.0-production-cab-decision-record` for evidence-only CAB decision records.
 - Released `v2.34.0-production-change-freeze-record`.
 - Added production change freeze records linked to production adapter authorization packets.
 - Added API endpoints for production change freeze records.

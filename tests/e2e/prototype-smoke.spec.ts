@@ -270,6 +270,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production CAB handoff packet")).toBeVisible();
   await expect(page.getByText("CAB handoff evidence")).toBeVisible();
   await expect(page.getByText("Change freeze ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production CAB decision" })).toBeVisible();
+  await page.getByRole("button", { name: "Record CAB decision" }).click();
+  await expect(page.getByText("Production CAB decision record")).toBeVisible();
+  await expect(page.getByText("CAB decision evidence")).toBeVisible();
+  await expect(page.getByText("CAB decision recorded")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

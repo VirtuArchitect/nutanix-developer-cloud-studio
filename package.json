@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.35.0-production-cab-handoff-packet",
+  "version": "2.36.0-production-cab-decision-record",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

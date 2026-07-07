@@ -443,6 +443,15 @@ Production CAB handoff packets assemble CAB evidence after production change fre
 
 Required role: `Platform Admin`.
 
+### Production CAB Decision Records
+
+- `GET /api/real-adapter/production-cab-decision-records`
+- `POST /api/real-adapter/production-cab-decision-records`
+
+Production CAB decision records capture the external CAB decision after handoff readiness and before any implementation control. Records require a ready CAB handoff packet, approved-with-conditions CAB decision, decision authority, condition list, rollback approval, decision minutes, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

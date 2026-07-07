@@ -1284,6 +1284,39 @@ export type ProductionCabHandoffPacket = {
   createdAt: string;
 };
 
+export type ProductionCabDecisionRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production CAB decision review";
+  requestedBy: string;
+  cabDecision: "Approved with conditions" | "Rejected" | "Deferred";
+  decisionAuthority: string;
+  conditionListReference: string;
+  rollbackApprovalReference: string;
+  decisionMinutesReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ProductionCabHandoffPacket["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

@@ -496,6 +496,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready freeze records, CAB owners, agenda references, risk acceptance, rollback representation, or go/no-go agenda evidence block readiness.
 - The prototype does not promote or enable real adapters.
 
+## Current Production CAB Decision Record Slice
+
+- API records production CAB decision records linked to production CAB handoff packets.
+- CAB decision records require approved-with-conditions decision, decision authority, condition list, rollback approval, and decision minutes.
+- Admin Operations surfaces CAB decision readiness, evidence references, and blockers.
+- Missing ready handoff packets, CAB decisions, authorities, condition lists, rollback approvals, or decision minutes block readiness.
+- The prototype does not promote or enable real adapters.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

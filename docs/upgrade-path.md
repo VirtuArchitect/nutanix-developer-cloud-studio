@@ -975,6 +975,23 @@ Exit gate:
 - CAB decision records are evidence-only.
 - No adapter is promoted by the prototype.
 
+### v2.37.0-production-implementation-hold-record
+
+Goal: record a production implementation hold after CAB decision readiness without promoting adapters from the prototype.
+
+Build:
+
+- Production implementation hold records linked to CAB decision records.
+- Implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment checks.
+- Admin Operations implementation hold panel with blockers and evidence references.
+- Tests proving missing ready CAB decision records, implementation owners, hold windows, condition acceptance, rollback implementation ownership, or freeze acknowledgment block hold readiness.
+
+Exit gate:
+
+- Production implementation hold APIs and UI are tested.
+- Implementation hold records are evidence-only.
+- No adapter is promoted by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

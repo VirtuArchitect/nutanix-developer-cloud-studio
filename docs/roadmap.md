@@ -440,10 +440,17 @@
 
 ## Phase 58 - Production CAB Decision Record (`v2.36.0-production-cab-decision-record`)
 
-- Add production CAB decision records linked to CAB handoff packets - planned
-- Require CAB decision, decision authority, condition list, rollback approval, and decision minutes - planned
-- Add Admin Operations CAB decision panel - planned
-- Keep CAB decision records evidence-only and require external implementation controls before adapter promotion - planned
+- Add production CAB decision records linked to CAB handoff packets - done
+- Require CAB decision, decision authority, condition list, rollback approval, and decision minutes - done
+- Add Admin Operations CAB decision panel - done
+- Keep CAB decision records evidence-only and require external implementation controls before adapter promotion - done
+
+## Phase 59 - Production Implementation Hold Record (`v2.37.0-production-implementation-hold-record`)
+
+- Add production implementation hold records linked to CAB decision records - planned
+- Require implementation owner, hold window, condition acceptance, rollback implementation owner, and release freeze acknowledgment - planned
+- Add Admin Operations implementation hold panel - planned
+- Keep implementation hold records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

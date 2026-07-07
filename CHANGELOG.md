@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.35.0-production-cab-handoff-packet`.
+This project uses release tags for public milestones. The current release is `v2.36.0-production-cab-decision-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production CAB decision records after CAB handoff packets are complete.
+- Add production implementation hold records after CAB decision records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.36.0-production-cab-decision-record] - 2026-07-07
+
+### Added
+
+- Production CAB decision records linked to production CAB handoff packets.
+- API endpoints for listing and recording production CAB decision records.
+- Admin Operations production CAB decision panel.
+- CAB decision, decision authority, condition list, rollback approval, and decision minutes checks.
+- Tests proving missing CAB handoff packets or incomplete decision evidence block decision readiness.
+
+### Notes
+
+- Production CAB decision records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.35.0-production-cab-handoff-packet] - 2026-07-07
 
