@@ -100,6 +100,7 @@ import {
   type ProductionExecutionFinalTurnoverRecord,
   type ProductionExecutionOperationalClosureRecord,
   type ProductionExecutionPostImplementationReviewRecord,
+  type ProductionExecutionImprovementClosureRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -162,6 +163,7 @@ import {
   createProductionExecutionFinalTurnoverRecordViaApi,
   createProductionExecutionOperationalClosureRecordViaApi,
   createProductionExecutionPostImplementationReviewRecordViaApi,
+  createProductionExecutionImprovementClosureRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -229,6 +231,7 @@ import {
   fetchProductionExecutionFinalTurnoverRecordsFromApi,
   fetchProductionExecutionOperationalClosureRecordsFromApi,
   fetchProductionExecutionPostImplementationReviewRecordsFromApi,
+  fetchProductionExecutionImprovementClosureRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -421,6 +424,9 @@ export function App() {
     productionExecutionPostImplementationReviewRecords,
     setProductionExecutionPostImplementationReviewRecords,
   ] = useState<ProductionExecutionPostImplementationReviewRecord[]>([]);
+  const [productionExecutionImprovementClosureRecords, setProductionExecutionImprovementClosureRecords] = useState<
+    ProductionExecutionImprovementClosureRecord[]
+  >([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -548,6 +554,7 @@ export function App() {
             apiProductionExecutionFinalTurnoverRecords,
             apiProductionExecutionOperationalClosureRecords,
             apiProductionExecutionPostImplementationReviewRecords,
+            apiProductionExecutionImprovementClosureRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -630,6 +637,7 @@ export function App() {
             fetchProductionExecutionFinalTurnoverRecordsFromApi(),
             fetchProductionExecutionOperationalClosureRecordsFromApi(),
             fetchProductionExecutionPostImplementationReviewRecordsFromApi(),
+            fetchProductionExecutionImprovementClosureRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -718,6 +726,7 @@ export function App() {
             setProductionExecutionPostImplementationReviewRecords(
               apiProductionExecutionPostImplementationReviewRecords
             );
+            setProductionExecutionImprovementClosureRecords(apiProductionExecutionImprovementClosureRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -922,6 +931,7 @@ export function App() {
       apiProductionExecutionFinalTurnoverRecords,
       apiProductionExecutionOperationalClosureRecords,
       apiProductionExecutionPostImplementationReviewRecords,
+      apiProductionExecutionImprovementClosureRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -1004,6 +1014,7 @@ export function App() {
       fetchProductionExecutionFinalTurnoverRecordsFromApi(),
       fetchProductionExecutionOperationalClosureRecordsFromApi(),
       fetchProductionExecutionPostImplementationReviewRecordsFromApi(),
+      fetchProductionExecutionImprovementClosureRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1087,6 +1098,7 @@ export function App() {
     setProductionExecutionFinalTurnoverRecords(apiProductionExecutionFinalTurnoverRecords);
     setProductionExecutionOperationalClosureRecords(apiProductionExecutionOperationalClosureRecords);
     setProductionExecutionPostImplementationReviewRecords(apiProductionExecutionPostImplementationReviewRecords);
+    setProductionExecutionImprovementClosureRecords(apiProductionExecutionImprovementClosureRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2687,6 +2699,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionImprovementClosure() {
+    const postImplementationReviewRecord = productionExecutionPostImplementationReviewRecords[0];
+    if (!postImplementationReviewRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionImprovementClosureRecordViaApi({
+        postImplementationReviewRecordId: postImplementationReviewRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionImprovementClosureRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionImprovementClosureRecords((current) => [
+      createMockProductionExecutionImprovementClosureRecord(postImplementationReviewRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2954,6 +2990,7 @@ export function App() {
             productionExecutionFinalTurnoverRecords={productionExecutionFinalTurnoverRecords}
             productionExecutionOperationalClosureRecords={productionExecutionOperationalClosureRecords}
             productionExecutionPostImplementationReviewRecords={productionExecutionPostImplementationReviewRecords}
+            productionExecutionImprovementClosureRecords={productionExecutionImprovementClosureRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -3026,6 +3063,7 @@ export function App() {
             recordProductionExecutionFinalTurnover={recordProductionExecutionFinalTurnover}
             recordProductionExecutionOperationalClosure={recordProductionExecutionOperationalClosure}
             recordProductionExecutionPostImplementationReview={recordProductionExecutionPostImplementationReview}
+            recordProductionExecutionImprovementClosure={recordProductionExecutionImprovementClosure}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3581,6 +3619,7 @@ function AdminView({
   productionExecutionFinalTurnoverRecords,
   productionExecutionOperationalClosureRecords,
   productionExecutionPostImplementationReviewRecords,
+  productionExecutionImprovementClosureRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3653,6 +3692,7 @@ function AdminView({
   recordProductionExecutionFinalTurnover,
   recordProductionExecutionOperationalClosure,
   recordProductionExecutionPostImplementationReview,
+  recordProductionExecutionImprovementClosure,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3739,6 +3779,7 @@ function AdminView({
   productionExecutionFinalTurnoverRecords: ProductionExecutionFinalTurnoverRecord[];
   productionExecutionOperationalClosureRecords: ProductionExecutionOperationalClosureRecord[];
   productionExecutionPostImplementationReviewRecords: ProductionExecutionPostImplementationReviewRecord[];
+  productionExecutionImprovementClosureRecords: ProductionExecutionImprovementClosureRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3814,6 +3855,7 @@ function AdminView({
   recordProductionExecutionFinalTurnover: () => void;
   recordProductionExecutionOperationalClosure: () => void;
   recordProductionExecutionPostImplementationReview: () => void;
+  recordProductionExecutionImprovementClosure: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4349,6 +4391,15 @@ function AdminView({
             <ProductionExecutionPostImplementationReviewRecordPanel
               records={productionExecutionPostImplementationReviewRecords}
               recordProductionExecutionPostImplementationReview={recordProductionExecutionPostImplementationReview}
+            />
+          </Panel>
+          <Panel
+            title="Production improvement closure"
+            action={`${productionExecutionImprovementClosureRecords.length} records`}
+          >
+            <ProductionExecutionImprovementClosureRecordPanel
+              records={productionExecutionImprovementClosureRecords}
+              recordProductionExecutionImprovementClosure={recordProductionExecutionImprovementClosure}
             />
           </Panel>
         </div>
@@ -8215,6 +8266,73 @@ function ProductionExecutionPostImplementationReviewRecordPanel({
             <span>Cost variance: {latest.costVarianceReviewReference || "missing"}</span>
             <span>Improvement backlog: {latest.improvementBacklogReference || "missing"}</span>
             <span>Operational closure: {latest.operationalClosureRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionImprovementClosureRecordPanel({
+  records,
+  recordProductionExecutionImprovementClosure,
+}: {
+  records: ProductionExecutionImprovementClosureRecord[];
+  recordProductionExecutionImprovementClosure: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution improvement closure record</strong>
+          <span>Captures action register, accepted deferrals, lessons learned, and next-cycle ownership.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionImprovementClosure}>
+          <Archive size={15} />
+          Record improvement closure
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution improvement closure record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.postImplementationReviewRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution improvement closure review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Improvement owner" value={latest.improvementOwner || "missing"} passed={Boolean(latest.improvementOwner)} />
+            <CheckLine icon={ScrollText} label="Action register" value={latest.actionRegisterReference || "missing"} passed={Boolean(latest.actionRegisterReference)} />
+            <CheckLine icon={ShieldCheck} label="Accepted deferrals" value={latest.acceptedDeferralsReference || "missing"} passed={Boolean(latest.acceptedDeferralsReference)} />
+            <CheckLine icon={Archive} label="Improvement closure" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution improvement closure evidence</strong>
+            <span>Lessons learned: {latest.lessonsLearnedPublicationReference || "missing"}</span>
+            <span>Next-cycle owner: {latest.nextCycleOwner || "missing"}</span>
+            <span>Post-implementation review: {latest.postImplementationReviewRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -14689,6 +14807,120 @@ function createMockProductionExecutionPostImplementationReviewRecord(
       }.`,
     ],
     killSwitch: operationalClosureRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionImprovementClosureRecord(
+  postImplementationReviewRecord: ProductionExecutionPostImplementationReviewRecord,
+  actor: string
+): ProductionExecutionImprovementClosureRecord {
+  const providerSlug = postImplementationReviewRecord.provider.toLowerCase();
+  const improvementOwner = "Production Improvement Owner";
+  const actionRegisterReference = `production-improvement-action-register-${providerSlug}.md`;
+  const acceptedDeferralsReference = `production-accepted-deferrals-${providerSlug}.md`;
+  const lessonsLearnedPublicationReference = `production-lessons-learned-publication-${providerSlug}.md`;
+  const nextCycleOwner = "Production Next-Cycle Owner";
+  const checks = [
+    {
+      name: "Post-implementation review ready",
+      passed:
+        postImplementationReviewRecord.status ===
+        "Ready for production execution post-implementation review",
+      detail: `${postImplementationReviewRecord.id} is ${postImplementationReviewRecord.status}.`,
+    },
+    {
+      name: "Improvement owner assigned",
+      passed: Boolean(improvementOwner),
+      detail: improvementOwner,
+    },
+    {
+      name: "Action register linked",
+      passed: Boolean(actionRegisterReference),
+      detail: actionRegisterReference,
+    },
+    {
+      name: "Accepted deferrals linked",
+      passed: Boolean(acceptedDeferralsReference),
+      detail: acceptedDeferralsReference,
+    },
+    {
+      name: "Lessons learned published",
+      passed: Boolean(lessonsLearnedPublicationReference),
+      detail: lessonsLearnedPublicationReference,
+    },
+    {
+      name: "Next-cycle owner assigned",
+      passed: Boolean(nextCycleOwner),
+      detail: nextCycleOwner,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !postImplementationReviewRecord.provisioningEnabled && !postImplementationReviewRecord.killSwitch.enabled,
+      detail: `${postImplementationReviewRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-improvement-closure-record-${providerSlug}-${Date.now()}`,
+    provider: postImplementationReviewRecord.provider,
+    postImplementationReviewRecordId: postImplementationReviewRecord.id,
+    operationalClosureRecordId: postImplementationReviewRecord.operationalClosureRecordId,
+    finalTurnoverRecordId: postImplementationReviewRecord.finalTurnoverRecordId,
+    serviceAcceptanceRecordId: postImplementationReviewRecord.serviceAcceptanceRecordId,
+    supportReadinessRecordId: postImplementationReviewRecord.supportReadinessRecordId,
+    operationsHandoverRecordId: postImplementationReviewRecord.operationsHandoverRecordId,
+    completionDossierRecordId: postImplementationReviewRecord.completionDossierRecordId,
+    finalArchiveCertificationRecordId: postImplementationReviewRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: postImplementationReviewRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: postImplementationReviewRecord.archivalHandoffRecordId,
+    closurePacketRecordId: postImplementationReviewRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: postImplementationReviewRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: postImplementationReviewRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: postImplementationReviewRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: postImplementationReviewRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: postImplementationReviewRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: postImplementationReviewRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: postImplementationReviewRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: postImplementationReviewRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: postImplementationReviewRecord.implementationHoldRecordId,
+    cabDecisionRecordId: postImplementationReviewRecord.cabDecisionRecordId,
+    cabHandoffPacketId: postImplementationReviewRecord.cabHandoffPacketId,
+    freezeRecordId: postImplementationReviewRecord.freezeRecordId,
+    authorizationPacketId: postImplementationReviewRecord.authorizationPacketId,
+    promotionDossierId: postImplementationReviewRecord.promotionDossierId,
+    closurePackageId: postImplementationReviewRecord.closurePackageId,
+    outcomeRecordId: postImplementationReviewRecord.outcomeRecordId,
+    handoffPackageId: postImplementationReviewRecord.handoffPackageId,
+    controlledSwitchRequestId: postImplementationReviewRecord.controlledSwitchRequestId,
+    auditPackageId: postImplementationReviewRecord.auditPackageId,
+    switchReviewId: postImplementationReviewRecord.switchReviewId,
+    activationId: postImplementationReviewRecord.activationId,
+    idempotencyKey: postImplementationReviewRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution improvement closure review"
+      : "Blocked",
+    requestedBy: actor,
+    improvementOwner,
+    actionRegisterReference,
+    acceptedDeferralsReference,
+    lessonsLearnedPublicationReference,
+    nextCycleOwner,
+    checks,
+    evidence: [
+      `Post-implementation review record: ${postImplementationReviewRecord.id}.`,
+      `Operational closure record: ${postImplementationReviewRecord.operationalClosureRecordId}.`,
+      `Improvement owner: ${improvementOwner}.`,
+      `Action register: ${actionRegisterReference}.`,
+      `Accepted deferrals: ${acceptedDeferralsReference}.`,
+      `Lessons learned: ${lessonsLearnedPublicationReference}.`,
+      `Next-cycle owner: ${nextCycleOwner}.`,
+      `Kill switch: ${postImplementationReviewRecord.killSwitch.name}=${
+        postImplementationReviewRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: postImplementationReviewRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

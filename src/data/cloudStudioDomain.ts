@@ -2115,6 +2115,56 @@ export type ProductionExecutionPostImplementationReviewRecord = {
   createdAt: string;
 };
 
+export type ProductionExecutionImprovementClosureRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  postImplementationReviewRecordId: string;
+  operationalClosureRecordId: string;
+  finalTurnoverRecordId: string;
+  serviceAcceptanceRecordId: string;
+  supportReadinessRecordId: string;
+  operationsHandoverRecordId: string;
+  completionDossierRecordId: string;
+  finalArchiveCertificationRecordId: string;
+  retentionAttestationRecordId: string;
+  archivalHandoffRecordId: string;
+  closurePacketRecordId: string;
+  closureAuthorizationRecordId: string;
+  outcomeAuthorizationRecordId: string;
+  executionHoldPointRecordId: string;
+  finalExecutionPacketRecordId: string;
+  changeTicketLockRecordId: string;
+  executionAuthorizationRecordId: string;
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production execution improvement closure review";
+  requestedBy: string;
+  improvementOwner: string;
+  actionRegisterReference: string;
+  acceptedDeferralsReference: string;
+  lessonsLearnedPublicationReference: string;
+  nextCycleOwner: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionPostImplementationReviewRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

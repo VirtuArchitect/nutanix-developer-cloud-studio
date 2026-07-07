@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.57.0-production-execution-improvement-closure-record`.
+- Added production execution improvement closure records linked to production execution post-implementation review records.
+- Added API endpoints for production execution improvement closure records.
+- Added Admin Operations production improvement closure panel.
+- Added tests proving missing post-implementation review records or incomplete improvement closure evidence block readiness.
+- Planned `v2.58.0-production-execution-final-acceptance-archive-record` for evidence-only final acceptance archive records.
 - Released `v2.56.0-production-execution-post-implementation-review-record`.
 - Added production execution post-implementation review records linked to production execution operational closure records.
 - Added API endpoints for production execution post-implementation review records.

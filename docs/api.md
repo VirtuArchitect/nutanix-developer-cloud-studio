@@ -632,6 +632,15 @@ Production execution post-implementation review records capture PIR evidence aft
 
 Required role: `Platform Admin`.
 
+### Production Execution Improvement Closure Records
+
+- `GET /api/real-adapter/production-execution-improvement-closure-records`
+- `POST /api/real-adapter/production-execution-improvement-closure-records`
+
+Production execution improvement closure records capture improvement closure evidence after post-implementation review and before any future final acceptance archive phase. Records require a ready post-implementation review record, improvement owner, action register, accepted deferrals, lessons-learned publication, next-cycle owner, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

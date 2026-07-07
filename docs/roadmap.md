@@ -587,10 +587,17 @@
 
 ## Phase 79 - Production Execution Improvement Closure Record (`v2.57.0-production-execution-improvement-closure-record`)
 
-- Add production execution improvement closure records linked to post-implementation review records - planned
-- Require improvement owner, action register, accepted deferrals, lessons-learned publication, and next-cycle owner - planned
-- Add Admin Operations improvement closure panel - planned
-- Keep improvement closure records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution improvement closure records linked to post-implementation review records - done
+- Require improvement owner, action register, accepted deferrals, lessons-learned publication, and next-cycle owner - done
+- Add Admin Operations improvement closure panel - done
+- Keep improvement closure records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 80 - Production Execution Final Acceptance Archive Record (`v2.58.0-production-execution-final-acceptance-archive-record`)
+
+- Add production execution final acceptance archive records linked to improvement closure records - planned
+- Require archive owner, acceptance archive index, final evidence checksum, stakeholder receipt proof, and retrieval owner - planned
+- Add Admin Operations final acceptance archive panel - planned
+- Keep final acceptance archive records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

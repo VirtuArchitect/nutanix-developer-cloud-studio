@@ -57,6 +57,7 @@ import {
   createProductionExecutionFinalTurnoverRecordViaApi,
   createProductionExecutionOperationalClosureRecordViaApi,
   createProductionExecutionPostImplementationReviewRecordViaApi,
+  createProductionExecutionImprovementClosureRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -131,6 +132,7 @@ import {
   fetchProductionExecutionFinalTurnoverRecordsFromApi,
   fetchProductionExecutionOperationalClosureRecordsFromApi,
   fetchProductionExecutionPostImplementationReviewRecordsFromApi,
+  fetchProductionExecutionImprovementClosureRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -648,6 +650,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionPostImplementationReviewRecordViaApi({
       operationalClosureRecordId: "production-execution-operational-closure-record-ndb-1",
     });
+    await fetchProductionExecutionImprovementClosureRecordsFromApi();
+    await createProductionExecutionImprovementClosureRecordViaApi({
+      postImplementationReviewRecordId: "production-execution-post-implementation-review-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1054,6 +1060,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-operational-closure-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      91,
+      "/api/real-adapter/production-execution-improvement-closure-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      92,
+      "/api/real-adapter/production-execution-improvement-closure-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-post-implementation-review-record-ndb-1"),
       })
     );
   });

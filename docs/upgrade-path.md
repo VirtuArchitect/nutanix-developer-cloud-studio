@@ -1332,6 +1332,23 @@ Exit gate:
 - Improvement closure records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.58.0-production-execution-final-acceptance-archive-record
+
+Goal: record final acceptance archive evidence after improvement closure without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production execution final acceptance archive records linked to improvement closure records.
+- Archive owner, acceptance archive index, final evidence checksum, stakeholder receipt proof, and retrieval owner checks.
+- Admin Operations final acceptance archive panel with blockers and evidence references.
+- Tests proving missing ready improvement closure records, archive owners, archive indexes, final evidence checksums, stakeholder receipt proof, or retrieval owners block final acceptance archive.
+
+Exit gate:
+
+- Production execution final acceptance archive APIs and UI are tested.
+- Final acceptance archive records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

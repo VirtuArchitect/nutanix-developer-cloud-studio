@@ -74,6 +74,7 @@ import type {
   ProductionExecutionFinalTurnoverRecord,
   ProductionExecutionOperationalClosureRecord,
   ProductionExecutionPostImplementationReviewRecord,
+  ProductionExecutionImprovementClosureRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -163,6 +164,7 @@ export type ApiState = {
   productionExecutionFinalTurnoverRecords: ProductionExecutionFinalTurnoverRecord[];
   productionExecutionOperationalClosureRecords: ProductionExecutionOperationalClosureRecord[];
   productionExecutionPostImplementationReviewRecords: ProductionExecutionPostImplementationReviewRecord[];
+  productionExecutionImprovementClosureRecords: ProductionExecutionImprovementClosureRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -720,6 +722,16 @@ export type CreateProductionExecutionPostImplementationReviewRecordRequest = {
   incidentReviewProofReference?: string;
   costVarianceReviewReference?: string;
   improvementBacklogReference?: string;
+};
+
+export type CreateProductionExecutionImprovementClosureRecordRequest = {
+  postImplementationReviewRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  improvementOwner?: string;
+  actionRegisterReference?: string;
+  acceptedDeferralsReference?: string;
+  lessonsLearnedPublicationReference?: string;
+  nextCycleOwner?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {
