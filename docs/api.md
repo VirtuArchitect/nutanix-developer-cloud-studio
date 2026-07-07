@@ -668,6 +668,15 @@ Production execution archive retrieval validation records capture retrievability
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Drill Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-drill-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-drill-records`
+
+Production execution archive recovery drill records capture recovery drill evidence after archive retrieval validation and before any future archive recovery acceptance phase. Records require a ready archive retrieval validation record, drill owner, recovery scenario, elapsed recovery proof, restored artifact review, drill sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

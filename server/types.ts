@@ -78,6 +78,7 @@ import type {
   ProductionExecutionFinalAcceptanceArchiveRecord,
   ProductionExecutionReadinessArchiveHandoffRecord,
   ProductionExecutionArchiveRetrievalValidationRecord,
+  ProductionExecutionArchiveRecoveryDrillRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -171,6 +172,7 @@ export type ApiState = {
   productionExecutionFinalAcceptanceArchiveRecords: ProductionExecutionFinalAcceptanceArchiveRecord[];
   productionExecutionReadinessArchiveHandoffRecords: ProductionExecutionReadinessArchiveHandoffRecord[];
   productionExecutionArchiveRetrievalValidationRecords: ProductionExecutionArchiveRetrievalValidationRecord[];
+  productionExecutionArchiveRecoveryDrillRecords: ProductionExecutionArchiveRecoveryDrillRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -768,6 +770,16 @@ export type CreateProductionExecutionArchiveRetrievalValidationRecordRequest = {
   checksumVerificationReference?: string;
   accessAuditReference?: string;
   recoverySlaWitnessReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRecoveryDrillRecordRequest = {
+  archiveRetrievalValidationRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  drillOwner?: string;
+  recoveryScenarioReference?: string;
+  elapsedRecoveryProofReference?: string;
+  restoredArtifactReviewReference?: string;
+  drillSignOffReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

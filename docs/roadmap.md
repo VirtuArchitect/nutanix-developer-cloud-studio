@@ -615,10 +615,17 @@
 
 ## Phase 83 - Production Execution Archive Recovery Drill Record (`v2.61.0-production-execution-archive-recovery-drill-record`)
 
-- Add production execution archive recovery drill records linked to archive retrieval validation records - planned
-- Require drill owner, recovery scenario, elapsed recovery proof, restored artifact review, and drill sign-off - planned
-- Add Admin Operations archive recovery drill panel - planned
-- Keep archive recovery drill records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery drill records linked to archive retrieval validation records - done
+- Require drill owner, recovery scenario, elapsed recovery proof, restored artifact review, and drill sign-off - done
+- Add Admin Operations archive recovery drill panel - done
+- Keep archive recovery drill records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 84 - Production Execution Archive Recovery Acceptance Record (`v2.62.0-production-execution-archive-recovery-acceptance-record`)
+
+- Add production execution archive recovery acceptance records linked to archive recovery drill records - planned
+- Require acceptance owner, recovery evidence packet, RTO/RPO variance review, residual recovery risk register, and acceptance sign-off - planned
+- Add Admin Operations archive recovery acceptance panel - planned
+- Keep archive recovery acceptance records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

@@ -1395,6 +1395,22 @@ Promotion criteria:
 
 - Production execution archive recovery drill APIs and UI are tested.
 - Archive recovery drill records are evidence-only.
+
+### v2.62.0-production-execution-archive-recovery-acceptance-record
+
+Goal: record archive recovery acceptance evidence after archive recovery drill without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery acceptance records linked to archive recovery drill records.
+- Require acceptance owner, recovery evidence packet, RTO/RPO variance review, residual recovery risk register, and acceptance sign-off.
+- Add Admin Operations archive recovery acceptance panel with blockers and evidence references.
+- Add tests proving missing ready archive recovery drill records, acceptance owners, recovery evidence packets, RTO/RPO variance reviews, residual recovery risk registers, or acceptance sign-offs block archive recovery acceptance readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery acceptance APIs and UI are tested.
+- Archive recovery acceptance records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
 ## Automatic Implementation Rule

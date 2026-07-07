@@ -1208,6 +1208,18 @@ describe("api server", () => {
     const productionExecutionArchiveRetrievalValidationRecords = await requestJson(
       "/api/real-adapter/production-execution-archive-retrieval-validation-records"
     );
+    const productionExecutionArchiveRecoveryDrillRecord = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-drill-records",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          archiveRetrievalValidationRecordId: productionExecutionArchiveRetrievalValidationRecord.data.id,
+        }),
+      }
+    );
+    const productionExecutionArchiveRecoveryDrillRecords = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-drill-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -2121,6 +2133,25 @@ describe("api server", () => {
         expect.objectContaining({ id: productionExecutionArchiveRetrievalValidationRecord.data.id }),
       ])
     );
+    expect(productionExecutionArchiveRecoveryDrillRecord.data).toMatchObject({
+      provider: "NDB",
+      archiveRetrievalValidationRecordId: productionExecutionArchiveRetrievalValidationRecord.data.id,
+      readinessArchiveHandoffRecordId: productionExecutionReadinessArchiveHandoffRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionExecutionArchiveRecoveryDrillRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Archive retrieval validation ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not execute adapter", passed: true }),
+      ])
+    );
+    expect(productionExecutionArchiveRecoveryDrillRecords.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: productionExecutionArchiveRecoveryDrillRecord.data.id }),
+      ])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -2225,6 +2256,10 @@ describe("api server", () => {
         }),
         expect.objectContaining({
           action: "real-adapter.production-execution-archive-retrieval-validation.recorded",
+          target: "NDB",
+        }),
+        expect.objectContaining({
+          action: "real-adapter.production-execution-archive-recovery-drill.recorded",
           target: "NDB",
         }),
       ])

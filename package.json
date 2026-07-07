@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.60.0-production-execution-archive-retrieval-validation-record",
+  "version": "2.61.0-production-execution-archive-recovery-drill-record",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

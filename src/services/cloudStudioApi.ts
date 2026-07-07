@@ -71,6 +71,7 @@ import type {
   ProductionExecutionFinalAcceptanceArchiveRecord,
   ProductionExecutionReadinessArchiveHandoffRecord,
   ProductionExecutionArchiveRetrievalValidationRecord,
+  ProductionExecutionArchiveRecoveryDrillRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -562,6 +563,12 @@ export async function fetchProductionExecutionReadinessArchiveHandoffRecordsFrom
 export async function fetchProductionExecutionArchiveRetrievalValidationRecordsFromApi() {
   return fetchJson<ProductionExecutionArchiveRetrievalValidationRecord[]>(
     "/api/real-adapter/production-execution-archive-retrieval-validation-records"
+  );
+}
+
+export async function fetchProductionExecutionArchiveRecoveryDrillRecordsFromApi() {
+  return fetchJson<ProductionExecutionArchiveRecoveryDrillRecord[]>(
+    "/api/real-adapter/production-execution-archive-recovery-drill-records"
   );
 }
 
@@ -1231,6 +1238,19 @@ export async function createProductionExecutionArchiveRetrievalValidationRecordV
 }) {
   return fetchJson<ProductionExecutionArchiveRetrievalValidationRecord>(
     "/api/real-adapter/production-execution-archive-retrieval-validation-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionArchiveRecoveryDrillRecordViaApi(payload: {
+  archiveRetrievalValidationRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionArchiveRecoveryDrillRecord>(
+    "/api/real-adapter/production-execution-archive-recovery-drill-records",
     {
       method: "POST",
       body: JSON.stringify(payload),
