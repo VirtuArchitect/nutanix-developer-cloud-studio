@@ -40,6 +40,7 @@ import {
   fetchPlatformServiceRequestsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
   fetchProviderReleaseGateRecordsFromApi,
+  fetchProviderReleaseReadinessSummaryFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
@@ -379,11 +380,17 @@ describe("cloudStudioApi", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await fetchProviderReleaseGateRecordsFromApi();
+    await fetchProviderReleaseReadinessSummaryFromApi();
     await createProviderReleaseGateRecordViaApi({ provider: "NDB", releaseApprover: "platform.owner" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/provider-release-gates", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
+      "/api/provider-release-readiness",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
       "/api/provider-release-gates",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("platform.owner") })
     );

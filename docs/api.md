@@ -271,6 +271,7 @@ Required role: `Developer` or `Platform Admin`.
 - `POST /api/platform-services/adapter-contracts`
 - `GET /api/provider-release-gates`
 - `POST /api/provider-release-gates`
+- `GET /api/provider-release-readiness`
 - `GET /api/release-evidence-exports`
 - `POST /api/release-evidence-exports`
 
@@ -279,6 +280,8 @@ The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter
 The platform-service adapter contract endpoint maps approved service request fields into disabled future provider payloads for NKP, NDB, NUS, and NAI. Contract reviews include the related preflight run, blocked operations, provider kill switch state, and `provisioningEnabled=false`.
 
 Provider release gate records roll up the evidence required before NCI, NKP, NDB, NUS, or NAI can be considered for a controlled lab release. Gates check active lab scope, credential reference diagnostics, VM lifecycle proof, adapter enablement, provider preflight, provider contract review, audit export, release approver, and disabled real-adapter switch state.
+
+Provider release readiness summarizes latest release gate status, check counts, gap counts, blocked operations, and kill switch state across NCI, NKP, NDB, NUS, and NAI. It also identifies the nearest-to-ready and most-blocked providers.
 
 Release evidence exports prepare redacted JSON manifests linked to provider release gates. Manifests include provider, gate status, check counts, blocked operations, kill switch state, checksum, and evidence references only. Inline auth material is redacted before persistence.
 

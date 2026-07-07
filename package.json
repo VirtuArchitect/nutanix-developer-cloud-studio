@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.10.0-release-evidence-export-hardening",
+  "version": "2.11.0-provider-release-dashboard-hardening",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

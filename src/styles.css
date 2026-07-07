@@ -814,6 +814,32 @@ button {
   gap: 10px;
 }
 
+.releaseReadinessList {
+  display: grid;
+  gap: 10px;
+}
+
+.releaseReadinessRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(120px, 220px) auto minmax(180px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.releaseReadinessRow strong,
+.releaseReadinessRow span,
+.releaseReadinessRow small {
+  display: block;
+}
+
+.releaseReadinessRow small {
+  color: #60747c;
+}
+
 .governanceRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1229,6 +1255,10 @@ meter {
   }
 
   .tableRow {
+    grid-template-columns: 1fr;
+  }
+
+  .releaseReadinessRow {
     grid-template-columns: 1fr;
   }
 

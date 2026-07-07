@@ -550,6 +550,23 @@ Exit gate:
 - Release readiness remains evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.12.0-controlled-lab-release-runbook
+
+Goal: document the exact human runbook required before any future controlled lab adapter release can be proposed.
+
+Build:
+
+- Operator runbook records linked to provider release readiness.
+- Required sign-offs for platform owner, security reviewer, rollback owner, and lab owner.
+- Admin Operations runbook checklist for stop conditions and escalation contacts.
+- Tests proving missing sign-offs block runbook completion.
+
+Exit gate:
+
+- Runbook APIs and UI are tested.
+- Runbook completion remains evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createProviderReleaseGateRecord, ProviderReleaseGateError } from "./providerReleaseGate";
+import {
+  createProviderReleaseGateRecord,
+  createProviderReleaseReadinessSummary,
+  ProviderReleaseGateError,
+} from "./providerReleaseGate";
 import { createDefaultState } from "./storage";
 
 describe("provider release gate", () => {
@@ -35,5 +39,35 @@ describe("provider release gate", () => {
         "platform.admin"
       )
     ).toThrowError(ProviderReleaseGateError);
+  });
+
+  it("summarizes provider release readiness gaps", () => {
+    const state = createDefaultState();
+    state.providerReleaseGateRecords = [
+      createProviderReleaseGateRecord(state, { provider: "NDB", releaseApprover: "platform.owner" }, "platform.admin"),
+    ];
+
+    const summary = createProviderReleaseReadinessSummary(state);
+
+    expect(summary).toMatchObject({
+      nearestToReady: "NDB",
+      mostBlocked: "NDB",
+      provisioningEnabled: false,
+    });
+    expect(summary.providers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          provider: "NDB",
+          status: "Blocked",
+          gapCount: expect.any(Number),
+          gaps: expect.arrayContaining(["Approved lab scope"]),
+        }),
+        expect.objectContaining({
+          provider: "NCI",
+          status: "No gate",
+          gaps: ["Provider release gate not reviewed"],
+        }),
+      ])
+    );
   });
 });

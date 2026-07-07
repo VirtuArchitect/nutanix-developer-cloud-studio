@@ -1,4 +1,4 @@
-import type { ProviderReleaseGateRecord } from "../src/data/cloudStudioDomain";
+import type { ProviderReleaseGateRecord, ProviderReleaseReadinessSummary } from "../src/data/cloudStudioDomain";
 import { blockedProviderOperations } from "./adapterEnablement";
 import { getActiveLabAuthorizationScope, isLabScopeReadyForProvider } from "./authorizationEvidence";
 import { createCredentialReferenceDiagnostics } from "./credentialReferences";
@@ -15,6 +15,47 @@ export class ProviderReleaseGateError extends Error {
 }
 
 const releaseGateProviders: ProviderReleaseGateRecord["provider"][] = ["NCI", "NKP", "NDB", "NUS", "NAI"];
+
+export function createProviderReleaseReadinessSummary(state: ApiState): ProviderReleaseReadinessSummary {
+  const providers: ProviderReleaseReadinessSummary["providers"] = releaseGateProviders.map((provider) => {
+    const latestGate = state.providerReleaseGateRecords.find((record) => record.provider === provider);
+    const gaps = latestGate?.checks.filter((check) => !check.passed).map((check) => check.name) ?? [
+      "Provider release gate not reviewed",
+    ];
+    const passedChecks = latestGate?.checks.filter((check) => check.passed).length ?? 0;
+    const checkCount = latestGate?.checks.length ?? 0;
+
+    return {
+      provider,
+      latestGateId: latestGate?.id,
+      status: latestGate?.status ?? "No gate",
+      checkCount,
+      passedChecks,
+      gapCount: gaps.length,
+      gaps,
+      blockedOperations: latestGate?.blockedOperations ?? blockedProviderOperations(provider),
+      killSwitch: latestGate?.killSwitch ?? {
+        name: `NDC_${provider}_REAL_ADAPTER_ENABLED`,
+        enabled: process.env[`NDC_${provider}_REAL_ADAPTER_ENABLED`] === "true",
+      },
+    };
+  });
+
+  const reviewedProviders = providers.filter((provider) => provider.checkCount > 0);
+  const nearestToReady = [...reviewedProviders].sort(
+    (a, b) => b.passedChecks - a.passedChecks || a.gapCount - b.gapCount
+  )[0]?.provider;
+  const mostBlocked = [...providers].sort((a, b) => b.gapCount - a.gapCount || a.passedChecks - b.passedChecks)[0]
+    ?.provider;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    providers,
+    nearestToReady,
+    mostBlocked,
+    provisioningEnabled: false,
+  };
+}
 
 export function createProviderReleaseGateRecord(
   state: ApiState,

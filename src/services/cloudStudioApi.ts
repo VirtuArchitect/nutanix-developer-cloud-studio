@@ -29,6 +29,7 @@ import type {
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
+  ProviderReleaseReadinessSummary,
   ReleaseEvidenceExportRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -275,6 +276,10 @@ export async function fetchPlatformServiceAdapterContractReviewsFromApi() {
 
 export async function fetchProviderReleaseGateRecordsFromApi() {
   return fetchJson<ProviderReleaseGateRecord[]>("/api/provider-release-gates");
+}
+
+export async function fetchProviderReleaseReadinessSummaryFromApi() {
+  return fetchJson<ProviderReleaseReadinessSummary>("/api/provider-release-readiness");
 }
 
 export async function fetchReleaseEvidenceExportsFromApi() {

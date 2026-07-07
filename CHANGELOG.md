@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.10.0-release-evidence-export-hardening`.
+This project uses release tags for public milestones. The current release is `v2.11.0-provider-release-dashboard-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,20 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.11.0-provider-release-dashboard-hardening] - 2026-07-07
+
+### Added
+
+- Provider release readiness summary for NCI, NKP, NDB, NUS, and NAI.
+- API endpoint for release readiness comparison across providers.
+- Admin Control Plane panel for nearest-to-ready, most-blocked, per-provider gap counts, and disabled execution status.
+- Tests proving summary counts match provider release gate records.
+
+### Notes
+
+- Release readiness remains evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.10.0-release-evidence-export-hardening] - 2026-07-07
 

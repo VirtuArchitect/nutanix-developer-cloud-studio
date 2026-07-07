@@ -63,6 +63,7 @@ import {
 } from "./privateCloudOperations";
 import {
   createProviderReleaseGateRecord,
+  createProviderReleaseReadinessSummary,
   ProviderReleaseGateError,
 } from "./providerReleaseGate";
 import {
@@ -476,6 +477,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/provider-release-gates") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.providerReleaseGateRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/provider-release-readiness") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createProviderReleaseReadinessSummary(state) });
     return;
   }
 

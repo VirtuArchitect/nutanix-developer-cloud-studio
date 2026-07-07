@@ -27,6 +27,7 @@ import type {
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
+  ProviderReleaseReadinessSummary,
   ReleaseEvidenceExportRecord,
   RegistryStatus,
   ResourceProfile,
@@ -207,6 +208,8 @@ export type RegistryActionResult = {
 export type ApiResponse<T> = {
   data: T;
 };
+
+export type ProviderReleaseReadinessResponse = ProviderReleaseReadinessSummary;
 
 export type ApiError = {
   error: {

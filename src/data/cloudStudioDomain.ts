@@ -636,6 +636,24 @@ export type ReleaseEvidenceExportRecord = {
   createdAt: string;
 };
 
+export type ProviderReleaseReadinessSummary = {
+  generatedAt: string;
+  providers: Array<{
+    provider: ProviderReleaseGateRecord["provider"];
+    latestGateId?: string;
+    status: "No gate" | ProviderReleaseGateRecord["status"];
+    checkCount: number;
+    passedChecks: number;
+    gapCount: number;
+    gaps: string[];
+    blockedOperations: string[];
+    killSwitch: ProviderReleaseGateRecord["killSwitch"];
+  }>;
+  nearestToReady?: ProviderReleaseGateRecord["provider"];
+  mostBlocked?: ProviderReleaseGateRecord["provider"];
+  provisioningEnabled: false;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

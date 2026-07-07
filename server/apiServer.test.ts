@@ -802,6 +802,7 @@ describe("api server", () => {
       body: JSON.stringify({ provider: "NDB", releaseApprover: "platform.owner" }),
     });
     const releaseGates = await requestJson("/api/provider-release-gates");
+    const releaseReadiness = await requestJson("/api/provider-release-readiness");
     const releaseExport = await requestJson("/api/release-evidence-exports", {
       method: "POST",
       body: JSON.stringify({ gateId: releaseGate.data.id }),
@@ -865,6 +866,18 @@ describe("api server", () => {
       ])
     );
     expect(releaseGates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: releaseGate.data.id })]));
+    expect(releaseReadiness.data).toMatchObject({
+      nearestToReady: "NDB",
+      mostBlocked: expect.any(String),
+      provisioningEnabled: false,
+      providers: expect.arrayContaining([
+        expect.objectContaining({
+          provider: "NDB",
+          latestGateId: releaseGate.data.id,
+          gapCount: expect.any(Number),
+        }),
+      ]),
+    });
     expect(releaseExport.data).toMatchObject({
       provider: "NDB",
       gateId: releaseGate.data.id,

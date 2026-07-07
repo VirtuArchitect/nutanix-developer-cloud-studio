@@ -62,6 +62,7 @@ import {
   type ProvisioningAdapterReadiness,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
+  type ProviderReleaseReadinessSummary,
   type ReleaseEvidenceExportRecord,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
@@ -134,6 +135,7 @@ import {
   fetchPlatformServicePreflightRunsFromApi,
   fetchPlatformServiceRequestsFromApi,
   fetchProviderReleaseGateRecordsFromApi,
+  fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
@@ -207,6 +209,9 @@ export function App() {
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [platformServiceAdapterContractReviews, setPlatformServiceAdapterContractReviews] = useState<PlatformServiceAdapterContractReview[]>([]);
   const [providerReleaseGateRecords, setProviderReleaseGateRecords] = useState<ProviderReleaseGateRecord[]>([]);
+  const [providerReleaseReadinessSummary, setProviderReleaseReadinessSummary] = useState<ProviderReleaseReadinessSummary>(() =>
+    createMockProviderReleaseReadinessSummary([])
+  );
   const [releaseEvidenceExports, setReleaseEvidenceExports] = useState<ReleaseEvidenceExportRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
@@ -288,6 +293,7 @@ export function App() {
             apiPlatformServicePreflightRuns,
             apiPlatformServiceAdapterContractReviews,
             apiProviderReleaseGateRecords,
+            apiProviderReleaseReadinessSummary,
             apiReleaseEvidenceExports,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
@@ -324,6 +330,7 @@ export function App() {
             fetchPlatformServicePreflightRunsFromApi(),
             fetchPlatformServiceAdapterContractReviewsFromApi(),
             fetchProviderReleaseGateRecordsFromApi(),
+            fetchProviderReleaseReadinessSummaryFromApi(),
             fetchReleaseEvidenceExportsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
@@ -362,6 +369,7 @@ export function App() {
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
             setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
+            setProviderReleaseReadinessSummary(apiProviderReleaseReadinessSummary);
             setReleaseEvidenceExports(apiReleaseEvidenceExports);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -520,6 +528,7 @@ export function App() {
       apiPlatformServicePreflightRuns,
       apiPlatformServiceAdapterContractReviews,
       apiProviderReleaseGateRecords,
+      apiProviderReleaseReadinessSummary,
       apiReleaseEvidenceExports,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
@@ -556,6 +565,7 @@ export function App() {
       fetchPlatformServicePreflightRunsFromApi(),
       fetchPlatformServiceAdapterContractReviewsFromApi(),
       fetchProviderReleaseGateRecordsFromApi(),
+      fetchProviderReleaseReadinessSummaryFromApi(),
       fetchReleaseEvidenceExportsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
@@ -593,6 +603,7 @@ export function App() {
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
     setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
+    setProviderReleaseReadinessSummary(apiProviderReleaseReadinessSummary);
     setReleaseEvidenceExports(apiReleaseEvidenceExports);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -1058,8 +1069,7 @@ export function App() {
       return;
     }
 
-    setProviderReleaseGateRecords((current) => [
-      createMockProviderReleaseGateRecord({
+    const record = createMockProviderReleaseGateRecord({
         provider,
         actor: session.user,
         session,
@@ -1072,9 +1082,12 @@ export function App() {
         platformServiceAdapterContractReviews,
         platformServicePreflightRuns,
         auditExports,
-      }),
-      ...current,
-    ]);
+    });
+    setProviderReleaseGateRecords((current) => {
+      const next = [record, ...current];
+      setProviderReleaseReadinessSummary(createMockProviderReleaseReadinessSummary(next));
+      return next;
+    });
   }
 
   async function createProductionReadinessReview() {
@@ -1371,6 +1384,7 @@ export function App() {
             platformServicePreflightRuns={platformServicePreflightRuns}
             platformServiceAdapterContractReviews={platformServiceAdapterContractReviews}
             providerReleaseGateRecords={providerReleaseGateRecords}
+            providerReleaseReadinessSummary={providerReleaseReadinessSummary}
             vmLifecycleProofs={vmLifecycleProofs}
             rollbackDestroyProofs={rollbackDestroyProofs}
             ahvCreateAdapterContractReviews={ahvCreateAdapterContractReviews}
@@ -1907,6 +1921,7 @@ function AdminView({
   platformServicePreflightRuns,
   platformServiceAdapterContractReviews,
   providerReleaseGateRecords,
+  providerReleaseReadinessSummary,
   vmLifecycleProofs,
   rollbackDestroyProofs,
   ahvCreateAdapterContractReviews,
@@ -1974,6 +1989,7 @@ function AdminView({
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
   providerReleaseGateRecords: ProviderReleaseGateRecord[];
+  providerReleaseReadinessSummary: ProviderReleaseReadinessSummary;
   vmLifecycleProofs: VmLifecycleProof[];
   rollbackDestroyProofs: RollbackDestroyProofRecord[];
   ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
@@ -2198,6 +2214,9 @@ function AdminView({
               reviews={platformServiceAdapterContractReviews}
               reviewPlatformServiceAdapterContract={reviewPlatformServiceAdapterContract}
             />
+          </Panel>
+          <Panel title="Provider release readiness" action={`${providerReleaseReadinessSummary.providers.length} providers`}>
+            <ProviderReleaseReadinessPanel summary={providerReleaseReadinessSummary} />
           </Panel>
           <Panel title="Provider release gates" action={`${providerReleaseGateRecords.length} reviews`}>
             <ProviderReleaseGatePanel
@@ -3741,6 +3760,41 @@ function PlatformServiceAdapterContractPanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ProviderReleaseReadinessPanel({ summary }: { summary: ProviderReleaseReadinessSummary }) {
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Gauge size={18} />
+        <div>
+          <strong>Provider release readiness summary</strong>
+          <span>Compares evidence gaps across NCI, NKP, NDB, NUS, and NAI without enabling provider execution.</span>
+        </div>
+      </div>
+      <div className="platformConfigGrid">
+        <CheckLine icon={ShieldCheck} label="Nearest ready" value={summary.nearestToReady ?? "No provider reviewed"} passed={Boolean(summary.nearestToReady)} />
+        <CheckLine icon={LockKeyhole} label="Most blocked" value={summary.mostBlocked ?? "No provider reviewed"} passed={false} />
+        <CheckLine icon={Activity} label="Providers" value={`${summary.providers.length}`} passed />
+        <CheckLine icon={Gauge} label="Execution" value="Disabled" passed={false} />
+      </div>
+      <div className="releaseReadinessList">
+        {summary.providers.map((provider) => (
+          <div className="releaseReadinessRow" key={provider.provider}>
+            <div>
+              <strong>{provider.provider}</strong>
+              <span>{provider.status}</span>
+            </div>
+            <meter min="0" max={Math.max(provider.checkCount, 1)} value={provider.passedChecks} />
+            <span className={`status ${provider.gapCount === 0 && provider.checkCount > 0 ? "ready" : "failed"}`}>
+              {provider.gapCount} gaps
+            </span>
+            <small>{provider.gaps.slice(0, 2).join(" / ")}</small>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -5406,6 +5460,49 @@ function createMockProviderReleaseGateRecord({
     },
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProviderReleaseReadinessSummary(
+  records: ProviderReleaseGateRecord[]
+): ProviderReleaseReadinessSummary {
+  const providers: ProviderReleaseGateRecord["provider"][] = ["NCI", "NKP", "NDB", "NUS", "NAI"];
+  const summaries: ProviderReleaseReadinessSummary["providers"] = providers.map((provider) => {
+    const latestGate = records.find((record) => record.provider === provider);
+    const gaps = latestGate?.checks.filter((check) => !check.passed).map((check) => check.name) ?? [
+      "Provider release gate not reviewed",
+    ];
+    const passedChecks = latestGate?.checks.filter((check) => check.passed).length ?? 0;
+    const checkCount = latestGate?.checks.length ?? 0;
+
+    return {
+      provider,
+      latestGateId: latestGate?.id,
+      status: latestGate?.status ?? "No gate",
+      checkCount,
+      passedChecks,
+      gapCount: gaps.length,
+      gaps,
+      blockedOperations: latestGate?.blockedOperations ?? blockedPlatformProviderOperations(provider),
+      killSwitch: latestGate?.killSwitch ?? {
+        name: `NDC_${provider}_REAL_ADAPTER_ENABLED`,
+        enabled: false,
+      },
+    };
+  });
+  const reviewedProviders = summaries.filter((provider) => provider.checkCount > 0);
+  const nearestToReady = [...reviewedProviders].sort(
+    (a, b) => b.passedChecks - a.passedChecks || a.gapCount - b.gapCount
+  )[0]?.provider;
+  const mostBlocked = [...summaries].sort((a, b) => b.gapCount - a.gapCount || a.passedChecks - b.passedChecks)[0]
+    ?.provider;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    providers: summaries,
+    nearestToReady,
+    mostBlocked,
+    provisioningEnabled: false,
   };
 }
 

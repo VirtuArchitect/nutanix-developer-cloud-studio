@@ -265,10 +265,17 @@
 
 ## Phase 33 - Provider Release Dashboard Hardening (`v2.11.0-provider-release-dashboard-hardening`)
 
-- Add provider release readiness summary grouped by provider - planned
-- Add evidence gap counts across release gate categories - planned
-- Add Admin dashboard cards for nearest-to-ready and most-blocked provider - planned
-- Keep release readiness evidence-only and real adapter execution disabled - planned
+- Add provider release readiness summary grouped by provider - done
+- Add evidence gap counts across release gate categories - done
+- Add Admin dashboard cards for nearest-to-ready and most-blocked provider - done
+- Keep release readiness evidence-only and real adapter execution disabled - done
+
+## Phase 34 - Controlled Lab Release Runbook (`v2.12.0-controlled-lab-release-runbook`)
+
+- Add operator runbook records linked to provider release readiness - planned
+- Track platform owner, security reviewer, rollback owner, and lab owner sign-offs - planned
+- Add Admin Operations runbook checklist for stop conditions and escalation contacts - planned
+- Keep runbook completion evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

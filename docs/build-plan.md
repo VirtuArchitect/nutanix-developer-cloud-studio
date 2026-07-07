@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.11.0-provider-release-dashboard-hardening` adds provider release readiness summaries and Admin Control Plane comparison cards for nearest-to-ready and most-blocked providers while keeping readiness evidence-only.
 - `v2.10.0-release-evidence-export-hardening` adds redacted release evidence export manifests linked to provider release gates and an Admin Operations export history while keeping exports metadata-only.
 - `v2.9.0-provider-release-gate-evidence` adds provider release gate records, API-backed evidence reviews, and Admin Control Plane release readiness summaries while keeping all real adapter switches disabled.
 - `v2.8.0-platform-service-adapter-contracts` adds disabled NKP, NDB, NUS, and NAI adapter contracts, API-backed contract review records, and Admin Control Plane payload previews while keeping execute, poll, rollback, and real service mutations disabled.
