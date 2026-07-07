@@ -73,6 +73,10 @@ import {
   ExecutionBrokerDispatchApprovalError,
 } from "./executionBrokerDispatchApproval";
 import {
+  createRealAdapterLabScopeActivation,
+  RealAdapterLabScopeActivationError,
+} from "./realAdapterLabScopeActivation";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -172,6 +176,7 @@ import type {
   CreateControlledLabExecutionRehearsalPacketRequest,
   CreateExecutionBrokerDispatchApprovalRequest,
   CreateExecutionBrokerQueueRecordRequest,
+  CreateRealAdapterLabScopeActivationRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -387,6 +392,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ExecutionBrokerDispatchApprovalError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof RealAdapterLabScopeActivationError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -762,6 +777,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/execution-broker/dispatch-approvals") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.executionBrokerDispatchApprovals });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/lab-scope-activations") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.realAdapterLabScopeActivations });
     return;
   }
 
@@ -1664,6 +1685,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: dispatchApproval });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/lab-scope-activations") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateRealAdapterLabScopeActivationRequest>(request);
+    const activation = createRealAdapterLabScopeActivation(state, body, context.session.user);
+    state.realAdapterLabScopeActivations = [activation, ...state.realAdapterLabScopeActivations];
+    addAuditEvent(state, "real-adapter.lab-scope-activation.recorded", context.session.user, activation.provider, {
+      dispatchApprovalId: activation.dispatchApprovalId,
+      idempotencyKey: activation.idempotencyKey,
+      status: activation.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: activation });
     return;
   }
 

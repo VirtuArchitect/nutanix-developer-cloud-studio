@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.25.0-real-adapter-lab-scope-activation` adds manual-switch-review activation evidence linked to dispatch approvals and an Admin Operations activation panel.
 - `v2.24.0-execution-broker-dispatch-approval` adds non-executing dispatch approvals linked to broker queue records and an Admin Operations dispatch approval panel.
 - `v2.23.0-execution-broker-hardening` adds operator-review-only execution broker queue records linked to readiness attestations and an Admin Operations broker panel.
 - `v2.22.0-controlled-lab-execution-readiness-attestation` adds evidence-only readiness attestations linked to evidence ledgers and an Admin Operations attestation panel.
@@ -404,6 +405,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Dispatch approvals require rollback proof, pentest evidence, operator approver, and dispatch window references.
 - Admin Operations surfaces dispatch approval readiness, evidence references, and blockers.
 - Missing broker queue records or incomplete dispatch evidence block readiness.
+- Real adapter execution remains disabled.
+
+## Current Real Adapter Lab Scope Activation Slice
+
+- API records real-adapter lab scope activations linked to dispatch approvals.
+- Activations require authorized lab scope, pentest completion evidence, rollback ownership, bounded provider targets, and manual operator controls.
+- Admin Operations surfaces activation readiness, evidence references, and blockers.
+- Missing dispatch approvals or incomplete activation evidence block manual switch review readiness.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack

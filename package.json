@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.24.0-execution-broker-dispatch-approval",
+  "version": "2.25.0-real-adapter-lab-scope-activation",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

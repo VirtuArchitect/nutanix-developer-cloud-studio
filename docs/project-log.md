@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.25.0-real-adapter-lab-scope-activation`.
+- Added real-adapter lab scope activation records linked to dispatch approvals.
+- Added API endpoints for lab scope activations.
+- Added Admin Operations lab scope activation panel.
+- Added tests proving missing dispatch approvals or incomplete activation evidence block readiness.
+- Planned `v2.26.0-manual-real-adapter-switch-review` for evidence-only switch review records.
 - Released `v2.24.0-execution-broker-dispatch-approval`.
 - Added execution broker dispatch approval records linked to broker queue records.
 - Added API endpoints for dispatch approvals.
 - Added Admin Operations dispatch approval panel.
 - Added tests proving missing broker records or incomplete dispatch evidence block readiness.
-- Planned `v2.25.0-real-adapter-lab-scope-activation` for explicit real-adapter lab scope activation evidence.
 - Released `v2.23.0-execution-broker-hardening`.
 - Added execution broker queue records linked to readiness attestations.
 - Added API endpoints for broker queue records.

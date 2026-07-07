@@ -363,10 +363,17 @@
 
 ## Phase 47 - Real Adapter Lab Scope Activation (`v2.25.0-real-adapter-lab-scope-activation`)
 
-- Add explicit real-adapter lab scope activation records linked to dispatch approvals - planned
-- Require authorized scope, pentest completion evidence, rollback owner, and bounded provider target references - planned
-- Add Admin Operations lab scope activation panel - planned
-- Keep real adapter switches disabled until activation evidence and manual operator controls are complete - planned
+- Add explicit real-adapter lab scope activation records linked to dispatch approvals - done
+- Require authorized scope, pentest completion evidence, rollback owner, and bounded provider target references - done
+- Add Admin Operations lab scope activation panel - done
+- Keep real adapter switches disabled until activation evidence and manual operator controls are complete - done
+
+## Phase 48 - Manual Real Adapter Switch Review (`v2.26.0-manual-real-adapter-switch-review`)
+
+- Add manual real-adapter switch review records linked to lab scope activations - planned
+- Require named switch operator, second reviewer, maintenance window, and switch-state audit references - planned
+- Add Admin Operations switch review panel - planned
+- Keep switch reviews evidence-only until an authorized lab operator explicitly changes environment configuration - planned
 
 ## Gated Promotion
 

@@ -76,6 +76,7 @@ import {
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
+  type RealAdapterLabScopeActivation,
   type ReleaseEvidenceExportRecord,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
@@ -132,6 +133,7 @@ import {
   createPlatformServicePreflightRunViaApi,
   createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
+  createRealAdapterLabScopeActivationViaApi,
   createReleaseEvidenceExportViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
@@ -176,6 +178,7 @@ import {
   fetchProviderReleaseGateRecordsFromApi,
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
+  fetchRealAdapterLabScopeActivationsFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
@@ -265,6 +268,7 @@ export function App() {
   const [controlledLabExecutionReadinessAttestations, setControlledLabExecutionReadinessAttestations] = useState<ControlledLabExecutionReadinessAttestation[]>([]);
   const [executionBrokerQueueRecords, setExecutionBrokerQueueRecords] = useState<ExecutionBrokerQueueRecord[]>([]);
   const [executionBrokerDispatchApprovals, setExecutionBrokerDispatchApprovals] = useState<ExecutionBrokerDispatchApproval[]>([]);
+  const [realAdapterLabScopeActivations, setRealAdapterLabScopeActivations] = useState<RealAdapterLabScopeActivation[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -360,6 +364,7 @@ export function App() {
             apiControlledLabExecutionReadinessAttestations,
             apiExecutionBrokerQueueRecords,
             apiExecutionBrokerDispatchApprovals,
+            apiRealAdapterLabScopeActivations,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -410,6 +415,7 @@ export function App() {
             fetchControlledLabExecutionReadinessAttestationsFromApi(),
             fetchExecutionBrokerQueueRecordsFromApi(),
             fetchExecutionBrokerDispatchApprovalsFromApi(),
+            fetchRealAdapterLabScopeActivationsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -462,6 +468,7 @@ export function App() {
             setControlledLabExecutionReadinessAttestations(apiControlledLabExecutionReadinessAttestations);
             setExecutionBrokerQueueRecords(apiExecutionBrokerQueueRecords);
             setExecutionBrokerDispatchApprovals(apiExecutionBrokerDispatchApprovals);
+            setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -634,6 +641,7 @@ export function App() {
       apiControlledLabExecutionReadinessAttestations,
       apiExecutionBrokerQueueRecords,
       apiExecutionBrokerDispatchApprovals,
+      apiRealAdapterLabScopeActivations,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -684,6 +692,7 @@ export function App() {
       fetchControlledLabExecutionReadinessAttestationsFromApi(),
       fetchExecutionBrokerQueueRecordsFromApi(),
       fetchExecutionBrokerDispatchApprovalsFromApi(),
+      fetchRealAdapterLabScopeActivationsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -735,6 +744,7 @@ export function App() {
     setControlledLabExecutionReadinessAttestations(apiControlledLabExecutionReadinessAttestations);
     setExecutionBrokerQueueRecords(apiExecutionBrokerQueueRecords);
     setExecutionBrokerDispatchApprovals(apiExecutionBrokerDispatchApprovals);
+    setRealAdapterLabScopeActivations(apiRealAdapterLabScopeActivations);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1585,6 +1595,28 @@ export function App() {
     ]);
   }
 
+  async function recordRealAdapterLabScopeActivation() {
+    const dispatchApproval = executionBrokerDispatchApprovals[0];
+    if (!dispatchApproval) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const activation = await createRealAdapterLabScopeActivationViaApi({ dispatchApprovalId: dispatchApproval.id });
+      await refreshApiState();
+      setRealAdapterLabScopeActivations((current) => [
+        activation,
+        ...current.filter((item) => item.id !== activation.id),
+      ]);
+      return;
+    }
+
+    setRealAdapterLabScopeActivations((current) => [
+      createMockRealAdapterLabScopeActivation(dispatchApproval, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1820,6 +1852,7 @@ export function App() {
             controlledLabExecutionReadinessAttestations={controlledLabExecutionReadinessAttestations}
             executionBrokerQueueRecords={executionBrokerQueueRecords}
             executionBrokerDispatchApprovals={executionBrokerDispatchApprovals}
+            realAdapterLabScopeActivations={realAdapterLabScopeActivations}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1860,6 +1893,7 @@ export function App() {
             recordControlledLabExecutionReadinessAttestation={recordControlledLabExecutionReadinessAttestation}
             queueExecutionBrokerRecord={queueExecutionBrokerRecord}
             recordExecutionBrokerDispatchApproval={recordExecutionBrokerDispatchApproval}
+            recordRealAdapterLabScopeActivation={recordRealAdapterLabScopeActivation}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2383,6 +2417,7 @@ function AdminView({
   controlledLabExecutionReadinessAttestations,
   executionBrokerQueueRecords,
   executionBrokerDispatchApprovals,
+  realAdapterLabScopeActivations,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2423,6 +2458,7 @@ function AdminView({
   recordControlledLabExecutionReadinessAttestation,
   queueExecutionBrokerRecord,
   recordExecutionBrokerDispatchApproval,
+  recordRealAdapterLabScopeActivation,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2477,6 +2513,7 @@ function AdminView({
   controlledLabExecutionReadinessAttestations: ControlledLabExecutionReadinessAttestation[];
   executionBrokerQueueRecords: ExecutionBrokerQueueRecord[];
   executionBrokerDispatchApprovals: ExecutionBrokerDispatchApproval[];
+  realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2520,6 +2557,7 @@ function AdminView({
   recordControlledLabExecutionReadinessAttestation: () => void;
   queueExecutionBrokerRecord: () => void;
   recordExecutionBrokerDispatchApproval: () => void;
+  recordRealAdapterLabScopeActivation: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2824,6 +2862,12 @@ function AdminView({
             <ExecutionBrokerDispatchApprovalPanel
               approvals={executionBrokerDispatchApprovals}
               recordExecutionBrokerDispatchApproval={recordExecutionBrokerDispatchApproval}
+            />
+          </Panel>
+          <Panel title="Real adapter lab scope activation" action={`${realAdapterLabScopeActivations.length} records`}>
+            <RealAdapterLabScopeActivationPanel
+              activations={realAdapterLabScopeActivations}
+              recordRealAdapterLabScopeActivation={recordRealAdapterLabScopeActivation}
             />
           </Panel>
         </div>
@@ -4547,6 +4591,73 @@ function ExecutionBrokerDispatchApprovalPanel({
             <span>Pentest evidence: {latest.pentestEvidenceReference || "missing"}</span>
             <span>Dispatch window: {latest.dispatchWindowReference || "missing"}</span>
             <span>Readiness attestation: {latest.readinessAttestationId}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RealAdapterLabScopeActivationPanel({
+  activations,
+  recordRealAdapterLabScopeActivation,
+}: {
+  activations: RealAdapterLabScopeActivation[];
+  recordRealAdapterLabScopeActivation: () => void;
+}) {
+  const latest = activations[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Real-adapter lab scope activation</strong>
+          <span>Records authorized lab scope, completed pentest evidence, bounded targets, rollback ownership, and manual controls.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordRealAdapterLabScopeActivation}>
+          <LockKeyhole size={15} />
+          Record lab scope activation
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No real-adapter lab scope activation has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.dispatchApprovalId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for manual real-adapter switch review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Scope" value={latest.authorizedScopeReference || "missing"} passed={Boolean(latest.authorizedScopeReference)} />
+            <CheckLine icon={UserRound} label="Rollback owner" value={latest.rollbackOwner || "missing"} passed={Boolean(latest.rollbackOwner)} />
+            <CheckLine icon={Network} label="Targets" value={`${latest.boundedProviderTargets.length} bounded`} passed={latest.boundedProviderTargets.length > 0} />
+            <CheckLine icon={LockKeyhole} label="Switch" value="Disabled" passed={!latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Activation evidence</strong>
+            <span>Pentest completion: {latest.pentestCompletionEvidence || "missing"}</span>
+            <span>Manual controls: {latest.manualOperatorControls.join(", ")}</span>
+            <span>Bounded targets: {latest.boundedProviderTargets.join(", ")}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
             {latest.checks.map((check) => (
@@ -7997,6 +8108,90 @@ function createMockExecutionBrokerDispatchApproval(
       `Kill switch: ${brokerRecord.killSwitch.name}=${brokerRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: brokerRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockRealAdapterLabScopeActivation(
+  dispatchApproval: ExecutionBrokerDispatchApproval,
+  actor: string
+): RealAdapterLabScopeActivation {
+  const authorizedScopeReference = `authorized-lab-scope-${dispatchApproval.provider.toLowerCase()}.md`;
+  const pentestCompletionEvidence = `pentest-complete-${dispatchApproval.provider.toLowerCase()}.md`;
+  const rollbackOwner = "Cloud Operations";
+  const boundedProviderTargets = [
+    `${dispatchApproval.provider.toLowerCase()}-lab-cluster-01`,
+    `${dispatchApproval.provider.toLowerCase()}-lab-project-dev`,
+  ];
+  const manualOperatorControls = [
+    "manual-change-window-approved",
+    "two-person-operator-confirmation",
+    "post-change-destroy-plan-ready",
+  ];
+  const checks = [
+    {
+      name: "Dispatch approval ready",
+      passed: dispatchApproval.status === "Ready for authorized lab dispatch review",
+      detail: `${dispatchApproval.id} is ${dispatchApproval.status}.`,
+    },
+    {
+      name: "Authorized scope linked",
+      passed: Boolean(authorizedScopeReference),
+      detail: authorizedScopeReference,
+    },
+    {
+      name: "Pentest completion linked",
+      passed: Boolean(pentestCompletionEvidence),
+      detail: pentestCompletionEvidence,
+    },
+    {
+      name: "Rollback owner assigned",
+      passed: Boolean(rollbackOwner),
+      detail: rollbackOwner,
+    },
+    {
+      name: "Bounded provider targets",
+      passed: boundedProviderTargets.length > 0,
+      detail: `${boundedProviderTargets.length} bounded provider target(s).`,
+    },
+    {
+      name: "Manual operator controls complete",
+      passed: manualOperatorControls.length >= 3,
+      detail: `${manualOperatorControls.length}/3 manual operator control(s).`,
+    },
+    {
+      name: "Real adapter switch remains disabled",
+      passed: !dispatchApproval.provisioningEnabled && !dispatchApproval.killSwitch.enabled,
+      detail: `${dispatchApproval.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `real-adapter-lab-scope-activation-${dispatchApproval.provider.toLowerCase()}-${Date.now()}`,
+    provider: dispatchApproval.provider,
+    dispatchApprovalId: dispatchApproval.id,
+    brokerRecordId: dispatchApproval.brokerRecordId,
+    idempotencyKey: dispatchApproval.idempotencyKey,
+    status: checks.every((check) => check.passed) ? "Ready for manual real-adapter switch review" : "Blocked",
+    requestedBy: actor,
+    authorizedScopeReference,
+    pentestCompletionEvidence,
+    rollbackOwner,
+    boundedProviderTargets,
+    manualOperatorControls,
+    checks,
+    evidence: [
+      `Dispatch approval: ${dispatchApproval.id}.`,
+      `Broker record: ${dispatchApproval.brokerRecordId}.`,
+      `Authorized scope: ${authorizedScopeReference}.`,
+      `Pentest completion: ${pentestCompletionEvidence}.`,
+      `Rollback owner: ${rollbackOwner}.`,
+      `Bounded targets: ${boundedProviderTargets.length}.`,
+      `Manual controls: ${manualOperatorControls.length}.`,
+      `Kill switch: ${dispatchApproval.killSwitch.name}=${dispatchApproval.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: dispatchApproval.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

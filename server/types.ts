@@ -41,6 +41,7 @@ import type {
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
+  RealAdapterLabScopeActivation,
   ReleaseEvidenceExportRecord,
   RegistryStatus,
   ResourceProfile,
@@ -99,6 +100,7 @@ export type ApiState = {
   controlledLabExecutionReadinessAttestations: ControlledLabExecutionReadinessAttestation[];
   executionBrokerQueueRecords: ExecutionBrokerQueueRecord[];
   executionBrokerDispatchApprovals: ExecutionBrokerDispatchApproval[];
+  realAdapterLabScopeActivations: RealAdapterLabScopeActivation[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -336,6 +338,16 @@ export type CreateExecutionBrokerDispatchApprovalRequest = {
   rollbackProofReference?: string;
   pentestEvidenceReference?: string;
   dispatchWindowReference?: string;
+};
+
+export type CreateRealAdapterLabScopeActivationRequest = {
+  dispatchApprovalId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  authorizedScopeReference?: string;
+  pentestCompletionEvidence?: string;
+  rollbackOwner?: string;
+  boundedProviderTargets?: string[];
+  manualOperatorControls?: string[];
 };
 
 export type CreateAdapterEnablementRecordRequest = {

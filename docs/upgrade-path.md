@@ -788,6 +788,23 @@ Exit gate:
 - Real adapter switches remain disabled until activation evidence is complete.
 - No production infrastructure mutation is possible from the prototype.
 
+### v2.26.0-manual-real-adapter-switch-review
+
+Goal: add a manual review record before any authorized lab operator changes real-adapter switch configuration.
+
+Build:
+
+- Manual real-adapter switch review records linked to lab scope activations.
+- Named switch operator, second reviewer, maintenance window, switch-state audit references, and rollback contact evidence.
+- Admin Operations switch review panel with blockers and evidence references.
+- Tests proving missing activation records, operator evidence, reviewer evidence, or switch-state audit references block review readiness.
+
+Exit gate:
+
+- Switch review APIs and UI are tested.
+- Switch reviews are evidence-only records.
+- No switch is changed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

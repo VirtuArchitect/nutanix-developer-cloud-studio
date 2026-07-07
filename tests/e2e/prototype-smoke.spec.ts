@@ -215,6 +215,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Dispatch approval boundary")).toBeVisible();
   await expect(page.getByText("Dispatch approval evidence")).toBeVisible();
   await expect(page.getByText("Rollback proof linked")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Real adapter lab scope activation" })).toBeVisible();
+  await page.getByRole("button", { name: "Record lab scope activation" }).click();
+  await expect(page.getByText("Real-adapter lab scope activation")).toBeVisible();
+  await expect(page.getByText("Activation evidence")).toBeVisible();
+  await expect(page.getByText("Real adapter switch remains disabled")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

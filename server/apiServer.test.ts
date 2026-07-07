@@ -876,6 +876,11 @@ describe("api server", () => {
       body: JSON.stringify({ brokerRecordId: brokerRecord.data.id }),
     });
     const dispatchApprovals = await requestJson("/api/execution-broker/dispatch-approvals");
+    const labScopeActivation = await requestJson("/api/real-adapter/lab-scope-activations", {
+      method: "POST",
+      body: JSON.stringify({ dispatchApprovalId: dispatchApproval.data.id }),
+    });
+    const labScopeActivations = await requestJson("/api/real-adapter/lab-scope-activations");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1170,6 +1175,23 @@ describe("api server", () => {
     expect(dispatchApprovals.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: dispatchApproval.data.id })])
     );
+    expect(labScopeActivation.data).toMatchObject({
+      provider: "NDB",
+      dispatchApprovalId: dispatchApproval.data.id,
+      brokerRecordId: brokerRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(labScopeActivation.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Dispatch approval ready", passed: false }),
+        expect.objectContaining({ name: "Real adapter switch remains disabled", passed: true }),
+      ])
+    );
+    expect(labScopeActivations.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: labScopeActivation.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1189,6 +1211,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "controlled-lab-release.readiness-attestation.recorded", target: "NDB" }),
         expect.objectContaining({ action: "execution-broker.queue.recorded", target: "NDB" }),
         expect.objectContaining({ action: "execution-broker.dispatch-approval.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.lab-scope-activation.recorded", target: "NDB" }),
       ])
     );
   });

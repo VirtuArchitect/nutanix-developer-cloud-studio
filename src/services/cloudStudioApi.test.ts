@@ -29,6 +29,7 @@ import {
   createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
+  createRealAdapterLabScopeActivationViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
@@ -71,6 +72,7 @@ import {
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
+  fetchRealAdapterLabScopeActivationsFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
   fetchSessionFromApi,
@@ -470,6 +472,8 @@ describe("cloudStudioApi", () => {
     });
     await fetchExecutionBrokerDispatchApprovalsFromApi();
     await createExecutionBrokerDispatchApprovalViaApi({ brokerRecordId: "execution-broker-ndb-1" });
+    await fetchRealAdapterLabScopeActivationsFromApi();
+    await createRealAdapterLabScopeActivationViaApi({ dispatchApprovalId: "execution-broker-dispatch-approval-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -548,6 +552,12 @@ describe("cloudStudioApi", () => {
       26,
       "/api/execution-broker/dispatch-approvals",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("execution-broker-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(27, "/api/real-adapter/lab-scope-activations", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      28,
+      "/api/real-adapter/lab-scope-activations",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("execution-broker-dispatch-approval-ndb-1") })
     );
   });
 

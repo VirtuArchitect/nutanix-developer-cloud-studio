@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.24.0-execution-broker-dispatch-approval`.
+This project uses release tags for public milestones. The current release is `v2.25.0-real-adapter-lab-scope-activation`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add real-adapter lab scope activation only after dispatch approval, rollback proof, and authorized pentest evidence are complete.
+- Add manual real-adapter switch review and switch-state audit records after lab-scope activation evidence is complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.25.0-real-adapter-lab-scope-activation] - 2026-07-07
+
+### Added
+
+- Real-adapter lab scope activation records linked to dispatch approvals.
+- API endpoints for listing and recording lab scope activations.
+- Admin Operations lab scope activation panel.
+- Authorized lab scope, pentest completion, rollback owner, bounded provider target, and manual operator control checks.
+- Tests proving missing dispatch approvals or incomplete activation evidence block readiness.
+
+### Notes
+
+- Lab scope activations prepare evidence for manual real-adapter switch review only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.24.0-execution-broker-dispatch-approval] - 2026-07-07
 

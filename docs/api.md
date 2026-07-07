@@ -344,6 +344,15 @@ Execution broker dispatch approvals record the final non-executing evidence boun
 
 Required role: `Platform Admin`.
 
+### Real Adapter Lab Scope Activations
+
+- `GET /api/real-adapter/lab-scope-activations`
+- `POST /api/real-adapter/lab-scope-activations`
+
+Real-adapter lab scope activations record explicit evidence before any manual real-adapter switch review can be considered. Activations require a ready dispatch approval, authorized lab scope reference, pentest completion evidence, rollback owner, bounded provider targets, manual operator controls, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

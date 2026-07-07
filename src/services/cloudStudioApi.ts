@@ -43,6 +43,7 @@ import type {
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
+  RealAdapterLabScopeActivation,
   ReleaseEvidenceExportRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -351,6 +352,10 @@ export async function fetchExecutionBrokerDispatchApprovalsFromApi() {
   return fetchJson<ExecutionBrokerDispatchApproval[]>("/api/execution-broker/dispatch-approvals");
 }
 
+export async function fetchRealAdapterLabScopeActivationsFromApi() {
+  return fetchJson<RealAdapterLabScopeActivation[]>("/api/real-adapter/lab-scope-activations");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -608,6 +613,16 @@ export async function createExecutionBrokerDispatchApprovalViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ExecutionBrokerDispatchApproval>("/api/execution-broker/dispatch-approvals", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createRealAdapterLabScopeActivationViaApi(payload: {
+  dispatchApprovalId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<RealAdapterLabScopeActivation>("/api/real-adapter/lab-scope-activations", {
     method: "POST",
     body: JSON.stringify(payload),
   });

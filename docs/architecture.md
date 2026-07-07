@@ -98,6 +98,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Controlled lab execution readiness attestations: final platform, security, operations, rollback, and sponsor attestation records linked to evidence ledgers
 - Execution broker queue records: idempotent operator-review queue records linked to readiness attestations
 - Execution broker dispatch approvals: non-executing rollback, pentest, operator, and dispatch-window evidence linked to broker records
+- Real-adapter lab scope activations: authorized scope, pentest completion, rollback ownership, bounded target, and manual control evidence linked to dispatch approvals
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -177,6 +178,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Controlled lab execution readiness attestation API and Admin Operations attestation UI
 - Execution broker queue API and Admin Operations broker UI
 - Execution broker dispatch approval API and Admin Operations dispatch approval UI
+- Real-adapter lab scope activation API and Admin Operations activation UI
 - Production readiness review API and Admin Overview UI
 - Private-cloud lifecycle operation API and Admin Operations UI
 - Audit export readiness API and Admin Operations UI
@@ -236,6 +238,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Controlled lab execution readiness attestations record final human attestations only; they do not authorize or execute real adapter operations.
 - Execution broker queue records are operator-review intake only; they do not dispatch or execute provider adapters.
 - Execution broker dispatch approvals are non-executing evidence records; they do not dispatch or execute provider adapters.
+- Real-adapter lab scope activations prepare manual switch review evidence only; they do not enable or execute provider adapters.
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Adapter enablement records review evidence only; an enabled real-adapter switch fails this phase and all mutation operations remain blocked.

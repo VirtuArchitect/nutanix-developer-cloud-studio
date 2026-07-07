@@ -984,6 +984,30 @@ export type ExecutionBrokerDispatchApproval = {
   createdAt: string;
 };
 
+export type RealAdapterLabScopeActivation = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  dispatchApprovalId: string;
+  brokerRecordId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for manual real-adapter switch review";
+  requestedBy: string;
+  authorizedScopeReference: string;
+  pentestCompletionEvidence: string;
+  rollbackOwner: string;
+  boundedProviderTargets: string[];
+  manualOperatorControls: string[];
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ExecutionBrokerDispatchApproval["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";
