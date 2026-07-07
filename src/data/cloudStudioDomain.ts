@@ -889,6 +889,32 @@ export type ControlledLabDryRunExecutionChecklist = {
   createdAt: string;
 };
 
+export type ControlledLabExecutionEvidenceLedger = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  dryRunChecklistId: string;
+  rehearsalPacketId: string;
+  status: "Blocked" | "Ready for evidence review";
+  requestedBy: string;
+  immutableReferences: {
+    operatorEvidence: string[];
+    observerEvidence: string[];
+    rollbackEvidence: string[];
+    logEvidence: string[];
+    auditEvidence: string[];
+    stopAuthorityEvidence: string[];
+  };
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ControlledLabDryRunExecutionChecklist["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

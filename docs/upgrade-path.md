@@ -720,6 +720,23 @@ Exit gate:
 - Ledger records remain evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.22.0-controlled-lab-execution-readiness-attestation
+
+Goal: record final readiness attestations after evidence ledger readiness while still keeping real adapter execution disabled.
+
+Build:
+
+- Controlled lab execution readiness attestation records linked to evidence ledgers.
+- Platform, security, operations, rollback, and sponsor attestation decisions.
+- Admin Operations readiness attestation panel with blockers and evidence references.
+- Tests proving missing evidence ledgers or incomplete attestations block readiness.
+
+Exit gate:
+
+- Readiness attestation APIs and UI are tested.
+- Attestations remain evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

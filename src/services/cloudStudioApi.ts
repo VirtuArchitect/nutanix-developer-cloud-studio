@@ -7,6 +7,7 @@ import type {
   AuditRetentionDiagnostics,
   ControlledLabExecutionApprovalGate,
   ControlledLabDryRunExecutionChecklist,
+  ControlledLabExecutionEvidenceLedger,
   ControlledLabExecutionRehearsalPacket,
   ControlledLabDryRunWindowRecord,
   ControlledLabReleaseRunbookRecord,
@@ -331,6 +332,10 @@ export async function fetchControlledLabDryRunExecutionChecklistsFromApi() {
   return fetchJson<ControlledLabDryRunExecutionChecklist[]>("/api/controlled-lab-release/dry-run-checklists");
 }
 
+export async function fetchControlledLabExecutionEvidenceLedgersFromApi() {
+  return fetchJson<ControlledLabExecutionEvidenceLedger[]>("/api/controlled-lab-release/evidence-ledgers");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -547,6 +552,16 @@ export async function createControlledLabDryRunExecutionChecklistViaApi(payload:
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ControlledLabDryRunExecutionChecklist>("/api/controlled-lab-release/dry-run-checklists", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createControlledLabExecutionEvidenceLedgerViaApi(payload: {
+  dryRunChecklistId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ControlledLabExecutionEvidenceLedger>("/api/controlled-lab-release/evidence-ledgers", {
     method: "POST",
     body: JSON.stringify(payload),
   });

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.20.0-controlled-lab-dry-run-execution-checklist`.
+This project uses release tags for public milestones. The current release is `v2.21.0-controlled-lab-execution-evidence-ledger`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add a lab execution evidence ledger after dry-run checklists while keeping adapters disabled.
+- Add final controlled lab execution readiness attestations while keeping adapters disabled.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.21.0-controlled-lab-execution-evidence-ledger] - 2026-07-07
+
+### Added
+
+- Controlled lab execution evidence ledger records linked to dry-run checklists.
+- API endpoints for listing and recording evidence ledgers.
+- Admin Operations evidence ledger panel.
+- Immutable operator, observer, rollback, log, audit, and stop authority evidence references.
+- Tests proving missing dry-run checklists or incomplete evidence block ledger readiness.
+
+### Notes
+
+- Evidence ledgers are evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.20.0-controlled-lab-dry-run-execution-checklist] - 2026-07-07
 

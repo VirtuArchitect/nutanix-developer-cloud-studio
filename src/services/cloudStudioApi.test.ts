@@ -7,6 +7,7 @@ import {
   createAuditExportViaApi,
   createControlledLabExecutionApprovalViaApi,
   createControlledLabDryRunExecutionChecklistViaApi,
+  createControlledLabExecutionEvidenceLedgerViaApi,
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
@@ -37,6 +38,7 @@ import {
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlledLabExecutionApprovalsFromApi,
   fetchControlledLabDryRunExecutionChecklistsFromApi,
+  fetchControlledLabExecutionEvidenceLedgersFromApi,
   fetchControlledLabExecutionRehearsalPacketsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
@@ -451,6 +453,8 @@ describe("cloudStudioApi", () => {
     await createControlledLabExecutionRehearsalPacketViaApi({ approvalGateId: "controlled-lab-execution-approval-ndb-1" });
     await fetchControlledLabDryRunExecutionChecklistsFromApi();
     await createControlledLabDryRunExecutionChecklistViaApi({ rehearsalPacketId: "controlled-lab-rehearsal-packet-ndb-1" });
+    await fetchControlledLabExecutionEvidenceLedgersFromApi();
+    await createControlledLabExecutionEvidenceLedgerViaApi({ dryRunChecklistId: "controlled-lab-dry-run-checklist-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -505,6 +509,12 @@ describe("cloudStudioApi", () => {
       18,
       "/api/controlled-lab-release/dry-run-checklists",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-rehearsal-packet-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(19, "/api/controlled-lab-release/evidence-ledgers", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      20,
+      "/api/controlled-lab-release/evidence-ledgers",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-dry-run-checklist-ndb-1") })
     );
   });
 

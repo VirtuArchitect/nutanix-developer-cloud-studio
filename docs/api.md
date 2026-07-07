@@ -292,6 +292,8 @@ Required role: `Developer` or `Platform Admin`.
 - `POST /api/controlled-lab-release/rehearsal-packets`
 - `GET /api/controlled-lab-release/dry-run-checklists`
 - `POST /api/controlled-lab-release/dry-run-checklists`
+- `GET /api/controlled-lab-release/evidence-ledgers`
+- `POST /api/controlled-lab-release/evidence-ledgers`
 
 The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter readiness against request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state. It records provider-specific blocked mutation operations and returns `provisioningEnabled=false`.
 
@@ -320,6 +322,8 @@ Controlled lab execution approvals record final platform owner, security reviewe
 Controlled lab execution rehearsal packets freeze approved gate evidence with runbook, rollback owner, emergency contact, stop condition, proposal export, audit export, and approval evidence references. Missing approved gates or incomplete frozen evidence keep packets blocked, and packets do not enable adapter execution.
 
 Controlled lab dry-run execution checklists record final operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution checks against rehearsal packets. Missing rehearsal packets or incomplete checklist evidence keep readiness blocked.
+
+Controlled lab execution evidence ledgers freeze immutable operator, observer, rollback, log, audit, and stop authority evidence references against dry-run checklists. Missing ready checklists or incomplete references keep ledger readiness blocked.
 
 Required role: `Platform Admin`.
 

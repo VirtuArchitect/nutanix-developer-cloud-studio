@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.21.0-controlled-lab-execution-evidence-ledger`.
+- Added controlled lab execution evidence ledger records linked to dry-run checklists.
+- Added API endpoints for evidence ledgers.
+- Added Admin Operations evidence ledger panel.
+- Added tests proving missing dry-run checklists or incomplete evidence block ledger readiness.
+- Planned `v2.22.0-controlled-lab-execution-readiness-attestation` for final readiness attestations while keeping adapters disabled.
 - Released `v2.20.0-controlled-lab-dry-run-execution-checklist`.
 - Added controlled lab dry-run execution checklist records linked to rehearsal packets.
 - Added API endpoints for dry-run checklists.
 - Added Admin Operations dry-run checklist panel.
 - Added tests proving missing rehearsal packets or checklist evidence block readiness.
-- Planned `v2.21.0-controlled-lab-execution-evidence-ledger` for immutable evidence ledger records after dry-run checklist readiness.
 - Released `v2.19.0-controlled-lab-execution-rehearsal-packet`.
 - Added controlled lab execution rehearsal packet records linked to approval gates.
 - Added API endpoints for rehearsal packets.

@@ -335,10 +335,17 @@
 
 ## Phase 43 - Controlled Lab Execution Evidence Ledger (`v2.21.0-controlled-lab-execution-evidence-ledger`)
 
-- Add evidence ledger records linked to dry-run checklists - planned
-- Capture immutable evidence references for operator, observer, rollback, log, audit, and stop authority records - planned
-- Add Admin Operations evidence ledger panel - planned
-- Keep ledger records evidence-only and real adapter execution disabled - planned
+- Add evidence ledger records linked to dry-run checklists - done
+- Capture immutable evidence references for operator, observer, rollback, log, audit, and stop authority records - done
+- Add Admin Operations evidence ledger panel - done
+- Keep ledger records evidence-only and real adapter execution disabled - done
+
+## Phase 44 - Controlled Lab Execution Readiness Attestation (`v2.22.0-controlled-lab-execution-readiness-attestation`)
+
+- Add readiness attestation records linked to evidence ledgers - planned
+- Track platform, security, operations, rollback, and sponsor attestations - planned
+- Add Admin Operations readiness attestation panel - planned
+- Keep attestations evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

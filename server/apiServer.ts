@@ -57,6 +57,10 @@ import {
   createControlledLabDryRunExecutionChecklist,
 } from "./controlledLabDryRunExecutionChecklist";
 import {
+  ControlledLabExecutionEvidenceLedgerError,
+  createControlledLabExecutionEvidenceLedger,
+} from "./controlledLabExecutionEvidenceLedger";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -151,6 +155,7 @@ import type {
   CreateControlledProvisioningGateRequest,
   CreateControlledLabExecutionApprovalGateRequest,
   CreateControlledLabDryRunExecutionChecklistRequest,
+  CreateControlledLabExecutionEvidenceLedgerRequest,
   CreateControlledLabExecutionRehearsalPacketRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
@@ -327,6 +332,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabDryRunExecutionChecklistError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledLabExecutionEvidenceLedgerError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -678,6 +693,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/dry-run-checklists") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledLabDryRunExecutionChecklists });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/evidence-ledgers") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledLabExecutionEvidenceLedgers });
     return;
   }
 
@@ -1507,6 +1528,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: checklist });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/evidence-ledgers") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledLabExecutionEvidenceLedgerRequest>(request);
+    const ledger = createControlledLabExecutionEvidenceLedger(state, body, context.session.user);
+    state.controlledLabExecutionEvidenceLedgers = [ledger, ...state.controlledLabExecutionEvidenceLedgers];
+    addAuditEvent(state, "controlled-lab-release.evidence-ledger.recorded", context.session.user, ledger.provider, {
+      dryRunChecklistId: ledger.dryRunChecklistId,
+      rehearsalPacketId: ledger.rehearsalPacketId,
+      status: ledger.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: ledger });
     return;
   }
 

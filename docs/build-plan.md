@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.21.0-controlled-lab-execution-evidence-ledger` adds evidence-only ledgers linked to dry-run checklists and an Admin Operations ledger panel.
 - `v2.20.0-controlled-lab-dry-run-execution-checklist` adds evidence-only dry-run execution checklists linked to rehearsal packets and an Admin Operations checklist panel.
 - `v2.19.0-controlled-lab-execution-rehearsal-packet` adds evidence-only rehearsal packets linked to approved execution gates and an Admin Operations packet panel.
 - `v2.18.0-controlled-lab-execution-approval-gate` adds evidence-only approval gates linked to proposal exports and an Admin Operations approval panel.
@@ -368,6 +369,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Checklists cover operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution state.
 - Admin Operations surfaces checklist readiness, dry-run controls, log capture references, and blockers.
 - Missing rehearsal packets or incomplete checklist evidence blocks readiness.
+- Real adapter execution remains disabled.
+
+## Current Controlled Lab Execution Evidence Ledger Slice
+
+- API records controlled lab execution evidence ledgers linked to dry-run checklists.
+- Ledgers freeze immutable operator, observer, rollback, log, audit, and stop authority evidence references.
+- Admin Operations surfaces ledger readiness, immutable evidence references, and blockers.
+- Missing ready dry-run checklists or incomplete evidence references block ledger readiness.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack
