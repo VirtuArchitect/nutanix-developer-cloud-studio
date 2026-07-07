@@ -1480,6 +1480,23 @@ Promotion criteria:
 - Archive recovery evidence custody closure records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.67.0-production-execution-archive-recovery-operational-continuity-record
+
+Goal: record operational continuity evidence after evidence custody closure without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery operational continuity records linked to evidence custody closure records.
+- Require continuity owner, continuity runbook update, recovery KPI baseline, support continuity handoff, and continuity sign-off.
+- Add Admin Operations archive recovery operational continuity panel with blockers and evidence references.
+- Add tests proving missing ready evidence custody closure records, continuity owners, runbook updates, KPI baselines, support handoffs, or continuity sign-offs block operational continuity readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery operational continuity APIs and UI are tested.
+- Archive recovery operational continuity records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

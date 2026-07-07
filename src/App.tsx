@@ -109,6 +109,7 @@ import {
   type ProductionExecutionArchiveRecoveryClosureRecord,
   type ProductionExecutionArchiveRecoveryAuditCertificationRecord,
   type ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord,
+  type ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -180,6 +181,7 @@ import {
   createProductionExecutionArchiveRecoveryClosureRecordViaApi,
   createProductionExecutionArchiveRecoveryAuditCertificationRecordViaApi,
   createProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordViaApi,
+  createProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -256,6 +258,7 @@ import {
   fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryAuditCertificationRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -483,6 +486,10 @@ export function App() {
     productionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
     setProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
   ] = useState<ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord[]>([]);
+  const [
+    productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
+    setProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
+  ] = useState<ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -619,6 +626,7 @@ export function App() {
             apiProductionExecutionArchiveRecoveryClosureRecords,
             apiProductionExecutionArchiveRecoveryAuditCertificationRecords,
             apiProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
+            apiProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -710,6 +718,7 @@ export function App() {
             fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi(),
             fetchProductionExecutionArchiveRecoveryAuditCertificationRecordsFromApi(),
             fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi(),
+            fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -822,6 +831,9 @@ export function App() {
             );
             setProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords(
               apiProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords
+            );
+            setProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords(
+              apiProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords
             );
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -1036,6 +1048,7 @@ export function App() {
       apiProductionExecutionArchiveRecoveryClosureRecords,
       apiProductionExecutionArchiveRecoveryAuditCertificationRecords,
       apiProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
+      apiProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -1127,6 +1140,7 @@ export function App() {
       fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi(),
       fetchProductionExecutionArchiveRecoveryAuditCertificationRecordsFromApi(),
       fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi(),
+      fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1222,6 +1236,9 @@ export function App() {
     );
     setProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords(
       apiProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords
+    );
+    setProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords(
+      apiProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords
     );
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -3039,6 +3056,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure() {
+    const finalComplianceArchiveRecord = productionExecutionArchiveRecoveryFinalComplianceArchiveRecords[0];
+    if (!finalComplianceArchiveRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordViaApi({
+        finalComplianceArchiveRecordId: finalComplianceArchiveRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords((current) => [
+      createMockProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord(finalComplianceArchiveRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -3319,6 +3360,9 @@ export function App() {
             productionExecutionArchiveRecoveryFinalComplianceArchiveRecords={
               productionExecutionArchiveRecoveryFinalComplianceArchiveRecords
             }
+            productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords={
+              productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords
+            }
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -3403,6 +3447,9 @@ export function App() {
             }
             recordProductionExecutionArchiveRecoveryFinalComplianceArchive={
               recordProductionExecutionArchiveRecoveryFinalComplianceArchive
+            }
+            recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure={
+              recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure
             }
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
@@ -3968,6 +4015,7 @@ function AdminView({
   productionExecutionArchiveRecoveryClosureRecords,
   productionExecutionArchiveRecoveryAuditCertificationRecords,
   productionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
+  productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -4049,6 +4097,7 @@ function AdminView({
   recordProductionExecutionArchiveRecoveryClosure,
   recordProductionExecutionArchiveRecoveryAuditCertification,
   recordProductionExecutionArchiveRecoveryFinalComplianceArchive,
+  recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -4144,6 +4193,7 @@ function AdminView({
   productionExecutionArchiveRecoveryClosureRecords: ProductionExecutionArchiveRecoveryClosureRecord[];
   productionExecutionArchiveRecoveryAuditCertificationRecords: ProductionExecutionArchiveRecoveryAuditCertificationRecord[];
   productionExecutionArchiveRecoveryFinalComplianceArchiveRecords: ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord[];
+  productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords: ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -4228,6 +4278,7 @@ function AdminView({
   recordProductionExecutionArchiveRecoveryClosure: () => void;
   recordProductionExecutionArchiveRecoveryAuditCertification: () => void;
   recordProductionExecutionArchiveRecoveryFinalComplianceArchive: () => void;
+  recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4847,6 +4898,17 @@ function AdminView({
               records={productionExecutionArchiveRecoveryFinalComplianceArchiveRecords}
               recordProductionExecutionArchiveRecoveryFinalComplianceArchive={
                 recordProductionExecutionArchiveRecoveryFinalComplianceArchive
+              }
+            />
+          </Panel>
+          <Panel
+            title="Production archive recovery evidence custody closure"
+            action={`${productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords.length} records`}
+          >
+            <ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordPanel
+              records={productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords}
+              recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure={
+                recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure
               }
             />
           </Panel>
@@ -9373,6 +9435,79 @@ function ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordPanel({
             <span>Audit witness receipt: {latest.auditWitnessReceiptReference || "missing"}</span>
             <span>Final compliance sign-off: {latest.finalComplianceArchiveSignOffReference || "missing"}</span>
             <span>Audit certification: {latest.archiveRecoveryAuditCertificationRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordPanel({
+  records,
+  recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure,
+}: {
+  records: ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord[];
+  recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution archive recovery evidence custody closure record</strong>
+          <span>Captures final custody ledger, evidence transfer receipt, retention lock, and custody closure sign-off evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure}>
+          <Archive size={15} />
+          Record custody closure
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution archive recovery evidence custody closure record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.finalComplianceArchiveRecordId}</span>
+            </div>
+            <span
+              className={`status ${
+                latest.status === "Ready for production execution archive recovery evidence custody closure review"
+                  ? "ready"
+                  : "approval"
+              }`}
+            >
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Custody owner" value={latest.custodyOwner || "missing"} passed={Boolean(latest.custodyOwner)} />
+            <CheckLine icon={Archive} label="Custody ledger" value={latest.finalCustodyLedgerReference || "missing"} passed={Boolean(latest.finalCustodyLedgerReference)} />
+            <CheckLine icon={ScrollText} label="Transfer receipt" value={latest.evidenceTransferReceiptReference || "missing"} passed={Boolean(latest.evidenceTransferReceiptReference)} />
+            <CheckLine icon={ShieldCheck} label="Custody closure" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution archive recovery evidence custody closure evidence</strong>
+            <span>Retention lock confirmation: {latest.retentionLockConfirmationReference || "missing"}</span>
+            <span>Custody closure sign-off: {latest.custodyClosureSignOffReference || "missing"}</span>
+            <span>Final compliance archive: {latest.finalComplianceArchiveRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -16915,6 +17050,132 @@ function createMockProductionExecutionArchiveRecoveryFinalComplianceArchiveRecor
       }.`,
     ],
     killSwitch: auditCertificationRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord(
+  finalComplianceArchiveRecord: ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord,
+  actor: string
+): ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord {
+  const providerSlug = finalComplianceArchiveRecord.provider.toLowerCase();
+  const custodyOwner = "Production Archive Recovery Evidence Custody Owner";
+  const finalCustodyLedgerReference = `production-archive-recovery-final-custody-ledger-${providerSlug}.json`;
+  const evidenceTransferReceiptReference = `production-archive-recovery-evidence-transfer-receipt-${providerSlug}.md`;
+  const retentionLockConfirmationReference = `production-archive-recovery-retention-lock-confirmation-${providerSlug}.md`;
+  const custodyClosureSignOffReference = `production-archive-recovery-custody-closure-signoff-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Final compliance archive ready",
+      passed:
+        finalComplianceArchiveRecord.status ===
+        "Ready for production execution archive recovery final compliance archive review",
+      detail: `${finalComplianceArchiveRecord.id} is ${finalComplianceArchiveRecord.status}.`,
+    },
+    {
+      name: "Custody owner assigned",
+      passed: Boolean(custodyOwner),
+      detail: custodyOwner,
+    },
+    {
+      name: "Final custody ledger linked",
+      passed: Boolean(finalCustodyLedgerReference),
+      detail: finalCustodyLedgerReference,
+    },
+    {
+      name: "Evidence transfer receipt linked",
+      passed: Boolean(evidenceTransferReceiptReference),
+      detail: evidenceTransferReceiptReference,
+    },
+    {
+      name: "Retention lock confirmation linked",
+      passed: Boolean(retentionLockConfirmationReference),
+      detail: retentionLockConfirmationReference,
+    },
+    {
+      name: "Custody closure sign-off linked",
+      passed: Boolean(custodyClosureSignOffReference),
+      detail: custodyClosureSignOffReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed:
+        finalComplianceArchiveRecord.provisioningEnabled === false &&
+        finalComplianceArchiveRecord.killSwitch.enabled === false,
+      detail: `${finalComplianceArchiveRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-archive-recovery-evidence-custody-closure-record-${providerSlug}-${Date.now()}`,
+    provider: finalComplianceArchiveRecord.provider,
+    finalComplianceArchiveRecordId: finalComplianceArchiveRecord.id,
+    archiveRecoveryAuditCertificationRecordId:
+      finalComplianceArchiveRecord.archiveRecoveryAuditCertificationRecordId,
+    archiveRecoveryClosureRecordId: finalComplianceArchiveRecord.archiveRecoveryClosureRecordId,
+    archiveRecoveryAcceptanceRecordId: finalComplianceArchiveRecord.archiveRecoveryAcceptanceRecordId,
+    archiveRecoveryDrillRecordId: finalComplianceArchiveRecord.archiveRecoveryDrillRecordId,
+    archiveRetrievalValidationRecordId: finalComplianceArchiveRecord.archiveRetrievalValidationRecordId,
+    readinessArchiveHandoffRecordId: finalComplianceArchiveRecord.readinessArchiveHandoffRecordId,
+    finalAcceptanceArchiveRecordId: finalComplianceArchiveRecord.finalAcceptanceArchiveRecordId,
+    improvementClosureRecordId: finalComplianceArchiveRecord.improvementClosureRecordId,
+    postImplementationReviewRecordId: finalComplianceArchiveRecord.postImplementationReviewRecordId,
+    operationalClosureRecordId: finalComplianceArchiveRecord.operationalClosureRecordId,
+    finalTurnoverRecordId: finalComplianceArchiveRecord.finalTurnoverRecordId,
+    serviceAcceptanceRecordId: finalComplianceArchiveRecord.serviceAcceptanceRecordId,
+    supportReadinessRecordId: finalComplianceArchiveRecord.supportReadinessRecordId,
+    operationsHandoverRecordId: finalComplianceArchiveRecord.operationsHandoverRecordId,
+    completionDossierRecordId: finalComplianceArchiveRecord.completionDossierRecordId,
+    finalArchiveCertificationRecordId: finalComplianceArchiveRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: finalComplianceArchiveRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: finalComplianceArchiveRecord.archivalHandoffRecordId,
+    closurePacketRecordId: finalComplianceArchiveRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: finalComplianceArchiveRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: finalComplianceArchiveRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: finalComplianceArchiveRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: finalComplianceArchiveRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: finalComplianceArchiveRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: finalComplianceArchiveRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: finalComplianceArchiveRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: finalComplianceArchiveRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: finalComplianceArchiveRecord.implementationHoldRecordId,
+    cabDecisionRecordId: finalComplianceArchiveRecord.cabDecisionRecordId,
+    cabHandoffPacketId: finalComplianceArchiveRecord.cabHandoffPacketId,
+    freezeRecordId: finalComplianceArchiveRecord.freezeRecordId,
+    authorizationPacketId: finalComplianceArchiveRecord.authorizationPacketId,
+    promotionDossierId: finalComplianceArchiveRecord.promotionDossierId,
+    closurePackageId: finalComplianceArchiveRecord.closurePackageId,
+    outcomeRecordId: finalComplianceArchiveRecord.outcomeRecordId,
+    handoffPackageId: finalComplianceArchiveRecord.handoffPackageId,
+    controlledSwitchRequestId: finalComplianceArchiveRecord.controlledSwitchRequestId,
+    auditPackageId: finalComplianceArchiveRecord.auditPackageId,
+    switchReviewId: finalComplianceArchiveRecord.switchReviewId,
+    activationId: finalComplianceArchiveRecord.activationId,
+    idempotencyKey: finalComplianceArchiveRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution archive recovery evidence custody closure review"
+      : "Blocked",
+    requestedBy: actor,
+    custodyOwner,
+    finalCustodyLedgerReference,
+    evidenceTransferReceiptReference,
+    retentionLockConfirmationReference,
+    custodyClosureSignOffReference,
+    checks,
+    evidence: [
+      `Final compliance archive record: ${finalComplianceArchiveRecord.id}.`,
+      `Archive recovery audit certification record: ${finalComplianceArchiveRecord.archiveRecoveryAuditCertificationRecordId}.`,
+      `Custody owner: ${custodyOwner}.`,
+      `Final custody ledger: ${finalCustodyLedgerReference}.`,
+      `Evidence transfer receipt: ${evidenceTransferReceiptReference}.`,
+      `Retention lock confirmation: ${retentionLockConfirmationReference}.`,
+      `Custody closure sign-off: ${custodyClosureSignOffReference}.`,
+      `Kill switch: ${finalComplianceArchiveRecord.killSwitch.name}=${
+        finalComplianceArchiveRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: finalComplianceArchiveRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

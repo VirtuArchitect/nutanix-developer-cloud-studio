@@ -650,10 +650,17 @@
 
 ## Phase 88 - Production Execution Archive Recovery Evidence Custody Closure Record (`v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record`)
 
-- Add production execution archive recovery evidence custody closure records linked to final compliance archive records - planned
-- Require custody owner, final custody ledger, evidence transfer receipt, retention lock confirmation, and custody closure sign-off - planned
-- Add Admin Operations archive recovery evidence custody closure panel - planned
-- Keep archive recovery evidence custody closure records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery evidence custody closure records linked to final compliance archive records - done
+- Require custody owner, final custody ledger, evidence transfer receipt, retention lock confirmation, and custody closure sign-off - done
+- Add Admin Operations archive recovery evidence custody closure panel - done
+- Keep archive recovery evidence custody closure records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 89 - Production Execution Archive Recovery Operational Continuity Record (`v2.67.0-production-execution-archive-recovery-operational-continuity-record`)
+
+- Add production execution archive recovery operational continuity records linked to evidence custody closure records - planned
+- Require continuity owner, continuity runbook update, recovery KPI baseline, support continuity handoff, and continuity sign-off - planned
+- Add Admin Operations archive recovery operational continuity panel - planned
+- Keep archive recovery operational continuity records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

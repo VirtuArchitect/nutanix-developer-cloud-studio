@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.65.0-production-execution-archive-recovery-final-compliance-archive-record`.
+This project uses release tags for public milestones. The current release is `v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery evidence custody closure records after final compliance archive records are complete.
+- Add production execution archive recovery operational continuity records after evidence custody closure records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record] - 2026-07-07
+
+### Added
+
+- Production execution archive recovery evidence custody closure records linked to production execution archive recovery final compliance archive records.
+- API endpoints for listing and recording production execution archive recovery evidence custody closure records.
+- Admin Operations production archive recovery evidence custody closure panel.
+- Custody owner, final custody ledger, evidence transfer receipt, retention lock confirmation, and custody closure sign-off checks.
+- Tests proving missing final compliance archive records or incomplete evidence custody closure evidence block readiness.
+
+### Notes
+
+- Production execution archive recovery evidence custody closure records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.65.0-production-execution-archive-recovery-final-compliance-archive-record] - 2026-07-07
 

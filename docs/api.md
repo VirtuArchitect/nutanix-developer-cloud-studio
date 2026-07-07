@@ -713,6 +713,15 @@ Production execution archive recovery final compliance archive records capture f
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Evidence Custody Closure Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-evidence-custody-closure-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-evidence-custody-closure-records`
+
+Production execution archive recovery evidence custody closure records capture custody closure evidence after final compliance archive and before any future operational continuity phase. Records require a ready final compliance archive record, custody owner, final custody ledger, evidence transfer receipt, retention lock confirmation, custody closure sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

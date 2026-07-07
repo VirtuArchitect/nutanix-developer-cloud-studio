@@ -12,6 +12,7 @@ describe("api server", () => {
 
   beforeEach(async () => {
     delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
+    process.env.NDC_RATE_LIMIT_PER_MINUTE = "1000";
     server = createApiServer({ store: new MemoryStore() });
     await new Promise<void>((resolve) => {
       server.listen(0, "127.0.0.1", resolve);
@@ -25,6 +26,7 @@ describe("api server", () => {
 
   afterEach(async () => {
     delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
+    delete process.env.NDC_RATE_LIMIT_PER_MINUTE;
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
     });
@@ -1269,6 +1271,19 @@ describe("api server", () => {
     const productionExecutionArchiveRecoveryFinalComplianceArchiveRecords = await requestJson(
       "/api/real-adapter/production-execution-archive-recovery-final-compliance-archive-records"
     );
+    const productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-evidence-custody-closure-records",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          finalComplianceArchiveRecordId:
+            productionExecutionArchiveRecoveryFinalComplianceArchiveRecord.data.id,
+        }),
+      }
+    );
+    const productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-evidence-custody-closure-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -2278,6 +2293,26 @@ describe("api server", () => {
         expect.objectContaining({ id: productionExecutionArchiveRecoveryFinalComplianceArchiveRecord.data.id }),
       ])
     );
+    expect(productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord.data).toMatchObject({
+      provider: "NDB",
+      finalComplianceArchiveRecordId: productionExecutionArchiveRecoveryFinalComplianceArchiveRecord.data.id,
+      archiveRecoveryAuditCertificationRecordId:
+        productionExecutionArchiveRecoveryAuditCertificationRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Final compliance archive ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not execute adapter", passed: true }),
+      ])
+    );
+    expect(productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord.data.id }),
+      ])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -2402,6 +2437,10 @@ describe("api server", () => {
         }),
         expect.objectContaining({
           action: "real-adapter.production-execution-archive-recovery-final-compliance-archive.recorded",
+          target: "NDB",
+        }),
+        expect.objectContaining({
+          action: "real-adapter.production-execution-archive-recovery-evidence-custody-closure.recorded",
           target: "NDB",
         }),
       ])

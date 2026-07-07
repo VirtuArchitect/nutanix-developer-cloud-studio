@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record`.
+- Added production execution archive recovery evidence custody closure records linked to production execution archive recovery final compliance archive records.
+- Added API endpoints for production execution archive recovery evidence custody closure records.
+- Added Admin Operations production archive recovery evidence custody closure panel.
+- Added tests proving missing final compliance archive records or incomplete evidence custody closure evidence block readiness.
+- Planned `v2.67.0-production-execution-archive-recovery-operational-continuity-record` for evidence-only archive recovery operational continuity records.
 - Released `v2.65.0-production-execution-archive-recovery-final-compliance-archive-record`.
 - Added production execution archive recovery final compliance archive records linked to production execution archive recovery audit certification records.
 - Added API endpoints for production execution archive recovery final compliance archive records.

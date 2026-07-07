@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.65.0-production-execution-archive-recovery-final-compliance-archive-record",
+  "version": "2.66.0-production-execution-archive-recovery-evidence-custody-closure-record",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -11,7 +11,7 @@
     "build:api": "tsc -p tsconfig.server.json",
     "build:all": "npm run build && npm run build:api",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run",
+    "test": "vitest run --pool=threads --maxWorkers=1",
     "test:e2e": "playwright test",
     "test:all": "npm run test && npm run build:all && npm run test:e2e"
   },

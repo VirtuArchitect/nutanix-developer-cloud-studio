@@ -83,6 +83,7 @@ import type {
   ProductionExecutionArchiveRecoveryClosureRecord,
   ProductionExecutionArchiveRecoveryAuditCertificationRecord,
   ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord,
+  ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -181,6 +182,7 @@ export type ApiState = {
   productionExecutionArchiveRecoveryClosureRecords: ProductionExecutionArchiveRecoveryClosureRecord[];
   productionExecutionArchiveRecoveryAuditCertificationRecords: ProductionExecutionArchiveRecoveryAuditCertificationRecord[];
   productionExecutionArchiveRecoveryFinalComplianceArchiveRecords: ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord[];
+  productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords: ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -828,6 +830,16 @@ export type CreateProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord
   evidenceRetentionProofReference?: string;
   auditWitnessReceiptReference?: string;
   finalComplianceArchiveSignOffReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordRequest = {
+  finalComplianceArchiveRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  custodyOwner?: string;
+  finalCustodyLedgerReference?: string;
+  evidenceTransferReceiptReference?: string;
+  retentionLockConfirmationReference?: string;
+  custodyClosureSignOffReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

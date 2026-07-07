@@ -66,6 +66,7 @@ import {
   createProductionExecutionArchiveRecoveryClosureRecordViaApi,
   createProductionExecutionArchiveRecoveryAuditCertificationRecordViaApi,
   createProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordViaApi,
+  createProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -149,6 +150,7 @@ import {
   fetchProductionExecutionArchiveRecoveryClosureRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryAuditCertificationRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -703,6 +705,10 @@ describe("cloudStudioApi", () => {
       archiveRecoveryAuditCertificationRecordId:
         "production-execution-archive-recovery-audit-certification-record-ndb-1",
     });
+    await fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi();
+    await createProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordViaApi({
+      finalComplianceArchiveRecordId: "production-execution-archive-recovery-final-compliance-archive-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1226,6 +1232,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-archive-recovery-audit-certification-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      109,
+      "/api/real-adapter/production-execution-archive-recovery-evidence-custody-closure-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      110,
+      "/api/real-adapter/production-execution-archive-recovery-evidence-custody-closure-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-archive-recovery-final-compliance-archive-record-ndb-1"),
       })
     );
   });
