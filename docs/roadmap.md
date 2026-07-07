@@ -349,10 +349,17 @@
 
 ## Phase 45 - Execution Broker Hardening (`v2.23.0-execution-broker-hardening`)
 
-- Add execution broker queue records for future controlled adapter work - planned
-- Add idempotency keys, kill-switch checks, and approval evidence links - planned
-- Add Admin Operations execution broker panel - planned
-- Keep broker records queued for operator review with real adapter execution disabled - planned
+- Add execution broker queue records for future controlled adapter work - done
+- Add idempotency keys, kill-switch checks, and approval evidence links - done
+- Add Admin Operations execution broker panel - done
+- Keep broker records queued for operator review with real adapter execution disabled - done
+
+## Phase 46 - Execution Broker Dispatch Approval (`v2.24.0-execution-broker-dispatch-approval`)
+
+- Add dispatch approval records linked to broker queue records - planned
+- Require rollback proof, operator approver, and pentest evidence references - planned
+- Add Admin Operations dispatch approval panel - planned
+- Keep dispatch approval records non-executing until an authorized real-adapter lab scope exists - planned
 
 ## Gated Promotion
 

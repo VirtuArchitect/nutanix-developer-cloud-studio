@@ -940,6 +940,27 @@ export type ControlledLabExecutionReadinessAttestation = {
   createdAt: string;
 };
 
+export type ExecutionBrokerQueueRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  readinessAttestationId: string;
+  evidenceLedgerId: string;
+  idempotencyKey: string;
+  operation: "Controlled Lab Adapter Execution";
+  status: "Blocked" | "Queued for operator review";
+  requestedBy: string;
+  approvalEvidenceLinks: string[];
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ControlledLabExecutionReadinessAttestation["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

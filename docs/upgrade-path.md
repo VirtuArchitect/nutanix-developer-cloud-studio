@@ -754,6 +754,23 @@ Exit gate:
 - Broker records remain queued for operator review only.
 - Real adapter execution remains disabled.
 
+### v2.24.0-execution-broker-dispatch-approval
+
+Goal: add the final non-executing dispatch approval boundary before any brokered request can be considered for authorized lab execution.
+
+Build:
+
+- Dispatch approval records linked to execution broker queue records.
+- Rollback proof, operator approver, pentest evidence, and dispatch window references.
+- Admin Operations dispatch approval panel with blockers and evidence references.
+- Tests proving missing broker records, rollback proof, pentest evidence, or approver evidence block dispatch readiness.
+
+Exit gate:
+
+- Dispatch approval APIs and UI are tested.
+- Dispatch approval records remain non-executing.
+- Real adapter execution remains disabled unless an authorized real-adapter lab scope exists.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

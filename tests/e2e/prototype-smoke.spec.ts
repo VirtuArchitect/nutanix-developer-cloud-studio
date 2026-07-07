@@ -205,6 +205,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Execution readiness attestation")).toBeVisible();
   await expect(page.getByText("Final attestation evidence")).toBeVisible();
   await expect(page.getByText("Platform owner attested")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Execution broker queue" })).toBeVisible();
+  await page.getByRole("button", { name: "Queue broker review" }).click();
+  await expect(page.getByText("Execution broker hardening")).toBeVisible();
+  await expect(page.getByText("Broker evidence boundary")).toBeVisible();
+  await expect(page.getByText("Idempotency key unique")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

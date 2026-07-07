@@ -331,6 +331,15 @@ Controlled lab execution readiness attestations record final platform, security,
 
 Required role: `Platform Admin`.
 
+### Execution Broker Queue
+
+- `GET /api/execution-broker/queue`
+- `POST /api/execution-broker/queue`
+
+Execution broker queue records create a hardened intake boundary for future controlled adapter work. Records require a ready execution attestation, a unique idempotency key, linked approval evidence, a disabled provider kill switch, and `provisioningEnabled=false`. Passing records are queued for operator review only and do not execute adapters.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -12,6 +12,7 @@ import {
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
+  createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
   createLabExecutionProposalEnvelopeViaApi,
   createLabExecutionProposalExportViaApi,
@@ -48,6 +49,7 @@ import {
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
+  fetchExecutionBrokerQueueRecordsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
   fetchLabEvidenceReviewsFromApi,
@@ -459,6 +461,11 @@ describe("cloudStudioApi", () => {
     await createControlledLabExecutionEvidenceLedgerViaApi({ dryRunChecklistId: "controlled-lab-dry-run-checklist-ndb-1" });
     await fetchControlledLabExecutionReadinessAttestationsFromApi();
     await createControlledLabExecutionReadinessAttestationViaApi({ evidenceLedgerId: "controlled-lab-evidence-ledger-ndb-1" });
+    await fetchExecutionBrokerQueueRecordsFromApi();
+    await createExecutionBrokerQueueRecordViaApi({
+      readinessAttestationId: "controlled-lab-readiness-attestation-ndb-1",
+      idempotencyKey: "ndb-controlled-lab-001",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -525,6 +532,12 @@ describe("cloudStudioApi", () => {
       22,
       "/api/controlled-lab-release/readiness-attestations",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-evidence-ledger-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(23, "/api/execution-broker/queue", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      24,
+      "/api/execution-broker/queue",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("ndb-controlled-lab-001") })
     );
   });
 

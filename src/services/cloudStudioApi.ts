@@ -16,6 +16,7 @@ import type {
   ControlledProvisioningGate,
   ControlPlaneJob,
   ControlledCreateAuthorizationEnvelope,
+  ExecutionBrokerQueueRecord,
   Environment,
   Integration,
   IntegrationConfig,
@@ -341,6 +342,10 @@ export async function fetchControlledLabExecutionReadinessAttestationsFromApi() 
   return fetchJson<ControlledLabExecutionReadinessAttestation[]>("/api/controlled-lab-release/readiness-attestations");
 }
 
+export async function fetchExecutionBrokerQueueRecordsFromApi() {
+  return fetchJson<ExecutionBrokerQueueRecord[]>("/api/execution-broker/queue");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -577,6 +582,17 @@ export async function createControlledLabExecutionReadinessAttestationViaApi(pay
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ControlledLabExecutionReadinessAttestation>("/api/controlled-lab-release/readiness-attestations", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createExecutionBrokerQueueRecordViaApi(payload: {
+  readinessAttestationId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  idempotencyKey?: string;
+}) {
+  return fetchJson<ExecutionBrokerQueueRecord>("/api/execution-broker/queue", {
     method: "POST",
     body: JSON.stringify(payload),
   });

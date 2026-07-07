@@ -65,6 +65,10 @@ import {
   createControlledLabExecutionReadinessAttestation,
 } from "./controlledLabExecutionReadinessAttestation";
 import {
+  createExecutionBrokerQueueRecord,
+  ExecutionBrokerError,
+} from "./executionBroker";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -162,6 +166,7 @@ import type {
   CreateControlledLabExecutionEvidenceLedgerRequest,
   CreateControlledLabExecutionReadinessAttestationRequest,
   CreateControlledLabExecutionRehearsalPacketRequest,
+  CreateExecutionBrokerQueueRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -357,6 +362,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabExecutionReadinessAttestationError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ExecutionBrokerError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -720,6 +735,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/readiness-attestations") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledLabExecutionReadinessAttestations });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/execution-broker/queue") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.executionBrokerQueueRecords });
     return;
   }
 
@@ -1590,6 +1611,22 @@ async function routeApi(
     );
     await store.save(state);
     sendJson(response, 201, { data: attestation });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/execution-broker/queue") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateExecutionBrokerQueueRecordRequest>(request);
+    const brokerRecord = createExecutionBrokerQueueRecord(state, body, context.session.user);
+    state.executionBrokerQueueRecords = [brokerRecord, ...state.executionBrokerQueueRecords];
+    addAuditEvent(state, "execution-broker.queue.recorded", context.session.user, brokerRecord.provider, {
+      readinessAttestationId: brokerRecord.readinessAttestationId,
+      idempotencyKey: brokerRecord.idempotencyKey,
+      status: brokerRecord.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: brokerRecord });
     return;
   }
 

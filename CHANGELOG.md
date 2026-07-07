@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.22.0-controlled-lab-execution-readiness-attestation`.
+This project uses release tags for public milestones. The current release is `v2.23.0-execution-broker-hardening`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add execution broker hardening with idempotency, kill-switch checks, and queued operator review before any real adapter path.
+- Add execution broker dispatch approvals and rollback proof binding before any real adapter path.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.23.0-execution-broker-hardening] - 2026-07-07
+
+### Added
+
+- Execution broker queue records linked to controlled lab readiness attestations.
+- API endpoints for listing and recording broker queue records.
+- Admin Operations execution broker panel.
+- Idempotency key, approval evidence, kill-switch, and operator-review-only checks.
+- Tests proving missing attestations, duplicate idempotency keys, or incomplete evidence block broker readiness.
+
+### Notes
+
+- Broker records are queued for operator review only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.22.0-controlled-lab-execution-readiness-attestation] - 2026-07-07
 

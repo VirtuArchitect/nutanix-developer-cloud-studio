@@ -863,6 +863,14 @@ describe("api server", () => {
       body: JSON.stringify({ evidenceLedgerId: evidenceLedger.data.id }),
     });
     const readinessAttestations = await requestJson("/api/controlled-lab-release/readiness-attestations");
+    const brokerRecord = await requestJson("/api/execution-broker/queue", {
+      method: "POST",
+      body: JSON.stringify({
+        readinessAttestationId: readinessAttestation.data.id,
+        idempotencyKey: "ndb-controlled-lab-001",
+      }),
+    });
+    const brokerRecords = await requestJson("/api/execution-broker/queue");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1122,6 +1130,23 @@ describe("api server", () => {
     expect(readinessAttestations.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: readinessAttestation.data.id })])
     );
+    expect(brokerRecord.data).toMatchObject({
+      provider: "NDB",
+      readinessAttestationId: readinessAttestation.data.id,
+      evidenceLedgerId: evidenceLedger.data.id,
+      idempotencyKey: "ndb-controlled-lab-001",
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(brokerRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Readiness attestation complete", passed: false }),
+        expect.objectContaining({ name: "Idempotency key unique", passed: true }),
+        expect.objectContaining({ name: "Queued for operator review only", passed: true }),
+      ])
+    );
+    expect(brokerRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: brokerRecord.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1139,6 +1164,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "controlled-lab-release.dry-run-checklist.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.evidence-ledger.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.readiness-attestation.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "execution-broker.queue.recorded", target: "NDB" }),
       ])
     );
   });

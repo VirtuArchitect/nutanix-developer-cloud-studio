@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.23.0-execution-broker-hardening`.
+- Added execution broker queue records linked to readiness attestations.
+- Added API endpoints for broker queue records.
+- Added Admin Operations execution broker panel.
+- Added tests proving missing attestations, duplicate idempotency keys, or incomplete evidence block broker readiness.
+- Planned `v2.24.0-execution-broker-dispatch-approval` for the next non-executing dispatch approval boundary.
 - Released `v2.22.0-controlled-lab-execution-readiness-attestation`.
 - Added controlled lab execution readiness attestation records linked to evidence ledgers.
 - Added API endpoints for readiness attestations.
 - Added Admin Operations readiness attestation panel.
 - Added tests proving missing evidence ledgers or incomplete attestations block readiness.
-- Planned `v2.23.0-execution-broker-hardening` for idempotent broker queue controls while keeping adapters disabled.
 - Released `v2.21.0-controlled-lab-execution-evidence-ledger`.
 - Added controlled lab execution evidence ledger records linked to dry-run checklists.
 - Added API endpoints for evidence ledgers.

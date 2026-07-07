@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.23.0-execution-broker-hardening` adds operator-review-only execution broker queue records linked to readiness attestations and an Admin Operations broker panel.
 - `v2.22.0-controlled-lab-execution-readiness-attestation` adds evidence-only readiness attestations linked to evidence ledgers and an Admin Operations attestation panel.
 - `v2.21.0-controlled-lab-execution-evidence-ledger` adds evidence-only ledgers linked to dry-run checklists and an Admin Operations ledger panel.
 - `v2.20.0-controlled-lab-dry-run-execution-checklist` adds evidence-only dry-run execution checklists linked to rehearsal packets and an Admin Operations checklist panel.
@@ -386,6 +387,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Attestations capture platform, security, operations, rollback, and executive sponsor evidence.
 - Admin Operations surfaces final attestation readiness, evidence references, and blockers.
 - Missing ready evidence ledgers or incomplete attestations block execution readiness.
+- Real adapter execution remains disabled.
+
+## Current Execution Broker Hardening Slice
+
+- API records execution broker queue records linked to readiness attestations.
+- Broker records require unique idempotency keys, approval evidence links, disabled kill switches, and operator-review-only mode.
+- Admin Operations surfaces broker queue readiness, evidence references, and blockers.
+- Missing readiness attestations, duplicate idempotency keys, or incomplete evidence block broker readiness.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack
