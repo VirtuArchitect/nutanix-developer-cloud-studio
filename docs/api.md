@@ -506,6 +506,15 @@ Production final execution packet records capture final packet evidence after ch
 
 Required role: `Platform Admin`.
 
+### Production Execution Hold-Point Records
+
+- `GET /api/real-adapter/production-execution-hold-point-records`
+- `POST /api/real-adapter/production-execution-hold-point-records`
+
+Production execution hold-point records capture final hold-point evidence after the final execution packet and before any future execution outcome authorization phase. Records require a ready final execution packet record, hold-point owner, final stop/go checkpoint, rollback timer checkpoint, monitoring readiness checkpoint, incident bridge checkpoint, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

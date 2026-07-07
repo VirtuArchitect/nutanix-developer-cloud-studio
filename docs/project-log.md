@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.43.0-production-execution-hold-point-record`.
+- Added production execution hold-point records linked to production final execution packet records.
+- Added API endpoints for production execution hold-point records.
+- Added Admin Operations production execution hold-point panel.
+- Added tests proving missing final execution packet records or incomplete hold-point evidence block readiness.
+- Planned `v2.44.0-production-execution-outcome-authorization-record` for evidence-only execution outcome authorization records.
 - Released `v2.42.0-production-final-execution-packet-record`.
 - Added production final execution packet records linked to production change ticket lock records.
 - Added API endpoints for production final execution packet records.

@@ -305,6 +305,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production final execution packet record")).toBeVisible();
   await expect(page.getByText("Final execution packet evidence")).toBeVisible();
   await expect(page.getByText("Change ticket lock ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production execution hold-point" })).toBeVisible();
+  await page.getByRole("button", { name: "Record hold-point" }).click();
+  await expect(page.getByText("Production execution hold-point record")).toBeVisible();
+  await expect(page.getByText("Execution hold-point evidence")).toBeVisible();
+  await expect(page.getByText("Final execution packet ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

@@ -996,6 +996,16 @@ describe("api server", () => {
     const productionFinalExecutionPacketRecords = await requestJson(
       "/api/real-adapter/production-final-execution-packet-records"
     );
+    const productionExecutionHoldPointRecord = await requestJson(
+      "/api/real-adapter/production-execution-hold-point-records",
+      {
+        method: "POST",
+        body: JSON.stringify({ finalExecutionPacketRecordId: productionFinalExecutionPacketRecord.data.id }),
+      }
+    );
+    const productionExecutionHoldPointRecords = await requestJson(
+      "/api/real-adapter/production-execution-hold-point-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1595,6 +1605,23 @@ describe("api server", () => {
     expect(productionFinalExecutionPacketRecords.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: productionFinalExecutionPacketRecord.data.id })])
     );
+    expect(productionExecutionHoldPointRecord.data).toMatchObject({
+      provider: "NDB",
+      finalExecutionPacketRecordId: productionFinalExecutionPacketRecord.data.id,
+      changeTicketLockRecordId: productionChangeTicketLockRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionExecutionHoldPointRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Final execution packet ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not execute adapter", passed: true }),
+      ])
+    );
+    expect(productionExecutionHoldPointRecords.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: productionExecutionHoldPointRecord.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1632,6 +1659,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "real-adapter.production-execution-authorization.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.production-change-ticket-lock.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.production-final-execution-packet.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.production-execution-hold-point.recorded", target: "NDB" }),
       ])
     );
   });

@@ -504,12 +504,12 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready handoff packets, CAB decisions, authorities, condition lists, rollback approvals, or decision minutes block readiness.
 - The prototype does not promote or enable real adapters.
 
-## Current Production Final Execution Packet Record Slice
+## Current Production Execution Hold-Point Record Slice
 
-- API records production final execution packet records linked to production change ticket lock records.
-- Final execution packet records require final packet manifest, operator run sheet, communications proof, observation window, and final rollback standby confirmation.
-- Admin Operations surfaces final execution packet readiness, evidence references, and blockers.
-- Missing ready change ticket lock records, final packet manifests, operator run sheets, communications proofs, observation windows, or final rollback standby confirmations block readiness.
+- API records production execution hold-point records linked to production final execution packet records.
+- Execution hold-point records require hold-point owner, final stop/go checkpoint, rollback timer checkpoint, monitoring readiness checkpoint, and incident bridge checkpoint.
+- Admin Operations surfaces execution hold-point readiness, evidence references, and blockers.
+- Missing ready final execution packet records, hold-point owners, final stop/go checkpoints, rollback timer checkpoints, monitoring readiness checkpoints, or incident bridge checkpoints block readiness.
 - The prototype does not promote, enable, or execute real adapters.
 
 ## Suggested Tech Stack
