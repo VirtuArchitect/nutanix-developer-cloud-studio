@@ -675,6 +675,8 @@ describe("api server", () => {
 
     const envelope = await requestJson("/api/vm-sandbox/controlled-create-authorization", { method: "POST" });
     const envelopes = await requestJson("/api/vm-sandbox/controlled-create-authorization");
+    const contract = await requestJson("/api/ahv/create-adapter-contracts", { method: "POST" });
+    const contracts = await requestJson("/api/ahv/create-adapter-contracts");
 
     expect(envelope.data).toMatchObject({
       environmentName: "authorization-envelope-plan",
@@ -688,6 +690,25 @@ describe("api server", () => {
       ])
     );
     expect(envelopes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: envelope.data.id })]));
+    expect(contract.data).toMatchObject({
+      environmentName: "authorization-envelope-plan",
+      adapterMode: "Disabled real adapter",
+      status: "Blocked",
+      provisioningEnabled: false,
+      payload: expect.objectContaining({
+        name: "authorization-envelope-plan",
+        project: "developer-cloud-lab",
+      }),
+      blockedOperations: expect.arrayContaining(["create_vm", "delete_vm"]),
+    });
+    expect(contract.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Authorization envelope approved", passed: false }),
+        expect.objectContaining({ name: "Payload fields approved", passed: true }),
+        expect.objectContaining({ name: "Execute path disabled", passed: true }),
+      ])
+    );
+    expect(contracts.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: contract.data.id })]));
   });
 
   it("records fail-closed AHV controlled provisioning preflight runs", async () => {

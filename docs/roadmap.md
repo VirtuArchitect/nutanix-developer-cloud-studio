@@ -234,6 +234,21 @@
 - Prove missing active pentest scope blocks live authorization - done
 - Keep real mutation disabled - done
 
+## Phase 29 - Controlled Create Adapter Contract (`v2.7.0-controlled-create-adapter-contract`)
+
+- Add disabled AHV create adapter contract methods for validate, map payload, execute, poll, and rollback - done
+- Map VM sandbox dry-run fields into the future Prism Central create payload shape - done
+- Add API-backed AHV create contract review records - done
+- Add Admin Control Plane payload preview, blocked operations, and kill switch panel - done
+- Keep execute, poll, rollback, and real mutation disabled - done
+
+## Phase 30 - Platform Service Adapter Contracts (`v2.8.0-platform-service-adapter-contracts`)
+
+- Define disabled adapter contracts for NKP, NDB, NUS, and NAI - planned
+- Map service planning records into future provider payload previews - planned
+- Add per-provider blocked operations and kill switch status - planned
+- Add API/UI/tests proving service execute paths remain disabled - planned
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

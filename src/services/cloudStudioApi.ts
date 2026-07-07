@@ -2,6 +2,7 @@ import type {
   ApprovalRequest,
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
+  AhvCreateAdapterContractReview,
   AuditExportRecord,
   AuditRetentionDiagnostics,
   CredentialReferenceDiagnostic,
@@ -249,6 +250,10 @@ export async function fetchControlledCreateAuthorizationEnvelopesFromApi() {
   return fetchJson<ControlledCreateAuthorizationEnvelope[]>("/api/vm-sandbox/controlled-create-authorization");
 }
 
+export async function fetchAhvCreateAdapterContractReviewsFromApi() {
+  return fetchJson<AhvCreateAdapterContractReview[]>("/api/ahv/create-adapter-contracts");
+}
+
 export async function fetchAhvControlledProvisioningRunsFromApi() {
   return fetchJson<AhvControlledProvisioningRun[]>("/api/ahv/controlled-provisioning/runs");
 }
@@ -410,6 +415,12 @@ export async function createRollbackDestroyProofViaApi(payload: {
 
 export async function createControlledCreateAuthorizationEnvelopeViaApi() {
   return fetchJson<ControlledCreateAuthorizationEnvelope>("/api/vm-sandbox/controlled-create-authorization", {
+    method: "POST",
+  });
+}
+
+export async function createAhvCreateAdapterContractReviewViaApi() {
+  return fetchJson<AhvCreateAdapterContractReview>("/api/ahv/create-adapter-contracts", {
     method: "POST",
   });
 }

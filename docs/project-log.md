@@ -1,5 +1,14 @@
 # Nutanix Developer Cloud Studio - Project Log
 
+## 2026-07-07
+
+- Released `v2.7.0-controlled-create-adapter-contract`.
+- Added a disabled AHV create adapter contract for validate, dry-run payload mapping, execute, poll, and rollback boundaries.
+- Added API endpoints for AHV create contract reviews.
+- Added Admin Control Plane payload preview with checks, blocked mutation operations, and AHV adapter kill switch status.
+- Added tests proving approved dry-run fields are mapped and execute/poll/rollback remain disabled.
+- Planned `v2.8.0-platform-service-adapter-contracts` for disabled NKP, NDB, NUS, and NAI service contract coverage.
+
 ## 2026-06-26
 
 - Confirmed the project as a viable MVP and clickable product prototype.

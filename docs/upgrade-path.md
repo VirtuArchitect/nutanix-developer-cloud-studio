@@ -482,6 +482,23 @@ Exit gate:
 - Payload mapping contains only approved fields.
 - Execute path remains disabled without authorized pentest scope and explicit adapter release.
 
+### v2.8.0-platform-service-adapter-contracts
+
+Goal: define disabled real-adapter contracts for NKP, NDB, NUS, and NAI service creation before any live service mutation is considered.
+
+Build:
+
+- Service adapter interfaces with validate, map payload, execute disabled, poll disabled, and rollback disabled methods.
+- Payload mapping from platform-service request/preflight records to future provider requests.
+- Admin Control Plane view for service payload previews, blocked operations, and per-provider kill switch status.
+- Tests proving service payload fields stay allowlisted and execute paths remain disabled.
+
+Exit gate:
+
+- Service adapter contract APIs and UI are tested.
+- Payload mappings contain only approved request fields.
+- NKP, NDB, NUS, and NAI execute paths remain disabled without authorized scope and explicit adapter release.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

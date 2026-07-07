@@ -3,6 +3,7 @@ import {
   checkApiHealth,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
+  createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
@@ -17,6 +18,7 @@ import {
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -254,6 +256,21 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/vm-sandbox/controlled-create-authorization",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and creates AHV create adapter contract reviews", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchAhvCreateAdapterContractReviewsFromApi();
+    await createAhvCreateAdapterContractReviewViaApi();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/ahv/create-adapter-contracts", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/ahv/create-adapter-contracts",
       expect.objectContaining({ method: "POST" })
     );
   });

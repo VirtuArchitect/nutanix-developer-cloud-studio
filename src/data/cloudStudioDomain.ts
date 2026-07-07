@@ -448,6 +448,39 @@ export type ControlledCreateAuthorizationEnvelope = {
   createdAt: string;
 };
 
+export type AhvCreateAdapterContractReview = {
+  id: string;
+  environmentName: string;
+  dryRunPlanId: string;
+  adapterMode: "Disabled real adapter";
+  status: "Blocked" | "Payload ready but execution disabled";
+  requestedBy: string;
+  payload: {
+    name: string;
+    project: string;
+    cluster: string;
+    network: string;
+    imageProfileId: string;
+    cpu: number;
+    memoryGb: number;
+    diskGb: number;
+    category: string;
+    owner: string;
+  };
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  blockedOperations: string[];
+  killSwitch: {
+    name: string;
+    enabled: boolean;
+  };
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type AhvControlledProvisioningRun = {
   id: string;
   gateId: string;

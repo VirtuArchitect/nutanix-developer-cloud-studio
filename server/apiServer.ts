@@ -11,6 +11,10 @@ import {
   createDisabledAhvControlledProvisioningAdapter,
 } from "./ahvControlledProvisioning";
 import {
+  AhvCreateAdapterContractError,
+  createDisabledAhvCreateAdapterContract,
+} from "./ahvCreateAdapterContract";
+import {
   AuthorizationEvidenceError,
   createLabScopeDiagnostics,
   createLabAuthorizationScope,
@@ -182,6 +186,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledCreateAuthorizationError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof AhvCreateAdapterContractError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -384,6 +398,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/vm-sandbox/controlled-create-authorization") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledCreateAuthorizationEnvelopes });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/ahv/create-adapter-contracts") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.ahvCreateAdapterContractReviews });
     return;
   }
 
@@ -921,6 +941,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: envelope });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/ahv/create-adapter-contracts") {
+    requireRole(context, ["Platform Admin"]);
+    const adapter = createDisabledAhvCreateAdapterContract(state, context.session.user);
+    const review = adapter.validate(state);
+    state.ahvCreateAdapterContractReviews = [review, ...state.ahvCreateAdapterContractReviews];
+    addAuditEvent(state, "ahv.create-adapter-contract.reviewed", context.session.user, review.environmentName, {
+      status: review.status,
+      checksPassed: review.checks.every((check) => check.passed),
+      blockedOperations: review.blockedOperations,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: review });
     return;
   }
 

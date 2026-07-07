@@ -228,6 +228,8 @@ Required roles: `Platform Admin` to request a gate review; `Platform Admin` or `
 - `POST /api/vm-sandbox/rollback-destroy-proofs`
 - `GET /api/vm-sandbox/controlled-create-authorization`
 - `POST /api/vm-sandbox/controlled-create-authorization`
+- `GET /api/ahv/create-adapter-contracts`
+- `POST /api/ahv/create-adapter-contracts`
 
 Lab authorization scopes record the approved project, cluster, network, target environment, provider coverage, target endpoint references, test window, allowed actions, excluded actions, evidence references, rollback owner, and pentest scope evidence required before controlled create work can be considered.
 
@@ -238,6 +240,8 @@ VM lifecycle proofs record gate, rollback, and destroy evidence after an approve
 Rollback/destroy proof records attach to VM sandbox dry-run plans and check backup/export evidence, owner notification, rollback owner, teardown order, inventory reconciliation, and audit export readiness. Controlled provisioning gate review remains blocked until a ready rollback/destroy proof exists for the dry-run.
 
 Controlled-create authorization envelopes roll up lab scope, rollback/destroy proof, controlled gate approval, lifecycle proof, adapter enablement, audit export, active pentest scope, allowed create fields, kill switch, and emergency stop procedure. Missing active pentest scope keeps the envelope `Blocked`.
+
+AHV create adapter contract reviews map approved VM sandbox dry-run fields to the future Prism Central create request shape and record blocked create, clone, power, poll, rollback, and delete operations. Execute, poll, and rollback methods remain disabled and return `provisioningEnabled=false`.
 
 Required role: `Platform Admin` to record evidence.
 
@@ -325,8 +329,8 @@ Trusted headers are a starter boundary only. A production deployment should vali
 ## Current Limits
 
 - No real Nutanix API calls.
-- No authentication or authorization yet.
-- Session and role context are mocked for OIDC readiness only.
+- Authentication is starter trusted-header/OIDC-shaped only and must be enforced by a production ingress or API validation layer before real use.
+- Session and role context are prototype readiness scaffolding, not a complete identity platform.
 - No production database yet.
 - Postgres mode validates configuration but remains scaffold-only until an approved runtime driver phase.
 - No secret storage yet.

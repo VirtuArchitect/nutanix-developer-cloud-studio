@@ -103,6 +103,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Live adapter authorization envelope")).toBeVisible();
   await expect(page.getByText("Active pentest scope", { exact: true })).toBeVisible();
   await expect(page.getByText("Active authorized pentest scope is required before live adapter authorization.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AHV create adapter contract" })).toBeVisible();
+  await page.getByRole("button", { name: "Review AHV create contract" }).click();
+  await expect(page.getByText("Disabled AHV create contract")).toBeVisible();
+  await expect(page.getByText("Payload fields approved", { exact: true })).toBeVisible();
+  await expect(page.getByText("create_vm", { exact: true }).first()).toBeVisible();
   await page.getByRole("button", { name: "Record lifecycle proof" }).click();
   await expect(page.getByText("Controlled gate approved").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "AHV controlled preflight" })).toBeVisible();

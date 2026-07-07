@@ -30,6 +30,7 @@ import {
   templates,
   type AdapterEnablementRecord,
   type AhvControlledProvisioningRun,
+  type AhvCreateAdapterContractReview,
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
   type CredentialReferenceDiagnostic,
@@ -89,6 +90,7 @@ import {
   checkApiHealth,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
+  createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
@@ -104,6 +106,7 @@ import {
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -195,6 +198,7 @@ export function App() {
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
+  const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
   const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
   const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
   const [lifecycleOperations, setLifecycleOperations] = useState<LifecycleOperationRecord[]>([]);
@@ -272,6 +276,7 @@ export function App() {
             apiPlatformServicePreflightRuns,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
+            apiAhvCreateAdapterContractReviews,
             apiAhvControlledProvisioningRuns,
             apiProductionReadinessReviews,
             apiLifecycleOperations,
@@ -304,6 +309,7 @@ export function App() {
             fetchPlatformServicePreflightRunsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
+            fetchAhvCreateAdapterContractReviewsFromApi(),
             fetchAhvControlledProvisioningRunsFromApi(),
             fetchProductionReadinessReviewsFromApi(),
             fetchLifecycleOperationsFromApi(),
@@ -338,6 +344,7 @@ export function App() {
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
+            setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
             setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
             setProductionReadinessReviews(apiProductionReadinessReviews);
             setLifecycleOperations(apiLifecycleOperations);
@@ -492,6 +499,7 @@ export function App() {
       apiPlatformServicePreflightRuns,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
+      apiAhvCreateAdapterContractReviews,
       apiAhvControlledProvisioningRuns,
       apiProductionReadinessReviews,
       apiLifecycleOperations,
@@ -524,6 +532,7 @@ export function App() {
       fetchPlatformServicePreflightRunsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
+      fetchAhvCreateAdapterContractReviewsFromApi(),
       fetchAhvControlledProvisioningRunsFromApi(),
       fetchProductionReadinessReviewsFromApi(),
       fetchLifecycleOperationsFromApi(),
@@ -557,6 +566,7 @@ export function App() {
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
+    setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
     setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
     setProductionReadinessReviews(apiProductionReadinessReviews);
     setLifecycleOperations(apiLifecycleOperations);
@@ -915,6 +925,24 @@ export function App() {
     ]);
   }
 
+  async function reviewAhvCreateAdapterContract() {
+    if (apiHealth.mode === "api") {
+      const review = await createAhvCreateAdapterContractReviewViaApi();
+      await refreshApiState();
+      setAhvCreateAdapterContractReviews((current) => [review, ...current.filter((item) => item.id !== review.id)]);
+      return;
+    }
+
+    setAhvCreateAdapterContractReviews((current) => [
+      createMockAhvCreateAdapterContractReview({
+        actor: session.user,
+        vmSandboxDryRuns,
+        controlledCreateAuthorizationEnvelopes,
+      }),
+      ...current,
+    ]);
+  }
+
   async function runAhvControlledProvisioningPreflight() {
     const gate = controlledProvisioningGates[0];
     if (!gate) {
@@ -1248,6 +1276,7 @@ export function App() {
             platformServicePreflightRuns={platformServicePreflightRuns}
             vmLifecycleProofs={vmLifecycleProofs}
             rollbackDestroyProofs={rollbackDestroyProofs}
+            ahvCreateAdapterContractReviews={ahvCreateAdapterContractReviews}
             ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
             productionReadinessReviews={productionReadinessReviews}
             lifecycleOperations={lifecycleOperations}
@@ -1269,6 +1298,7 @@ export function App() {
             recordVmLifecycleProof={recordVmLifecycleProof}
             recordRollbackDestroyProof={recordRollbackDestroyProof}
             reviewControlledCreateAuthorization={reviewControlledCreateAuthorization}
+            reviewAhvCreateAdapterContract={reviewAhvCreateAdapterContract}
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
@@ -1776,6 +1806,7 @@ function AdminView({
   platformServicePreflightRuns,
   vmLifecycleProofs,
   rollbackDestroyProofs,
+  ahvCreateAdapterContractReviews,
   ahvControlledProvisioningRuns,
   productionReadinessReviews,
   lifecycleOperations,
@@ -1797,6 +1828,7 @@ function AdminView({
   recordVmLifecycleProof,
   recordRollbackDestroyProof,
   reviewControlledCreateAuthorization,
+  reviewAhvCreateAdapterContract,
   runAhvControlledProvisioningPreflight,
   createPlatformServiceRequest,
   runPlatformServicePreflight,
@@ -1835,6 +1867,7 @@ function AdminView({
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   vmLifecycleProofs: VmLifecycleProof[];
   rollbackDestroyProofs: RollbackDestroyProofRecord[];
+  ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
@@ -1859,6 +1892,7 @@ function AdminView({
   recordVmLifecycleProof: () => void;
   recordRollbackDestroyProof: () => void;
   reviewControlledCreateAuthorization: () => void;
+  reviewAhvCreateAdapterContract: () => void;
   runAhvControlledProvisioningPreflight: () => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
@@ -2020,6 +2054,12 @@ function AdminView({
             <ControlledCreateAuthorizationPanel
               envelopes={controlledCreateAuthorizationEnvelopes}
               reviewControlledCreateAuthorization={reviewControlledCreateAuthorization}
+            />
+          </Panel>
+          <Panel title="AHV create adapter contract" action={`${ahvCreateAdapterContractReviews.length} reviews`}>
+            <AhvCreateAdapterContractPanel
+              reviews={ahvCreateAdapterContractReviews}
+              reviewAhvCreateAdapterContract={reviewAhvCreateAdapterContract}
             />
           </Panel>
           <Panel title="AHV controlled preflight" action={`${ahvControlledProvisioningRuns.length} runs`}>
@@ -3164,6 +3204,84 @@ function ControlledCreateAuthorizationPanel({
             {latest.emergencyStopProcedure.map((step) => (
               <span key={step}>{step}</span>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AhvCreateAdapterContractPanel({
+  reviews,
+  reviewAhvCreateAdapterContract,
+}: {
+  reviews: AhvCreateAdapterContractReview[];
+  reviewAhvCreateAdapterContract: () => void;
+}) {
+  const latest = reviews[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <TerminalSquare size={18} />
+        <div>
+          <strong>Disabled AHV create contract</strong>
+          <span>Maps the approved dry-run fields to a future Prism Central create request while execution stays blocked.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={reviewAhvCreateAdapterContract}>
+          <Play size={15} />
+          Review AHV create contract
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No AHV create adapter contract review has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.environmentName}</strong>
+              <span>{latest.adapterMode}</span>
+            </div>
+            <span className={`status ${latest.status === "Payload ready but execution disabled" ? "approval" : "failed"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            {Object.entries(latest.payload).map(([field, value]) => (
+              <CheckLine
+                icon={ShieldCheck}
+                key={field}
+                label={field}
+                value={String(value)}
+                passed
+              />
+            ))}
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Blocked mutation operations</strong>
+            {latest.blockedOperations.map((operation) => (
+              <span key={operation}>{operation}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Adapter kill switch</strong>
+            <span>
+              {latest.killSwitch.name}: {latest.killSwitch.enabled ? "enabled" : "disabled"}
+            </span>
+            <span>Provisioning enabled: {latest.provisioningEnabled ? "yes" : "no"}</span>
           </div>
         </div>
       )}
@@ -4423,6 +4541,76 @@ function createMockControlledCreateAuthorizationEnvelope({
       "Keep NDC_AHV_REAL_ADAPTER_ENABLED disabled until approved adapter implementation is present.",
       "Notify rollback owner and preserve audit export evidence.",
     ],
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAhvCreateAdapterContractReview({
+  actor,
+  vmSandboxDryRuns,
+  controlledCreateAuthorizationEnvelopes,
+}: {
+  actor: string;
+  vmSandboxDryRuns: VmSandboxDryRunPlan[];
+  controlledCreateAuthorizationEnvelopes: ControlledCreateAuthorizationEnvelope[];
+}): AhvCreateAdapterContractReview {
+  const envelope = controlledCreateAuthorizationEnvelopes[0];
+  const dryRun = vmSandboxDryRuns.find((item) => item.id === envelope?.dryRunPlanId) ?? vmSandboxDryRuns[0];
+  const payload = {
+    name: dryRun?.environmentName ?? "missing-dry-run",
+    project: dryRun?.project ?? defaultPlatformConfig.defaultProject,
+    cluster: dryRun?.cluster ?? defaultPlatformConfig.defaultCluster,
+    network: dryRun?.network ?? defaultPlatformConfig.networkProfile,
+    imageProfileId: dryRun?.imageProfileId ?? "ahv-rocky-9-hardened",
+    cpu: dryRun?.quota.cpu ?? 2,
+    memoryGb: dryRun?.quota.memoryGb ?? 8,
+    diskGb: dryRun?.quota.diskGb ?? 80,
+    category: dryRun?.category ?? "Lifecycle:30-day-expiry",
+    owner: dryRun?.owner ?? actor,
+  };
+  const approvedFields = envelope?.allowedCreateFields ?? [];
+  const disallowedFields = Object.keys(payload).filter((field) => !approvedFields.includes(field));
+  const checks = [
+    {
+      name: "Authorization envelope approved",
+      passed: envelope?.status === "Ready for authorization review",
+      detail: envelope ? `Envelope status is ${envelope.status}.` : "Authorization envelope is required.",
+    },
+    {
+      name: "Payload fields approved",
+      passed: Boolean(envelope) && disallowedFields.length === 0,
+      detail:
+        envelope && disallowedFields.length === 0
+          ? "Mapped payload only uses approved create fields."
+          : `Disallowed fields: ${disallowedFields.join(", ") || "all fields until envelope exists"}.`,
+    },
+    {
+      name: "Dry-run validations passed",
+      passed: Boolean(dryRun?.validations.every((validation) => validation.passed)),
+      detail: dryRun ? "VM sandbox dry-run validations must pass before payload mapping." : "Dry-run plan is required.",
+    },
+    {
+      name: "Execute path disabled",
+      passed: true,
+      detail: "Execute, poll, and rollback remain disabled.",
+    },
+  ];
+
+  return {
+    id: `ahv-create-contract-${payload.name}-${Date.now()}`,
+    environmentName: payload.name,
+    dryRunPlanId: dryRun?.id ?? "missing-dry-run",
+    adapterMode: "Disabled real adapter",
+    status: checks.every((check) => check.passed) ? "Payload ready but execution disabled" : "Blocked",
+    requestedBy: actor,
+    payload,
+    checks,
+    blockedOperations: ["create_vm", "clone_vm", "power_on_vm", "poll_task", "rollback_create", "delete_vm"],
+    killSwitch: {
+      name: "NDC_AHV_REAL_ADAPTER_ENABLED",
+      enabled: false,
+    },
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

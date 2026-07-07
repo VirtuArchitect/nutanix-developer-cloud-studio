@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.7.0-controlled-create-adapter-contract` adds the disabled AHV create adapter contract, dry-run-to-create payload mapping, API-backed contract review records, and Admin Control Plane payload preview while keeping execute, poll, rollback, and real Prism Central mutation disabled.
 - Mock product data now lives in `src/data/cloudStudioData.ts`
 - Mock provisioning behavior now lives in `src/services/provisioningService.ts`
 - Requested environments persist in browser local storage

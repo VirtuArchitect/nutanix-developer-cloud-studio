@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.6.0-controlled-create-adapter-authorization-envelope`.
+This project uses release tags for public milestones. The current release is `v2.7.0-controlled-create-adapter-contract`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.7.0-controlled-create-adapter-contract] - 2026-07-07
+
+### Added
+
+- Disabled AHV create adapter contract with validate, payload mapping, execute, poll, and rollback methods.
+- API endpoints for listing and recording AHV create adapter contract reviews.
+- Admin Control Plane panel for payload preview, contract checks, blocked mutation operations, and adapter kill switch state.
+- Tests proving the contract review maps approved dry-run fields and execute/poll/rollback remain disabled.
+
+### Notes
+
+- This phase defines the adapter contract boundary only.
+- Prism Central create, poll, and rollback calls remain disabled.
+- A future live adapter still requires authorized lab scope, pentest evidence, and explicit adapter release.
 
 ## [v2.6.0-controlled-create-adapter-authorization-envelope] - 2026-07-07
 
