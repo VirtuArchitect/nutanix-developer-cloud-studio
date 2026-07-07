@@ -141,6 +141,7 @@ export function createDefaultState(): ApiState {
     platformServiceAdapterContractReviews: [],
     providerReleaseGateRecords: [],
     releaseEvidenceExports: [],
+    controlledLabReleaseRunbooks: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

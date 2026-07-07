@@ -5,6 +5,7 @@ import type {
   AhvCreateAdapterContractReview,
   AuditExportRecord,
   AuditRetentionDiagnostics,
+  ControlledLabReleaseRunbookRecord,
   CredentialReferenceDiagnostic,
   ControlledProvisioningGate,
   ControlPlaneJob,
@@ -286,6 +287,10 @@ export async function fetchReleaseEvidenceExportsFromApi() {
   return fetchJson<ReleaseEvidenceExportRecord[]>("/api/release-evidence-exports");
 }
 
+export async function fetchControlledLabReleaseRunbooksFromApi() {
+  return fetchJson<ControlledLabReleaseRunbookRecord[]>("/api/controlled-lab-release/runbooks");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -398,6 +403,19 @@ export async function createReleaseEvidenceExportViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ReleaseEvidenceExportRecord>("/api/release-evidence-exports", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createControlledLabReleaseRunbookViaApi(payload: {
+  provider?: ProviderReleaseGateRecord["provider"];
+  platformOwnerEvidence?: string;
+  securityReviewerEvidence?: string;
+  rollbackOwnerEvidence?: string;
+  labOwnerEvidence?: string;
+}) {
+  return fetchJson<ControlledLabReleaseRunbookRecord>("/api/controlled-lab-release/runbooks", {
     method: "POST",
     body: JSON.stringify(payload),
   });

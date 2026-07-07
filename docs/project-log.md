@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.12.0-controlled-lab-release-runbook`.
+- Added controlled lab release runbook records linked to provider release readiness.
+- Added API endpoints for controlled lab release runbooks.
+- Added Admin Operations runbook checklist for required sign-offs, stop conditions, escalation contacts, and disabled execution evidence.
+- Added tests proving missing sign-offs block runbook completion.
+- Planned `v2.13.0-controlled-lab-dry-run-window` for scheduled evidence-only lab dry-run windows.
 - Released `v2.11.0-provider-release-dashboard-hardening`.
 - Added provider release readiness summaries for NCI, NKP, NDB, NUS, and NAI.
 - Added API endpoint for provider release readiness comparison.
 - Added Admin Control Plane release readiness summary with nearest-to-ready and most-blocked provider cards.
 - Added tests proving summary gap counts match release gate records.
-- Planned `v2.12.0-controlled-lab-release-runbook` for human sign-off and stop-condition runbooks.
 - Released `v2.10.0-release-evidence-export-hardening`.
 - Added release evidence export records linked to provider release gates.
 - Added redacted JSON manifest metadata for provider, gate status, check counts, blocked operations, kill switch state, and evidence references.

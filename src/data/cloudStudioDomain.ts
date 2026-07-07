@@ -654,6 +654,30 @@ export type ProviderReleaseReadinessSummary = {
   provisioningEnabled: false;
 };
 
+export type ControlledLabReleaseRunbookRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  readinessGeneratedAt: string;
+  status: "Blocked" | "Ready for controlled lab release review";
+  requestedBy: string;
+  signOffs: Array<{
+    role: "Platform owner" | "Security reviewer" | "Rollback owner" | "Lab owner";
+    owner: string;
+    signed: boolean;
+    evidence: string;
+  }>;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  stopConditions: string[];
+  escalationContacts: string[];
+  linkedReleaseGateId?: string;
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

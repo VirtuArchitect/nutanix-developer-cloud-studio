@@ -567,6 +567,23 @@ Exit gate:
 - Runbook completion remains evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.13.0-controlled-lab-dry-run-window
+
+Goal: schedule a controlled lab dry-run window without allowing provider mutation.
+
+Build:
+
+- Controlled lab dry-run window records with start time, end time, provider, and owner references.
+- Links to controlled lab release runbook, release evidence export, lab scope, rollback owner, and emergency stop contacts.
+- Admin Operations readiness checklist for window approval, rollback standby, audit export readiness, and stop-the-line contacts.
+- Tests proving missing runbook, lab scope, rollback owner, or audit evidence blocks window readiness.
+
+Exit gate:
+
+- Window APIs and UI are tested.
+- Window scheduling remains evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

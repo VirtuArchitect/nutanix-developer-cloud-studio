@@ -33,6 +33,7 @@ import {
   type AhvCreateAdapterContractReview,
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
+  type ControlledLabReleaseRunbookRecord,
   type CredentialReferenceDiagnostic,
   type Environment,
   type ApprovalRequest,
@@ -96,6 +97,7 @@ import {
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
+  createControlledLabReleaseRunbookViaApi,
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
   createControlledProvisioningGateViaApi,
@@ -121,6 +123,7 @@ import {
   fetchControlPlaneJobsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
+  fetchControlledLabReleaseRunbooksFromApi,
   fetchEnvironmentsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchApprovalsFromApi,
@@ -213,6 +216,7 @@ export function App() {
     createMockProviderReleaseReadinessSummary([])
   );
   const [releaseEvidenceExports, setReleaseEvidenceExports] = useState<ReleaseEvidenceExportRecord[]>([]);
+  const [controlledLabReleaseRunbooks, setControlledLabReleaseRunbooks] = useState<ControlledLabReleaseRunbookRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -295,6 +299,7 @@ export function App() {
             apiProviderReleaseGateRecords,
             apiProviderReleaseReadinessSummary,
             apiReleaseEvidenceExports,
+            apiControlledLabReleaseRunbooks,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -332,6 +337,7 @@ export function App() {
             fetchProviderReleaseGateRecordsFromApi(),
             fetchProviderReleaseReadinessSummaryFromApi(),
             fetchReleaseEvidenceExportsFromApi(),
+            fetchControlledLabReleaseRunbooksFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -371,6 +377,7 @@ export function App() {
             setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
             setProviderReleaseReadinessSummary(apiProviderReleaseReadinessSummary);
             setReleaseEvidenceExports(apiReleaseEvidenceExports);
+            setControlledLabReleaseRunbooks(apiControlledLabReleaseRunbooks);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -530,6 +537,7 @@ export function App() {
       apiProviderReleaseGateRecords,
       apiProviderReleaseReadinessSummary,
       apiReleaseEvidenceExports,
+      apiControlledLabReleaseRunbooks,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -567,6 +575,7 @@ export function App() {
       fetchProviderReleaseGateRecordsFromApi(),
       fetchProviderReleaseReadinessSummaryFromApi(),
       fetchReleaseEvidenceExportsFromApi(),
+      fetchControlledLabReleaseRunbooksFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -605,6 +614,7 @@ export function App() {
     setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
     setProviderReleaseReadinessSummary(apiProviderReleaseReadinessSummary);
     setReleaseEvidenceExports(apiReleaseEvidenceExports);
+    setControlledLabReleaseRunbooks(apiControlledLabReleaseRunbooks);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1171,6 +1181,22 @@ export function App() {
     ]);
   }
 
+  async function prepareControlledLabReleaseRunbook() {
+    const provider = providerReleaseReadinessSummary.nearestToReady ?? providerReleaseGateRecords[0]?.provider ?? "NCI";
+
+    if (apiHealth.mode === "api") {
+      const runbook = await createControlledLabReleaseRunbookViaApi({ provider });
+      await refreshApiState();
+      setControlledLabReleaseRunbooks((current) => [runbook, ...current.filter((item) => item.id !== runbook.id)]);
+      return;
+    }
+
+    setControlledLabReleaseRunbooks((current) => [
+      createMockControlledLabReleaseRunbookRecord(provider, providerReleaseReadinessSummary, providerReleaseGateRecords, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1393,6 +1419,7 @@ export function App() {
             lifecycleOperations={lifecycleOperations}
             auditExports={auditExports}
             releaseEvidenceExports={releaseEvidenceExports}
+            controlledLabReleaseRunbooks={controlledLabReleaseRunbooks}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1420,6 +1447,7 @@ export function App() {
             requestLifecycleOperation={requestLifecycleOperation}
             prepareAuditExport={prepareAuditExport}
             prepareReleaseEvidenceExport={prepareReleaseEvidenceExport}
+            prepareControlledLabReleaseRunbook={prepareControlledLabReleaseRunbook}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -1930,6 +1958,7 @@ function AdminView({
   lifecycleOperations,
   auditExports,
   releaseEvidenceExports,
+  controlledLabReleaseRunbooks,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -1957,6 +1986,7 @@ function AdminView({
   requestLifecycleOperation,
   prepareAuditExport,
   prepareReleaseEvidenceExport,
+  prepareControlledLabReleaseRunbook,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -1998,6 +2028,7 @@ function AdminView({
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
   releaseEvidenceExports: ReleaseEvidenceExportRecord[];
+  controlledLabReleaseRunbooks: ControlledLabReleaseRunbookRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2028,6 +2059,7 @@ function AdminView({
   requestLifecycleOperation: (operation: LifecycleOperationKind) => void;
   prepareAuditExport: () => void;
   prepareReleaseEvidenceExport: () => void;
+  prepareControlledLabReleaseRunbook: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2254,6 +2286,12 @@ function AdminView({
             <ReleaseEvidenceExportPanel
               exports={releaseEvidenceExports}
               prepareReleaseEvidenceExport={prepareReleaseEvidenceExport}
+            />
+          </Panel>
+          <Panel title="Controlled lab release runbook" action={`${controlledLabReleaseRunbooks.length} records`}>
+            <ControlledLabReleaseRunbookPanel
+              runbooks={controlledLabReleaseRunbooks}
+              prepareControlledLabReleaseRunbook={prepareControlledLabReleaseRunbook}
             />
           </Panel>
         </div>
@@ -3099,6 +3137,75 @@ function ReleaseEvidenceExportPanel({
             <strong>Redaction boundary</strong>
             <span>{latest.redactionBoundary}</span>
             <span>{latest.storageBoundary}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledLabReleaseRunbookPanel({
+  runbooks,
+  prepareControlledLabReleaseRunbook,
+}: {
+  runbooks: ControlledLabReleaseRunbookRecord[];
+  prepareControlledLabReleaseRunbook: () => void;
+}) {
+  const latest = runbooks[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ScrollText size={18} />
+        <div>
+          <strong>Operator release runbook</strong>
+          <span>Records human sign-offs, stop conditions, and escalation contacts before any controlled lab adapter release proposal.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareControlledLabReleaseRunbook}>
+          <ScrollText size={15} />
+          Prepare runbook
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled lab release runbook has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.id}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for controlled lab release review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Release gate" value={latest.linkedReleaseGateId ?? "missing"} passed={Boolean(latest.linkedReleaseGateId)} />
+            <CheckLine icon={UserRound} label="Sign-offs" value={`${latest.signOffs.filter((item) => item.signed).length}/${latest.signOffs.length} recorded`} passed={latest.signOffs.every((item) => item.signed)} />
+            <CheckLine icon={Gauge} label="Stop conditions" value={`${latest.stopConditions.length}`} passed={latest.stopConditions.length >= 3} />
+            <CheckLine icon={LockKeyhole} label="Execution" value="Disabled" passed />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Required sign-offs</strong>
+            {latest.signOffs.map((signOff) => (
+              <span key={signOff.role}>
+                {signOff.role}: {signOff.signed ? signOff.evidence : "missing evidence"} ({signOff.owner})
+              </span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Stop conditions</strong>
+            {latest.stopConditions.map((condition) => (
+              <span key={condition}>{condition}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Escalation contacts</strong>
+            {latest.escalationContacts.map((contact) => (
+              <span key={contact}>{contact}</span>
+            ))}
           </div>
         </div>
       )}
@@ -5544,6 +5651,100 @@ function createMockReleaseEvidenceExportRecord(
     storageBoundary: "Export record is metadata only; configure external evidence storage before production release reviews.",
     provisioningEnabled: false,
     createdAt,
+  };
+}
+
+function createMockControlledLabReleaseRunbookRecord(
+  provider: ProviderReleaseGateRecord["provider"],
+  readiness: ProviderReleaseReadinessSummary,
+  gates: ProviderReleaseGateRecord[],
+  actor: string
+): ControlledLabReleaseRunbookRecord {
+  const providerReadiness = readiness.providers.find((item) => item.provider === provider);
+  const gate = providerReadiness?.latestGateId
+    ? gates.find((item) => item.id === providerReadiness.latestGateId)
+    : gates.find((item) => item.provider === provider);
+  const signOffs: ControlledLabReleaseRunbookRecord["signOffs"] = [
+    {
+      role: "Platform owner",
+      owner: "Cloud Platform Owner",
+      signed: false,
+      evidence: "Platform owner sign-off evidence required.",
+    },
+    {
+      role: "Security reviewer",
+      owner: "Security Reviewer",
+      signed: false,
+      evidence: "Security review sign-off evidence required.",
+    },
+    {
+      role: "Rollback owner",
+      owner: "Cloud Operations",
+      signed: false,
+      evidence: "Rollback owner sign-off evidence required.",
+    },
+    {
+      role: "Lab owner",
+      owner: "Lab Owner",
+      signed: false,
+      evidence: "Lab owner sign-off evidence required.",
+    },
+  ];
+  const stopConditions = [
+    `${provider} endpoint response differs from approved release evidence.`,
+    "Any sensitive value, credential prompt, or unauthorized mutation appears during the test window.",
+    "Rollback owner, lab owner, or security reviewer is unavailable.",
+    "Audit export, backup, rollback, or destroy evidence cannot be captured.",
+  ];
+  const checks = [
+    {
+      name: "Provider release gate ready",
+      passed: gate?.status === "Ready for release review",
+      detail: gate ? `${gate.id} is ${gate.status}.` : `${provider} provider release gate is required.`,
+    },
+    {
+      name: "Provider readiness gaps closed",
+      passed: providerReadiness?.gapCount === 0 && Boolean(providerReadiness.latestGateId),
+      detail:
+        providerReadiness && providerReadiness.gapCount === 0
+          ? `${provider} has no readiness gaps.`
+          : `${providerReadiness?.gapCount ?? 1} readiness gap(s) remain.`,
+    },
+    {
+      name: "All required sign-offs recorded",
+      passed: signOffs.every((signOff) => signOff.signed),
+      detail: "0/4 sign-offs recorded.",
+    },
+    {
+      name: "Stop conditions documented",
+      passed: stopConditions.length >= 3,
+      detail: `${stopConditions.length} stop condition(s) documented.`,
+    },
+    {
+      name: "Escalation contacts documented",
+      passed: true,
+      detail: "3 escalation contact(s) documented.",
+    },
+    {
+      name: "Real adapter execution disabled",
+      passed: gate?.provisioningEnabled === false && providerReadiness?.killSwitch.enabled === false,
+      detail: `${provider} remains evidence-only with real adapter disabled.`,
+    },
+  ];
+
+  return {
+    id: `controlled-lab-runbook-${provider.toLowerCase()}-${Date.now()}`,
+    provider,
+    readinessGeneratedAt: readiness.generatedAt,
+    status: checks.every((check) => check.passed) ? "Ready for controlled lab release review" : "Blocked",
+    requestedBy: actor,
+    signOffs,
+    checks,
+    stopConditions,
+    escalationContacts: ["cloud-platform-owner", "security-reviewer", "lab-owner"],
+    linkedReleaseGateId: gate?.id,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
   };
 }
 

@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.11.0-provider-release-dashboard-hardening`.
+This project uses release tags for public milestones. The current release is `v2.12.0-controlled-lab-release-runbook`.
 
 ## [Unreleased]
 
@@ -11,6 +11,20 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.12.0-controlled-lab-release-runbook] - 2026-07-07
+
+### Added
+
+- Controlled lab release runbook records linked to provider release readiness.
+- API endpoints for listing and preparing controlled lab release runbooks.
+- Admin Operations panel for required sign-offs, stop conditions, escalation contacts, and disabled execution evidence.
+- Tests proving missing sign-offs block runbook completion.
+
+### Notes
+
+- Runbook completion remains evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.11.0-provider-release-dashboard-hardening] - 2026-07-07
 

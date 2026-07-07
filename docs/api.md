@@ -274,6 +274,8 @@ Required role: `Developer` or `Platform Admin`.
 - `GET /api/provider-release-readiness`
 - `GET /api/release-evidence-exports`
 - `POST /api/release-evidence-exports`
+- `GET /api/controlled-lab-release/runbooks`
+- `POST /api/controlled-lab-release/runbooks`
 
 The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter readiness against request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state. It records provider-specific blocked mutation operations and returns `provisioningEnabled=false`.
 
@@ -284,6 +286,8 @@ Provider release gate records roll up the evidence required before NCI, NKP, NDB
 Provider release readiness summarizes latest release gate status, check counts, gap counts, blocked operations, and kill switch state across NCI, NKP, NDB, NUS, and NAI. It also identifies the nearest-to-ready and most-blocked providers.
 
 Release evidence exports prepare redacted JSON manifests linked to provider release gates. Manifests include provider, gate status, check counts, blocked operations, kill switch state, checksum, and evidence references only. Inline auth material is redacted before persistence.
+
+Controlled lab release runbooks record the human evidence required before any future controlled lab adapter release proposal. Runbooks link to provider release readiness, require platform owner, security reviewer, rollback owner, and lab owner sign-off evidence, and include stop conditions plus escalation contacts. Missing sign-offs keep the runbook blocked.
 
 Required role: `Platform Admin`.
 

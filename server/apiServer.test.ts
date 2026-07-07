@@ -808,6 +808,11 @@ describe("api server", () => {
       body: JSON.stringify({ gateId: releaseGate.data.id }),
     });
     const releaseExports = await requestJson("/api/release-evidence-exports");
+    const runbook = await requestJson("/api/controlled-lab-release/runbooks", {
+      method: "POST",
+      body: JSON.stringify({ provider: "NDB" }),
+    });
+    const runbooks = await requestJson("/api/controlled-lab-release/runbooks");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -894,12 +899,27 @@ describe("api server", () => {
     expect(releaseExport.data.checksum).toMatch(/^[a-f0-9]{64}$/);
     expect(releaseExport.data.redactionBoundary).toContain("metadata only");
     expect(releaseExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: releaseExport.data.id })]));
+    expect(runbook.data).toMatchObject({
+      provider: "NDB",
+      status: "Blocked",
+      provisioningEnabled: false,
+    });
+    expect(runbook.data.signOffs).toHaveLength(4);
+    expect(runbook.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "All required sign-offs recorded", passed: false }),
+        expect.objectContaining({ name: "Real adapter execution disabled", passed: true }),
+      ])
+    );
+    expect(runbook.data.stopConditions.length).toBeGreaterThanOrEqual(3);
+    expect(runbooks.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: runbook.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
         expect.objectContaining({ action: "platform-service.adapter-contract.reviewed", target: "app-postgres-dev" }),
         expect.objectContaining({ action: "provider-release-gate.reviewed", target: "NDB" }),
         expect.objectContaining({ action: "release-evidence.export.prepared", target: "NDB" }),
+        expect.objectContaining({ action: "controlled-lab-release.runbook.recorded", target: "NDB" }),
       ])
     );
   });

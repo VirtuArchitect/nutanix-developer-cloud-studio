@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.11.0-provider-release-dashboard-hardening",
+  "version": "2.12.0-controlled-lab-release-runbook",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

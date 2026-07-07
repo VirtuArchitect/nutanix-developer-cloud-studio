@@ -155,6 +155,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.getByRole("button", { name: "Prepare release evidence" }).click();
   await expect(page.getByText("Release evidence manifest")).toBeVisible();
   await expect(page.getByText("Release evidence exports contain references and metadata only; no inline auth material.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Controlled lab release runbook" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare runbook" }).click();
+  await expect(page.getByText("Operator release runbook")).toBeVisible();
+  await expect(page.getByText("Required sign-offs")).toBeVisible();
+  await expect(page.getByText("Stop conditions", { exact: true }).last()).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

@@ -41,6 +41,10 @@ import {
   createControlledCreateAuthorizationEnvelope,
 } from "./controlledCreateAuthorization";
 import {
+  ControlledLabReleaseRunbookError,
+  createControlledLabReleaseRunbookRecord,
+} from "./controlledLabReleaseRunbook";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -113,6 +117,7 @@ import type {
   CreateLifecycleOperationRequest,
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
+  CreateControlledLabReleaseRunbookRequest,
   CreatePlatformServiceRequest,
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
@@ -242,6 +247,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ReleaseEvidenceExportError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledLabReleaseRunbookError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -489,6 +504,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/release-evidence-exports") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.releaseEvidenceExports });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/runbooks") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledLabReleaseRunbooks });
     return;
   }
 
@@ -1173,6 +1194,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: exportRecord });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/runbooks") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledLabReleaseRunbookRequest>(request);
+    const runbook = createControlledLabReleaseRunbookRecord(state, body, context.session.user);
+    state.controlledLabReleaseRunbooks = [runbook, ...state.controlledLabReleaseRunbooks];
+    addAuditEvent(state, "controlled-lab-release.runbook.recorded", context.session.user, runbook.provider, {
+      status: runbook.status,
+      linkedReleaseGateId: runbook.linkedReleaseGateId,
+      signOffsRecorded: runbook.signOffs.filter((signOff) => signOff.signed).length,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: runbook });
     return;
   }
 

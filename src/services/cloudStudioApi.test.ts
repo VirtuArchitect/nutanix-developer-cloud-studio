@@ -5,6 +5,7 @@ import {
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
+  createControlledLabReleaseRunbookViaApi,
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
@@ -28,6 +29,7 @@ import {
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
+  fetchControlledLabReleaseRunbooksFromApi,
   fetchControlPlaneJobsFromApi,
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
@@ -408,6 +410,21 @@ describe("cloudStudioApi", () => {
       2,
       "/api/release-evidence-exports",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("provider-release-ndb-1") })
+    );
+  });
+
+  it("fetches and creates controlled lab release runbooks", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchControlledLabReleaseRunbooksFromApi();
+    await createControlledLabReleaseRunbookViaApi({ provider: "NDB" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/controlled-lab-release/runbooks",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("NDB") })
     );
   });
 

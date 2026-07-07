@@ -272,10 +272,17 @@
 
 ## Phase 34 - Controlled Lab Release Runbook (`v2.12.0-controlled-lab-release-runbook`)
 
-- Add operator runbook records linked to provider release readiness - planned
-- Track platform owner, security reviewer, rollback owner, and lab owner sign-offs - planned
-- Add Admin Operations runbook checklist for stop conditions and escalation contacts - planned
-- Keep runbook completion evidence-only and real adapter execution disabled - planned
+- Add operator runbook records linked to provider release readiness - done
+- Track platform owner, security reviewer, rollback owner, and lab owner sign-offs - done
+- Add Admin Operations runbook checklist for stop conditions and escalation contacts - done
+- Keep runbook completion evidence-only and real adapter execution disabled - done
+
+## Phase 35 - Controlled Lab Dry-Run Window (`v2.13.0-controlled-lab-dry-run-window`)
+
+- Add controlled lab dry-run window records with scheduled start/end times - planned
+- Attach runbooks, release evidence exports, lab scope, and rollback owners to the window - planned
+- Add Admin Operations window readiness checklist and emergency stop contacts - planned
+- Keep window scheduling evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 
