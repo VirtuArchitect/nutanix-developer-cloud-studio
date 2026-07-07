@@ -200,6 +200,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Execution evidence ledger")).toBeVisible();
   await expect(page.getByText("Immutable evidence references")).toBeVisible();
   await expect(page.getByText("Operator evidence immutable")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Controlled lab readiness attestations" })).toBeVisible();
+  await page.getByRole("button", { name: "Record readiness attestation" }).click();
+  await expect(page.getByText("Execution readiness attestation")).toBeVisible();
+  await expect(page.getByText("Final attestation evidence")).toBeVisible();
+  await expect(page.getByText("Platform owner attested")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

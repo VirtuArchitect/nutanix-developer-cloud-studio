@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.21.0-controlled-lab-execution-evidence-ledger`.
+This project uses release tags for public milestones. The current release is `v2.22.0-controlled-lab-execution-readiness-attestation`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add final controlled lab execution readiness attestations while keeping adapters disabled.
+- Add execution broker hardening with idempotency, kill-switch checks, and queued operator review before any real adapter path.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.22.0-controlled-lab-execution-readiness-attestation] - 2026-07-07
+
+### Added
+
+- Controlled lab execution readiness attestation records linked to evidence ledgers.
+- API endpoints for listing and recording readiness attestations.
+- Admin Operations readiness attestation panel.
+- Platform, security, operations, rollback, and executive sponsor attestation evidence.
+- Tests proving missing evidence ledgers or incomplete attestations block readiness.
+
+### Notes
+
+- Readiness attestations are evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.21.0-controlled-lab-execution-evidence-ledger] - 2026-07-07
 

@@ -8,6 +8,7 @@ import {
   createControlledLabExecutionApprovalViaApi,
   createControlledLabDryRunExecutionChecklistViaApi,
   createControlledLabExecutionEvidenceLedgerViaApi,
+  createControlledLabExecutionReadinessAttestationViaApi,
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
@@ -39,6 +40,7 @@ import {
   fetchControlledLabExecutionApprovalsFromApi,
   fetchControlledLabDryRunExecutionChecklistsFromApi,
   fetchControlledLabExecutionEvidenceLedgersFromApi,
+  fetchControlledLabExecutionReadinessAttestationsFromApi,
   fetchControlledLabExecutionRehearsalPacketsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
@@ -455,6 +457,8 @@ describe("cloudStudioApi", () => {
     await createControlledLabDryRunExecutionChecklistViaApi({ rehearsalPacketId: "controlled-lab-rehearsal-packet-ndb-1" });
     await fetchControlledLabExecutionEvidenceLedgersFromApi();
     await createControlledLabExecutionEvidenceLedgerViaApi({ dryRunChecklistId: "controlled-lab-dry-run-checklist-ndb-1" });
+    await fetchControlledLabExecutionReadinessAttestationsFromApi();
+    await createControlledLabExecutionReadinessAttestationViaApi({ evidenceLedgerId: "controlled-lab-evidence-ledger-ndb-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -515,6 +519,12 @@ describe("cloudStudioApi", () => {
       20,
       "/api/controlled-lab-release/evidence-ledgers",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-dry-run-checklist-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(21, "/api/controlled-lab-release/readiness-attestations", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      22,
+      "/api/controlled-lab-release/readiness-attestations",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("controlled-lab-evidence-ledger-ndb-1") })
     );
   });
 

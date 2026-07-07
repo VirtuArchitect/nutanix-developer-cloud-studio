@@ -95,6 +95,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Controlled lab execution rehearsal packets: frozen evidence packets linked to approved execution gates
 - Controlled lab dry-run execution checklists: final operator readiness records linked to rehearsal packets
 - Controlled lab execution evidence ledgers: immutable evidence reference records linked to dry-run checklists
+- Controlled lab execution readiness attestations: final platform, security, operations, rollback, and sponsor attestation records linked to evidence ledgers
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -171,6 +172,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Controlled lab execution rehearsal packet API and Admin Operations packet UI
 - Controlled lab dry-run execution checklist API and Admin Operations checklist UI
 - Controlled lab execution evidence ledger API and Admin Operations ledger UI
+- Controlled lab execution readiness attestation API and Admin Operations attestation UI
 - Production readiness review API and Admin Overview UI
 - Private-cloud lifecycle operation API and Admin Operations UI
 - Audit export readiness API and Admin Operations UI
@@ -227,6 +229,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Controlled lab execution rehearsal packets freeze evidence references only; they do not authorize or execute real adapter operations.
 - Controlled lab dry-run execution checklists record operator readiness only; they do not authorize or execute real adapter operations.
 - Controlled lab execution evidence ledgers freeze immutable evidence references only; they do not authorize or execute real adapter operations.
+- Controlled lab execution readiness attestations record final human attestations only; they do not authorize or execute real adapter operations.
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Adapter enablement records review evidence only; an enabled real-adapter switch fails this phase and all mutation operations remain blocked.

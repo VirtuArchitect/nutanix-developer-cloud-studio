@@ -915,6 +915,31 @@ export type ControlledLabExecutionEvidenceLedger = {
   createdAt: string;
 };
 
+export type ControlledLabExecutionReadinessAttestation = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  evidenceLedgerId: string;
+  dryRunChecklistId: string;
+  status: "Blocked" | "Ready for execution review";
+  requestedBy: string;
+  attestations: {
+    platformOwner: string;
+    securityReviewer: string;
+    operationsReviewer: string;
+    rollbackOwner: string;
+    executiveSponsor: string;
+  };
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ControlledLabExecutionEvidenceLedger["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

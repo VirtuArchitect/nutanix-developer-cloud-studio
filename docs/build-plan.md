@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.22.0-controlled-lab-execution-readiness-attestation` adds evidence-only readiness attestations linked to evidence ledgers and an Admin Operations attestation panel.
 - `v2.21.0-controlled-lab-execution-evidence-ledger` adds evidence-only ledgers linked to dry-run checklists and an Admin Operations ledger panel.
 - `v2.20.0-controlled-lab-dry-run-execution-checklist` adds evidence-only dry-run execution checklists linked to rehearsal packets and an Admin Operations checklist panel.
 - `v2.19.0-controlled-lab-execution-rehearsal-packet` adds evidence-only rehearsal packets linked to approved execution gates and an Admin Operations packet panel.
@@ -377,6 +378,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Ledgers freeze immutable operator, observer, rollback, log, audit, and stop authority evidence references.
 - Admin Operations surfaces ledger readiness, immutable evidence references, and blockers.
 - Missing ready dry-run checklists or incomplete evidence references block ledger readiness.
+- Real adapter execution remains disabled.
+
+## Current Controlled Lab Execution Readiness Attestation Slice
+
+- API records controlled lab execution readiness attestations linked to evidence ledgers.
+- Attestations capture platform, security, operations, rollback, and executive sponsor evidence.
+- Admin Operations surfaces final attestation readiness, evidence references, and blockers.
+- Missing ready evidence ledgers or incomplete attestations block execution readiness.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack

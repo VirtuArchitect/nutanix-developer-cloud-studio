@@ -8,6 +8,7 @@ import type {
   ControlledLabExecutionApprovalGate,
   ControlledLabDryRunExecutionChecklist,
   ControlledLabExecutionEvidenceLedger,
+  ControlledLabExecutionReadinessAttestation,
   ControlledLabExecutionRehearsalPacket,
   ControlledLabDryRunWindowRecord,
   ControlledCreateAuthorizationEnvelope,
@@ -93,6 +94,7 @@ export type ApiState = {
   controlledLabExecutionRehearsalPackets: ControlledLabExecutionRehearsalPacket[];
   controlledLabDryRunExecutionChecklists: ControlledLabDryRunExecutionChecklist[];
   controlledLabExecutionEvidenceLedgers: ControlledLabExecutionEvidenceLedger[];
+  controlledLabExecutionReadinessAttestations: ControlledLabExecutionReadinessAttestation[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -304,6 +306,16 @@ export type CreateControlledLabExecutionEvidenceLedgerRequest = {
   logEvidence?: string[];
   auditEvidence?: string[];
   stopAuthorityEvidence?: string[];
+};
+
+export type CreateControlledLabExecutionReadinessAttestationRequest = {
+  evidenceLedgerId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  platformOwnerAttestation?: string;
+  securityReviewerAttestation?: string;
+  operationsReviewerAttestation?: string;
+  rollbackOwnerAttestation?: string;
+  executiveSponsorAttestation?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

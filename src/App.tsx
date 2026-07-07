@@ -36,6 +36,7 @@ import {
   type ControlledLabExecutionApprovalGate,
   type ControlledLabDryRunExecutionChecklist,
   type ControlledLabExecutionEvidenceLedger,
+  type ControlledLabExecutionReadinessAttestation,
   type ControlledLabExecutionRehearsalPacket,
   type ControlledLabDryRunWindowRecord,
   type ControlledLabReleaseRunbookRecord,
@@ -109,6 +110,7 @@ import {
   createControlledLabExecutionApprovalViaApi,
   createControlledLabDryRunExecutionChecklistViaApi,
   createControlledLabExecutionEvidenceLedgerViaApi,
+  createControlledLabExecutionReadinessAttestationViaApi,
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
@@ -142,6 +144,7 @@ import {
   fetchControlledLabExecutionApprovalsFromApi,
   fetchControlledLabDryRunExecutionChecklistsFromApi,
   fetchControlledLabExecutionEvidenceLedgersFromApi,
+  fetchControlledLabExecutionReadinessAttestationsFromApi,
   fetchControlledLabExecutionRehearsalPacketsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
@@ -253,6 +256,7 @@ export function App() {
   const [controlledLabExecutionRehearsalPackets, setControlledLabExecutionRehearsalPackets] = useState<ControlledLabExecutionRehearsalPacket[]>([]);
   const [controlledLabDryRunExecutionChecklists, setControlledLabDryRunExecutionChecklists] = useState<ControlledLabDryRunExecutionChecklist[]>([]);
   const [controlledLabExecutionEvidenceLedgers, setControlledLabExecutionEvidenceLedgers] = useState<ControlledLabExecutionEvidenceLedger[]>([]);
+  const [controlledLabExecutionReadinessAttestations, setControlledLabExecutionReadinessAttestations] = useState<ControlledLabExecutionReadinessAttestation[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -345,6 +349,7 @@ export function App() {
             apiControlledLabExecutionRehearsalPackets,
             apiControlledLabDryRunExecutionChecklists,
             apiControlledLabExecutionEvidenceLedgers,
+            apiControlledLabExecutionReadinessAttestations,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -392,6 +397,7 @@ export function App() {
             fetchControlledLabExecutionRehearsalPacketsFromApi(),
             fetchControlledLabDryRunExecutionChecklistsFromApi(),
             fetchControlledLabExecutionEvidenceLedgersFromApi(),
+            fetchControlledLabExecutionReadinessAttestationsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -441,6 +447,7 @@ export function App() {
             setControlledLabExecutionRehearsalPackets(apiControlledLabExecutionRehearsalPackets);
             setControlledLabDryRunExecutionChecklists(apiControlledLabDryRunExecutionChecklists);
             setControlledLabExecutionEvidenceLedgers(apiControlledLabExecutionEvidenceLedgers);
+            setControlledLabExecutionReadinessAttestations(apiControlledLabExecutionReadinessAttestations);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -610,6 +617,7 @@ export function App() {
       apiControlledLabExecutionRehearsalPackets,
       apiControlledLabDryRunExecutionChecklists,
       apiControlledLabExecutionEvidenceLedgers,
+      apiControlledLabExecutionReadinessAttestations,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -657,6 +665,7 @@ export function App() {
       fetchControlledLabExecutionRehearsalPacketsFromApi(),
       fetchControlledLabDryRunExecutionChecklistsFromApi(),
       fetchControlledLabExecutionEvidenceLedgersFromApi(),
+      fetchControlledLabExecutionReadinessAttestationsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -705,6 +714,7 @@ export function App() {
     setControlledLabExecutionRehearsalPackets(apiControlledLabExecutionRehearsalPackets);
     setControlledLabDryRunExecutionChecklists(apiControlledLabDryRunExecutionChecklists);
     setControlledLabExecutionEvidenceLedgers(apiControlledLabExecutionEvidenceLedgers);
+    setControlledLabExecutionReadinessAttestations(apiControlledLabExecutionReadinessAttestations);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1485,6 +1495,28 @@ export function App() {
     ]);
   }
 
+  async function recordControlledLabExecutionReadinessAttestation() {
+    const ledger = controlledLabExecutionEvidenceLedgers[0];
+    if (!ledger) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const attestation = await createControlledLabExecutionReadinessAttestationViaApi({ evidenceLedgerId: ledger.id });
+      await refreshApiState();
+      setControlledLabExecutionReadinessAttestations((current) => [
+        attestation,
+        ...current.filter((item) => item.id !== attestation.id),
+      ]);
+      return;
+    }
+
+    setControlledLabExecutionReadinessAttestations((current) => [
+      createMockControlledLabExecutionReadinessAttestation(ledger, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1717,6 +1749,7 @@ export function App() {
             controlledLabExecutionRehearsalPackets={controlledLabExecutionRehearsalPackets}
             controlledLabDryRunExecutionChecklists={controlledLabDryRunExecutionChecklists}
             controlledLabExecutionEvidenceLedgers={controlledLabExecutionEvidenceLedgers}
+            controlledLabExecutionReadinessAttestations={controlledLabExecutionReadinessAttestations}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1754,6 +1787,7 @@ export function App() {
             prepareControlledLabExecutionRehearsalPacket={prepareControlledLabExecutionRehearsalPacket}
             recordControlledLabDryRunExecutionChecklist={recordControlledLabDryRunExecutionChecklist}
             recordControlledLabExecutionEvidenceLedger={recordControlledLabExecutionEvidenceLedger}
+            recordControlledLabExecutionReadinessAttestation={recordControlledLabExecutionReadinessAttestation}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2274,6 +2308,7 @@ function AdminView({
   controlledLabExecutionRehearsalPackets,
   controlledLabDryRunExecutionChecklists,
   controlledLabExecutionEvidenceLedgers,
+  controlledLabExecutionReadinessAttestations,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2311,6 +2346,7 @@ function AdminView({
   prepareControlledLabExecutionRehearsalPacket,
   recordControlledLabDryRunExecutionChecklist,
   recordControlledLabExecutionEvidenceLedger,
+  recordControlledLabExecutionReadinessAttestation,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2362,6 +2398,7 @@ function AdminView({
   controlledLabExecutionRehearsalPackets: ControlledLabExecutionRehearsalPacket[];
   controlledLabDryRunExecutionChecklists: ControlledLabDryRunExecutionChecklist[];
   controlledLabExecutionEvidenceLedgers: ControlledLabExecutionEvidenceLedger[];
+  controlledLabExecutionReadinessAttestations: ControlledLabExecutionReadinessAttestation[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2402,6 +2439,7 @@ function AdminView({
   prepareControlledLabExecutionRehearsalPacket: () => void;
   recordControlledLabDryRunExecutionChecklist: () => void;
   recordControlledLabExecutionEvidenceLedger: () => void;
+  recordControlledLabExecutionReadinessAttestation: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2688,6 +2726,12 @@ function AdminView({
             <ControlledLabExecutionEvidenceLedgerPanel
               ledgers={controlledLabExecutionEvidenceLedgers}
               recordControlledLabExecutionEvidenceLedger={recordControlledLabExecutionEvidenceLedger}
+            />
+          </Panel>
+          <Panel title="Controlled lab readiness attestations" action={`${controlledLabExecutionReadinessAttestations.length} attestations`}>
+            <ControlledLabExecutionReadinessAttestationPanel
+              attestations={controlledLabExecutionReadinessAttestations}
+              recordControlledLabExecutionReadinessAttestation={recordControlledLabExecutionReadinessAttestation}
             />
           </Panel>
         </div>
@@ -4207,6 +4251,74 @@ function ControlledLabExecutionEvidenceLedgerPanel({
             <span>Logs: {latest.immutableReferences.logEvidence.join(", ")}</span>
             <span>Audit: {latest.immutableReferences.auditEvidence.join(", ")}</span>
             <span>Stop authority: {latest.immutableReferences.stopAuthorityEvidence.join(", ")}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledLabExecutionReadinessAttestationPanel({
+  attestations,
+  recordControlledLabExecutionReadinessAttestation,
+}: {
+  attestations: ControlledLabExecutionReadinessAttestation[];
+  recordControlledLabExecutionReadinessAttestation: () => void;
+}) {
+  const latest = attestations[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Execution readiness attestation</strong>
+          <span>Captures final platform, security, operations, rollback, and sponsor attestations while adapters remain disabled.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordControlledLabExecutionReadinessAttestation}>
+          <ShieldCheck size={15} />
+          Record readiness attestation
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled lab execution readiness attestation has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.evidenceLedgerId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for execution review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Archive} label="Ledger" value={latest.evidenceLedgerId} passed />
+            <CheckLine icon={ShieldCheck} label="Attestations" value={`${Object.values(latest.attestations).filter(Boolean).length}/5`} passed={Object.values(latest.attestations).every(Boolean)} />
+            <CheckLine icon={CheckCircle2} label="Checklist" value={latest.dryRunChecklistId} passed />
+            <CheckLine icon={LockKeyhole} label="Execution" value="Disabled" passed={!latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Final attestation evidence</strong>
+            <span>Platform: {latest.attestations.platformOwner || "missing"}</span>
+            <span>Security: {latest.attestations.securityReviewer || "missing"}</span>
+            <span>Operations: {latest.attestations.operationsReviewer || "missing"}</span>
+            <span>Rollback: {latest.attestations.rollbackOwner || "missing"}</span>
+            <span>Sponsor: {latest.attestations.executiveSponsor || "missing"}</span>
           </div>
           <div className="dryRunValidationList">
             {latest.checks.map((check) => (
@@ -7451,6 +7563,80 @@ function createMockControlledLabExecutionEvidenceLedger(
       `Kill switch: ${checklist.killSwitch.name}=${checklist.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: checklist.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockControlledLabExecutionReadinessAttestation(
+  ledger: ControlledLabExecutionEvidenceLedger,
+  actor: string
+): ControlledLabExecutionReadinessAttestation {
+  const attestations: ControlledLabExecutionReadinessAttestation["attestations"] = {
+    platformOwner: `Platform owner reviewed ${ledger.id}.`,
+    securityReviewer: `Security reviewer accepted immutable evidence for ${ledger.provider}.`,
+    operationsReviewer: "Operations confirmed runbook, observation, and stop authority coverage.",
+    rollbackOwner: "Rollback owner confirmed rollback evidence and timer.",
+    executiveSponsor: "Executive sponsor acknowledged controlled lab execution readiness.",
+  };
+  const checks = [
+    {
+      name: "Evidence ledger ready",
+      passed: ledger.status === "Ready for evidence review",
+      detail: `${ledger.id} is ${ledger.status}.`,
+    },
+    {
+      name: "Platform owner attested",
+      passed: Boolean(attestations.platformOwner),
+      detail: attestations.platformOwner,
+    },
+    {
+      name: "Security reviewer attested",
+      passed: Boolean(attestations.securityReviewer),
+      detail: attestations.securityReviewer,
+    },
+    {
+      name: "Operations reviewer attested",
+      passed: Boolean(attestations.operationsReviewer),
+      detail: attestations.operationsReviewer,
+    },
+    {
+      name: "Rollback owner attested",
+      passed: Boolean(attestations.rollbackOwner),
+      detail: attestations.rollbackOwner,
+    },
+    {
+      name: "Executive sponsor attested",
+      passed: Boolean(attestations.executiveSponsor),
+      detail: attestations.executiveSponsor,
+    },
+    {
+      name: "Real adapter execution disabled",
+      passed: !ledger.killSwitch.enabled,
+      detail: `${ledger.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `controlled-lab-readiness-attestation-${ledger.provider.toLowerCase()}-${Date.now()}`,
+    provider: ledger.provider,
+    evidenceLedgerId: ledger.id,
+    dryRunChecklistId: ledger.dryRunChecklistId,
+    status: checks.every((check) => check.passed) ? "Ready for execution review" : "Blocked",
+    requestedBy: actor,
+    attestations,
+    checks,
+    evidence: [
+      `Evidence ledger: ${ledger.id}.`,
+      `Dry-run checklist: ${ledger.dryRunChecklistId}.`,
+      `Platform owner attestation: present.`,
+      `Security reviewer attestation: present.`,
+      `Operations reviewer attestation: present.`,
+      `Rollback owner attestation: present.`,
+      `Executive sponsor attestation: present.`,
+      `Kill switch: ${ledger.killSwitch.name}=${ledger.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: ledger.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

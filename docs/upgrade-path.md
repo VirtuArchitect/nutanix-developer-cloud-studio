@@ -737,6 +737,23 @@ Exit gate:
 - Attestations remain evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.23.0-execution-broker-hardening
+
+Goal: introduce a hardened execution broker contract before any future real adapter operation can be considered.
+
+Build:
+
+- Execution broker queue records for future controlled adapter work.
+- Idempotency keys, kill-switch checks, approval evidence links, and operator review state.
+- Admin Operations execution broker panel with blockers and evidence references.
+- Tests proving missing attestations, duplicate idempotency keys, or enabled real-adapter switches block queue readiness.
+
+Exit gate:
+
+- Execution broker APIs and UI are tested.
+- Broker records remain queued for operator review only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

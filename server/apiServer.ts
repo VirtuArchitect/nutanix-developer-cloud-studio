@@ -61,6 +61,10 @@ import {
   createControlledLabExecutionEvidenceLedger,
 } from "./controlledLabExecutionEvidenceLedger";
 import {
+  ControlledLabExecutionReadinessAttestationError,
+  createControlledLabExecutionReadinessAttestation,
+} from "./controlledLabExecutionReadinessAttestation";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -156,6 +160,7 @@ import type {
   CreateControlledLabExecutionApprovalGateRequest,
   CreateControlledLabDryRunExecutionChecklistRequest,
   CreateControlledLabExecutionEvidenceLedgerRequest,
+  CreateControlledLabExecutionReadinessAttestationRequest,
   CreateControlledLabExecutionRehearsalPacketRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
@@ -342,6 +347,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabExecutionEvidenceLedgerError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledLabExecutionReadinessAttestationError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -699,6 +714,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/evidence-ledgers") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledLabExecutionEvidenceLedgers });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/readiness-attestations") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledLabExecutionReadinessAttestations });
     return;
   }
 
@@ -1544,6 +1565,31 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: ledger });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/readiness-attestations") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledLabExecutionReadinessAttestationRequest>(request);
+    const attestation = createControlledLabExecutionReadinessAttestation(state, body, context.session.user);
+    state.controlledLabExecutionReadinessAttestations = [
+      attestation,
+      ...state.controlledLabExecutionReadinessAttestations,
+    ];
+    addAuditEvent(
+      state,
+      "controlled-lab-release.readiness-attestation.recorded",
+      context.session.user,
+      attestation.provider,
+      {
+        evidenceLedgerId: attestation.evidenceLedgerId,
+        dryRunChecklistId: attestation.dryRunChecklistId,
+        status: attestation.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: attestation });
     return;
   }
 

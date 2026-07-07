@@ -342,10 +342,17 @@
 
 ## Phase 44 - Controlled Lab Execution Readiness Attestation (`v2.22.0-controlled-lab-execution-readiness-attestation`)
 
-- Add readiness attestation records linked to evidence ledgers - planned
-- Track platform, security, operations, rollback, and sponsor attestations - planned
-- Add Admin Operations readiness attestation panel - planned
-- Keep attestations evidence-only and real adapter execution disabled - planned
+- Add readiness attestation records linked to evidence ledgers - done
+- Track platform, security, operations, rollback, and sponsor attestations - done
+- Add Admin Operations readiness attestation panel - done
+- Keep attestations evidence-only and real adapter execution disabled - done
+
+## Phase 45 - Execution Broker Hardening (`v2.23.0-execution-broker-hardening`)
+
+- Add execution broker queue records for future controlled adapter work - planned
+- Add idempotency keys, kill-switch checks, and approval evidence links - planned
+- Add Admin Operations execution broker panel - planned
+- Keep broker records queued for operator review with real adapter execution disabled - planned
 
 ## Gated Promotion
 

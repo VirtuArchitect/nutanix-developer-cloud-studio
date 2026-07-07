@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.22.0-controlled-lab-execution-readiness-attestation`.
+- Added controlled lab execution readiness attestation records linked to evidence ledgers.
+- Added API endpoints for readiness attestations.
+- Added Admin Operations readiness attestation panel.
+- Added tests proving missing evidence ledgers or incomplete attestations block readiness.
+- Planned `v2.23.0-execution-broker-hardening` for idempotent broker queue controls while keeping adapters disabled.
 - Released `v2.21.0-controlled-lab-execution-evidence-ledger`.
 - Added controlled lab execution evidence ledger records linked to dry-run checklists.
 - Added API endpoints for evidence ledgers.
 - Added Admin Operations evidence ledger panel.
 - Added tests proving missing dry-run checklists or incomplete evidence block ledger readiness.
-- Planned `v2.22.0-controlled-lab-execution-readiness-attestation` for final readiness attestations while keeping adapters disabled.
 - Released `v2.20.0-controlled-lab-dry-run-execution-checklist`.
 - Added controlled lab dry-run execution checklist records linked to rehearsal packets.
 - Added API endpoints for dry-run checklists.

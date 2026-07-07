@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.21.0-controlled-lab-execution-evidence-ledger",
+  "version": "2.22.0-controlled-lab-execution-readiness-attestation",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
