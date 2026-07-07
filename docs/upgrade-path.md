@@ -1179,6 +1179,23 @@ Exit gate:
 - Execution retention attestation records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.49.0-production-execution-final-archive-certification-record
+
+Goal: record production execution final archive certification evidence after retention attestation readiness without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production execution final archive certification records linked to retention attestation records.
+- Certification owner, final archive manifest, retention lock proof, compliance sign-off, and retrieval witness proof checks.
+- Admin Operations final archive certification panel with blockers and evidence references.
+- Tests proving missing ready retention attestation records, certification owners, final archive manifests, retention lock proofs, compliance sign-offs, or retrieval witness proofs block final archive certification readiness.
+
+Exit gate:
+
+- Production execution final archive certification APIs and UI are tested.
+- Final archive certification records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

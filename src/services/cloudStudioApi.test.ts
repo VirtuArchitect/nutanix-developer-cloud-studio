@@ -48,6 +48,7 @@ import {
   createProductionExecutionClosureAuthorizationRecordViaApi,
   createProductionExecutionClosurePacketRecordViaApi,
   createProductionExecutionArchivalHandoffRecordViaApi,
+  createProductionExecutionRetentionAttestationRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -113,6 +114,7 @@ import {
   fetchProductionExecutionClosureAuthorizationRecordsFromApi,
   fetchProductionExecutionClosurePacketRecordsFromApi,
   fetchProductionExecutionArchivalHandoffRecordsFromApi,
+  fetchProductionExecutionRetentionAttestationRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -594,6 +596,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionArchivalHandoffRecordViaApi({
       closurePacketRecordId: "production-execution-closure-packet-record-ndb-1",
     });
+    await fetchProductionExecutionRetentionAttestationRecordsFromApi();
+    await createProductionExecutionRetentionAttestationRecordViaApi({
+      archivalHandoffRecordId: "production-execution-archival-handoff-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -883,6 +889,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-closure-packet-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      73,
+      "/api/real-adapter/production-execution-retention-attestation-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      74,
+      "/api/real-adapter/production-execution-retention-attestation-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-archival-handoff-record-ndb-1"),
       })
     );
   });

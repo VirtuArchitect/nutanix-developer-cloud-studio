@@ -504,12 +504,12 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready handoff packets, CAB decisions, authorities, condition lists, rollback approvals, or decision minutes block readiness.
 - The prototype does not promote or enable real adapters.
 
-## Current Production Execution Archival Handoff Record Slice
+## Current Production Execution Retention Attestation Record Slice
 
-- API records production execution archival handoff records linked to production execution closure packet records.
-- Execution archival handoff records require archive owner, retention policy reference, immutable storage proof, audit index reference, and retrieval test reference.
-- Admin Operations surfaces execution archival handoff readiness, evidence references, and blockers.
-- Missing ready closure packet records, archive owners, retention policy references, immutable storage proofs, audit index references, or retrieval test references block readiness.
+- API records production execution retention attestation records linked to production execution archival handoff records.
+- Execution retention attestation records require retention owner, retention schedule proof, legal hold check, deletion exception register, and retrieval SLA proof.
+- Admin Operations surfaces execution retention attestation readiness, evidence references, and blockers.
+- Missing ready archival handoff records, retention owners, retention schedule proofs, legal hold checks, deletion exception registers, or retrieval SLA proofs block readiness.
 - The prototype does not promote, enable, or execute real adapters.
 
 ## Suggested Tech Stack

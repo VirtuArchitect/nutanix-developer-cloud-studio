@@ -121,6 +121,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Production execution closure authorization records: closure authority, success criteria, rollback closure criteria, incident closure criteria, and audit capture confirmation linked to outcome authorization records
 - Production execution closure packet records: closure packet manifest, evidence bundle, audit export, stakeholder notification proof, and retention handoff confirmation linked to closure authorization records
 - Production execution archival handoff records: archive owner, retention policy, immutable storage proof, audit index, and retrieval test linked to closure packet records
+- Production execution retention attestation records: retention owner, retention schedule proof, legal hold check, deletion exception register, and retrieval SLA proof linked to archival handoff records
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -170,7 +171,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Production execution closure authorization record API and Admin Operations closure authorization UI
 - Production execution closure packet record API and Admin Operations closure packet UI
 - Production execution archival handoff record API and Admin Operations archival handoff UI
-- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, promotion dossiers, production authorization packets, production change freeze records, CAB handoff packets, CAB decision records, implementation hold records, operator assignment records, execution readiness records, execution authorization records, change ticket lock records, final execution packet records, execution hold-point records, execution outcome authorization records, execution closure authorization records, execution closure packet records, and execution archival handoff records are evidence-only records; the prototype does not change switch configuration or promote adapters.
+- Production execution retention attestation record API and Admin Operations retention attestation UI
+- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, promotion dossiers, production authorization packets, production change freeze records, CAB handoff packets, CAB decision records, implementation hold records, operator assignment records, execution readiness records, execution authorization records, change ticket lock records, final execution packet records, execution hold-point records, execution outcome authorization records, execution closure authorization records, execution closure packet records, execution archival handoff records, and execution retention attestation records are evidence-only records; the prototype does not change switch configuration or promote adapters.
 - Admin template governance edits persisted in browser local storage
 - Timed mock provisioning state transitions exposed through the provisioning service
 - Template details view for golden-path outcomes and readiness notes

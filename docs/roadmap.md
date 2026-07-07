@@ -524,10 +524,17 @@
 
 ## Phase 70 - Production Execution Retention Attestation Record (`v2.48.0-production-execution-retention-attestation-record`)
 
-- Add production execution retention attestation records linked to archival handoff records - planned
-- Require retention owner, retention schedule proof, legal hold check, deletion exception register, and retrieval SLA proof - planned
-- Add Admin Operations execution retention attestation panel - planned
-- Keep execution retention attestation records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution retention attestation records linked to archival handoff records - done
+- Require retention owner, retention schedule proof, legal hold check, deletion exception register, and retrieval SLA proof - done
+- Add Admin Operations execution retention attestation panel - done
+- Keep execution retention attestation records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 71 - Production Execution Final Archive Certification Record (`v2.49.0-production-execution-final-archive-certification-record`)
+
+- Add production execution final archive certification records linked to retention attestation records - planned
+- Require certification owner, final archive manifest, retention lock proof, compliance sign-off, and retrieval witness proof - planned
+- Add Admin Operations final archive certification panel - planned
+- Keep final archive certification records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

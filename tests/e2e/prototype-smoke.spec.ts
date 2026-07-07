@@ -330,6 +330,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution archival handoff record")).toBeVisible();
   await expect(page.getByText("Execution archival handoff evidence")).toBeVisible();
   await expect(page.getByText("Closure packet ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production retention attestation" })).toBeVisible();
+  await page.getByRole("button", { name: "Record retention attestation" }).click();
+  await expect(page.getByText("Production execution retention attestation record")).toBeVisible();
+  await expect(page.getByText("Execution retention attestation evidence")).toBeVisible();
+  await expect(page.getByText("Archival handoff ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

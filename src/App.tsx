@@ -91,6 +91,7 @@ import {
   type ProductionExecutionClosureAuthorizationRecord,
   type ProductionExecutionClosurePacketRecord,
   type ProductionExecutionArchivalHandoffRecord,
+  type ProductionExecutionRetentionAttestationRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -144,6 +145,7 @@ import {
   createProductionExecutionClosureAuthorizationRecordViaApi,
   createProductionExecutionClosurePacketRecordViaApi,
   createProductionExecutionArchivalHandoffRecordViaApi,
+  createProductionExecutionRetentionAttestationRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -202,6 +204,7 @@ import {
   fetchProductionExecutionClosureAuthorizationRecordsFromApi,
   fetchProductionExecutionClosurePacketRecordsFromApi,
   fetchProductionExecutionArchivalHandoffRecordsFromApi,
+  fetchProductionExecutionRetentionAttestationRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -365,6 +368,9 @@ export function App() {
   const [productionExecutionArchivalHandoffRecords, setProductionExecutionArchivalHandoffRecords] = useState<
     ProductionExecutionArchivalHandoffRecord[]
   >([]);
+  const [productionExecutionRetentionAttestationRecords, setProductionExecutionRetentionAttestationRecords] = useState<
+    ProductionExecutionRetentionAttestationRecord[]
+  >([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -483,6 +489,7 @@ export function App() {
             apiProductionExecutionClosureAuthorizationRecords,
             apiProductionExecutionClosurePacketRecords,
             apiProductionExecutionArchivalHandoffRecords,
+            apiProductionExecutionRetentionAttestationRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -556,6 +563,7 @@ export function App() {
             fetchProductionExecutionClosureAuthorizationRecordsFromApi(),
             fetchProductionExecutionClosurePacketRecordsFromApi(),
             fetchProductionExecutionArchivalHandoffRecordsFromApi(),
+            fetchProductionExecutionRetentionAttestationRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -631,6 +639,7 @@ export function App() {
             setProductionExecutionClosureAuthorizationRecords(apiProductionExecutionClosureAuthorizationRecords);
             setProductionExecutionClosurePacketRecords(apiProductionExecutionClosurePacketRecords);
             setProductionExecutionArchivalHandoffRecords(apiProductionExecutionArchivalHandoffRecords);
+            setProductionExecutionRetentionAttestationRecords(apiProductionExecutionRetentionAttestationRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -826,6 +835,7 @@ export function App() {
       apiProductionExecutionClosureAuthorizationRecords,
       apiProductionExecutionClosurePacketRecords,
       apiProductionExecutionArchivalHandoffRecords,
+      apiProductionExecutionRetentionAttestationRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -899,6 +909,7 @@ export function App() {
       fetchProductionExecutionClosureAuthorizationRecordsFromApi(),
       fetchProductionExecutionClosurePacketRecordsFromApi(),
       fetchProductionExecutionArchivalHandoffRecordsFromApi(),
+      fetchProductionExecutionRetentionAttestationRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -973,6 +984,7 @@ export function App() {
     setProductionExecutionClosureAuthorizationRecords(apiProductionExecutionClosureAuthorizationRecords);
     setProductionExecutionClosurePacketRecords(apiProductionExecutionClosurePacketRecords);
     setProductionExecutionArchivalHandoffRecords(apiProductionExecutionArchivalHandoffRecords);
+    setProductionExecutionRetentionAttestationRecords(apiProductionExecutionRetentionAttestationRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2357,6 +2369,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionRetentionAttestation() {
+    const archivalHandoffRecord = productionExecutionArchivalHandoffRecords[0];
+    if (!archivalHandoffRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionRetentionAttestationRecordViaApi({
+        archivalHandoffRecordId: archivalHandoffRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionRetentionAttestationRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionRetentionAttestationRecords((current) => [
+      createMockProductionExecutionRetentionAttestationRecord(archivalHandoffRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2615,6 +2651,7 @@ export function App() {
             productionExecutionClosureAuthorizationRecords={productionExecutionClosureAuthorizationRecords}
             productionExecutionClosurePacketRecords={productionExecutionClosurePacketRecords}
             productionExecutionArchivalHandoffRecords={productionExecutionArchivalHandoffRecords}
+            productionExecutionRetentionAttestationRecords={productionExecutionRetentionAttestationRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2678,6 +2715,7 @@ export function App() {
             recordProductionExecutionClosureAuthorization={recordProductionExecutionClosureAuthorization}
             recordProductionExecutionClosurePacket={recordProductionExecutionClosurePacket}
             recordProductionExecutionArchivalHandoff={recordProductionExecutionArchivalHandoff}
+            recordProductionExecutionRetentionAttestation={recordProductionExecutionRetentionAttestation}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -3224,6 +3262,7 @@ function AdminView({
   productionExecutionClosureAuthorizationRecords,
   productionExecutionClosurePacketRecords,
   productionExecutionArchivalHandoffRecords,
+  productionExecutionRetentionAttestationRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -3287,6 +3326,7 @@ function AdminView({
   recordProductionExecutionClosureAuthorization,
   recordProductionExecutionClosurePacket,
   recordProductionExecutionArchivalHandoff,
+  recordProductionExecutionRetentionAttestation,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3364,6 +3404,7 @@ function AdminView({
   productionExecutionClosureAuthorizationRecords: ProductionExecutionClosureAuthorizationRecord[];
   productionExecutionClosurePacketRecords: ProductionExecutionClosurePacketRecord[];
   productionExecutionArchivalHandoffRecords: ProductionExecutionArchivalHandoffRecord[];
+  productionExecutionRetentionAttestationRecords: ProductionExecutionRetentionAttestationRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3430,6 +3471,7 @@ function AdminView({
   recordProductionExecutionClosureAuthorization: () => void;
   recordProductionExecutionClosurePacket: () => void;
   recordProductionExecutionArchivalHandoff: () => void;
+  recordProductionExecutionRetentionAttestation: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3884,6 +3926,15 @@ function AdminView({
             <ProductionExecutionArchivalHandoffRecordPanel
               records={productionExecutionArchivalHandoffRecords}
               recordProductionExecutionArchivalHandoff={recordProductionExecutionArchivalHandoff}
+            />
+          </Panel>
+          <Panel
+            title="Production retention attestation"
+            action={`${productionExecutionRetentionAttestationRecords.length} records`}
+          >
+            <ProductionExecutionRetentionAttestationRecordPanel
+              records={productionExecutionRetentionAttestationRecords}
+              recordProductionExecutionRetentionAttestation={recordProductionExecutionRetentionAttestation}
             />
           </Panel>
         </div>
@@ -7147,6 +7198,73 @@ function ProductionExecutionArchivalHandoffRecordPanel({
             <span>Audit index: {latest.auditIndexReference || "missing"}</span>
             <span>Retrieval test: {latest.retrievalTestReference || "missing"}</span>
             <span>Closure packet: {latest.closurePacketRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionRetentionAttestationRecordPanel({
+  records,
+  recordProductionExecutionRetentionAttestation,
+}: {
+  records: ProductionExecutionRetentionAttestationRecord[];
+  recordProductionExecutionRetentionAttestation: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution retention attestation record</strong>
+          <span>Captures retention owner, retention schedule proof, legal hold check, deletion exception register, and retrieval SLA proof.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionRetentionAttestation}>
+          <Archive size={15} />
+          Record retention attestation
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution retention attestation record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.archivalHandoffRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution retention attestation review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Retention owner" value={latest.retentionOwner || "missing"} passed={Boolean(latest.retentionOwner)} />
+            <CheckLine icon={ScrollText} label="Schedule proof" value={latest.retentionScheduleProofReference || "missing"} passed={Boolean(latest.retentionScheduleProofReference)} />
+            <CheckLine icon={ShieldCheck} label="Legal hold" value={latest.legalHoldCheckReference || "missing"} passed={Boolean(latest.legalHoldCheckReference)} />
+            <CheckLine icon={LockKeyhole} label="Retention" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution retention attestation evidence</strong>
+            <span>Deletion exceptions: {latest.deletionExceptionRegisterReference || "missing"}</span>
+            <span>Retrieval SLA: {latest.retrievalSlaProofReference || "missing"}</span>
+            <span>Archival handoff: {latest.archivalHandoffRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -12641,6 +12759,109 @@ function createMockProductionExecutionArchivalHandoffRecord(
       }.`,
     ],
     killSwitch: closurePacketRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionRetentionAttestationRecord(
+  archivalHandoffRecord: ProductionExecutionArchivalHandoffRecord,
+  actor: string
+): ProductionExecutionRetentionAttestationRecord {
+  const providerSlug = archivalHandoffRecord.provider.toLowerCase();
+  const retentionOwner = "Production Retention Owner";
+  const retentionScheduleProofReference = `production-retention-schedule-${providerSlug}.md`;
+  const legalHoldCheckReference = `production-legal-hold-check-${providerSlug}.md`;
+  const deletionExceptionRegisterReference = `production-deletion-exception-register-${providerSlug}.md`;
+  const retrievalSlaProofReference = `production-retrieval-sla-proof-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Archival handoff ready",
+      passed: archivalHandoffRecord.status === "Ready for production execution archival handoff review",
+      detail: `${archivalHandoffRecord.id} is ${archivalHandoffRecord.status}.`,
+    },
+    {
+      name: "Retention owner assigned",
+      passed: Boolean(retentionOwner),
+      detail: retentionOwner,
+    },
+    {
+      name: "Retention schedule proof linked",
+      passed: Boolean(retentionScheduleProofReference),
+      detail: retentionScheduleProofReference,
+    },
+    {
+      name: "Legal hold check linked",
+      passed: Boolean(legalHoldCheckReference),
+      detail: legalHoldCheckReference,
+    },
+    {
+      name: "Deletion exception register linked",
+      passed: Boolean(deletionExceptionRegisterReference),
+      detail: deletionExceptionRegisterReference,
+    },
+    {
+      name: "Retrieval SLA proof linked",
+      passed: Boolean(retrievalSlaProofReference),
+      detail: retrievalSlaProofReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !archivalHandoffRecord.provisioningEnabled && !archivalHandoffRecord.killSwitch.enabled,
+      detail: `${archivalHandoffRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-retention-attestation-record-${providerSlug}-${Date.now()}`,
+    provider: archivalHandoffRecord.provider,
+    archivalHandoffRecordId: archivalHandoffRecord.id,
+    closurePacketRecordId: archivalHandoffRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: archivalHandoffRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: archivalHandoffRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: archivalHandoffRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: archivalHandoffRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: archivalHandoffRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: archivalHandoffRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: archivalHandoffRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: archivalHandoffRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: archivalHandoffRecord.implementationHoldRecordId,
+    cabDecisionRecordId: archivalHandoffRecord.cabDecisionRecordId,
+    cabHandoffPacketId: archivalHandoffRecord.cabHandoffPacketId,
+    freezeRecordId: archivalHandoffRecord.freezeRecordId,
+    authorizationPacketId: archivalHandoffRecord.authorizationPacketId,
+    promotionDossierId: archivalHandoffRecord.promotionDossierId,
+    closurePackageId: archivalHandoffRecord.closurePackageId,
+    outcomeRecordId: archivalHandoffRecord.outcomeRecordId,
+    handoffPackageId: archivalHandoffRecord.handoffPackageId,
+    controlledSwitchRequestId: archivalHandoffRecord.controlledSwitchRequestId,
+    auditPackageId: archivalHandoffRecord.auditPackageId,
+    switchReviewId: archivalHandoffRecord.switchReviewId,
+    activationId: archivalHandoffRecord.activationId,
+    idempotencyKey: archivalHandoffRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution retention attestation review"
+      : "Blocked",
+    requestedBy: actor,
+    retentionOwner,
+    retentionScheduleProofReference,
+    legalHoldCheckReference,
+    deletionExceptionRegisterReference,
+    retrievalSlaProofReference,
+    checks,
+    evidence: [
+      `Archival handoff record: ${archivalHandoffRecord.id}.`,
+      `Closure packet record: ${archivalHandoffRecord.closurePacketRecordId}.`,
+      `Retention owner: ${retentionOwner}.`,
+      `Retention schedule proof: ${retentionScheduleProofReference}.`,
+      `Legal hold check: ${legalHoldCheckReference}.`,
+      `Deletion exception register: ${deletionExceptionRegisterReference}.`,
+      `Retrieval SLA proof: ${retrievalSlaProofReference}.`,
+      `Kill switch: ${archivalHandoffRecord.killSwitch.name}=${
+        archivalHandoffRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: archivalHandoffRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

@@ -551,6 +551,15 @@ Production execution archival handoff records capture archive handoff evidence a
 
 Required role: `Platform Admin`.
 
+### Production Execution Retention Attestation Records
+
+- `GET /api/real-adapter/production-execution-retention-attestation-records`
+- `POST /api/real-adapter/production-execution-retention-attestation-records`
+
+Production execution retention attestation records capture retention evidence after archival handoff readiness and before any future final archive certification phase. Records require a ready archival handoff record, retention owner, retention schedule proof, legal hold check, deletion exception register, retrieval SLA proof, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`
