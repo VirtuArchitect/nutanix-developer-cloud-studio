@@ -300,10 +300,17 @@
 
 ## Phase 38 - Lab Execution Proposal Envelope (`v2.16.0-lab-execution-proposal-envelope`)
 
-- Add execution proposal envelopes linked to accepted lab evidence reviews - planned
-- Check lab scope, runbook, window, export, review, rollback owner, audit export, and emergency contacts - planned
-- Add Admin Operations proposal readiness panel - planned
-- Keep proposal envelopes evidence-only and real adapter execution disabled - planned
+- Add execution proposal envelopes linked to accepted lab evidence reviews - done
+- Check lab scope, runbook, window, export, review, rollback owner, audit export, and emergency contacts - done
+- Add Admin Operations proposal readiness panel - done
+- Keep proposal envelopes evidence-only and real adapter execution disabled - done
+
+## Phase 39 - Lab Execution Proposal Export (`v2.17.0-lab-execution-proposal-export`)
+
+- Add redacted proposal envelope export manifests - planned
+- Include proposal checks, evidence references, rollback owner, emergency contacts, and disabled execution state - planned
+- Add Admin Operations proposal export history - planned
+- Keep exports metadata-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

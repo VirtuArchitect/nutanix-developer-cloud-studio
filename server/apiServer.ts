@@ -57,6 +57,10 @@ import {
   LabEvidenceReviewError,
 } from "./labEvidenceReview";
 import {
+  createLabExecutionProposalEnvelope,
+  LabExecutionProposalEnvelopeError,
+} from "./labExecutionProposalEnvelope";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -133,6 +137,7 @@ import type {
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
   CreateLabEvidenceReviewRequest,
+  CreateLabExecutionProposalEnvelopeRequest,
   CreatePlatformServiceRequest,
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
@@ -302,6 +307,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof LabEvidenceReviewError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof LabExecutionProposalEnvelopeError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -573,6 +588,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/evidence-reviews") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.labEvidenceReviews });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/proposal-envelopes") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labExecutionProposalEnvelopes });
     return;
   }
 
@@ -1321,6 +1342,23 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: review });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/proposal-envelopes") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabExecutionProposalEnvelopeRequest>(request);
+    const envelope = createLabExecutionProposalEnvelope(state, body, context.session.user);
+    state.labExecutionProposalEnvelopes = [envelope, ...state.labExecutionProposalEnvelopes];
+    addAuditEvent(state, "controlled-lab-release.execution-proposal.reviewed", context.session.user, envelope.provider, {
+      reviewId: envelope.reviewId,
+      exportId: envelope.exportId,
+      windowId: envelope.windowId,
+      status: envelope.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: envelope });
     return;
   }
 

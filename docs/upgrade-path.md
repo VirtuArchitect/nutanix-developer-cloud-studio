@@ -635,6 +635,23 @@ Exit gate:
 - Proposal envelopes remain evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.17.0-lab-execution-proposal-export
+
+Goal: make lab execution proposal envelopes exportable for final operations and security review.
+
+Build:
+
+- Proposal envelope export records linked to lab execution proposal envelopes.
+- Redacted metadata manifest containing proposal checks, evidence references, rollback owner, emergency contacts, kill switch state, and disabled execution state.
+- Admin Operations proposal export history.
+- Tests proving proposal exports contain references and metadata only.
+
+Exit gate:
+
+- Proposal export APIs and UI are tested.
+- Exports contain no inline auth material.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

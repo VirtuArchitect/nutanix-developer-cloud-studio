@@ -145,6 +145,7 @@ export function createDefaultState(): ApiState {
     controlledLabDryRunWindows: [],
     labWindowEvidenceExports: [],
     labEvidenceReviews: [],
+    labExecutionProposalEnvelopes: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

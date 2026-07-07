@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.16.0-lab-execution-proposal-envelope` adds evidence-only execution proposal envelopes linked to lab evidence reviews and an Admin Operations proposal readiness panel.
 - `v2.15.0-lab-evidence-review-queue` adds evidence-only human review records for lab window evidence exports and an Admin Operations review queue.
 - `v2.14.0-lab-window-evidence-export` adds metadata-only lab window evidence exports linked to controlled lab dry-run windows and surfaces export history in Admin Operations.
 - `v2.13.0-controlled-lab-dry-run-window` adds evidence-only scheduled lab dry-run windows linked to runbooks, release exports, lab scope, rollback owners, audit exports, and emergency stop contacts.
@@ -324,6 +325,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Control Plane shows exact blockers, allowed create fields, kill switch, and emergency stop procedure.
 - Missing active pentest scope blocks future live adapter authorization.
 - Real AHV mutation remains disabled.
+
+## Current Lab Execution Proposal Envelope Slice
+
+- API records lab execution proposal envelopes linked to lab evidence reviews.
+- Envelopes roll up lab scope, controlled lab release runbook, dry-run window, window evidence export, review decision, rollback owner, audit export readiness, emergency contacts, and disabled real-adapter state.
+- Admin Operations surfaces proposal readiness checks and supporting evidence references.
+- Missing or rejected review evidence blocks proposal readiness.
+- Proposal envelopes remain evidence-only and do not enable real adapter execution.
 
 ## Suggested Tech Stack
 

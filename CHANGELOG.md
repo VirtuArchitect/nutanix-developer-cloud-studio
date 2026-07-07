@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.15.0-lab-evidence-review-queue`.
+This project uses release tags for public milestones. The current release is `v2.16.0-lab-execution-proposal-envelope`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.16.0-lab-execution-proposal-envelope] - 2026-07-07
+
+### Added
+
+- Lab execution proposal envelope records linked to lab evidence reviews.
+- API endpoints for listing and recording proposal envelopes.
+- Admin Operations proposal readiness panel.
+- Checks for lab scope, runbook, dry-run window, window evidence export, review acceptance, rollback owner, audit export, emergency contacts, and disabled execution.
+- Tests proving missing or rejected review evidence blocks proposal readiness.
+
+### Notes
+
+- Proposal envelopes are evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.15.0-lab-evidence-review-queue] - 2026-07-07
 

@@ -755,6 +755,30 @@ export type LabEvidenceReviewRecord = {
   createdAt: string;
 };
 
+export type LabExecutionProposalEnvelope = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  reviewId: string;
+  exportId: string;
+  windowId: string;
+  status: "Blocked" | "Ready for proposal review";
+  requestedBy: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  rollbackOwner: string;
+  emergencyStopContacts: string[];
+  killSwitch: {
+    name: string;
+    enabled: boolean;
+  };
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

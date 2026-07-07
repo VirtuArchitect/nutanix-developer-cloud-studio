@@ -15,6 +15,7 @@ import type {
   AuditExportRecord,
   LabWindowEvidenceExportRecord,
   LabEvidenceReviewRecord,
+  LabExecutionProposalEnvelope,
   LabAdapterSnapshot,
   LabAuthorizationScope,
   LifecycleOperationKind,
@@ -81,6 +82,7 @@ export type ApiState = {
   controlledLabDryRunWindows: ControlledLabDryRunWindowRecord[];
   labWindowEvidenceExports: LabWindowEvidenceExportRecord[];
   labEvidenceReviews: LabEvidenceReviewRecord[];
+  labExecutionProposalEnvelopes: LabExecutionProposalEnvelope[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -240,6 +242,11 @@ export type CreateLabEvidenceReviewRequest = {
   platformOwnerEvidence?: string;
   securityReviewerEvidence?: string;
   operationsReviewerEvidence?: string;
+};
+
+export type CreateLabExecutionProposalEnvelopeRequest = {
+  reviewId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
 };
 
 export type CreateAdapterEnablementRecordRequest = {

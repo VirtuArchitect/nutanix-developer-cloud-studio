@@ -15,6 +15,7 @@ import type {
   Integration,
   IntegrationConfig,
   LabEvidenceReviewRecord,
+  LabExecutionProposalEnvelope,
   LabWindowEvidenceExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
@@ -306,6 +307,10 @@ export async function fetchLabEvidenceReviewsFromApi() {
   return fetchJson<LabEvidenceReviewRecord[]>("/api/controlled-lab-release/evidence-reviews");
 }
 
+export async function fetchLabExecutionProposalEnvelopesFromApi() {
+  return fetchJson<LabExecutionProposalEnvelope[]>("/api/controlled-lab-release/proposal-envelopes");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -467,6 +472,16 @@ export async function createLabEvidenceReviewViaApi(payload: {
   operationsReviewerDecision?: "Accepted" | "Rejected";
 }) {
   return fetchJson<LabEvidenceReviewRecord>("/api/controlled-lab-release/evidence-reviews", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createLabExecutionProposalEnvelopeViaApi(payload: {
+  reviewId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<LabExecutionProposalEnvelope>("/api/controlled-lab-release/proposal-envelopes", {
     method: "POST",
     body: JSON.stringify(payload),
   });

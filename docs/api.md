@@ -282,6 +282,8 @@ Required role: `Developer` or `Platform Admin`.
 - `POST /api/controlled-lab-release/window-exports`
 - `GET /api/controlled-lab-release/evidence-reviews`
 - `POST /api/controlled-lab-release/evidence-reviews`
+- `GET /api/controlled-lab-release/proposal-envelopes`
+- `POST /api/controlled-lab-release/proposal-envelopes`
 
 The platform-service preflight endpoint evaluates NKP, NDB, NUS, and NAI adapter readiness against request validation, VM lifecycle proof, provider readiness, adapter configuration, and real-adapter switch state. It records provider-specific blocked mutation operations and returns `provisioningEnabled=false`.
 
@@ -300,6 +302,8 @@ Controlled lab dry-run windows record scheduled start/end times and link runbook
 Lab window evidence exports prepare redacted JSON manifests linked to controlled lab dry-run windows. Manifests include schedule, provider, runbook reference, release evidence export reference, lab scope reference, rollback owner, emergency stop contacts, check counts, readiness checklist, checksum, and disabled execution state only.
 
 Lab evidence reviews record platform owner, security reviewer, and operations reviewer decisions against exported lab window evidence packages. Missing reviewer decisions keep reviews blocked; rejected decisions mark the package rejected.
+
+Lab execution proposal envelopes roll up accepted lab evidence reviews with the underlying dry-run window, runbook, export, lab scope, rollback owner, audit export readiness, emergency contacts, and disabled adapter kill switch state. Missing or rejected evidence keeps envelopes blocked.
 
 Required role: `Platform Admin`.
 
