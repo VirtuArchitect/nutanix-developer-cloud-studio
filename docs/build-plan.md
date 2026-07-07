@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.50.0-production-execution-completion-dossier-record` adds evidence-only completion dossier records linked to final archive certifications and an Admin Operations completion dossier panel.
 - `v2.49.0-production-execution-final-archive-certification-record` adds evidence-only final archive certification records linked to retention attestations and an Admin Operations final archive certification panel.
 - `v2.48.0-production-execution-retention-attestation-record` adds evidence-only retention attestation records linked to archival handoffs and an Admin Operations retention attestation panel.
 - `v2.47.0-production-execution-archival-handoff-record` adds evidence-only archival handoff records linked to closure packets and an Admin Operations archival handoff panel.

@@ -569,6 +569,15 @@ Production execution final archive certification records capture final archive c
 
 Required role: `Platform Admin`.
 
+### Production Execution Completion Dossier Records
+
+- `GET /api/real-adapter/production-execution-completion-dossier-records`
+- `POST /api/real-adapter/production-execution-completion-dossier-records`
+
+Production execution completion dossier records capture completion evidence after final archive certification readiness and before any future operations handover phase. Records require a ready final archive certification record, dossier owner, final evidence index, audit export reference, operations acceptance, compliance closure proof, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.49.0-production-execution-final-archive-certification-record`.
+This project uses release tags for public milestones. The current release is `v2.50.0-production-execution-completion-dossier-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution completion dossier records after final archive certification records are complete.
+- Add production execution operations handover records after completion dossier records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.50.0-production-execution-completion-dossier-record] - 2026-07-07
+
+### Added
+
+- Production execution completion dossier records linked to production execution final archive certification records.
+- API endpoints for listing and recording production execution completion dossier records.
+- Admin Operations production completion dossier panel.
+- Dossier owner, final evidence index, audit export reference, operations acceptance, and compliance closure proof checks.
+- Tests proving missing final archive certification records or incomplete completion dossier evidence block completion dossier readiness.
+
+### Notes
+
+- Production execution completion dossier records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.49.0-production-execution-final-archive-certification-record] - 2026-07-07
 

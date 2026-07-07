@@ -538,10 +538,17 @@
 
 ## Phase 72 - Production Execution Completion Dossier Record (`v2.50.0-production-execution-completion-dossier-record`)
 
-- Add production execution completion dossier records linked to final archive certification records - planned
-- Require dossier owner, final evidence index, audit export reference, operations acceptance, and compliance closure proof - planned
-- Add Admin Operations completion dossier panel - planned
-- Keep completion dossier records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution completion dossier records linked to final archive certification records - done
+- Require dossier owner, final evidence index, audit export reference, operations acceptance, and compliance closure proof - done
+- Add Admin Operations completion dossier panel - done
+- Keep completion dossier records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 73 - Production Execution Operations Handover Record (`v2.51.0-production-execution-operations-handover-record`)
+
+- Add production execution operations handover records linked to completion dossier records - planned
+- Require operations owner, support model reference, monitoring handover proof, escalation route, and service desk acceptance - planned
+- Add Admin Operations operations handover panel - planned
+- Keep operations handover records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

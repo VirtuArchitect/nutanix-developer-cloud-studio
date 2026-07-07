@@ -50,6 +50,7 @@ import {
   createProductionExecutionArchivalHandoffRecordViaApi,
   createProductionExecutionRetentionAttestationRecordViaApi,
   createProductionExecutionFinalArchiveCertificationRecordViaApi,
+  createProductionExecutionCompletionDossierRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -117,6 +118,7 @@ import {
   fetchProductionExecutionArchivalHandoffRecordsFromApi,
   fetchProductionExecutionRetentionAttestationRecordsFromApi,
   fetchProductionExecutionFinalArchiveCertificationRecordsFromApi,
+  fetchProductionExecutionCompletionDossierRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -606,6 +608,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionFinalArchiveCertificationRecordViaApi({
       retentionAttestationRecordId: "production-execution-retention-attestation-record-ndb-1",
     });
+    await fetchProductionExecutionCompletionDossierRecordsFromApi();
+    await createProductionExecutionCompletionDossierRecordViaApi({
+      finalArchiveCertificationRecordId: "production-execution-final-archive-certification-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -921,6 +927,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-retention-attestation-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      77,
+      "/api/real-adapter/production-execution-completion-dossier-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      78,
+      "/api/real-adapter/production-execution-completion-dossier-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-final-archive-certification-record-ndb-1"),
       })
     );
   });
