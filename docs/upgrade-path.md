@@ -703,6 +703,23 @@ Exit gate:
 - Checklists remain evidence-only.
 - Real adapter execution remains disabled.
 
+### v2.21.0-controlled-lab-execution-evidence-ledger
+
+Goal: add an immutable evidence ledger after dry-run checklist readiness while still keeping real adapter execution disabled.
+
+Build:
+
+- Controlled lab execution evidence ledger records linked to dry-run checklists.
+- Immutable evidence references for operator, observer, rollback, log, audit, and stop authority records.
+- Admin Operations evidence ledger panel with blockers and evidence references.
+- Tests proving missing dry-run checklists or incomplete evidence blocks ledger readiness.
+
+Exit gate:
+
+- Evidence ledger APIs and UI are tested.
+- Ledger records remain evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

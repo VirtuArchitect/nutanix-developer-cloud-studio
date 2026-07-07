@@ -6,6 +6,7 @@ import type {
   ControlledProvisioningDecision,
   ControlledLabReleaseRunbookRecord,
   ControlledLabExecutionApprovalGate,
+  ControlledLabDryRunExecutionChecklist,
   ControlledLabExecutionRehearsalPacket,
   ControlledLabDryRunWindowRecord,
   ControlledCreateAuthorizationEnvelope,
@@ -89,6 +90,7 @@ export type ApiState = {
   labExecutionProposalExports: LabExecutionProposalExportRecord[];
   controlledLabExecutionApprovals: ControlledLabExecutionApprovalGate[];
   controlledLabExecutionRehearsalPackets: ControlledLabExecutionRehearsalPacket[];
+  controlledLabDryRunExecutionChecklists: ControlledLabDryRunExecutionChecklist[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -278,6 +280,17 @@ export type CreateControlledLabExecutionApprovalGateRequest = {
 export type CreateControlledLabExecutionRehearsalPacketRequest = {
   approvalGateId?: string;
   provider?: ProviderReleaseGateRecord["provider"];
+};
+
+export type CreateControlledLabDryRunExecutionChecklistRequest = {
+  rehearsalPacketId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  operatorRoster?: string[];
+  scheduledStart?: string;
+  scheduledEnd?: string;
+  logCaptureReferences?: string[];
+  rollbackTimerMinutes?: number;
+  stopAuthority?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

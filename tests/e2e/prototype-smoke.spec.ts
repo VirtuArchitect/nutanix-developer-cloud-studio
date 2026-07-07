@@ -190,6 +190,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Execution rehearsal packet")).toBeVisible();
   await expect(page.getByText("Frozen references")).toBeVisible();
   await expect(page.getByText("Runbook frozen")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Controlled lab dry-run checklists" })).toBeVisible();
+  await page.getByRole("button", { name: "Record dry-run checklist" }).click();
+  await expect(page.getByText("Dry-run execution checklist")).toBeVisible();
+  await expect(page.getByText("Dry-run controls")).toBeVisible();
+  await expect(page.getByText("Operator roster assigned")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

@@ -34,6 +34,7 @@ import {
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
   type ControlledLabExecutionApprovalGate,
+  type ControlledLabDryRunExecutionChecklist,
   type ControlledLabExecutionRehearsalPacket,
   type ControlledLabDryRunWindowRecord,
   type ControlledLabReleaseRunbookRecord,
@@ -105,6 +106,7 @@ import {
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
   createControlledLabExecutionApprovalViaApi,
+  createControlledLabDryRunExecutionChecklistViaApi,
   createControlledLabExecutionRehearsalPacketViaApi,
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
@@ -136,6 +138,7 @@ import {
   fetchCredentialReferenceDiagnosticsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledLabExecutionApprovalsFromApi,
+  fetchControlledLabDryRunExecutionChecklistsFromApi,
   fetchControlledLabExecutionRehearsalPacketsFromApi,
   fetchControlledProvisioningGatesFromApi,
   fetchControlledCreateAuthorizationEnvelopesFromApi,
@@ -245,6 +248,7 @@ export function App() {
   const [labExecutionProposalExports, setLabExecutionProposalExports] = useState<LabExecutionProposalExportRecord[]>([]);
   const [controlledLabExecutionApprovals, setControlledLabExecutionApprovals] = useState<ControlledLabExecutionApprovalGate[]>([]);
   const [controlledLabExecutionRehearsalPackets, setControlledLabExecutionRehearsalPackets] = useState<ControlledLabExecutionRehearsalPacket[]>([]);
+  const [controlledLabDryRunExecutionChecklists, setControlledLabDryRunExecutionChecklists] = useState<ControlledLabDryRunExecutionChecklist[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -335,6 +339,7 @@ export function App() {
             apiLabExecutionProposalExports,
             apiControlledLabExecutionApprovals,
             apiControlledLabExecutionRehearsalPackets,
+            apiControlledLabDryRunExecutionChecklists,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -380,6 +385,7 @@ export function App() {
             fetchLabExecutionProposalExportsFromApi(),
             fetchControlledLabExecutionApprovalsFromApi(),
             fetchControlledLabExecutionRehearsalPacketsFromApi(),
+            fetchControlledLabDryRunExecutionChecklistsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -427,6 +433,7 @@ export function App() {
             setLabExecutionProposalExports(apiLabExecutionProposalExports);
             setControlledLabExecutionApprovals(apiControlledLabExecutionApprovals);
             setControlledLabExecutionRehearsalPackets(apiControlledLabExecutionRehearsalPackets);
+            setControlledLabDryRunExecutionChecklists(apiControlledLabDryRunExecutionChecklists);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -594,6 +601,7 @@ export function App() {
       apiLabExecutionProposalExports,
       apiControlledLabExecutionApprovals,
       apiControlledLabExecutionRehearsalPackets,
+      apiControlledLabDryRunExecutionChecklists,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -639,6 +647,7 @@ export function App() {
       fetchLabExecutionProposalExportsFromApi(),
       fetchControlledLabExecutionApprovalsFromApi(),
       fetchControlledLabExecutionRehearsalPacketsFromApi(),
+      fetchControlledLabDryRunExecutionChecklistsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -685,6 +694,7 @@ export function App() {
     setLabExecutionProposalExports(apiLabExecutionProposalExports);
     setControlledLabExecutionApprovals(apiControlledLabExecutionApprovals);
     setControlledLabExecutionRehearsalPackets(apiControlledLabExecutionRehearsalPackets);
+    setControlledLabDryRunExecutionChecklists(apiControlledLabDryRunExecutionChecklists);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1427,6 +1437,25 @@ export function App() {
     ]);
   }
 
+  async function recordControlledLabDryRunExecutionChecklist() {
+    const rehearsalPacket = controlledLabExecutionRehearsalPackets[0];
+    if (!rehearsalPacket) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const checklist = await createControlledLabDryRunExecutionChecklistViaApi({ rehearsalPacketId: rehearsalPacket.id });
+      await refreshApiState();
+      setControlledLabDryRunExecutionChecklists((current) => [checklist, ...current.filter((item) => item.id !== checklist.id)]);
+      return;
+    }
+
+    setControlledLabDryRunExecutionChecklists((current) => [
+      createMockControlledLabDryRunExecutionChecklist(rehearsalPacket, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1657,6 +1686,7 @@ export function App() {
             labExecutionProposalExports={labExecutionProposalExports}
             controlledLabExecutionApprovals={controlledLabExecutionApprovals}
             controlledLabExecutionRehearsalPackets={controlledLabExecutionRehearsalPackets}
+            controlledLabDryRunExecutionChecklists={controlledLabDryRunExecutionChecklists}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1692,6 +1722,7 @@ export function App() {
             prepareLabExecutionProposalExport={prepareLabExecutionProposalExport}
             recordControlledLabExecutionApproval={recordControlledLabExecutionApproval}
             prepareControlledLabExecutionRehearsalPacket={prepareControlledLabExecutionRehearsalPacket}
+            recordControlledLabDryRunExecutionChecklist={recordControlledLabDryRunExecutionChecklist}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2210,6 +2241,7 @@ function AdminView({
   labExecutionProposalExports,
   controlledLabExecutionApprovals,
   controlledLabExecutionRehearsalPackets,
+  controlledLabDryRunExecutionChecklists,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2245,6 +2277,7 @@ function AdminView({
   prepareLabExecutionProposalExport,
   recordControlledLabExecutionApproval,
   prepareControlledLabExecutionRehearsalPacket,
+  recordControlledLabDryRunExecutionChecklist,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2294,6 +2327,7 @@ function AdminView({
   labExecutionProposalExports: LabExecutionProposalExportRecord[];
   controlledLabExecutionApprovals: ControlledLabExecutionApprovalGate[];
   controlledLabExecutionRehearsalPackets: ControlledLabExecutionRehearsalPacket[];
+  controlledLabDryRunExecutionChecklists: ControlledLabDryRunExecutionChecklist[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2332,6 +2366,7 @@ function AdminView({
   prepareLabExecutionProposalExport: () => void;
   recordControlledLabExecutionApproval: () => void;
   prepareControlledLabExecutionRehearsalPacket: () => void;
+  recordControlledLabDryRunExecutionChecklist: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2606,6 +2641,12 @@ function AdminView({
             <ControlledLabExecutionRehearsalPacketPanel
               packets={controlledLabExecutionRehearsalPackets}
               prepareControlledLabExecutionRehearsalPacket={prepareControlledLabExecutionRehearsalPacket}
+            />
+          </Panel>
+          <Panel title="Controlled lab dry-run checklists" action={`${controlledLabDryRunExecutionChecklists.length} checklists`}>
+            <ControlledLabDryRunExecutionChecklistPanel
+              checklists={controlledLabDryRunExecutionChecklists}
+              recordControlledLabDryRunExecutionChecklist={recordControlledLabDryRunExecutionChecklist}
             />
           </Panel>
         </div>
@@ -3983,6 +4024,78 @@ function ControlledLabExecutionRehearsalPacketPanel({
             <strong>Approval evidence</strong>
             {latest.frozenReferences.approvalEvidence.map((item) => (
               <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ControlledLabDryRunExecutionChecklistPanel({
+  checklists,
+  recordControlledLabDryRunExecutionChecklist,
+}: {
+  checklists: ControlledLabDryRunExecutionChecklist[];
+  recordControlledLabDryRunExecutionChecklist: () => void;
+}) {
+  const latest = checklists[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <CheckCircle2 size={18} />
+        <div>
+          <strong>Dry-run execution checklist</strong>
+          <span>Records operator roster, observation window, log capture, rollback timer, and stop authority while execution remains disabled.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordControlledLabDryRunExecutionChecklist}>
+          <CheckCircle2 size={15} />
+          Record dry-run checklist
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No controlled lab dry-run execution checklist has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.rehearsalPacketId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for dry-run review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Roster" value={`${latest.operatorRoster.length} assigned`} passed={latest.operatorRoster.length >= 3} />
+            <CheckLine icon={Activity} label="Observation" value={`${latest.observationWindow.scheduledStart} to ${latest.observationWindow.scheduledEnd}`} passed={Date.parse(latest.observationWindow.scheduledEnd) > Date.parse(latest.observationWindow.scheduledStart)} />
+            <CheckLine icon={Archive} label="Log capture" value={`${latest.logCaptureReferences.length} refs`} passed={latest.logCaptureReferences.length >= 2} />
+            <CheckLine icon={LockKeyhole} label="Execution" value="Disabled" passed={!latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Dry-run controls</strong>
+            <span>Operators: {latest.operatorRoster.join(", ")}</span>
+            <span>Rollback timer: {latest.rollbackTimerMinutes} minutes</span>
+            <span>Stop authority: {latest.stopAuthority || "missing"}</span>
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Log capture references</strong>
+            {latest.logCaptureReferences.map((reference) => (
+              <span key={reference}>{reference}</span>
             ))}
           </div>
           <div className="dryRunValidationList">
@@ -7068,6 +7181,85 @@ function createMockControlledLabExecutionRehearsalPacket({
       `Kill switch: ${approvalGate.killSwitch.name}=${approvalGate.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: approvalGate.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockControlledLabDryRunExecutionChecklist(
+  packet: ControlledLabExecutionRehearsalPacket,
+  actor: string
+): ControlledLabDryRunExecutionChecklist {
+  const scheduledStart = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const scheduledEnd = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+  const operatorRoster = ["Cloud Operator", "Security Observer", "Rollback Owner"];
+  const logCaptureReferences = ["audit-log-capture-plan.md", "provider-response-capture.md"];
+  const rollbackTimerMinutes = 30;
+  const stopAuthority = packet.frozenReferences.rollbackOwner;
+  const checks = [
+    {
+      name: "Rehearsal packet ready",
+      passed: packet.status === "Ready for rehearsal review",
+      detail: `${packet.id} is ${packet.status}.`,
+    },
+    {
+      name: "Operator roster assigned",
+      passed: operatorRoster.length >= 3,
+      detail: `${operatorRoster.length} operator role(s) assigned.`,
+    },
+    {
+      name: "Observation window scheduled",
+      passed: Date.parse(scheduledEnd) > Date.parse(scheduledStart),
+      detail: `${scheduledStart} to ${scheduledEnd}.`,
+    },
+    {
+      name: "Log capture references recorded",
+      passed: logCaptureReferences.length >= 2,
+      detail: `${logCaptureReferences.length} log capture reference(s) recorded.`,
+    },
+    {
+      name: "Rollback timer set",
+      passed: rollbackTimerMinutes >= 15,
+      detail: `${rollbackTimerMinutes} minute rollback timer.`,
+    },
+    {
+      name: "Stop authority assigned",
+      passed: Boolean(stopAuthority),
+      detail: stopAuthority || "Stop authority is required.",
+    },
+    {
+      name: "Real adapter execution disabled",
+      passed: !packet.killSwitch.enabled,
+      detail: `${packet.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `controlled-lab-dry-run-checklist-${packet.provider.toLowerCase()}-${Date.now()}`,
+    provider: packet.provider,
+    rehearsalPacketId: packet.id,
+    approvalGateId: packet.approvalGateId,
+    status: checks.every((check) => check.passed) ? "Ready for dry-run review" : "Blocked",
+    requestedBy: actor,
+    operatorRoster,
+    observationWindow: {
+      scheduledStart,
+      scheduledEnd,
+    },
+    logCaptureReferences,
+    rollbackTimerMinutes,
+    stopAuthority,
+    checks,
+    evidence: [
+      `Rehearsal packet: ${packet.id}.`,
+      `Approval gate: ${packet.approvalGateId}.`,
+      `Operator roster: ${operatorRoster.join(", ")}.`,
+      `Observation window: ${scheduledStart} to ${scheduledEnd}.`,
+      `Rollback timer: ${rollbackTimerMinutes} minutes.`,
+      `Stop authority: ${stopAuthority || "missing"}.`,
+      `Kill switch: ${packet.killSwitch.name}=${packet.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: packet.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

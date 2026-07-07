@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.20.0-controlled-lab-dry-run-execution-checklist` adds evidence-only dry-run execution checklists linked to rehearsal packets and an Admin Operations checklist panel.
 - `v2.19.0-controlled-lab-execution-rehearsal-packet` adds evidence-only rehearsal packets linked to approved execution gates and an Admin Operations packet panel.
 - `v2.18.0-controlled-lab-execution-approval-gate` adds evidence-only approval gates linked to proposal exports and an Admin Operations approval panel.
 - `v2.17.0-lab-execution-proposal-export` adds metadata-only proposal export manifests linked to lab execution proposal envelopes and an Admin Operations export history panel.
@@ -359,6 +360,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Packets freeze runbook, rollback owner, emergency contacts, stop conditions, proposal export, audit export, and approval evidence references.
 - Admin Operations surfaces packet readiness, frozen references, stop conditions, and blockers.
 - Missing approved gates or incomplete frozen evidence blocks packet readiness.
+- Real adapter execution remains disabled.
+
+## Current Controlled Lab Dry-Run Execution Checklist Slice
+
+- API records controlled lab dry-run execution checklists linked to rehearsal packets.
+- Checklists cover operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution state.
+- Admin Operations surfaces checklist readiness, dry-run controls, log capture references, and blockers.
+- Missing rehearsal packets or incomplete checklist evidence blocks readiness.
 - Real adapter execution remains disabled.
 
 ## Suggested Tech Stack

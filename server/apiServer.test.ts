@@ -848,6 +848,11 @@ describe("api server", () => {
       body: JSON.stringify({ approvalGateId: executionApproval.data.id }),
     });
     const rehearsalPackets = await requestJson("/api/controlled-lab-release/rehearsal-packets");
+    const dryRunChecklist = await requestJson("/api/controlled-lab-release/dry-run-checklists", {
+      method: "POST",
+      body: JSON.stringify({ rehearsalPacketId: rehearsalPacket.data.id }),
+    });
+    const dryRunChecklists = await requestJson("/api/controlled-lab-release/dry-run-checklists");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1060,6 +1065,21 @@ describe("api server", () => {
       ])
     );
     expect(rehearsalPackets.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: rehearsalPacket.data.id })]));
+    expect(dryRunChecklist.data).toMatchObject({
+      provider: "NDB",
+      rehearsalPacketId: rehearsalPacket.data.id,
+      approvalGateId: executionApproval.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(dryRunChecklist.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Rehearsal packet ready", passed: false }),
+        expect.objectContaining({ name: "Real adapter execution disabled", passed: true }),
+      ])
+    );
+    expect(dryRunChecklists.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: dryRunChecklist.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1074,6 +1094,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "controlled-lab-release.execution-proposal.exported", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.execution-approval.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.rehearsal-packet.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "controlled-lab-release.dry-run-checklist.recorded", target: "NDB" }),
       ])
     );
   });

@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.19.0-controlled-lab-execution-rehearsal-packet",
+  "version": "2.20.0-controlled-lab-dry-run-execution-checklist",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

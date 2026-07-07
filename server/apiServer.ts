@@ -53,6 +53,10 @@ import {
   createControlledLabExecutionRehearsalPacket,
 } from "./controlledLabExecutionRehearsalPacket";
 import {
+  ControlledLabDryRunExecutionChecklistError,
+  createControlledLabDryRunExecutionChecklist,
+} from "./controlledLabDryRunExecutionChecklist";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -146,6 +150,7 @@ import type {
   CreateEnvironmentRequest,
   CreateControlledProvisioningGateRequest,
   CreateControlledLabExecutionApprovalGateRequest,
+  CreateControlledLabDryRunExecutionChecklistRequest,
   CreateControlledLabExecutionRehearsalPacketRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
@@ -312,6 +317,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ControlledLabExecutionRehearsalPacketError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledLabDryRunExecutionChecklistError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -657,6 +672,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/rehearsal-packets") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.controlledLabExecutionRehearsalPackets });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/dry-run-checklists") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.controlledLabDryRunExecutionChecklists });
     return;
   }
 
@@ -1470,6 +1491,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: packet });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/dry-run-checklists") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateControlledLabDryRunExecutionChecklistRequest>(request);
+    const checklist = createControlledLabDryRunExecutionChecklist(state, body, context.session.user);
+    state.controlledLabDryRunExecutionChecklists = [checklist, ...state.controlledLabDryRunExecutionChecklists];
+    addAuditEvent(state, "controlled-lab-release.dry-run-checklist.recorded", context.session.user, checklist.provider, {
+      rehearsalPacketId: checklist.rehearsalPacketId,
+      approvalGateId: checklist.approvalGateId,
+      status: checklist.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: checklist });
     return;
   }
 

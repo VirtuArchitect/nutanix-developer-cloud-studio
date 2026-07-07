@@ -6,6 +6,7 @@ import type {
   AuditExportRecord,
   AuditRetentionDiagnostics,
   ControlledLabExecutionApprovalGate,
+  ControlledLabDryRunExecutionChecklist,
   ControlledLabExecutionRehearsalPacket,
   ControlledLabDryRunWindowRecord,
   ControlledLabReleaseRunbookRecord,
@@ -326,6 +327,10 @@ export async function fetchControlledLabExecutionRehearsalPacketsFromApi() {
   return fetchJson<ControlledLabExecutionRehearsalPacket[]>("/api/controlled-lab-release/rehearsal-packets");
 }
 
+export async function fetchControlledLabDryRunExecutionChecklistsFromApi() {
+  return fetchJson<ControlledLabDryRunExecutionChecklist[]>("/api/controlled-lab-release/dry-run-checklists");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -532,6 +537,16 @@ export async function createControlledLabExecutionRehearsalPacketViaApi(payload:
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ControlledLabExecutionRehearsalPacket>("/api/controlled-lab-release/rehearsal-packets", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createControlledLabDryRunExecutionChecklistViaApi(payload: {
+  rehearsalPacketId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ControlledLabDryRunExecutionChecklist>("/api/controlled-lab-release/dry-run-checklists", {
     method: "POST",
     body: JSON.stringify(payload),
   });

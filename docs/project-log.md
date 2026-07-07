@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.20.0-controlled-lab-dry-run-execution-checklist`.
+- Added controlled lab dry-run execution checklist records linked to rehearsal packets.
+- Added API endpoints for dry-run checklists.
+- Added Admin Operations dry-run checklist panel.
+- Added tests proving missing rehearsal packets or checklist evidence block readiness.
+- Planned `v2.21.0-controlled-lab-execution-evidence-ledger` for immutable evidence ledger records after dry-run checklist readiness.
 - Released `v2.19.0-controlled-lab-execution-rehearsal-packet`.
 - Added controlled lab execution rehearsal packet records linked to approval gates.
 - Added API endpoints for rehearsal packets.
 - Added Admin Operations rehearsal packet panel.
 - Added tests proving missing approval gates or incomplete frozen evidence block packet readiness.
-- Planned `v2.20.0-controlled-lab-dry-run-execution-checklist` for final dry-run execution checklists before any future live-lab adapter operation.
 - Released `v2.18.0-controlled-lab-execution-approval-gate`.
 - Added controlled lab execution approval records linked to proposal exports.
 - Added API endpoints for execution approval gates.

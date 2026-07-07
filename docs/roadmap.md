@@ -328,10 +328,17 @@
 
 ## Phase 42 - Controlled Lab Dry-Run Execution Checklist (`v2.20.0-controlled-lab-dry-run-execution-checklist`)
 
-- Add final dry-run execution checklist records linked to rehearsal packets - planned
-- Check operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution state - planned
-- Add Admin Operations dry-run checklist panel - planned
-- Keep checklists evidence-only and real adapter execution disabled - planned
+- Add final dry-run execution checklist records linked to rehearsal packets - done
+- Check operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution state - done
+- Add Admin Operations dry-run checklist panel - done
+- Keep checklists evidence-only and real adapter execution disabled - done
+
+## Phase 43 - Controlled Lab Execution Evidence Ledger (`v2.21.0-controlled-lab-execution-evidence-ledger`)
+
+- Add evidence ledger records linked to dry-run checklists - planned
+- Capture immutable evidence references for operator, observer, rollback, log, audit, and stop authority records - planned
+- Add Admin Operations evidence ledger panel - planned
+- Keep ledger records evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

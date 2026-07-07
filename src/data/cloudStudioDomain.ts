@@ -863,6 +863,32 @@ export type ControlledLabExecutionRehearsalPacket = {
   createdAt: string;
 };
 
+export type ControlledLabDryRunExecutionChecklist = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  rehearsalPacketId: string;
+  approvalGateId: string;
+  status: "Blocked" | "Ready for dry-run review";
+  requestedBy: string;
+  operatorRoster: string[];
+  observationWindow: {
+    scheduledStart: string;
+    scheduledEnd: string;
+  };
+  logCaptureReferences: string[];
+  rollbackTimerMinutes: number;
+  stopAuthority: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: ControlledLabExecutionRehearsalPacket["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.19.0-controlled-lab-execution-rehearsal-packet`.
+This project uses release tags for public milestones. The current release is `v2.20.0-controlled-lab-dry-run-execution-checklist`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add final controlled lab dry-run execution checklists before any future live-lab execution phase.
+- Add a lab execution evidence ledger after dry-run checklists while keeping adapters disabled.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.20.0-controlled-lab-dry-run-execution-checklist] - 2026-07-07
+
+### Added
+
+- Controlled lab dry-run execution checklist records linked to rehearsal packets.
+- API endpoints for listing and recording dry-run execution checklists.
+- Admin Operations dry-run checklist panel.
+- Operator roster, observation window, log capture, rollback timer, stop authority, and disabled execution checks.
+- Tests proving missing rehearsal packets or checklist evidence block readiness.
+
+### Notes
+
+- Dry-run execution checklists are evidence-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.19.0-controlled-lab-execution-rehearsal-packet] - 2026-07-07
 
