@@ -133,6 +133,10 @@ import {
   ProductionExecutionReadinessRecordError,
 } from "./productionExecutionReadinessRecord";
 import {
+  createProductionExecutionAuthorizationRecord,
+  ProductionExecutionAuthorizationRecordError,
+} from "./productionExecutionAuthorizationRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -247,6 +251,7 @@ import type {
   CreateProductionImplementationHoldRecordRequest,
   CreateProductionOperatorAssignmentRecordRequest,
   CreateProductionExecutionReadinessRecordRequest,
+  CreateProductionExecutionAuthorizationRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -612,6 +617,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionReadinessRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionAuthorizationRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1077,6 +1092,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/production-execution-readiness-records") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionReadinessRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/production-execution-authorization-records") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionAuthorizationRecords });
     return;
   }
 
@@ -2228,6 +2249,22 @@ async function routeApi(
     state.productionExecutionReadinessRecords = [record, ...state.productionExecutionReadinessRecords];
     addAuditEvent(state, "real-adapter.production-execution-readiness.recorded", context.session.user, record.provider, {
       operatorAssignmentRecordId: record.operatorAssignmentRecordId,
+      idempotencyKey: record.idempotencyKey,
+      status: record.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/production-execution-authorization-records") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionAuthorizationRecordRequest>(request);
+    const record = createProductionExecutionAuthorizationRecord(state, body, context.session.user);
+    state.productionExecutionAuthorizationRecords = [record, ...state.productionExecutionAuthorizationRecords];
+    addAuditEvent(state, "real-adapter.production-execution-authorization.recorded", context.session.user, record.provider, {
+      executionReadinessRecordId: record.executionReadinessRecordId,
       idempotencyKey: record.idempotencyKey,
       status: record.status,
       provisioningEnabled: false,

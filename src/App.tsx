@@ -83,6 +83,7 @@ import {
   type ProductionImplementationHoldRecord,
   type ProductionOperatorAssignmentRecord,
   type ProductionExecutionReadinessRecord,
+  type ProductionExecutionAuthorizationRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -128,6 +129,7 @@ import {
   createProductionImplementationHoldRecordViaApi,
   createProductionOperatorAssignmentRecordViaApi,
   createProductionExecutionReadinessRecordViaApi,
+  createProductionExecutionAuthorizationRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -178,6 +180,7 @@ import {
   fetchProductionImplementationHoldRecordsFromApi,
   fetchProductionOperatorAssignmentRecordsFromApi,
   fetchProductionExecutionReadinessRecordsFromApi,
+  fetchProductionExecutionAuthorizationRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -325,6 +328,7 @@ export function App() {
   const [productionImplementationHoldRecords, setProductionImplementationHoldRecords] = useState<ProductionImplementationHoldRecord[]>([]);
   const [productionOperatorAssignmentRecords, setProductionOperatorAssignmentRecords] = useState<ProductionOperatorAssignmentRecord[]>([]);
   const [productionExecutionReadinessRecords, setProductionExecutionReadinessRecords] = useState<ProductionExecutionReadinessRecord[]>([]);
+  const [productionExecutionAuthorizationRecords, setProductionExecutionAuthorizationRecords] = useState<ProductionExecutionAuthorizationRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -435,6 +439,7 @@ export function App() {
             apiProductionImplementationHoldRecords,
             apiProductionOperatorAssignmentRecords,
             apiProductionExecutionReadinessRecords,
+            apiProductionExecutionAuthorizationRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -500,6 +505,7 @@ export function App() {
             fetchProductionImplementationHoldRecordsFromApi(),
             fetchProductionOperatorAssignmentRecordsFromApi(),
             fetchProductionExecutionReadinessRecordsFromApi(),
+            fetchProductionExecutionAuthorizationRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -567,6 +573,7 @@ export function App() {
             setProductionImplementationHoldRecords(apiProductionImplementationHoldRecords);
             setProductionOperatorAssignmentRecords(apiProductionOperatorAssignmentRecords);
             setProductionExecutionReadinessRecords(apiProductionExecutionReadinessRecords);
+            setProductionExecutionAuthorizationRecords(apiProductionExecutionAuthorizationRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -754,6 +761,7 @@ export function App() {
       apiProductionImplementationHoldRecords,
       apiProductionOperatorAssignmentRecords,
       apiProductionExecutionReadinessRecords,
+      apiProductionExecutionAuthorizationRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -819,6 +827,7 @@ export function App() {
       fetchProductionImplementationHoldRecordsFromApi(),
       fetchProductionOperatorAssignmentRecordsFromApi(),
       fetchProductionExecutionReadinessRecordsFromApi(),
+      fetchProductionExecutionAuthorizationRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -885,6 +894,7 @@ export function App() {
     setProductionImplementationHoldRecords(apiProductionImplementationHoldRecords);
     setProductionOperatorAssignmentRecords(apiProductionOperatorAssignmentRecords);
     setProductionExecutionReadinessRecords(apiProductionExecutionReadinessRecords);
+    setProductionExecutionAuthorizationRecords(apiProductionExecutionAuthorizationRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -2077,6 +2087,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionAuthorization() {
+    const readinessRecord = productionExecutionReadinessRecords[0];
+    if (!readinessRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionAuthorizationRecordViaApi({
+        executionReadinessRecordId: readinessRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionAuthorizationRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionAuthorizationRecords((current) => [
+      createMockProductionExecutionAuthorizationRecord(readinessRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2327,6 +2361,7 @@ export function App() {
             productionImplementationHoldRecords={productionImplementationHoldRecords}
             productionOperatorAssignmentRecords={productionOperatorAssignmentRecords}
             productionExecutionReadinessRecords={productionExecutionReadinessRecords}
+            productionExecutionAuthorizationRecords={productionExecutionAuthorizationRecords}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2382,6 +2417,7 @@ export function App() {
             recordProductionImplementationHold={recordProductionImplementationHold}
             recordProductionOperatorAssignment={recordProductionOperatorAssignment}
             recordProductionExecutionReadiness={recordProductionExecutionReadiness}
+            recordProductionExecutionAuthorization={recordProductionExecutionAuthorization}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2920,6 +2956,7 @@ function AdminView({
   productionImplementationHoldRecords,
   productionOperatorAssignmentRecords,
   productionExecutionReadinessRecords,
+  productionExecutionAuthorizationRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2975,6 +3012,7 @@ function AdminView({
   recordProductionImplementationHold,
   recordProductionOperatorAssignment,
   recordProductionExecutionReadiness,
+  recordProductionExecutionAuthorization,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -3044,6 +3082,7 @@ function AdminView({
   productionImplementationHoldRecords: ProductionImplementationHoldRecord[];
   productionOperatorAssignmentRecords: ProductionOperatorAssignmentRecord[];
   productionExecutionReadinessRecords: ProductionExecutionReadinessRecord[];
+  productionExecutionAuthorizationRecords: ProductionExecutionAuthorizationRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -3102,6 +3141,7 @@ function AdminView({
   recordProductionImplementationHold: () => void;
   recordProductionOperatorAssignment: () => void;
   recordProductionExecutionReadiness: () => void;
+  recordProductionExecutionAuthorization: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3496,6 +3536,12 @@ function AdminView({
             <ProductionExecutionReadinessRecordPanel
               records={productionExecutionReadinessRecords}
               recordProductionExecutionReadiness={recordProductionExecutionReadiness}
+            />
+          </Panel>
+          <Panel title="Production execution authorization" action={`${productionExecutionAuthorizationRecords.length} records`}>
+            <ProductionExecutionAuthorizationRecordPanel
+              records={productionExecutionAuthorizationRecords}
+              recordProductionExecutionAuthorization={recordProductionExecutionAuthorization}
             />
           </Panel>
         </div>
@@ -6223,6 +6269,73 @@ function ProductionExecutionReadinessRecordPanel({
             <span>Monitoring observer: {latest.monitoringObserver || "missing"}</span>
             <span>Implementation timer: {latest.implementationTimerReference || "missing"}</span>
             <span>Operator assignment: {latest.operatorAssignmentRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionAuthorizationRecordPanel({
+  records,
+  recordProductionExecutionAuthorization,
+}: {
+  records: ProductionExecutionAuthorizationRecord[];
+  recordProductionExecutionAuthorization: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution authorization record</strong>
+          <span>Captures final authority, go/no-go decision, rollback bridge, monitoring bridge, and emergency stop evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionAuthorization}>
+          <ShieldCheck size={15} />
+          Record execution authorization
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution authorization record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.executionReadinessRecordId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production execution authorization review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Authority" value={latest.authorizationAuthority || "missing"} passed={Boolean(latest.authorizationAuthority)} />
+            <CheckLine icon={CheckCircle2} label="Go/no-go" value={latest.finalGoNoGoDecision} passed={latest.finalGoNoGoDecision === "Approved"} />
+            <CheckLine icon={Network} label="Rollback bridge" value={latest.rollbackBridgeConfirmationReference || "missing"} passed={Boolean(latest.rollbackBridgeConfirmationReference)} />
+            <CheckLine icon={LockKeyhole} label="Authorization" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution authorization evidence</strong>
+            <span>Monitoring bridge: {latest.monitoringBridgeConfirmationReference || "missing"}</span>
+            <span>Emergency stop authority: {latest.emergencyStopAuthority || "missing"}</span>
+            <span>Execution readiness: {latest.executionReadinessRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -10935,6 +11048,99 @@ function createMockProductionExecutionReadinessRecord(
       `Kill switch: ${assignmentRecord.killSwitch.name}=${assignmentRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: assignmentRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionAuthorizationRecord(
+  readinessRecord: ProductionExecutionReadinessRecord,
+  actor: string
+): ProductionExecutionAuthorizationRecord {
+  const providerSlug = readinessRecord.provider.toLowerCase();
+  const authorizationAuthority = "Production Authorization Authority";
+  const finalGoNoGoDecision = "Approved" as const;
+  const rollbackBridgeConfirmationReference = `production-rollback-bridge-confirmation-${providerSlug}.md`;
+  const monitoringBridgeConfirmationReference = `production-monitoring-bridge-confirmation-${providerSlug}.md`;
+  const emergencyStopAuthority = "Emergency Stop Authority";
+  const checks = [
+    {
+      name: "Execution readiness ready",
+      passed: readinessRecord.status === "Ready for production execution readiness review",
+      detail: `${readinessRecord.id} is ${readinessRecord.status}.`,
+    },
+    {
+      name: "Authorization authority assigned",
+      passed: Boolean(authorizationAuthority),
+      detail: authorizationAuthority,
+    },
+    {
+      name: "Final go/no-go approved",
+      passed: finalGoNoGoDecision === "Approved",
+      detail: finalGoNoGoDecision,
+    },
+    {
+      name: "Rollback bridge confirmed",
+      passed: Boolean(rollbackBridgeConfirmationReference),
+      detail: rollbackBridgeConfirmationReference,
+    },
+    {
+      name: "Monitoring bridge confirmed",
+      passed: Boolean(monitoringBridgeConfirmationReference),
+      detail: monitoringBridgeConfirmationReference,
+    },
+    {
+      name: "Emergency stop authority assigned",
+      passed: Boolean(emergencyStopAuthority),
+      detail: emergencyStopAuthority,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed: !readinessRecord.provisioningEnabled && !readinessRecord.killSwitch.enabled,
+      detail: `${readinessRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-authorization-record-${providerSlug}-${Date.now()}`,
+    provider: readinessRecord.provider,
+    executionReadinessRecordId: readinessRecord.id,
+    operatorAssignmentRecordId: readinessRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: readinessRecord.implementationHoldRecordId,
+    cabDecisionRecordId: readinessRecord.cabDecisionRecordId,
+    cabHandoffPacketId: readinessRecord.cabHandoffPacketId,
+    freezeRecordId: readinessRecord.freezeRecordId,
+    authorizationPacketId: readinessRecord.authorizationPacketId,
+    promotionDossierId: readinessRecord.promotionDossierId,
+    closurePackageId: readinessRecord.closurePackageId,
+    outcomeRecordId: readinessRecord.outcomeRecordId,
+    handoffPackageId: readinessRecord.handoffPackageId,
+    controlledSwitchRequestId: readinessRecord.controlledSwitchRequestId,
+    auditPackageId: readinessRecord.auditPackageId,
+    switchReviewId: readinessRecord.switchReviewId,
+    activationId: readinessRecord.activationId,
+    idempotencyKey: readinessRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution authorization review"
+      : "Blocked",
+    requestedBy: actor,
+    authorizationAuthority,
+    finalGoNoGoDecision,
+    rollbackBridgeConfirmationReference,
+    monitoringBridgeConfirmationReference,
+    emergencyStopAuthority,
+    checks,
+    evidence: [
+      `Execution readiness record: ${readinessRecord.id}.`,
+      `Operator assignment record: ${readinessRecord.operatorAssignmentRecordId}.`,
+      `Authorization authority: ${authorizationAuthority}.`,
+      `Final go/no-go decision: ${finalGoNoGoDecision}.`,
+      `Rollback bridge confirmation: ${rollbackBridgeConfirmationReference}.`,
+      `Monitoring bridge confirmation: ${monitoringBridgeConfirmationReference}.`,
+      `Emergency stop authority: ${emergencyStopAuthority}.`,
+      `Kill switch: ${readinessRecord.killSwitch.name}=${readinessRecord.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: readinessRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

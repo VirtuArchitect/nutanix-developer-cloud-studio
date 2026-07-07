@@ -1043,6 +1043,23 @@ Exit gate:
 - Execution authorization records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.41.0-production-change-ticket-lock-record
+
+Goal: lock production change ticket evidence after execution authorization without executing or promoting adapters from the prototype.
+
+Build:
+
+- Production change ticket lock records linked to execution authorization records.
+- Change ticket lock, release window lock, approver roster lock, rollback bridge lock, and monitoring bridge lock checks.
+- Admin Operations change ticket lock panel with blockers and evidence references.
+- Tests proving missing ready execution authorization records, change ticket locks, release window locks, approver roster locks, rollback bridge locks, or monitoring bridge locks block change ticket lock readiness.
+
+Exit gate:
+
+- Production change ticket lock APIs and UI are tested.
+- Change ticket lock records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

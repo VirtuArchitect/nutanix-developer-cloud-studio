@@ -468,10 +468,17 @@
 
 ## Phase 62 - Production Execution Authorization Record (`v2.40.0-production-execution-authorization-record`)
 
-- Add production execution authorization records linked to execution readiness records - planned
-- Require authorization authority, final go/no-go decision, rollback bridge confirmation, monitoring bridge confirmation, and emergency stop authority - planned
-- Add Admin Operations execution authorization panel - planned
-- Keep execution authorization records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution authorization records linked to execution readiness records - done
+- Require authorization authority, final go/no-go decision, rollback bridge confirmation, monitoring bridge confirmation, and emergency stop authority - done
+- Add Admin Operations execution authorization panel - done
+- Keep execution authorization records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 63 - Production Change Ticket Lock Record (`v2.41.0-production-change-ticket-lock-record`)
+
+- Add production change ticket lock records linked to execution authorization records - planned
+- Require change ticket lock, release window lock, approver roster lock, rollback bridge lock, and monitoring bridge lock - planned
+- Add Admin Operations change ticket lock panel - planned
+- Keep change ticket lock records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

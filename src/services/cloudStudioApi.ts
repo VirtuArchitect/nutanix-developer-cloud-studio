@@ -50,6 +50,7 @@ import type {
   ProductionImplementationHoldRecord,
   ProductionOperatorAssignmentRecord,
   ProductionExecutionReadinessRecord,
+  ProductionExecutionAuthorizationRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -424,6 +425,10 @@ export async function fetchProductionOperatorAssignmentRecordsFromApi() {
 
 export async function fetchProductionExecutionReadinessRecordsFromApi() {
   return fetchJson<ProductionExecutionReadinessRecord[]>("/api/real-adapter/production-execution-readiness-records");
+}
+
+export async function fetchProductionExecutionAuthorizationRecordsFromApi() {
+  return fetchJson<ProductionExecutionAuthorizationRecord[]>("/api/real-adapter/production-execution-authorization-records");
 }
 
 export async function fetchProductionReadinessReviewsFromApi() {
@@ -833,6 +838,16 @@ export async function createProductionExecutionReadinessRecordViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<ProductionExecutionReadinessRecord>("/api/real-adapter/production-execution-readiness-records", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionExecutionAuthorizationRecordViaApi(payload: {
+  executionReadinessRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionAuthorizationRecord>("/api/real-adapter/production-execution-authorization-records", {
     method: "POST",
     body: JSON.stringify(payload),
   });

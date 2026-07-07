@@ -479,6 +479,15 @@ Production execution readiness records capture final execution readiness evidenc
 
 Required role: `Platform Admin`.
 
+### Production Execution Authorization Records
+
+- `GET /api/real-adapter/production-execution-authorization-records`
+- `POST /api/real-adapter/production-execution-authorization-records`
+
+Production execution authorization records capture final execution authorization evidence after execution readiness and before any future change-ticket lock phase. Records require a ready execution readiness record, authorization authority, approved final go/no-go decision, rollback bridge confirmation, monitoring bridge confirmation, emergency stop authority, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

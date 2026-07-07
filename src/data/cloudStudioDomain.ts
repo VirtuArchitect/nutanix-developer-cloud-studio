@@ -1418,6 +1418,39 @@ export type ProductionExecutionReadinessRecord = {
   createdAt: string;
 };
 
+export type ProductionExecutionAuthorizationRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production execution authorization review";
+  requestedBy: string;
+  authorizationAuthority: string;
+  finalGoNoGoDecision: "Approved" | "Rejected" | "Pending";
+  rollbackBridgeConfirmationReference: string;
+  monitoringBridgeConfirmationReference: string;
+  emergencyStopAuthority: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionReadinessRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

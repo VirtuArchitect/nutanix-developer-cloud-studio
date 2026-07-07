@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.39.0-production-execution-readiness-record`.
+This project uses release tags for public milestones. The current release is `v2.40.0-production-execution-authorization-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution authorization records after execution readiness records are complete.
+- Add production execution change ticket lock records after execution authorization records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.40.0-production-execution-authorization-record] - 2026-07-07
+
+### Added
+
+- Production execution authorization records linked to production execution readiness records.
+- API endpoints for listing and recording production execution authorization records.
+- Admin Operations production execution authorization panel.
+- Authorization authority, final go/no-go decision, rollback bridge confirmation, monitoring bridge confirmation, and emergency stop authority checks.
+- Tests proving missing execution readiness records or incomplete authorization evidence block authorization readiness.
+
+### Notes
+
+- Production execution authorization records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.39.0-production-execution-readiness-record] - 2026-07-07
 

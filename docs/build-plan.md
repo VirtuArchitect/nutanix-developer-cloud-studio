@@ -504,12 +504,12 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready handoff packets, CAB decisions, authorities, condition lists, rollback approvals, or decision minutes block readiness.
 - The prototype does not promote or enable real adapters.
 
-## Current Production Execution Readiness Record Slice
+## Current Production Execution Authorization Record Slice
 
-- API records production execution readiness records linked to production operator assignment records.
-- Execution readiness records require execution owner, pre-execution checklist, rollback bridge, monitoring observer, and implementation timer.
-- Admin Operations surfaces execution readiness, evidence references, and blockers.
-- Missing ready operator assignment records, execution owners, pre-execution checklists, rollback bridges, monitoring observers, or implementation timers block readiness.
+- API records production execution authorization records linked to production execution readiness records.
+- Execution authorization records require authorization authority, final go/no-go decision, rollback bridge confirmation, monitoring bridge confirmation, and emergency stop authority.
+- Admin Operations surfaces execution authorization, evidence references, and blockers.
+- Missing ready execution readiness records, authorization authorities, final decisions, rollback bridge confirmations, monitoring bridge confirmations, or emergency stop authorities block readiness.
 - The prototype does not promote, enable, or execute real adapters.
 
 ## Suggested Tech Stack
