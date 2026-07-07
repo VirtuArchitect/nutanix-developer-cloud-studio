@@ -2165,6 +2165,57 @@ export type ProductionExecutionImprovementClosureRecord = {
   createdAt: string;
 };
 
+export type ProductionExecutionFinalAcceptanceArchiveRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  improvementClosureRecordId: string;
+  postImplementationReviewRecordId: string;
+  operationalClosureRecordId: string;
+  finalTurnoverRecordId: string;
+  serviceAcceptanceRecordId: string;
+  supportReadinessRecordId: string;
+  operationsHandoverRecordId: string;
+  completionDossierRecordId: string;
+  finalArchiveCertificationRecordId: string;
+  retentionAttestationRecordId: string;
+  archivalHandoffRecordId: string;
+  closurePacketRecordId: string;
+  closureAuthorizationRecordId: string;
+  outcomeAuthorizationRecordId: string;
+  executionHoldPointRecordId: string;
+  finalExecutionPacketRecordId: string;
+  changeTicketLockRecordId: string;
+  executionAuthorizationRecordId: string;
+  executionReadinessRecordId: string;
+  operatorAssignmentRecordId: string;
+  implementationHoldRecordId: string;
+  cabDecisionRecordId: string;
+  cabHandoffPacketId: string;
+  freezeRecordId: string;
+  authorizationPacketId: string;
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production execution final acceptance archive review";
+  requestedBy: string;
+  archiveOwner: string;
+  acceptanceArchiveIndexReference: string;
+  finalEvidenceChecksumReference: string;
+  stakeholderReceiptProofReference: string;
+  retrievalOwner: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  killSwitch: ProductionExecutionImprovementClosureRecord["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

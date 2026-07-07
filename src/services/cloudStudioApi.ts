@@ -68,6 +68,7 @@ import type {
   ProductionExecutionOperationalClosureRecord,
   ProductionExecutionPostImplementationReviewRecord,
   ProductionExecutionImprovementClosureRecord,
+  ProductionExecutionFinalAcceptanceArchiveRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -541,6 +542,12 @@ export async function fetchProductionExecutionPostImplementationReviewRecordsFro
 export async function fetchProductionExecutionImprovementClosureRecordsFromApi() {
   return fetchJson<ProductionExecutionImprovementClosureRecord[]>(
     "/api/real-adapter/production-execution-improvement-closure-records"
+  );
+}
+
+export async function fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi() {
+  return fetchJson<ProductionExecutionFinalAcceptanceArchiveRecord[]>(
+    "/api/real-adapter/production-execution-final-acceptance-archive-records"
   );
 }
 
@@ -1171,6 +1178,19 @@ export async function createProductionExecutionImprovementClosureRecordViaApi(pa
 }) {
   return fetchJson<ProductionExecutionImprovementClosureRecord>(
     "/api/real-adapter/production-execution-improvement-closure-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionFinalAcceptanceArchiveRecordViaApi(payload: {
+  improvementClosureRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionFinalAcceptanceArchiveRecord>(
+    "/api/real-adapter/production-execution-final-acceptance-archive-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

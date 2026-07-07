@@ -58,6 +58,7 @@ import {
   createProductionExecutionOperationalClosureRecordViaApi,
   createProductionExecutionPostImplementationReviewRecordViaApi,
   createProductionExecutionImprovementClosureRecordViaApi,
+  createProductionExecutionFinalAcceptanceArchiveRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -133,6 +134,7 @@ import {
   fetchProductionExecutionOperationalClosureRecordsFromApi,
   fetchProductionExecutionPostImplementationReviewRecordsFromApi,
   fetchProductionExecutionImprovementClosureRecordsFromApi,
+  fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -654,6 +656,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionImprovementClosureRecordViaApi({
       postImplementationReviewRecordId: "production-execution-post-implementation-review-record-ndb-1",
     });
+    await fetchProductionExecutionFinalAcceptanceArchiveRecordsFromApi();
+    await createProductionExecutionFinalAcceptanceArchiveRecordViaApi({
+      improvementClosureRecordId: "production-execution-improvement-closure-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1073,6 +1079,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-post-implementation-review-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      93,
+      "/api/real-adapter/production-execution-final-acceptance-archive-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      94,
+      "/api/real-adapter/production-execution-final-acceptance-archive-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-improvement-closure-record-ndb-1"),
       })
     );
   });

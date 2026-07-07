@@ -205,6 +205,10 @@ import {
   ProductionExecutionImprovementClosureRecordError,
 } from "./productionExecutionImprovementClosureRecord";
 import {
+  createProductionExecutionFinalAcceptanceArchiveRecord,
+  ProductionExecutionFinalAcceptanceArchiveRecordError,
+} from "./productionExecutionFinalAcceptanceArchiveRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -337,6 +341,7 @@ import type {
   CreateProductionExecutionOperationalClosureRecordRequest,
   CreateProductionExecutionPostImplementationReviewRecordRequest,
   CreateProductionExecutionImprovementClosureRecordRequest,
+  CreateProductionExecutionFinalAcceptanceArchiveRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -882,6 +887,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionImprovementClosureRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionFinalAcceptanceArchiveRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1497,6 +1512,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionImprovementClosureRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-final-acceptance-archive-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionFinalAcceptanceArchiveRecords });
     return;
   }
 
@@ -3100,6 +3124,34 @@ async function routeApi(
       record.provider,
       {
         postImplementationReviewRecordId: record.postImplementationReviewRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-final-acceptance-archive-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionFinalAcceptanceArchiveRecordRequest>(request);
+    const record = createProductionExecutionFinalAcceptanceArchiveRecord(state, body, context.session.user);
+    state.productionExecutionFinalAcceptanceArchiveRecords = [
+      record,
+      ...state.productionExecutionFinalAcceptanceArchiveRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-final-acceptance-archive.recorded",
+      context.session.user,
+      record.provider,
+      {
+        improvementClosureRecordId: record.improvementClosureRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

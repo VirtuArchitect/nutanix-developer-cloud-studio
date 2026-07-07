@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.58.0-production-execution-final-acceptance-archive-record`.
+- Added production execution final acceptance archive records linked to production execution improvement closure records.
+- Added API endpoints for production execution final acceptance archive records.
+- Added Admin Operations production final acceptance archive panel.
+- Added tests proving missing improvement closure records or incomplete archive evidence block readiness.
+- Planned `v2.59.0-production-execution-readiness-archive-handoff-record` for evidence-only readiness archive handoff records.
 - Released `v2.57.0-production-execution-improvement-closure-record`.
 - Added production execution improvement closure records linked to production execution post-implementation review records.
 - Added API endpoints for production execution improvement closure records.

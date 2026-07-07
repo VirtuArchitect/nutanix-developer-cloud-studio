@@ -1347,6 +1347,22 @@ Exit gate:
 
 - Production execution final acceptance archive APIs and UI are tested.
 - Final acceptance archive records are evidence-only.
+
+### v2.59.0-production-execution-readiness-archive-handoff-record
+
+Goal: record readiness archive handoff evidence after final acceptance archive without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution readiness archive handoff records linked to final acceptance archive records.
+- Require handoff owner, archive repository reference, retrieval runbook, archive access review, and archive custody receipt.
+- Add Admin Operations readiness archive handoff panel with blockers and evidence references.
+- Add tests proving missing ready final acceptance archive records, handoff owners, archive repositories, retrieval runbooks, access reviews, or custody receipts block readiness archive handoff.
+
+Promotion criteria:
+
+- Production execution readiness archive handoff APIs and UI are tested.
+- Readiness archive handoff records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
 ## Automatic Implementation Rule

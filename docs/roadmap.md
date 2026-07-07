@@ -594,10 +594,17 @@
 
 ## Phase 80 - Production Execution Final Acceptance Archive Record (`v2.58.0-production-execution-final-acceptance-archive-record`)
 
-- Add production execution final acceptance archive records linked to improvement closure records - planned
-- Require archive owner, acceptance archive index, final evidence checksum, stakeholder receipt proof, and retrieval owner - planned
-- Add Admin Operations final acceptance archive panel - planned
-- Keep final acceptance archive records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution final acceptance archive records linked to improvement closure records - done
+- Require archive owner, acceptance archive index, final evidence checksum, stakeholder receipt proof, and retrieval owner - done
+- Add Admin Operations final acceptance archive panel - done
+- Keep final acceptance archive records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 81 - Production Execution Readiness Archive Handoff Record (`v2.59.0-production-execution-readiness-archive-handoff-record`)
+
+- Add production execution readiness archive handoff records linked to final acceptance archive records - planned
+- Require handoff owner, archive repository reference, retrieval runbook, archive access review, and archive custody receipt - planned
+- Add Admin Operations readiness archive handoff panel - planned
+- Keep readiness archive handoff records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

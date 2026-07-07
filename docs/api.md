@@ -641,6 +641,15 @@ Production execution improvement closure records capture improvement closure evi
 
 Required role: `Platform Admin`.
 
+### Production Execution Final Acceptance Archive Records
+
+- `GET /api/real-adapter/production-execution-final-acceptance-archive-records`
+- `POST /api/real-adapter/production-execution-final-acceptance-archive-records`
+
+Production execution final acceptance archive records capture final archive evidence after improvement closure and before any future readiness archive handoff phase. Records require a ready improvement closure record, archive owner, acceptance archive index, final evidence checksum, stakeholder receipt proof, retrieval owner, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`
