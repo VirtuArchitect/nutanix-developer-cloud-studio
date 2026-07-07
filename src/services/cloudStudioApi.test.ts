@@ -33,6 +33,7 @@ import {
   createPlatformServiceAdapterContractReviewViaApi,
   createPlatformServicePreflightRunViaApi,
   createProviderReleaseGateRecordViaApi,
+  createProductionAdapterAuthorizationPacketViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -83,6 +84,7 @@ import {
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
+  fetchProductionAdapterAuthorizationPacketsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -504,6 +506,10 @@ describe("cloudStudioApi", () => {
     await createSwitchClosureRetentionPackageViaApi({ outcomeRecordId: "switch-execution-outcome-record-ndb-1" });
     await fetchAdapterPromotionReadinessDossiersFromApi();
     await createAdapterPromotionReadinessDossierViaApi({ closurePackageId: "switch-closure-retention-package-ndb-1" });
+    await fetchProductionAdapterAuthorizationPacketsFromApi();
+    await createProductionAdapterAuthorizationPacketViaApi({
+      promotionDossierId: "adapter-promotion-readiness-dossier-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -630,6 +636,12 @@ describe("cloudStudioApi", () => {
       42,
       "/api/real-adapter/adapter-promotion-dossiers",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("switch-closure-retention-package-ndb-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(43, "/api/real-adapter/production-authorization-packets", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      44,
+      "/api/real-adapter/production-authorization-packets",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("adapter-promotion-readiness-dossier-ndb-1") })
     );
   });
 

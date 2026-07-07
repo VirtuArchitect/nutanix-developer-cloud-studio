@@ -43,6 +43,7 @@ import type {
   PrismInventoryImportResult,
   PrismInventoryRecord,
   ProvisioningAdapterReadiness,
+  ProductionAdapterAuthorizationPacket,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -391,6 +392,10 @@ export async function fetchAdapterPromotionReadinessDossiersFromApi() {
   return fetchJson<AdapterPromotionReadinessDossier[]>("/api/real-adapter/adapter-promotion-dossiers");
 }
 
+export async function fetchProductionAdapterAuthorizationPacketsFromApi() {
+  return fetchJson<ProductionAdapterAuthorizationPacket[]>("/api/real-adapter/production-authorization-packets");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -728,6 +733,16 @@ export async function createAdapterPromotionReadinessDossierViaApi(payload: {
   provider?: ProviderReleaseGateRecord["provider"];
 }) {
   return fetchJson<AdapterPromotionReadinessDossier>("/api/real-adapter/adapter-promotion-dossiers", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProductionAdapterAuthorizationPacketViaApi(payload: {
+  promotionDossierId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionAdapterAuthorizationPacket>("/api/real-adapter/production-authorization-packets", {
     method: "POST",
     body: JSON.stringify(payload),
   });

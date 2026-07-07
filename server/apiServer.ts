@@ -105,6 +105,10 @@ import {
   AdapterPromotionReadinessDossierError,
 } from "./adapterPromotionReadinessDossier";
 import {
+  createProductionAdapterAuthorizationPacket,
+  ProductionAdapterAuthorizationPacketError,
+} from "./productionAdapterAuthorizationPacket";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -212,6 +216,7 @@ import type {
   CreateSwitchExecutionOutcomeRecordRequest,
   CreateSwitchClosureRetentionPackageRequest,
   CreateAdapterPromotionReadinessDossierRequest,
+  CreateProductionAdapterAuthorizationPacketRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -507,6 +512,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof AdapterPromotionReadinessDossierError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionAdapterAuthorizationPacketError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -930,6 +945,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/real-adapter/adapter-promotion-dossiers") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.adapterPromotionReadinessDossiers });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/real-adapter/production-authorization-packets") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionAdapterAuthorizationPackets });
     return;
   }
 
@@ -1975,6 +1996,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: dossier });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/real-adapter/production-authorization-packets") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionAdapterAuthorizationPacketRequest>(request);
+    const packet = createProductionAdapterAuthorizationPacket(state, body, context.session.user);
+    state.productionAdapterAuthorizationPackets = [packet, ...state.productionAdapterAuthorizationPackets];
+    addAuditEvent(state, "real-adapter.production-authorization.recorded", context.session.user, packet.provider, {
+      promotionDossierId: packet.promotionDossierId,
+      idempotencyKey: packet.idempotencyKey,
+      status: packet.status,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: packet });
     return;
   }
 

@@ -255,6 +255,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Adapter promotion readiness dossier")).toBeVisible();
   await expect(page.getByText("Adapter promotion evidence")).toBeVisible();
   await expect(page.getByText("Prototype does not promote adapter")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production adapter authorization" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare authorization packet" }).click();
+  await expect(page.getByText("Production adapter authorization packet")).toBeVisible();
+  await expect(page.getByText("Production authorization evidence")).toBeVisible();
+  await expect(page.getByText("Prototype does not authorize promotion")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

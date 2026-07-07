@@ -924,6 +924,23 @@ Exit gate:
 - Authorization packets are evidence-only.
 - No adapter is promoted by the prototype.
 
+### v2.34.0-production-change-freeze-record
+
+Goal: record a production change freeze after authorization packet readiness without promoting adapters from the prototype.
+
+Build:
+
+- Production change freeze records linked to production adapter authorization packets.
+- Freeze owner, freeze window, stakeholder notification, rollback standby, and no-change exception plan checks.
+- Admin Operations production freeze panel with blockers and evidence references.
+- Tests proving missing ready authorization packets, freeze owners, freeze windows, stakeholder notifications, rollback standby, or exception plans block freeze readiness.
+
+Exit gate:
+
+- Production change freeze APIs and UI are tested.
+- Freeze records are evidence-only.
+- No adapter is promoted by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

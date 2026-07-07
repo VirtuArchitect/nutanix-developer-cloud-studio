@@ -76,6 +76,7 @@ import {
   type PrismInventoryImportResult,
   type PrismInventoryRecord,
   type ProvisioningAdapterReadiness,
+  type ProductionAdapterAuthorizationPacket,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -114,6 +115,7 @@ import {
 import {
   checkApiHealth,
   createAdapterPromotionReadinessDossierViaApi,
+  createProductionAdapterAuthorizationPacketViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -157,6 +159,7 @@ import {
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
+  fetchProductionAdapterAuthorizationPacketsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -297,6 +300,7 @@ export function App() {
   const [switchExecutionOutcomeRecords, setSwitchExecutionOutcomeRecords] = useState<SwitchExecutionOutcomeRecord[]>([]);
   const [switchClosureRetentionPackages, setSwitchClosureRetentionPackages] = useState<SwitchClosureRetentionPackage[]>([]);
   const [adapterPromotionReadinessDossiers, setAdapterPromotionReadinessDossiers] = useState<AdapterPromotionReadinessDossier[]>([]);
+  const [productionAdapterAuthorizationPackets, setProductionAdapterAuthorizationPackets] = useState<ProductionAdapterAuthorizationPacket[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -400,6 +404,7 @@ export function App() {
             apiSwitchExecutionOutcomeRecords,
             apiSwitchClosureRetentionPackages,
             apiAdapterPromotionReadinessDossiers,
+            apiProductionAdapterAuthorizationPackets,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -458,6 +463,7 @@ export function App() {
             fetchSwitchExecutionOutcomeRecordsFromApi(),
             fetchSwitchClosureRetentionPackagesFromApi(),
             fetchAdapterPromotionReadinessDossiersFromApi(),
+            fetchProductionAdapterAuthorizationPacketsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -518,6 +524,7 @@ export function App() {
             setSwitchExecutionOutcomeRecords(apiSwitchExecutionOutcomeRecords);
             setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
             setAdapterPromotionReadinessDossiers(apiAdapterPromotionReadinessDossiers);
+            setProductionAdapterAuthorizationPackets(apiProductionAdapterAuthorizationPackets);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -698,6 +705,7 @@ export function App() {
       apiSwitchExecutionOutcomeRecords,
       apiSwitchClosureRetentionPackages,
       apiAdapterPromotionReadinessDossiers,
+      apiProductionAdapterAuthorizationPackets,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -756,6 +764,7 @@ export function App() {
       fetchSwitchExecutionOutcomeRecordsFromApi(),
       fetchSwitchClosureRetentionPackagesFromApi(),
       fetchAdapterPromotionReadinessDossiersFromApi(),
+      fetchProductionAdapterAuthorizationPacketsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -815,6 +824,7 @@ export function App() {
     setSwitchExecutionOutcomeRecords(apiSwitchExecutionOutcomeRecords);
     setSwitchClosureRetentionPackages(apiSwitchClosureRetentionPackages);
     setAdapterPromotionReadinessDossiers(apiAdapterPromotionReadinessDossiers);
+    setProductionAdapterAuthorizationPackets(apiProductionAdapterAuthorizationPackets);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1843,6 +1853,28 @@ export function App() {
     ]);
   }
 
+  async function prepareProductionAdapterAuthorizationPacket() {
+    const dossier = adapterPromotionReadinessDossiers[0];
+    if (!dossier) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const packet = await createProductionAdapterAuthorizationPacketViaApi({ promotionDossierId: dossier.id });
+      await refreshApiState();
+      setProductionAdapterAuthorizationPackets((current) => [
+        packet,
+        ...current.filter((item) => item.id !== packet.id),
+      ]);
+      return;
+    }
+
+    setProductionAdapterAuthorizationPackets((current) => [
+      createMockProductionAdapterAuthorizationPacket(dossier, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -2086,6 +2118,7 @@ export function App() {
             switchExecutionOutcomeRecords={switchExecutionOutcomeRecords}
             switchClosureRetentionPackages={switchClosureRetentionPackages}
             adapterPromotionReadinessDossiers={adapterPromotionReadinessDossiers}
+            productionAdapterAuthorizationPackets={productionAdapterAuthorizationPackets}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -2134,6 +2167,7 @@ export function App() {
             recordSwitchExecutionOutcome={recordSwitchExecutionOutcome}
             prepareSwitchClosureRetentionPackage={prepareSwitchClosureRetentionPackage}
             prepareAdapterPromotionReadinessDossier={prepareAdapterPromotionReadinessDossier}
+            prepareProductionAdapterAuthorizationPacket={prepareProductionAdapterAuthorizationPacket}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2665,6 +2699,7 @@ function AdminView({
   switchExecutionOutcomeRecords,
   switchClosureRetentionPackages,
   adapterPromotionReadinessDossiers,
+  productionAdapterAuthorizationPackets,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2713,6 +2748,7 @@ function AdminView({
   recordSwitchExecutionOutcome,
   prepareSwitchClosureRetentionPackage,
   prepareAdapterPromotionReadinessDossier,
+  prepareProductionAdapterAuthorizationPacket,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2775,6 +2811,7 @@ function AdminView({
   switchExecutionOutcomeRecords: SwitchExecutionOutcomeRecord[];
   switchClosureRetentionPackages: SwitchClosureRetentionPackage[];
   adapterPromotionReadinessDossiers: AdapterPromotionReadinessDossier[];
+  productionAdapterAuthorizationPackets: ProductionAdapterAuthorizationPacket[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2826,6 +2863,7 @@ function AdminView({
   recordSwitchExecutionOutcome: () => void;
   prepareSwitchClosureRetentionPackage: () => void;
   prepareAdapterPromotionReadinessDossier: () => void;
+  prepareProductionAdapterAuthorizationPacket: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -3178,6 +3216,12 @@ function AdminView({
             <AdapterPromotionReadinessDossierPanel
               dossiers={adapterPromotionReadinessDossiers}
               prepareAdapterPromotionReadinessDossier={prepareAdapterPromotionReadinessDossier}
+            />
+          </Panel>
+          <Panel title="Production adapter authorization" action={`${productionAdapterAuthorizationPackets.length} packets`}>
+            <ProductionAdapterAuthorizationPacketPanel
+              packets={productionAdapterAuthorizationPackets}
+              prepareProductionAdapterAuthorizationPacket={prepareProductionAdapterAuthorizationPacket}
             />
           </Panel>
         </div>
@@ -5435,6 +5479,73 @@ function AdapterPromotionReadinessDossierPanel({
             <strong>Adapter promotion evidence</strong>
             <span>Rollback drill: {latest.rollbackDrillConfirmation || "missing"}</span>
             <span>Security acceptance: {latest.securityAcceptanceReference || "missing"}</span>
+            <span>Closure package: {latest.closurePackageId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionAdapterAuthorizationPacketPanel({
+  packets,
+  prepareProductionAdapterAuthorizationPacket,
+}: {
+  packets: ProductionAdapterAuthorizationPacket[];
+  prepareProductionAdapterAuthorizationPacket: () => void;
+}) {
+  const latest = packets[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production adapter authorization packet</strong>
+          <span>Links production approval, change ticket, release window, rollback, and compliance evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareProductionAdapterAuthorizationPacket}>
+          <ScrollText size={15} />
+          Prepare authorization packet
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production adapter authorization packet has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.promotionDossierId}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for production adapter authorization review" ? "ready" : "approval"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Approver" value={latest.productionApprover || "missing"} passed={Boolean(latest.productionApprover)} />
+            <CheckLine icon={ScrollText} label="Change" value={latest.changeTicketReference || "missing"} passed={Boolean(latest.changeTicketReference)} />
+            <CheckLine icon={Archive} label="Window" value={latest.releaseWindowReference || "missing"} passed={Boolean(latest.releaseWindowReference)} />
+            <CheckLine icon={LockKeyhole} label="Authorization" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Production authorization evidence</strong>
+            <span>Emergency rollback: {latest.emergencyRollbackAuthorization || "missing"}</span>
+            <span>Compliance acceptance: {latest.complianceAcceptanceReference || "missing"}</span>
             <span>Closure package: {latest.closurePackageId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
@@ -9529,6 +9640,92 @@ function createMockAdapterPromotionReadinessDossier(
       `Kill switch: ${closurePackage.killSwitch.name}=${closurePackage.killSwitch.enabled ? "enabled" : "disabled"}.`,
     ],
     killSwitch: closurePackage.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionAdapterAuthorizationPacket(
+  promotionDossier: AdapterPromotionReadinessDossier,
+  actor: string
+): ProductionAdapterAuthorizationPacket {
+  const providerSlug = promotionDossier.provider.toLowerCase();
+  const productionApprover = "Production Change Authority";
+  const changeTicketReference = `change-ticket-${providerSlug}.md`;
+  const releaseWindowReference = `production-release-window-${providerSlug}.md`;
+  const emergencyRollbackAuthorization = `emergency-rollback-authorization-${providerSlug}.md`;
+  const complianceAcceptanceReference = `compliance-acceptance-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Promotion dossier ready",
+      passed: promotionDossier.status === "Ready for adapter promotion review",
+      detail: `${promotionDossier.id} is ${promotionDossier.status}.`,
+    },
+    {
+      name: "Production approver assigned",
+      passed: Boolean(productionApprover),
+      detail: productionApprover,
+    },
+    {
+      name: "Change ticket linked",
+      passed: Boolean(changeTicketReference),
+      detail: changeTicketReference,
+    },
+    {
+      name: "Release window linked",
+      passed: Boolean(releaseWindowReference),
+      detail: releaseWindowReference,
+    },
+    {
+      name: "Emergency rollback authorized",
+      passed: Boolean(emergencyRollbackAuthorization),
+      detail: emergencyRollbackAuthorization,
+    },
+    {
+      name: "Compliance acceptance linked",
+      passed: Boolean(complianceAcceptanceReference),
+      detail: complianceAcceptanceReference,
+    },
+    {
+      name: "Prototype does not authorize promotion",
+      passed: !promotionDossier.provisioningEnabled && !promotionDossier.killSwitch.enabled,
+      detail: `${promotionDossier.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-adapter-authorization-packet-${providerSlug}-${Date.now()}`,
+    provider: promotionDossier.provider,
+    promotionDossierId: promotionDossier.id,
+    closurePackageId: promotionDossier.closurePackageId,
+    outcomeRecordId: promotionDossier.outcomeRecordId,
+    handoffPackageId: promotionDossier.handoffPackageId,
+    controlledSwitchRequestId: promotionDossier.controlledSwitchRequestId,
+    auditPackageId: promotionDossier.auditPackageId,
+    switchReviewId: promotionDossier.switchReviewId,
+    activationId: promotionDossier.activationId,
+    idempotencyKey: promotionDossier.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production adapter authorization review"
+      : "Blocked",
+    requestedBy: actor,
+    productionApprover,
+    changeTicketReference,
+    releaseWindowReference,
+    emergencyRollbackAuthorization,
+    complianceAcceptanceReference,
+    checks,
+    evidence: [
+      `Promotion dossier: ${promotionDossier.id}.`,
+      `Closure package: ${promotionDossier.closurePackageId}.`,
+      `Production approver: ${productionApprover}.`,
+      `Change ticket: ${changeTicketReference}.`,
+      `Release window: ${releaseWindowReference}.`,
+      `Emergency rollback authorization: ${emergencyRollbackAuthorization}.`,
+      `Compliance acceptance: ${complianceAcceptanceReference}.`,
+      `Kill switch: ${promotionDossier.killSwitch.name}=${promotionDossier.killSwitch.enabled ? "enabled" : "disabled"}.`,
+    ],
+    killSwitch: promotionDossier.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

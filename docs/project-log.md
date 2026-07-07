@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.33.0-production-adapter-authorization-packet`.
+- Added production adapter authorization packets linked to adapter promotion dossiers.
+- Added API endpoints for production authorization packets.
+- Added Admin Operations production adapter authorization panel.
+- Added tests proving missing promotion dossiers or incomplete production authorization evidence block readiness.
+- Planned `v2.34.0-production-change-freeze-record` for evidence-only production change freeze records.
 - Released `v2.32.0-adapter-promotion-readiness-dossier`.
 - Added adapter promotion readiness dossiers linked to switch closure packages.
 - Added API endpoints for adapter promotion dossiers.
 - Added Admin Operations adapter promotion dossier panel.
 - Added tests proving missing closure packages or incomplete promotion evidence block readiness.
-- Planned `v2.33.0-production-adapter-authorization-packet` for evidence-only production adapter authorization packets.
 - Released `v2.31.0-switch-closure-retention-package`.
 - Added switch closure retention packages linked to outcome records.
 - Added API endpoints for switch closure packages.

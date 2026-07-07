@@ -916,6 +916,11 @@ describe("api server", () => {
       body: JSON.stringify({ closurePackageId: switchClosurePackage.data.id }),
     });
     const adapterPromotionDossiers = await requestJson("/api/real-adapter/adapter-promotion-dossiers");
+    const productionAuthorizationPacket = await requestJson("/api/real-adapter/production-authorization-packets", {
+      method: "POST",
+      body: JSON.stringify({ promotionDossierId: adapterPromotionDossier.data.id }),
+    });
+    const productionAuthorizationPackets = await requestJson("/api/real-adapter/production-authorization-packets");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -1345,6 +1350,23 @@ describe("api server", () => {
     expect(adapterPromotionDossiers.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: adapterPromotionDossier.data.id })])
     );
+    expect(productionAuthorizationPacket.data).toMatchObject({
+      provider: "NDB",
+      promotionDossierId: adapterPromotionDossier.data.id,
+      closurePackageId: switchClosurePackage.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionAuthorizationPacket.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Promotion dossier ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not authorize promotion", passed: true }),
+      ])
+    );
+    expect(productionAuthorizationPackets.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: productionAuthorizationPacket.data.id })])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1372,6 +1394,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "real-adapter.switch-outcome.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.switch-closure.recorded", target: "NDB" }),
         expect.objectContaining({ action: "real-adapter.adapter-promotion-dossier.recorded", target: "NDB" }),
+        expect.objectContaining({ action: "real-adapter.production-authorization.recorded", target: "NDB" }),
       ])
     );
   });

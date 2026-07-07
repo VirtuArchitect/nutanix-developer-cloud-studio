@@ -162,6 +162,7 @@ export function createDefaultState(): ApiState {
     switchExecutionOutcomeRecords: [],
     switchClosureRetentionPackages: [],
     adapterPromotionReadinessDossiers: [],
+    productionAdapterAuthorizationPackets: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

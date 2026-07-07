@@ -106,6 +106,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Switch execution outcome records: operator result, post-switch validation, rollback decision, incident bridge log, and audit sign-off linked to handoff packages
 - Switch closure retention packages: closure owner, retained evidence manifest, lessons learned, rollback timer closure, and final audit retention confirmation linked to outcome records
 - Adapter promotion readiness dossiers: promotion owner, retained switch evidence, monitoring plan, rollback drill confirmation, and security acceptance linked to closure packages
+- Production adapter authorization packets: production approver, change ticket, release window, emergency rollback authorization, and compliance acceptance linked to promotion dossiers
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -140,7 +141,8 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Switch execution outcome record API and Admin Operations outcome UI
 - Switch closure retention package API and Admin Operations closure UI
 - Adapter promotion readiness dossier API and Admin Operations promotion UI
-- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, and promotion dossiers are evidence-only records; the prototype does not change switch configuration.
+- Production adapter authorization packet API and Admin Operations authorization UI
+- Real-adapter switch-state audit packages, controlled switch requests, switch handoff packages, switch outcome records, closure packages, promotion dossiers, and production authorization packets are evidence-only records; the prototype does not change switch configuration or promote adapters.
 - Admin template governance edits persisted in browser local storage
 - Timed mock provisioning state transitions exposed through the provisioning service
 - Template details view for golden-path outcomes and readiness notes

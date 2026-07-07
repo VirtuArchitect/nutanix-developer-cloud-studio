@@ -472,6 +472,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing ready closure packages, retained switch evidence, monitoring plans, rollback drill confirmations, or security acceptance block readiness.
 - The prototype does not promote or enable real adapters.
 
+## Current Production Adapter Authorization Packet Slice
+
+- API records production adapter authorization packets linked to adapter promotion dossiers.
+- Packets require production approver, change ticket, release window, emergency rollback authorization, and compliance acceptance.
+- Admin Operations surfaces production authorization readiness, evidence references, and blockers.
+- Missing ready promotion dossiers, approvers, change tickets, release windows, rollback authorization, or compliance acceptance block readiness.
+- The prototype does not authorize, promote, or enable real adapters.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

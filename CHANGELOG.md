@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.32.0-adapter-promotion-readiness-dossier`.
+This project uses release tags for public milestones. The current release is `v2.33.0-production-adapter-authorization-packet`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production adapter authorization packet records after promotion dossiers are complete.
+- Add production change freeze records after production authorization packets are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.33.0-production-adapter-authorization-packet] - 2026-07-07
+
+### Added
+
+- Production adapter authorization packet records linked to adapter promotion readiness dossiers.
+- API endpoints for listing and recording production authorization packets.
+- Admin Operations production adapter authorization panel.
+- Production approver, change ticket, release window, emergency rollback authorization, and compliance acceptance checks.
+- Tests proving missing promotion dossiers or incomplete production authorization evidence block packet readiness.
+
+### Notes
+
+- Production authorization packets are evidence-only.
+- The prototype does not authorize, promote, or enable real adapters.
 
 ## [v2.32.0-adapter-promotion-readiness-dossier] - 2026-07-07
 

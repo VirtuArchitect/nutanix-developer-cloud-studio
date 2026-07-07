@@ -416,6 +416,15 @@ Adapter promotion readiness dossiers assemble retained switch closure evidence b
 
 Required role: `Platform Admin`.
 
+### Production Adapter Authorization Packets
+
+- `GET /api/real-adapter/production-authorization-packets`
+- `POST /api/real-adapter/production-authorization-packets`
+
+Production adapter authorization packets assemble evidence after adapter promotion readiness and before any external production change process. Packets require a ready promotion dossier, production approver, change ticket, release window, emergency rollback authorization, compliance acceptance, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

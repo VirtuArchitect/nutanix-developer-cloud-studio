@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.32.0-adapter-promotion-readiness-dossier",
+  "version": "2.33.0-production-adapter-authorization-packet",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

@@ -1191,6 +1191,36 @@ export type AdapterPromotionReadinessDossier = {
   createdAt: string;
 };
 
+export type ProductionAdapterAuthorizationPacket = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  promotionDossierId: string;
+  closurePackageId: string;
+  outcomeRecordId: string;
+  handoffPackageId: string;
+  controlledSwitchRequestId: string;
+  auditPackageId: string;
+  switchReviewId: string;
+  activationId: string;
+  idempotencyKey: string;
+  status: "Blocked" | "Ready for production adapter authorization review";
+  requestedBy: string;
+  productionApprover: string;
+  changeTicketReference: string;
+  releaseWindowReference: string;
+  emergencyRollbackAuthorization: string;
+  complianceAcceptanceReference: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  killSwitch: AdapterPromotionReadinessDossier["killSwitch"];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";
