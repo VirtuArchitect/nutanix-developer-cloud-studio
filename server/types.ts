@@ -26,6 +26,7 @@ import type {
   PrismInventoryRecord,
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
+  ProviderReleaseGateRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -68,6 +69,7 @@ export type ApiState = {
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
+  providerReleaseGateRecords: ProviderReleaseGateRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -176,6 +178,11 @@ export type CreatePlatformServicePreflightRunRequest = {
 export type CreatePlatformServiceAdapterContractReviewRequest = {
   requestId?: string;
   kind?: PlatformServiceKind;
+};
+
+export type CreateProviderReleaseGateRecordRequest = {
+  provider?: ProviderReleaseGateRecord["provider"];
+  releaseApprover?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

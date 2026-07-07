@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.8.0-platform-service-adapter-contracts`.
+This project uses release tags for public milestones. The current release is `v2.9.0-provider-release-gate-evidence`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.9.0-provider-release-gate-evidence] - 2026-07-07
+
+### Added
+
+- Provider release gate records for NCI, NKP, NDB, NUS, and NAI.
+- API endpoints for listing and recording provider release gate reviews.
+- Admin Control Plane panel summarizing release evidence, missing gates, blocked operations, and real-adapter kill switch state.
+- Tests proving missing evidence blocks release review and real adapter switches remain disabled.
+
+### Notes
+
+- This phase is evidence-only and does not enable provider execution.
+- Provider release remains blocked unless lab scope, credentials, lifecycle proof, preflight, adapter contract, audit export, rollback ownership, and release approver evidence are present.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.8.0-platform-service-adapter-contracts] - 2026-07-07
 

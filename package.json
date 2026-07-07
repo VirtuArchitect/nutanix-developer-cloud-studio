@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.8.0-platform-service-adapter-contracts",
+  "version": "2.9.0-provider-release-gate-evidence",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

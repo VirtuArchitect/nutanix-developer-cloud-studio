@@ -62,6 +62,10 @@ import {
   PrivateCloudOperationError,
 } from "./privateCloudOperations";
 import {
+  createProviderReleaseGateRecord,
+  ProviderReleaseGateError,
+} from "./providerReleaseGate";
+import {
   createRollbackDestroyProofRecord,
   RollbackDestroyProofError,
 } from "./rollbackDestroyProof";
@@ -107,6 +111,7 @@ import type {
   CreatePlatformServiceRequest,
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
+  CreateProviderReleaseGateRecordRequest,
   CreateRollbackDestroyProofRequest,
   CreateVmLifecycleProofRequest,
   CreateVmSandboxDryRunRequest,
@@ -211,6 +216,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof PlatformServiceAdapterContractError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProviderReleaseGateError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -440,6 +455,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/platform-services/adapter-contracts") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.platformServiceAdapterContractReviews });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/provider-release-gates") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.providerReleaseGateRecords });
     return;
   }
 
@@ -1092,6 +1113,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: review });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/provider-release-gates") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProviderReleaseGateRecordRequest>(request);
+    const record = createProviderReleaseGateRecord(state, body, context.session.user);
+    state.providerReleaseGateRecords = [record, ...state.providerReleaseGateRecords];
+    addAuditEvent(state, "provider-release-gate.reviewed", context.session.user, record.provider, {
+      status: record.status,
+      checksPassed: record.checks.every((check) => check.passed),
+      blockedOperations: record.blockedOperations,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
     return;
   }
 

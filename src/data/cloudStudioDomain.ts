@@ -586,6 +586,28 @@ export type PlatformServiceAdapterContractReview = {
   createdAt: string;
 };
 
+export type ProviderReleaseGateRecord = {
+  id: string;
+  provider: Exclude<ProvisioningAdapterName, "NCM">;
+  product: string;
+  status: "Blocked" | "Ready for release review";
+  requestedBy: string;
+  releaseApprover: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  blockedOperations: string[];
+  killSwitch: {
+    name: string;
+    enabled: boolean;
+  };
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

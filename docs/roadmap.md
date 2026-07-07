@@ -251,10 +251,17 @@
 
 ## Phase 31 - Provider Release Gate Evidence (`v2.9.0-provider-release-gate-evidence`)
 
-- Add provider release gate records for NCI, NKP, NDB, NUS, and NAI - planned
-- Check lab scope, credential references, lifecycle proof, preflight, contract review, audit export, rollback owner, and release approver - planned
-- Add Admin Control Plane provider release readiness summary - planned
-- Keep real adapter switches disabled unless a future authorized implementation phase explicitly changes them - planned
+- Add provider release gate records for NCI, NKP, NDB, NUS, and NAI - done
+- Check lab scope, credential references, lifecycle proof, preflight, contract review, audit export, rollback owner, and release approver - done
+- Add Admin Control Plane provider release readiness summary - done
+- Keep real adapter switches disabled unless a future authorized implementation phase explicitly changes them - done
+
+## Phase 32 - Release Evidence Export Hardening (`v2.10.0-release-evidence-export-hardening`)
+
+- Add release evidence export records linked to provider release gates - planned
+- Generate redacted JSON manifests for checks, approver, blocked operations, and kill switch state - planned
+- Add Admin Operations release evidence export history - planned
+- Prove exports contain references and metadata only - planned
 
 ## Gated Promotion
 

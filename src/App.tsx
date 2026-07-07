@@ -61,6 +61,7 @@ import {
   type PrismInventoryRecord,
   type ProvisioningAdapterReadiness,
   type ProductionReadinessReview,
+  type ProviderReleaseGateRecord,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
@@ -101,6 +102,7 @@ import {
   createPlatformServiceRequestViaApi,
   createPlatformServiceAdapterContractReviewViaApi,
   createPlatformServicePreflightRunViaApi,
+  createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
@@ -129,6 +131,7 @@ import {
   fetchPlatformServiceAdapterContractReviewsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
   fetchPlatformServiceRequestsFromApi,
+  fetchProviderReleaseGateRecordsFromApi,
   fetchPolicyBundlesFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
@@ -200,6 +203,7 @@ export function App() {
   const [platformServiceRequests, setPlatformServiceRequests] = useState<PlatformServiceRequest[]>([]);
   const [platformServicePreflightRuns, setPlatformServicePreflightRuns] = useState<PlatformServicePreflightRun[]>([]);
   const [platformServiceAdapterContractReviews, setPlatformServiceAdapterContractReviews] = useState<PlatformServiceAdapterContractReview[]>([]);
+  const [providerReleaseGateRecords, setProviderReleaseGateRecords] = useState<ProviderReleaseGateRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -279,6 +283,7 @@ export function App() {
             apiPlatformServiceRequests,
             apiPlatformServicePreflightRuns,
             apiPlatformServiceAdapterContractReviews,
+            apiProviderReleaseGateRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -313,6 +318,7 @@ export function App() {
             fetchPlatformServiceRequestsFromApi(),
             fetchPlatformServicePreflightRunsFromApi(),
             fetchPlatformServiceAdapterContractReviewsFromApi(),
+            fetchProviderReleaseGateRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -349,6 +355,7 @@ export function App() {
             setPlatformServiceRequests(apiPlatformServiceRequests);
             setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
             setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
+            setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -505,6 +512,7 @@ export function App() {
       apiPlatformServiceRequests,
       apiPlatformServicePreflightRuns,
       apiPlatformServiceAdapterContractReviews,
+      apiProviderReleaseGateRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -539,6 +547,7 @@ export function App() {
       fetchPlatformServiceRequestsFromApi(),
       fetchPlatformServicePreflightRunsFromApi(),
       fetchPlatformServiceAdapterContractReviewsFromApi(),
+      fetchProviderReleaseGateRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -574,6 +583,7 @@ export function App() {
     setPlatformServiceRequests(apiPlatformServiceRequests);
     setPlatformServicePreflightRuns(apiPlatformServicePreflightRuns);
     setPlatformServiceAdapterContractReviews(apiPlatformServiceAdapterContractReviews);
+    setProviderReleaseGateRecords(apiProviderReleaseGateRecords);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1030,6 +1040,33 @@ export function App() {
     ]);
   }
 
+  async function reviewProviderReleaseGate(provider: ProviderReleaseGateRecord["provider"] = "NCI") {
+    if (apiHealth.mode === "api") {
+      const record = await createProviderReleaseGateRecordViaApi({ provider, releaseApprover: session.user });
+      await refreshApiState();
+      setProviderReleaseGateRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
+      return;
+    }
+
+    setProviderReleaseGateRecords((current) => [
+      createMockProviderReleaseGateRecord({
+        provider,
+        actor: session.user,
+        session,
+        labAuthorizationScopes,
+        credentialDiagnostics,
+        adapterEnablementRecords,
+        vmLifecycleProofs,
+        ahvCreateAdapterContractReviews,
+        ahvControlledProvisioningRuns,
+        platformServiceAdapterContractReviews,
+        platformServicePreflightRuns,
+        auditExports,
+      }),
+      ...current,
+    ]);
+  }
+
   async function createProductionReadinessReview() {
     if (apiHealth.mode === "api") {
       const review = await createProductionReadinessReviewViaApi();
@@ -1304,6 +1341,7 @@ export function App() {
             platformServiceRequests={platformServiceRequests}
             platformServicePreflightRuns={platformServicePreflightRuns}
             platformServiceAdapterContractReviews={platformServiceAdapterContractReviews}
+            providerReleaseGateRecords={providerReleaseGateRecords}
             vmLifecycleProofs={vmLifecycleProofs}
             rollbackDestroyProofs={rollbackDestroyProofs}
             ahvCreateAdapterContractReviews={ahvCreateAdapterContractReviews}
@@ -1333,6 +1371,7 @@ export function App() {
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
             reviewPlatformServiceAdapterContract={reviewPlatformServiceAdapterContract}
+            reviewProviderReleaseGate={reviewProviderReleaseGate}
             createProductionReadinessReview={createProductionReadinessReview}
             requestLifecycleOperation={requestLifecycleOperation}
             prepareAuditExport={prepareAuditExport}
@@ -1836,6 +1875,7 @@ function AdminView({
   platformServiceRequests,
   platformServicePreflightRuns,
   platformServiceAdapterContractReviews,
+  providerReleaseGateRecords,
   vmLifecycleProofs,
   rollbackDestroyProofs,
   ahvCreateAdapterContractReviews,
@@ -1865,6 +1905,7 @@ function AdminView({
   createPlatformServiceRequest,
   runPlatformServicePreflight,
   reviewPlatformServiceAdapterContract,
+  reviewProviderReleaseGate,
   createProductionReadinessReview,
   requestLifecycleOperation,
   prepareAuditExport,
@@ -1899,6 +1940,7 @@ function AdminView({
   platformServiceRequests: PlatformServiceRequest[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
+  providerReleaseGateRecords: ProviderReleaseGateRecord[];
   vmLifecycleProofs: VmLifecycleProof[];
   rollbackDestroyProofs: RollbackDestroyProofRecord[];
   ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
@@ -1931,6 +1973,7 @@ function AdminView({
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
   reviewPlatformServiceAdapterContract: () => void;
+  reviewProviderReleaseGate: (provider?: ProviderReleaseGateRecord["provider"]) => void;
   createProductionReadinessReview: () => void;
   requestLifecycleOperation: (operation: LifecycleOperationKind) => void;
   prepareAuditExport: () => void;
@@ -2119,6 +2162,12 @@ function AdminView({
             <PlatformServiceAdapterContractPanel
               reviews={platformServiceAdapterContractReviews}
               reviewPlatformServiceAdapterContract={reviewPlatformServiceAdapterContract}
+            />
+          </Panel>
+          <Panel title="Provider release gates" action={`${providerReleaseGateRecords.length} reviews`}>
+            <ProviderReleaseGatePanel
+              records={providerReleaseGateRecords}
+              reviewProviderReleaseGate={reviewProviderReleaseGate}
             />
           </Panel>
           <Panel title="Approval queue" action={`${pendingApprovals} pending`}>
@@ -3597,6 +3646,81 @@ function PlatformServiceAdapterContractPanel({
   );
 }
 
+function ProviderReleaseGatePanel({
+  records,
+  reviewProviderReleaseGate,
+}: {
+  records: ProviderReleaseGateRecord[];
+  reviewProviderReleaseGate: (provider?: ProviderReleaseGateRecord["provider"]) => void;
+}) {
+  const latest = records[0];
+  const providers: ProviderReleaseGateRecord["provider"][] = ["NCI", "NKP", "NDB", "NUS", "NAI"];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Provider release evidence envelope</strong>
+          <span>Summarizes the evidence required before any provider adapter can be considered for controlled lab release.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        {providers.map((provider) => (
+          <button className="iconTextButton" key={provider} onClick={() => reviewProviderReleaseGate(provider)}>
+            <Play size={15} />
+            Review {provider}
+          </button>
+        ))}
+      </div>
+      {!latest ? (
+        <p className="emptyState">No provider release gate has been reviewed.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.product} / approver {latest.releaseApprover}</span>
+            </div>
+            <span className={`status ${latest.status === "Ready for release review" ? "approval" : "failed"}`}>
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Provider" value={latest.provider} passed />
+            <CheckLine icon={UserRound} label="Approver" value={latest.releaseApprover} passed />
+            <CheckLine icon={LockKeyhole} label="Kill switch" value={`${latest.killSwitch.name}: ${latest.killSwitch.enabled ? "enabled" : "disabled"}`} passed={!latest.killSwitch.enabled} />
+            <CheckLine icon={Gauge} label="Blocked ops" value={`${latest.blockedOperations.length}`} passed={false} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Blocked provider operations</strong>
+            {latest.blockedOperations.map((operation) => (
+              <span key={operation}>{operation}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Evidence envelope</strong>
+            {latest.evidence.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProvisioningAdapterPanel({
   adapters,
   platformConfig,
@@ -5058,6 +5182,147 @@ function createMockPlatformServiceAdapterContractReview(
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };
+}
+
+function createMockProviderReleaseGateRecord({
+  provider,
+  actor,
+  session,
+  labAuthorizationScopes,
+  credentialDiagnostics,
+  adapterEnablementRecords,
+  vmLifecycleProofs,
+  ahvCreateAdapterContractReviews,
+  ahvControlledProvisioningRuns,
+  platformServiceAdapterContractReviews,
+  platformServicePreflightRuns,
+  auditExports,
+}: {
+  provider: ProviderReleaseGateRecord["provider"];
+  actor: string;
+  session: PlatformSession;
+  labAuthorizationScopes: LabAuthorizationScope[];
+  credentialDiagnostics: CredentialReferenceDiagnostic[];
+  adapterEnablementRecords: AdapterEnablementRecord[];
+  vmLifecycleProofs: VmLifecycleProof[];
+  ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
+  ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
+  platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
+  platformServicePreflightRuns: PlatformServicePreflightRun[];
+  auditExports: AuditExportRecord[];
+}): ProviderReleaseGateRecord {
+  const activeScope = labAuthorizationScopes.find(
+    (scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid && scope.providerCoverage.includes(provider)
+  );
+  const credentialDiagnostic = credentialDiagnostics.find((item) => item.provider === provider);
+  const lifecycleProof = vmLifecycleProofs.find((proof) => proof.status === "Verified");
+  const adapterEnablement = adapterEnablementRecords.find(
+    (record) => record.provider === provider && record.status === "Ready for review"
+  );
+  const providerEvidence =
+    provider === "NCI"
+      ? {
+          contractId: ahvCreateAdapterContractReviews.find((review) => review.status === "Payload ready but execution disabled")?.id,
+          preflightId: ahvControlledProvisioningRuns.find((run) => run.status === "Ready but disabled")?.id,
+        }
+      : {
+          contractId: platformServiceAdapterContractReviews.find(
+            (review) => review.provider === provider && review.status === "Payload ready but execution disabled"
+          )?.id,
+          preflightId: platformServicePreflightRuns.find(
+            (run) => run.provider === provider && run.status === "Ready but disabled"
+          )?.id,
+        };
+  const releaseApprover = session.user || "Cloud Platform Owner";
+  const checks = [
+    {
+      name: "Approved lab scope",
+      passed: Boolean(activeScope),
+      detail: activeScope ? `${activeScope.id} covers ${provider}.` : "Active lab scope is required.",
+    },
+    {
+      name: "Credential reference approved",
+      passed: credentialDiagnostic?.status === "Approved reference",
+      detail: `${provider} credential diagnostic is ${credentialDiagnostic?.status ?? "Missing"}.`,
+    },
+    {
+      name: "VM lifecycle proof verified",
+      passed: Boolean(lifecycleProof),
+      detail: lifecycleProof ? lifecycleProof.id : "Verified VM lifecycle proof is required.",
+    },
+    {
+      name: "Adapter enablement ready",
+      passed: Boolean(adapterEnablement),
+      detail: adapterEnablement ? adapterEnablement.id : `${provider} adapter enablement review is required.`,
+    },
+    {
+      name: "Provider contract evidence ready",
+      passed: Boolean(providerEvidence.contractId),
+      detail: providerEvidence.contractId ?? `${provider} contract review is required.`,
+    },
+    {
+      name: "Provider preflight recorded",
+      passed: Boolean(providerEvidence.preflightId),
+      detail: providerEvidence.preflightId ?? `${provider} preflight evidence is required.`,
+    },
+    {
+      name: "Audit export ready",
+      passed: auditExports.length > 0,
+      detail: auditExports.length > 0 ? "Audit export manifest exists." : "Audit export evidence is required.",
+    },
+    {
+      name: "Release approver assigned",
+      passed: Boolean(releaseApprover),
+      detail: releaseApprover,
+    },
+    {
+      name: "Real adapter disabled",
+      passed: true,
+      detail: `${provider} real adapter switch remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `provider-release-${provider.toLowerCase()}-${Date.now()}`,
+    provider,
+    product: provider,
+    status: checks.every((check) => check.passed) ? "Ready for release review" : "Blocked",
+    requestedBy: actor,
+    releaseApprover,
+    checks,
+    evidence: [
+      `Lab scope: ${activeScope?.id ?? "missing"}.`,
+      `Credential diagnostic: ${credentialDiagnostic?.status ?? "missing"}.`,
+      `Lifecycle proof: ${lifecycleProof?.id ?? "missing"}.`,
+      `Adapter enablement: ${adapterEnablement?.id ?? "missing"}.`,
+      `Provider contract: ${providerEvidence.contractId ?? "missing"}.`,
+      `Provider preflight: ${providerEvidence.preflightId ?? "missing"}.`,
+      `Audit exports prepared: ${auditExports.length}.`,
+      `Release approver: ${releaseApprover}.`,
+    ],
+    blockedOperations: blockedPlatformProviderOperations(provider),
+    killSwitch: {
+      name: `NDC_${provider}_REAL_ADAPTER_ENABLED`,
+      enabled: false,
+    },
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function blockedPlatformProviderOperations(provider: ProviderReleaseGateRecord["provider"]) {
+  switch (provider) {
+    case "NCI":
+      return ["create_vm", "clone_vm", "power_on_vm", "power_off_vm", "delete_vm", "update_vm_category"];
+    case "NKP":
+      return ["create_namespace", "apply_quota", "apply_network_policy", "delete_namespace"];
+    case "NDB":
+      return ["create_database", "restore_database", "rotate_database_access", "delete_database"];
+    case "NUS":
+      return ["create_share", "create_bucket", "update_lifecycle_rule", "delete_storage_target"];
+    case "NAI":
+      return ["create_endpoint", "allocate_gpu", "publish_route", "delete_endpoint"];
+  }
 }
 
 function blockedPlatformServiceOperations(kind: PlatformServiceKind) {

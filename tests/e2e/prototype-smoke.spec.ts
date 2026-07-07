@@ -127,6 +127,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Disabled service adapter contracts")).toBeVisible();
   await expect(page.getByText("Payload fields approved", { exact: true }).last()).toBeVisible();
   await expect(page.getByText("create_database", { exact: true }).last()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Provider release gates" })).toBeVisible();
+  await page.getByRole("button", { name: "Review NDB" }).click();
+  await expect(page.getByText("Provider release evidence envelope")).toBeVisible();
+  await expect(page.getByText("Provider contract evidence ready", { exact: true })).toBeVisible();
+  await expect(page.getByText("NDC_NDB_REAL_ADAPTER_ENABLED: disabled").last()).toBeVisible();
   await expect(page.getByText("smoke-api-dev").first()).toBeVisible();
   await page.getByRole("button", { name: "Advance" }).first().click();
   await expect(page.getByText("Validating")).toBeVisible();

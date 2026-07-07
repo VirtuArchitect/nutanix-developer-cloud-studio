@@ -797,6 +797,11 @@ describe("api server", () => {
       body: JSON.stringify({ requestId: serviceRequest.data.id }),
     });
     const contracts = await requestJson("/api/platform-services/adapter-contracts");
+    const releaseGate = await requestJson("/api/provider-release-gates", {
+      method: "POST",
+      body: JSON.stringify({ provider: "NDB", releaseApprover: "platform.owner" }),
+    });
+    const releaseGates = await requestJson("/api/provider-release-gates");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -839,10 +844,27 @@ describe("api server", () => {
       ])
     );
     expect(contracts.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: contract.data.id })]));
+    expect(releaseGate.data).toMatchObject({
+      provider: "NDB",
+      status: "Blocked",
+      releaseApprover: "platform.owner",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+      blockedOperations: expect.arrayContaining(["create_database", "delete_database"]),
+    });
+    expect(releaseGate.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Provider contract evidence ready", passed: false }),
+        expect.objectContaining({ name: "Release approver assigned", passed: true }),
+        expect.objectContaining({ name: "Real adapter disabled", passed: true }),
+      ])
+    );
+    expect(releaseGates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: releaseGate.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
         expect.objectContaining({ action: "platform-service.adapter-contract.reviewed", target: "app-postgres-dev" }),
+        expect.objectContaining({ action: "provider-release-gate.reviewed", target: "NDB" }),
       ])
     );
   });

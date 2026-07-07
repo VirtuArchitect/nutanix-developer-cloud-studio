@@ -28,6 +28,7 @@ import type {
   PrismInventoryRecord,
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
+  ProviderReleaseGateRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
   SessionDiagnostics,
@@ -271,6 +272,10 @@ export async function fetchPlatformServiceAdapterContractReviewsFromApi() {
   return fetchJson<PlatformServiceAdapterContractReview[]>("/api/platform-services/adapter-contracts");
 }
 
+export async function fetchProviderReleaseGateRecordsFromApi() {
+  return fetchJson<ProviderReleaseGateRecord[]>("/api/provider-release-gates");
+}
+
 export async function fetchProductionReadinessReviewsFromApi() {
   return fetchJson<ProductionReadinessReview[]>("/api/production-readiness/reviews");
 }
@@ -363,6 +368,16 @@ export async function createPlatformServiceAdapterContractReviewViaApi(payload: 
   kind?: PlatformServiceKind;
 }) {
   return fetchJson<PlatformServiceAdapterContractReview>("/api/platform-services/adapter-contracts", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createProviderReleaseGateRecordViaApi(payload: {
+  provider?: ProviderReleaseGateRecord["provider"];
+  releaseApprover?: string;
+}) {
+  return fetchJson<ProviderReleaseGateRecord>("/api/provider-release-gates", {
     method: "POST",
     body: JSON.stringify(payload),
   });

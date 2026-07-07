@@ -516,6 +516,23 @@ Exit gate:
 - Missing authorization, evidence, or approver data blocks release.
 - Real adapter execution remains disabled unless a future authorized implementation phase explicitly changes it.
 
+### v2.10.0-release-evidence-export-hardening
+
+Goal: make provider release evidence exportable and reviewable for operations, security, and platform owners.
+
+Build:
+
+- Release evidence export records linked to provider release gates.
+- Redacted JSON manifest for scope, checks, approver, blocked operations, and kill switch status.
+- Admin Operations view for release evidence export history.
+- Tests proving export manifests do not include inline credentials or endpoint secrets.
+
+Exit gate:
+
+- Export APIs and UI are tested.
+- Release evidence exports contain references and metadata only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

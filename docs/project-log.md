@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.9.0-provider-release-gate-evidence`.
+- Added provider release gate records for NCI, NKP, NDB, NUS, and NAI.
+- Added API endpoints for provider release gate reviews.
+- Added Admin Control Plane provider release evidence envelope with missing gate checks, blocked operations, and real-adapter kill switch status.
+- Added tests proving missing evidence blocks release review and real adapter switches remain disabled.
+- Planned `v2.10.0-release-evidence-export-hardening` to make release evidence exportable and reviewable.
 - Released `v2.8.0-platform-service-adapter-contracts`.
 - Added disabled platform-service adapter contracts for NKP, NDB, NUS, and NAI.
 - Added API endpoints for platform-service adapter contract reviews.

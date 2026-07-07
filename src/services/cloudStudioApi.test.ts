@@ -13,6 +13,7 @@ import {
   createPlatformServiceRequestViaApi,
   createPlatformServiceAdapterContractReviewViaApi,
   createPlatformServicePreflightRunViaApi,
+  createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
   createRollbackDestroyProofViaApi,
   createVmLifecycleProofViaApi,
@@ -37,6 +38,7 @@ import {
   fetchPlatformServiceAdapterContractReviewsFromApi,
   fetchPlatformServiceRequestsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
+  fetchProviderReleaseGateRecordsFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
@@ -367,6 +369,21 @@ describe("cloudStudioApi", () => {
       2,
       "/api/platform-services/adapter-contracts",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("platform-service-1") })
+    );
+  });
+
+  it("fetches and creates provider release gate reviews", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchProviderReleaseGateRecordsFromApi();
+    await createProviderReleaseGateRecordViaApi({ provider: "NDB", releaseApprover: "platform.owner" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/provider-release-gates", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/provider-release-gates",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("platform.owner") })
     );
   });
 
