@@ -833,6 +833,11 @@ describe("api server", () => {
       body: JSON.stringify({ reviewId: evidenceReview.data.id }),
     });
     const proposalEnvelopes = await requestJson("/api/controlled-lab-release/proposal-envelopes");
+    const proposalExport = await requestJson("/api/controlled-lab-release/proposal-exports", {
+      method: "POST",
+      body: JSON.stringify({ envelopeId: proposalEnvelope.data.id }),
+    });
+    const proposalExports = await requestJson("/api/controlled-lab-release/proposal-exports");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -994,6 +999,25 @@ describe("api server", () => {
       ])
     );
     expect(proposalEnvelopes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: proposalEnvelope.data.id })]));
+    expect(proposalExport.data).toMatchObject({
+      provider: "NDB",
+      envelopeId: proposalEnvelope.data.id,
+      status: "Prepared",
+      checksumAlgorithm: "sha256",
+      provisioningEnabled: false,
+      manifest: expect.objectContaining({
+        envelopeId: proposalEnvelope.data.id,
+        envelopeStatus: "Blocked",
+        reviewId: evidenceReview.data.id,
+        windowId: dryRunWindow.data.id,
+        windowEvidenceExportId: windowExport.data.id,
+        provisioningEnabled: false,
+        killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+      }),
+    });
+    expect(proposalExport.data.checksum).toMatch(/^[a-f0-9]{64}$/);
+    expect(proposalExport.data.redactionBoundary).toContain("metadata only");
+    expect(proposalExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: proposalExport.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -1005,6 +1029,7 @@ describe("api server", () => {
         expect.objectContaining({ action: "controlled-lab-release.window-evidence.exported", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.evidence-review.recorded", target: "NDB" }),
         expect.objectContaining({ action: "controlled-lab-release.execution-proposal.reviewed", target: "NDB" }),
+        expect.objectContaining({ action: "controlled-lab-release.execution-proposal.exported", target: "NDB" }),
       ])
     );
   });

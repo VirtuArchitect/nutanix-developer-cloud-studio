@@ -2,15 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.16.0-lab-execution-proposal-envelope`.
+This project uses release tags for public milestones. The current release is `v2.17.0-lab-execution-proposal-export`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
+- Add controlled lab execution proposal approval records before any future live-lab execution phase.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.17.0-lab-execution-proposal-export] - 2026-07-07
+
+### Added
+
+- Lab execution proposal export records linked to proposal envelopes.
+- API endpoints for listing and preparing proposal export manifests.
+- Admin Operations proposal export history panel.
+- Redacted metadata manifests for proposal checks, evidence references, rollback owner, emergency contacts, kill switch state, and disabled execution state.
+- Tests proving proposal exports contain references and metadata only.
+
+### Notes
+
+- Proposal exports are metadata-only.
+- Real Nutanix adapter execution remains disabled.
 
 ## [v2.16.0-lab-execution-proposal-envelope] - 2026-07-07
 

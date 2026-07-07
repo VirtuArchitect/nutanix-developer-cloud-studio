@@ -307,10 +307,17 @@
 
 ## Phase 39 - Lab Execution Proposal Export (`v2.17.0-lab-execution-proposal-export`)
 
-- Add redacted proposal envelope export manifests - planned
-- Include proposal checks, evidence references, rollback owner, emergency contacts, and disabled execution state - planned
-- Add Admin Operations proposal export history - planned
-- Keep exports metadata-only and real adapter execution disabled - planned
+- Add redacted proposal envelope export manifests - done
+- Include proposal checks, evidence references, rollback owner, emergency contacts, and disabled execution state - done
+- Add Admin Operations proposal export history - done
+- Keep exports metadata-only and real adapter execution disabled - done
+
+## Phase 40 - Controlled Lab Execution Approval Gate (`v2.18.0-controlled-lab-execution-approval-gate`)
+
+- Add approval records linked to proposal exports - planned
+- Track platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions - planned
+- Add Admin Operations approval gate panel - planned
+- Keep approvals evidence-only and real adapter execution disabled - planned
 
 ## Gated Promotion
 

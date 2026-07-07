@@ -2,12 +2,17 @@
 
 ## 2026-07-07
 
+- Released `v2.17.0-lab-execution-proposal-export`.
+- Added lab execution proposal export records linked to proposal envelopes.
+- Added API endpoints for proposal exports.
+- Added Admin Operations proposal export manifest panel.
+- Added tests proving proposal exports contain references and metadata only.
+- Planned `v2.18.0-controlled-lab-execution-approval-gate` for final human approvals before any future controlled lab execution phase.
 - Released `v2.16.0-lab-execution-proposal-envelope`.
 - Added lab execution proposal envelope records linked to lab evidence reviews.
 - Added API endpoints for lab execution proposal envelopes.
 - Added Admin Operations proposal readiness panel with lab scope, runbook, window, export, review, rollback owner, audit export, emergency contact, and disabled execution checks.
 - Added tests proving missing or rejected review evidence blocks proposal readiness.
-- Planned `v2.17.0-lab-execution-proposal-export` for redacted proposal envelope export manifests.
 - Released `v2.15.0-lab-evidence-review-queue`.
 - Added lab evidence review records linked to lab window evidence exports.
 - Added API endpoints for lab evidence reviews.

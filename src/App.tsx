@@ -45,6 +45,7 @@ import {
   type IntegrationConfig,
   type LabEvidenceReviewRecord,
   type LabExecutionProposalEnvelope,
+  type LabExecutionProposalExportRecord,
   type LabWindowEvidenceExportRecord,
   type JobState,
   type LabAdapterSnapshot,
@@ -105,6 +106,7 @@ import {
   createControlledLabReleaseRunbookViaApi,
   createLabEvidenceReviewViaApi,
   createLabExecutionProposalEnvelopeViaApi,
+  createLabExecutionProposalExportViaApi,
   createLabWindowEvidenceExportViaApi,
   createLabAuthorizationScopeViaApi,
   createLifecycleOperationViaApi,
@@ -141,6 +143,7 @@ import {
   fetchLabAuthorizationScopesFromApi,
   fetchLabEvidenceReviewsFromApi,
   fetchLabExecutionProposalEnvelopesFromApi,
+  fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
   fetchLabAdaptersFromApi,
@@ -233,6 +236,7 @@ export function App() {
   const [labWindowEvidenceExports, setLabWindowEvidenceExports] = useState<LabWindowEvidenceExportRecord[]>([]);
   const [labEvidenceReviews, setLabEvidenceReviews] = useState<LabEvidenceReviewRecord[]>([]);
   const [labExecutionProposalEnvelopes, setLabExecutionProposalEnvelopes] = useState<LabExecutionProposalEnvelope[]>([]);
+  const [labExecutionProposalExports, setLabExecutionProposalExports] = useState<LabExecutionProposalExportRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -320,6 +324,7 @@ export function App() {
             apiLabWindowEvidenceExports,
             apiLabEvidenceReviews,
             apiLabExecutionProposalEnvelopes,
+            apiLabExecutionProposalExports,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -362,6 +367,7 @@ export function App() {
             fetchLabWindowEvidenceExportsFromApi(),
             fetchLabEvidenceReviewsFromApi(),
             fetchLabExecutionProposalEnvelopesFromApi(),
+            fetchLabExecutionProposalExportsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -406,6 +412,7 @@ export function App() {
             setLabWindowEvidenceExports(apiLabWindowEvidenceExports);
             setLabEvidenceReviews(apiLabEvidenceReviews);
             setLabExecutionProposalEnvelopes(apiLabExecutionProposalEnvelopes);
+            setLabExecutionProposalExports(apiLabExecutionProposalExports);
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -570,6 +577,7 @@ export function App() {
       apiLabWindowEvidenceExports,
       apiLabEvidenceReviews,
       apiLabExecutionProposalEnvelopes,
+      apiLabExecutionProposalExports,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -612,6 +620,7 @@ export function App() {
       fetchLabWindowEvidenceExportsFromApi(),
       fetchLabEvidenceReviewsFromApi(),
       fetchLabExecutionProposalEnvelopesFromApi(),
+      fetchLabExecutionProposalExportsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -655,6 +664,7 @@ export function App() {
     setLabWindowEvidenceExports(apiLabWindowEvidenceExports);
     setLabEvidenceReviews(apiLabEvidenceReviews);
     setLabExecutionProposalEnvelopes(apiLabExecutionProposalEnvelopes);
+    setLabExecutionProposalExports(apiLabExecutionProposalExports);
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
     setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
@@ -1332,6 +1342,25 @@ export function App() {
     ]);
   }
 
+  async function prepareLabExecutionProposalExport() {
+    const envelope = labExecutionProposalEnvelopes[0];
+    if (!envelope) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const exportRecord = await createLabExecutionProposalExportViaApi({ envelopeId: envelope.id });
+      await refreshApiState();
+      setLabExecutionProposalExports((current) => [exportRecord, ...current.filter((item) => item.id !== exportRecord.id)]);
+      return;
+    }
+
+    setLabExecutionProposalExports((current) => [
+      createMockLabExecutionProposalExportRecord(envelope, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -1559,6 +1588,7 @@ export function App() {
             labWindowEvidenceExports={labWindowEvidenceExports}
             labEvidenceReviews={labEvidenceReviews}
             labExecutionProposalEnvelopes={labExecutionProposalEnvelopes}
+            labExecutionProposalExports={labExecutionProposalExports}
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -1591,6 +1621,7 @@ export function App() {
             prepareLabWindowEvidenceExport={prepareLabWindowEvidenceExport}
             reviewLabEvidencePackage={reviewLabEvidencePackage}
             reviewLabExecutionProposalEnvelope={reviewLabExecutionProposalEnvelope}
+            prepareLabExecutionProposalExport={prepareLabExecutionProposalExport}
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
             runTemplateRegistryAction={runTemplateRegistryAction}
@@ -2106,6 +2137,7 @@ function AdminView({
   labWindowEvidenceExports,
   labEvidenceReviews,
   labExecutionProposalEnvelopes,
+  labExecutionProposalExports,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -2138,6 +2170,7 @@ function AdminView({
   prepareLabWindowEvidenceExport,
   reviewLabEvidencePackage,
   reviewLabExecutionProposalEnvelope,
+  prepareLabExecutionProposalExport,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -2184,6 +2217,7 @@ function AdminView({
   labWindowEvidenceExports: LabWindowEvidenceExportRecord[];
   labEvidenceReviews: LabEvidenceReviewRecord[];
   labExecutionProposalEnvelopes: LabExecutionProposalEnvelope[];
+  labExecutionProposalExports: LabExecutionProposalExportRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -2219,6 +2253,7 @@ function AdminView({
   prepareLabWindowEvidenceExport: () => void;
   reviewLabEvidencePackage: () => void;
   reviewLabExecutionProposalEnvelope: () => void;
+  prepareLabExecutionProposalExport: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -2475,6 +2510,12 @@ function AdminView({
             <LabExecutionProposalEnvelopePanel
               envelopes={labExecutionProposalEnvelopes}
               reviewLabExecutionProposalEnvelope={reviewLabExecutionProposalEnvelope}
+            />
+          </Panel>
+          <Panel title="Lab execution proposal exports" action={`${labExecutionProposalExports.length} exports`}>
+            <LabExecutionProposalExportPanel
+              exports={labExecutionProposalExports}
+              prepareLabExecutionProposalExport={prepareLabExecutionProposalExport}
             />
           </Panel>
         </div>
@@ -3648,6 +3689,71 @@ function LabExecutionProposalEnvelopePanel({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LabExecutionProposalExportPanel({
+  exports,
+  prepareLabExecutionProposalExport,
+}: {
+  exports: LabExecutionProposalExportRecord[];
+  prepareLabExecutionProposalExport: () => void;
+}) {
+  const latest = exports[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Proposal export manifest</strong>
+          <span>Exports execution proposal envelope evidence as redacted metadata for final operations and security review.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={prepareLabExecutionProposalExport}>
+          <Archive size={15} />
+          Prepare proposal export
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No lab execution proposal export has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.id}</span>
+            </div>
+            <span className="status ready">{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={TerminalSquare} label="Envelope" value={latest.manifest.envelopeStatus} passed={latest.manifest.envelopeStatus === "Ready for proposal review"} />
+            <CheckLine icon={Gauge} label="Checks" value={`${latest.manifest.passedChecks}/${latest.manifest.checkCount} passed`} passed={latest.manifest.passedChecks === latest.manifest.checkCount} />
+            <CheckLine icon={LockKeyhole} label="Kill switch" value={`${latest.manifest.killSwitch.name}: ${latest.manifest.killSwitch.enabled ? "enabled" : "disabled"}`} passed={!latest.manifest.killSwitch.enabled} />
+            <CheckLine icon={Archive} label="Checksum" value={latest.checksum.slice(0, 12)} passed />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Proposal export evidence</strong>
+            <span>Review: {latest.manifest.reviewId}</span>
+            <span>Window: {latest.manifest.windowId}</span>
+            <span>Window export: {latest.manifest.windowEvidenceExportId}</span>
+            <span>Rollback owner: {latest.manifest.rollbackOwner || "missing"}</span>
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Evidence references</strong>
+            {latest.manifest.evidenceReferences.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Redaction boundary</strong>
+            <span>{latest.redactionBoundary}</span>
+            <span>{latest.storageBoundary}</span>
           </div>
         </div>
       )}
@@ -6472,6 +6578,53 @@ function createMockLabExecutionProposalEnvelope({
     killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockLabExecutionProposalExportRecord(
+  envelope: LabExecutionProposalEnvelope,
+  actor: string
+): LabExecutionProposalExportRecord {
+  const createdAt = new Date().toISOString();
+  const evidenceReferences = envelope.evidence.map((item) =>
+    item
+      .replace(/:\/\/[^/\s]*@/g, "://redacted@")
+      .replace(/([?&](?:key|sig|cred)=)[^&\s]+/gi, "$1redacted")
+  );
+  const manifest: LabExecutionProposalExportRecord["manifest"] = {
+    exportId: `lab-execution-proposal-export-${envelope.provider.toLowerCase()}-${Date.now()}`,
+    envelopeId: envelope.id,
+    provider: envelope.provider,
+    envelopeStatus: envelope.status,
+    generatedAt: createdAt,
+    reviewId: envelope.reviewId,
+    windowId: envelope.windowId,
+    windowEvidenceExportId: envelope.exportId,
+    checkCount: envelope.checks.length,
+    passedChecks: envelope.checks.filter((check) => check.passed).length,
+    evidenceReferences,
+    rollbackOwner: envelope.rollbackOwner,
+    emergencyStopContacts: envelope.emergencyStopContacts.map((contact) =>
+      contact.replace(/:\/\/[^/\s]*@/g, "://redacted@").replace(/([?&](?:key|sig|cred)=)[^&\s]+/gi, "$1redacted")
+    ),
+    killSwitch: envelope.killSwitch,
+    provisioningEnabled: false,
+  };
+
+  return {
+    id: manifest.exportId,
+    provider: envelope.provider,
+    envelopeId: envelope.id,
+    status: "Prepared",
+    requestedBy: actor,
+    format: "JSON",
+    checksumAlgorithm: "sha256",
+    checksum: `mock-${envelope.provider.toLowerCase()}-${manifest.checkCount}-${manifest.passedChecks}`,
+    manifest,
+    redactionBoundary: "Proposal exports contain references and metadata only; no inline auth material is persisted.",
+    storageBoundary: "Export record is metadata only; configure external evidence storage before controlled lab execution proposals.",
+    provisioningEnabled: false,
+    createdAt,
   };
 }
 

@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.17.0-lab-execution-proposal-export` adds metadata-only proposal export manifests linked to lab execution proposal envelopes and an Admin Operations export history panel.
 - `v2.16.0-lab-execution-proposal-envelope` adds evidence-only execution proposal envelopes linked to lab evidence reviews and an Admin Operations proposal readiness panel.
 - `v2.15.0-lab-evidence-review-queue` adds evidence-only human review records for lab window evidence exports and an Admin Operations review queue.
 - `v2.14.0-lab-window-evidence-export` adds metadata-only lab window evidence exports linked to controlled lab dry-run windows and surfaces export history in Admin Operations.
@@ -333,6 +334,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Admin Operations surfaces proposal readiness checks and supporting evidence references.
 - Missing or rejected review evidence blocks proposal readiness.
 - Proposal envelopes remain evidence-only and do not enable real adapter execution.
+
+## Current Lab Execution Proposal Export Slice
+
+- API records lab execution proposal export manifests linked to proposal envelopes.
+- Manifests include proposal check counts, evidence references, rollback owner, emergency contacts, kill switch state, checksum, and disabled execution state.
+- Admin Operations surfaces proposal export history and redaction/storage boundaries.
+- Exports contain references and metadata only.
+- Real adapter execution remains disabled.
 
 ## Suggested Tech Stack
 

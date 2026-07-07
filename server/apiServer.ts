@@ -61,6 +61,10 @@ import {
   LabExecutionProposalEnvelopeError,
 } from "./labExecutionProposalEnvelope";
 import {
+  createLabExecutionProposalExportRecord,
+  LabExecutionProposalExportError,
+} from "./labExecutionProposalExport";
+import {
   createEnvironmentRequest,
   decideApproval,
   requestEnvironmentDestroy,
@@ -138,6 +142,7 @@ import type {
   CreateLabWindowEvidenceExportRequest,
   CreateLabEvidenceReviewRequest,
   CreateLabExecutionProposalEnvelopeRequest,
+  CreateLabExecutionProposalExportRequest,
   CreatePlatformServiceRequest,
   CreatePlatformServiceAdapterContractReviewRequest,
   CreatePlatformServicePreflightRunRequest,
@@ -317,6 +322,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof LabExecutionProposalEnvelopeError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof LabExecutionProposalExportError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -594,6 +609,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/proposal-envelopes") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.labExecutionProposalEnvelopes });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/controlled-lab-release/proposal-exports") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labExecutionProposalExports });
     return;
   }
 
@@ -1359,6 +1380,22 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: envelope });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/controlled-lab-release/proposal-exports") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabExecutionProposalExportRequest>(request);
+    const exportRecord = createLabExecutionProposalExportRecord(state, body, context.session.user);
+    state.labExecutionProposalExports = [exportRecord, ...state.labExecutionProposalExports];
+    addAuditEvent(state, "controlled-lab-release.execution-proposal.exported", context.session.user, exportRecord.provider, {
+      envelopeId: exportRecord.envelopeId,
+      checksumAlgorithm: exportRecord.checksumAlgorithm,
+      checksum: exportRecord.checksum,
+      provisioningEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: exportRecord });
     return;
   }
 

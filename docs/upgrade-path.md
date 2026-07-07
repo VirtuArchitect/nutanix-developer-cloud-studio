@@ -652,6 +652,23 @@ Exit gate:
 - Exports contain no inline auth material.
 - Real adapter execution remains disabled.
 
+### v2.18.0-controlled-lab-execution-approval-gate
+
+Goal: add final human approvals for exported lab execution proposals before any future controlled lab execution phase.
+
+Build:
+
+- Controlled lab execution approval records linked to proposal exports.
+- Platform owner, security reviewer, lab owner, rollback owner, and executive sponsor decisions.
+- Admin Operations approval gate panel with blockers and evidence references.
+- Tests proving missing or rejected approvals block advancement.
+
+Exit gate:
+
+- Approval gate APIs and UI are tested.
+- Approval records remain evidence-only.
+- Real adapter execution remains disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

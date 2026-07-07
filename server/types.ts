@@ -16,6 +16,7 @@ import type {
   LabWindowEvidenceExportRecord,
   LabEvidenceReviewRecord,
   LabExecutionProposalEnvelope,
+  LabExecutionProposalExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
   LifecycleOperationKind,
@@ -83,6 +84,7 @@ export type ApiState = {
   labWindowEvidenceExports: LabWindowEvidenceExportRecord[];
   labEvidenceReviews: LabEvidenceReviewRecord[];
   labExecutionProposalEnvelopes: LabExecutionProposalEnvelope[];
+  labExecutionProposalExports: LabExecutionProposalExportRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -246,6 +248,11 @@ export type CreateLabEvidenceReviewRequest = {
 
 export type CreateLabExecutionProposalEnvelopeRequest = {
   reviewId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+};
+
+export type CreateLabExecutionProposalExportRequest = {
+  envelopeId?: string;
   provider?: ProviderReleaseGateRecord["provider"];
 };
 

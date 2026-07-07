@@ -779,6 +779,38 @@ export type LabExecutionProposalEnvelope = {
   createdAt: string;
 };
 
+export type LabExecutionProposalExportRecord = {
+  id: string;
+  provider: ProviderReleaseGateRecord["provider"];
+  envelopeId: string;
+  status: "Prepared";
+  requestedBy: string;
+  format: "JSON";
+  checksumAlgorithm: "sha256";
+  checksum: string;
+  manifest: {
+    exportId: string;
+    envelopeId: string;
+    provider: ProviderReleaseGateRecord["provider"];
+    envelopeStatus: LabExecutionProposalEnvelope["status"];
+    generatedAt: string;
+    reviewId: string;
+    windowId: string;
+    windowEvidenceExportId: string;
+    checkCount: number;
+    passedChecks: number;
+    evidenceReferences: string[];
+    rollbackOwner: string;
+    emergencyStopContacts: string[];
+    killSwitch: LabExecutionProposalEnvelope["killSwitch"];
+    provisioningEnabled: false;
+  };
+  redactionBoundary: string;
+  storageBoundary: string;
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

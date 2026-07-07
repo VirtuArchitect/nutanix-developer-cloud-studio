@@ -174,8 +174,12 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Reviewer decisions complete")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Lab execution proposal envelope" })).toBeVisible();
   await page.getByRole("button", { name: "Review proposal envelope" }).click();
-  await expect(page.getByText("Envelope evidence")).toBeVisible();
+  await expect(page.getByText("Envelope evidence", { exact: true })).toBeVisible();
   await expect(page.getByText("Lab evidence review accepted")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab execution proposal exports" })).toBeVisible();
+  await page.getByRole("button", { name: "Prepare proposal export" }).click();
+  await expect(page.getByText("Proposal export manifest")).toBeVisible();
+  await expect(page.getByText("Proposal export evidence", { exact: true })).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

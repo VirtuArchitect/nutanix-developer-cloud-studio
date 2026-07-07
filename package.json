@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.16.0-lab-execution-proposal-envelope",
+  "version": "2.17.0-lab-execution-proposal-export",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

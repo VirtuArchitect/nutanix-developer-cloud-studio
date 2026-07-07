@@ -51,6 +51,7 @@ flowchart LR
     Api --> WindowEvidence["Lab Window Evidence Exports"]
     Api --> EvidenceReview["Lab Evidence Review Queue"]
     Api --> ProposalEnvelope["Lab Execution Proposal Envelope"]
+    Api --> ProposalExport["Lab Execution Proposal Exports"]
     Api --> Details["Environment Detail"]
     Api --> Audit["Audit Events"]
 ```
@@ -85,6 +86,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Lab window evidence export records: redacted JSON manifest metadata linked to controlled lab dry-run windows
 - Lab evidence review records: platform, security, and operations decisions against lab window evidence exports
 - Lab execution proposal envelopes: final evidence rollups before any future controlled lab execution proposal
+- Lab execution proposal exports: redacted JSON manifest metadata linked to proposal envelopes
 - Production readiness reviews: release-gate rollups for identity, persistence, audit, lab, lifecycle, preflight, and provisioning guardrail evidence
 - Resource profiles: AHV images, NKP versions, NDB engines, NUS storage classes, and NAI endpoint profiles
 - Template registry: versioned golden-path publication state and approval evidence
@@ -156,6 +158,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Lab window evidence export API and Admin Operations manifest UI
 - Lab evidence review API and Admin Operations review queue UI
 - Lab execution proposal envelope API and Admin Operations readiness UI
+- Lab execution proposal export API and Admin Operations manifest UI
 - Production readiness review API and Admin Overview UI
 - Private-cloud lifecycle operation API and Admin Operations UI
 - Audit export readiness API and Admin Operations UI
@@ -207,6 +210,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Lab window evidence exports contain references and metadata only; they do not export provider data or enable provider execution.
 - Lab evidence reviews record human review decisions only; missing decisions block completion and rejected packages cannot advance.
 - Lab execution proposal envelopes are evidence rollups only; they do not enable real adapter execution.
+- Lab execution proposal exports contain references and metadata only; they do not deliver provider data or enable real adapter execution.
 - Production readiness reviews record release-gate evidence only; they do not enable live provisioning.
 - Private-cloud lifecycle operations record extend, suspend, destroy, and rebuild requests as operator workflow evidence only.
 - Adapter enablement records review evidence only; an enabled real-adapter switch fails this phase and all mutation operations remain blocked.
