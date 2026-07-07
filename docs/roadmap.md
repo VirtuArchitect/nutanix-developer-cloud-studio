@@ -210,6 +210,14 @@
 - Keep enabled real-adapter switches blocked in this review-only phase - done
 - Add API/client and smoke coverage for enablement review behavior - done
 
+## Phase 26 - Lab Scope Pentest Evidence Hardening (`v2.4.0-lab-scope-pentest-evidence-hardening`)
+
+- Add versioned lab scope records with provider coverage, target endpoints, evidence references, and rollback owner - done
+- Add lab scope diagnostics API - done
+- Surface expiry, provider coverage, target endpoints, and evidence readiness in Admin Control Plane - done
+- Make expired or incomplete scope evidence block adapter enablement review - done
+- Keep pentest evidence metadata-only and real mutation disabled - done
+
 ## Gated Promotion
 
 Each phase must pass the local or GitHub phase gate before promotion. See `docs/upgrade-path.md`.

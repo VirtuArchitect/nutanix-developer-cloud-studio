@@ -116,6 +116,12 @@ export type CreateLabAuthorizationScopeRequest = {
   excludedActions?: string[];
   pentestScopeReference?: string;
   pentestScopeStructurallyValid?: boolean;
+  version?: string;
+  targetEnvironment?: string;
+  providerCoverage?: LabAuthorizationScope["providerCoverage"];
+  targetEndpoints?: string[];
+  evidenceReferences?: string[];
+  rollbackOwner?: string;
 };
 
 export type CreateVmLifecycleProofRequest = {

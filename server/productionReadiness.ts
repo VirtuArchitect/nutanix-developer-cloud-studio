@@ -1,10 +1,9 @@
 import type { ProductionReadinessReview } from "../src/data/cloudStudioDomain";
+import { getActiveLabAuthorizationScope } from "./authorizationEvidence";
 import type { ApiState } from "./types";
 
 export function createProductionReadinessReview(state: ApiState, actor: string): ProductionReadinessReview {
-  const activeScope = state.labAuthorizationScopes.find(
-    (scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid && new Date(scope.expiresAt).getTime() > Date.now()
-  );
+  const activeScope = getActiveLabAuthorizationScope(state);
   const lifecycleProof = state.vmLifecycleProofs.find((proof) => proof.status === "Verified");
   const ahvPreflight = state.ahvControlledProvisioningRuns[0];
   const providers = ["NKP", "NDB", "NUS", "NAI"];

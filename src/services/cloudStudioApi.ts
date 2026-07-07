@@ -12,6 +12,7 @@ import type {
   IntegrationConfig,
   LabAdapterSnapshot,
   LabAuthorizationScope,
+  LabScopeDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
   PlatformConfig,
@@ -230,6 +231,10 @@ export async function fetchLabAuthorizationScopesFromApi() {
   return fetchJson<LabAuthorizationScope[]>("/api/lab-authorization/scopes");
 }
 
+export async function fetchLabScopeDiagnosticsFromApi() {
+  return fetchJson<LabScopeDiagnostics>("/api/lab-authorization/diagnostics");
+}
+
 export async function fetchVmLifecycleProofsFromApi() {
   return fetchJson<VmLifecycleProof[]>("/api/vm-lifecycle/proofs");
 }
@@ -265,6 +270,11 @@ export async function fetchAuditRetentionDiagnosticsFromApi() {
 export async function createLabAuthorizationScopeViaApi(payload: {
   pentestScopeReference?: string;
   pentestScopeStructurallyValid?: boolean;
+  targetEnvironment?: string;
+  providerCoverage?: LabAuthorizationScope["providerCoverage"];
+  targetEndpoints?: string[];
+  evidenceReferences?: string[];
+  rollbackOwner?: string;
 }) {
   return fetchJson<LabAuthorizationScope>("/api/lab-authorization/scopes", {
     method: "POST",

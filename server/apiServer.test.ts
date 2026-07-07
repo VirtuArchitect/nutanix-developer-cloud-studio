@@ -522,6 +522,11 @@ describe("api server", () => {
       body: JSON.stringify({
         pentestScopeReference: "authorized-lab-scope.md",
         pentestScopeStructurallyValid: true,
+        targetEnvironment: "scope-backed-vm-plan",
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        evidenceReferences: ["authorized-lab-scope.md", "rollback-runbook.md"],
+        rollbackOwner: "Cloud Operations",
       }),
     });
     const plan = await requestJson("/api/vm-sandbox/dry-runs", {
@@ -541,12 +546,26 @@ describe("api server", () => {
       body: JSON.stringify({ gateId: gate.data.id, rollbackVerified: true, destroyVerified: true }),
     });
     const scopes = await requestJson("/api/lab-authorization/scopes");
+    const diagnostics = await requestJson("/api/lab-authorization/diagnostics");
     const proofs = await requestJson("/api/vm-lifecycle/proofs");
 
     expect(scope.data).toMatchObject({
+      version: "v1",
+      targetEnvironment: "scope-backed-vm-plan",
+      providerCoverage: ["NCI"],
+      targetEndpoints: ["prism-central-ref"],
       pentestScopeReference: "authorized-lab-scope.md",
       pentestScopeStructurallyValid: true,
+      rollbackOwner: "Cloud Operations",
     });
+    expect(diagnostics.data).toMatchObject({
+      totalScopes: 1,
+      readyScopes: 1,
+      latest: expect.objectContaining({ readyForAdapterReview: true }),
+    });
+    expect(diagnostics.data.providerCoverage).toEqual(
+      expect.arrayContaining([expect.objectContaining({ provider: "NCI", covered: true })])
+    );
     expect(gate.data.checks).toEqual(
       expect.arrayContaining([expect.objectContaining({ name: "Authorized scope attached", passed: true })])
     );
@@ -560,6 +579,38 @@ describe("api server", () => {
     });
     expect(scopes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: scope.data.id })]));
     expect(proofs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: proof.data.id })]));
+  });
+
+  it("blocks adapter enablement when lab scope evidence is expired or incomplete", async () => {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        expiresAt: yesterday,
+        pentestScopeReference: "expired-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        evidenceReferences: ["expired-scope.md"],
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+
+    const diagnostics = await requestJson("/api/lab-authorization/diagnostics");
+    const record = await requestJson("/api/adapter-enablement/records", {
+      method: "POST",
+      body: JSON.stringify({ provider: "NCI", rollbackOwner: "Cloud Operations" }),
+    });
+
+    expect(diagnostics.data).toMatchObject({
+      totalScopes: 1,
+      readyScopes: 0,
+      latest: expect.objectContaining({ status: "Expired", readyForAdapterReview: false }),
+    });
+    expect(record.data.checks).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Approved lab scope", passed: false })])
+    );
+    expect(record.data).toMatchObject({ status: "Blocked", provisioningEnabled: false });
   });
 
   it("records fail-closed AHV controlled provisioning preflight runs", async () => {

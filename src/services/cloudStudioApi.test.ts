@@ -24,6 +24,7 @@ import {
   fetchEnvironmentsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabScopeDiagnosticsFromApi,
   fetchPolicyBundlesFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -243,19 +244,21 @@ describe("cloudStudioApi", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await fetchLabAuthorizationScopesFromApi();
+    await fetchLabScopeDiagnosticsFromApi();
     await createLabAuthorizationScopeViaApi({ pentestScopeStructurallyValid: true });
     await fetchVmLifecycleProofsFromApi();
     await createVmLifecycleProofViaApi({ gateId: "vm-controlled-1", rollbackVerified: true, destroyVerified: true });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/lab-authorization/scopes", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/lab-authorization/diagnostics", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       "/api/lab-authorization/scopes",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("pentestScopeStructurallyValid") })
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/vm-lifecycle/proofs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/vm-lifecycle/proofs", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      4,
+      5,
       "/api/vm-lifecycle/proofs",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("vm-controlled-1") })
     );

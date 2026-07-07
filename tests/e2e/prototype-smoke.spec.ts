@@ -78,7 +78,10 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Rollback plan")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Lab authorization and lifecycle proof" })).toBeVisible();
   await page.getByRole("button", { name: "Record lab scope" }).click();
-  await expect(page.getByText("Authorized lab scope / controlled provisioning test window")).toBeVisible();
+  await expect(page.locator("span").filter({ hasText: "Authorized lab scope / controlled provisioning test window" })).toBeVisible();
+  await expect(page.getByText("Provider coverage", { exact: true })).toBeVisible();
+  await expect(page.getByText("Target endpoints documented", { exact: true })).toBeVisible();
+  await expect(page.getByText("Rollback owner assigned", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Controlled provisioning gate" })).toBeVisible();
   await page.getByRole("button", { name: "Request gate review" }).click();
   await expect(page.getByText("Manual approval required")).toBeVisible();

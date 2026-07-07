@@ -176,6 +176,11 @@
 - Added adapter enablement contract records for NCI, NKP, NDB, NUS, NCM, and NAI.
 - Added API and Admin Providers UI for enablement evidence, rollback ownership, and blocked mutation operations.
 - Added tests and smoke coverage proving missing evidence blocks enablement and real adapters remain disabled.
+- Started `v2.4.0-lab-scope-pentest-evidence-hardening`.
+- Added versioned lab authorization scope metadata for target environment, provider coverage, endpoint references, evidence references, and rollback owner.
+- Added lab scope diagnostics API and Admin Control Plane diagnostics.
+- Updated adapter enablement and production readiness to use stricter active lab-scope checks.
+- Added tests proving expired lab scope evidence blocks adapter enablement review.
 
 ## Documentation Rule
 

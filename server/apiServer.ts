@@ -12,6 +12,7 @@ import {
 } from "./ahvControlledProvisioning";
 import {
   AuthorizationEvidenceError,
+  createLabScopeDiagnostics,
   createLabAuthorizationScope,
   createVmLifecycleProof,
 } from "./authorizationEvidence";
@@ -332,6 +333,12 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/lab-authorization/scopes") {
     sendJson(response, 200, { data: state.labAuthorizationScopes });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-authorization/diagnostics") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createLabScopeDiagnostics(state) });
     return;
   }
 
@@ -789,8 +796,12 @@ async function routeApi(
         project: scope.project,
         cluster: scope.cluster,
         network: scope.network,
+        version: scope.version,
+        targetEnvironment: scope.targetEnvironment,
+        providerCoverage: scope.providerCoverage,
         status: scope.status,
         pentestScopeStructurallyValid: scope.pentestScopeStructurallyValid,
+        evidenceReferenceCount: scope.evidenceReferences.length,
         provisioningEnabled: false,
       });
       await store.save(state);

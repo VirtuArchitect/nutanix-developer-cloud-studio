@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.3.0-adapter-enable-contract-hardening",
+  "version": "2.4.0-lab-scope-pentest-evidence-hardening",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

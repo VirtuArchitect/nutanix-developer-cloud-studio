@@ -292,6 +292,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 - Missing evidence blocks enablement review status.
 - Real adapter mutation remains disabled, and enabled real-adapter switches fail this review-only phase.
 
+## Current Lab Scope Pentest Evidence Hardening Slice
+
+- Lab authorization scopes are versioned and include target environment, provider coverage, target endpoint references, evidence references, and rollback owner.
+- API exposes lab scope diagnostics for expiry, provider coverage, and adapter-review readiness.
+- Admin Control Plane surfaces scope diagnostics, coverage gaps, target endpoint evidence, and rollback ownership.
+- Adapter enablement and production readiness use the stricter active lab-scope predicate.
+- Expired or incomplete scope evidence blocks adapter enablement review.
+
 ## Suggested Tech Stack
 
 - React or Next.js for the prototype UI

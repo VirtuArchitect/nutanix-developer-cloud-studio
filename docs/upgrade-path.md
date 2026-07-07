@@ -429,6 +429,25 @@ Exit gate:
 - Pentest evidence is metadata-only and does not store secrets.
 - Real mutation calls remain disabled.
 
+### v2.5.0-preflight-destroy-rollback-hardening
+
+Goal: harden rollback and destroy proof before any controlled create adapter can be authorized.
+
+Build:
+
+- Destroy and rollback preflight records tied to VM sandbox dry-run plans.
+- Checks for backup/export evidence, owner notification, rollback owner, teardown order, inventory reconciliation, and audit export readiness.
+- Admin Control Plane view for rollback/destroy proof gaps and stop conditions.
+- Tests that controlled create remains blocked when destroy or rollback proof is missing.
+- Runbook for rollback rehearsal and stop-the-line operator actions.
+
+Exit gate:
+
+- Rollback and destroy proof APIs and UI are tested.
+- Missing rollback or destroy evidence blocks controlled create promotion.
+- Audit records are produced for proof review.
+- Real mutation calls remain disabled.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

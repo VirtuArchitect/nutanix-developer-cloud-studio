@@ -42,6 +42,7 @@ import {
   type JobState,
   type LabAdapterSnapshot,
   type LabAuthorizationScope,
+  type LabScopeDiagnostics,
   type LifecycleOperationKind,
   type LifecycleOperationRecord,
   platformConfig as defaultPlatformConfig,
@@ -111,6 +112,7 @@ import {
   fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabScopeDiagnosticsFromApi,
   fetchLabAdaptersFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -166,6 +168,9 @@ export function App() {
   );
   const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
   const [labAuthorizationScopes, setLabAuthorizationScopes] = useState<LabAuthorizationScope[]>([]);
+  const [labScopeDiagnostics, setLabScopeDiagnostics] = useState<LabScopeDiagnostics>(() =>
+    createMockLabScopeDiagnostics([])
+  );
   const [prismInventory, setPrismInventory] = useState<PrismInventoryRecord[]>([]);
   const [prismInventoryImport, setPrismInventoryImport] = useState<PrismInventoryImportResult | undefined>();
   const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
@@ -243,6 +248,7 @@ export function App() {
             apiSystemStatus,
             apiLabAdapters,
             apiLabAuthorizationScopes,
+            apiLabScopeDiagnostics,
             apiPrismInventory,
             apiControlPlaneJobs,
             apiResourceProfiles,
@@ -272,6 +278,7 @@ export function App() {
             fetchSystemStatusFromApi(),
             fetchLabAdaptersFromApi(),
             fetchLabAuthorizationScopesFromApi(),
+            fetchLabScopeDiagnosticsFromApi(),
             fetchPrismInventoryFromApi(),
             fetchControlPlaneJobsFromApi(),
             fetchResourceProfilesFromApi(),
@@ -302,6 +309,7 @@ export function App() {
             setSystemStatus(apiSystemStatus);
             setLabAdapters(apiLabAdapters);
             setLabAuthorizationScopes(apiLabAuthorizationScopes);
+            setLabScopeDiagnostics(apiLabScopeDiagnostics);
             setPrismInventory(apiPrismInventory.records);
             setPrismInventoryImport(apiPrismInventory.lastImport);
             setControlPlaneJobs(apiControlPlaneJobs);
@@ -454,6 +462,7 @@ export function App() {
       apiSystemStatus,
       apiLabAdapters,
       apiLabAuthorizationScopes,
+      apiLabScopeDiagnostics,
       apiPrismInventory,
       apiControlPlaneJobs,
       apiResourceProfiles,
@@ -483,6 +492,7 @@ export function App() {
       fetchSystemStatusFromApi(),
       fetchLabAdaptersFromApi(),
       fetchLabAuthorizationScopesFromApi(),
+      fetchLabScopeDiagnosticsFromApi(),
       fetchPrismInventoryFromApi(),
       fetchControlPlaneJobsFromApi(),
       fetchResourceProfilesFromApi(),
@@ -512,6 +522,7 @@ export function App() {
     setSystemStatus(apiSystemStatus);
     setLabAdapters(apiLabAdapters);
     setLabAuthorizationScopes(apiLabAuthorizationScopes);
+    setLabScopeDiagnostics(apiLabScopeDiagnostics);
     setPrismInventory(apiPrismInventory.records);
     setPrismInventoryImport(apiPrismInventory.lastImport);
     setControlPlaneJobs(apiControlPlaneJobs);
@@ -788,6 +799,11 @@ export function App() {
     const payload = {
       pentestScopeReference: "Authorized lab scope / controlled provisioning test window",
       pentestScopeStructurallyValid: true,
+      targetEnvironment: "controlled-vm-plan",
+      providerCoverage: ["NCI" as const],
+      targetEndpoints: ["prism-central-ref"],
+      evidenceReferences: ["PENTEST_SCOPE_TEMPLATE.md", "operator-approval-record"],
+      rollbackOwner: "Cloud Operations",
     };
 
     if (apiHealth.mode === "api") {
@@ -797,7 +813,11 @@ export function App() {
       return;
     }
 
-    setLabAuthorizationScopes((current) => [createMockLabAuthorizationScope(session.user, platformConfig), ...current]);
+    setLabAuthorizationScopes((current) => {
+      const next = [createMockLabAuthorizationScope(session.user, platformConfig), ...current];
+      setLabScopeDiagnostics(createMockLabScopeDiagnostics(next));
+      return next;
+    });
   }
 
   async function recordVmLifecycleProof() {
@@ -1139,6 +1159,7 @@ export function App() {
             systemStatus={systemStatus}
             labAdapters={labAdapters}
             labAuthorizationScopes={labAuthorizationScopes}
+            labScopeDiagnostics={labScopeDiagnostics}
             prismInventory={prismInventory}
             prismInventoryImport={prismInventoryImport}
             resourceProfiles={resourceProfiles}
@@ -1662,6 +1683,7 @@ function AdminView({
   systemStatus,
   labAdapters,
   labAuthorizationScopes,
+  labScopeDiagnostics,
   prismInventory,
   prismInventoryImport,
   resourceProfiles,
@@ -1716,6 +1738,7 @@ function AdminView({
   systemStatus: SystemStatus;
   labAdapters: LabAdapterSnapshot[];
   labAuthorizationScopes: LabAuthorizationScope[];
+  labScopeDiagnostics: LabScopeDiagnostics;
   prismInventory: PrismInventoryRecord[];
   prismInventoryImport?: PrismInventoryImportResult;
   resourceProfiles: ResourceProfile[];
@@ -1890,6 +1913,7 @@ function AdminView({
           <Panel title="Lab authorization and lifecycle proof" action={`${labAuthorizationScopes.length + vmLifecycleProofs.length} records`}>
             <LifecycleEvidencePanel
               scopes={labAuthorizationScopes}
+              diagnostics={labScopeDiagnostics}
               proofs={vmLifecycleProofs}
               recordLabAuthorizationScope={recordLabAuthorizationScope}
               recordVmLifecycleProof={recordVmLifecycleProof}
@@ -2740,11 +2764,13 @@ function RegistryActions({
 
 function LifecycleEvidencePanel({
   scopes,
+  diagnostics,
   proofs,
   recordLabAuthorizationScope,
   recordVmLifecycleProof,
 }: {
   scopes: LabAuthorizationScope[];
+  diagnostics: LabScopeDiagnostics;
   proofs: VmLifecycleProof[];
   recordLabAuthorizationScope: () => void;
   recordVmLifecycleProof: () => void;
@@ -2781,8 +2807,14 @@ function LifecycleEvidencePanel({
         <CheckLine
           icon={LockKeyhole}
           label="Pentest scope"
-          value={latestScope?.pentestScopeStructurallyValid ? "Structured" : "Required"}
-          passed={Boolean(latestScope?.pentestScopeStructurallyValid)}
+          value={diagnostics.latest?.readyForAdapterReview ? "Ready" : "Required"}
+          passed={Boolean(diagnostics.latest?.readyForAdapterReview)}
+        />
+        <CheckLine
+          icon={Network}
+          label="Provider coverage"
+          value={`${diagnostics.providerCoverage.filter((item) => item.covered).length}/${diagnostics.providerCoverage.length}`}
+          passed={diagnostics.providerCoverage.some((item) => item.provider === "NCI" && item.covered)}
         />
         <CheckLine
           icon={Activity}
@@ -2798,7 +2830,26 @@ function LifecycleEvidencePanel({
           <span>
             {latestScope.project} / {latestScope.cluster} / {latestScope.network}
           </span>
+          <span>
+            Version {latestScope.version} / target {latestScope.targetEnvironment} / rollback {latestScope.rollbackOwner}
+          </span>
+          <span>Providers: {latestScope.providerCoverage.join(", ")}</span>
+          <span>Endpoints: {latestScope.targetEndpoints.join(", ")}</span>
           <span>{latestScope.pentestScopeReference}</span>
+          <span>Evidence: {latestScope.evidenceReferences.join(", ")}</span>
+        </div>
+      )}
+      {diagnostics.latest && (
+        <div className="dryRunValidationList">
+          {diagnostics.latest.checks.map((check) => (
+            <div className="dryRunValidationRow" key={check.name}>
+              <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+              <div>
+                <strong>{check.name}</strong>
+                <small>{check.detail}</small>
+              </div>
+            </div>
+          ))}
         </div>
       )}
       {latestProof && (
@@ -3856,7 +3907,9 @@ function createMockLabAuthorizationScope(actor: string, config: PlatformConfig):
   const now = new Date();
   return {
     id: `lab-scope-${Date.now()}`,
+    version: "v1",
     name: "Berlin AHV controlled provisioning lab",
+    targetEnvironment: "controlled-vm-plan",
     owner: actor,
     approver: actor,
     approvedAt: now.toISOString(),
@@ -3864,13 +3917,90 @@ function createMockLabAuthorizationScope(actor: string, config: PlatformConfig):
     project: config.defaultProject,
     cluster: config.defaultCluster,
     network: config.networkProfile,
+    providerCoverage: ["NCI"],
+    targetEndpoints: ["prism-central-ref"],
     allowedActions: ["dry_run", "controlled_create_observation", "rollback_validation", "destroy_validation"],
     excludedActions: ["unscoped_create", "bulk_delete", "network_change", "image_delete", "production_workload_change"],
     pentestScopeReference: "Authorized lab scope / controlled provisioning test window",
     pentestScopeStructurallyValid: true,
+    evidenceReferences: ["PENTEST_SCOPE_TEMPLATE.md", "operator-approval-record"],
+    rollbackOwner: "Cloud Operations",
     status: "Approved",
     createdAt: now.toISOString(),
   };
+}
+
+function createMockLabScopeDiagnostics(scopes: LabAuthorizationScope[]): LabScopeDiagnostics {
+  const generatedAt = new Date().toISOString();
+  const providers: LabScopeDiagnostics["providerCoverage"][number]["provider"][] = ["NCI", "NKP", "NDB", "NUS", "NCM", "NAI"];
+  const latest = scopes[0];
+  const latestChecks = latest ? createMockLabScopeChecks(latest) : [];
+  const readyScopes = scopes.filter((scope) => createMockLabScopeChecks(scope).every((check) => check.passed));
+
+  return {
+    generatedAt,
+    totalScopes: scopes.length,
+    readyScopes: readyScopes.length,
+    providerCoverage: providers.map((provider) => {
+      const scope = readyScopes.find((item) => item.providerCoverage.includes(provider));
+      return {
+        provider,
+        covered: Boolean(scope),
+        scopeId: scope?.id,
+      };
+    }),
+    latest: latest
+      ? {
+          scopeId: latest.id,
+          status: latest.status,
+          expiresAt: latest.expiresAt,
+          daysUntilExpiry: Math.floor((new Date(latest.expiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)),
+          checks: latestChecks,
+          readyForAdapterReview: latestChecks.every((check) => check.passed),
+        }
+      : undefined,
+  };
+}
+
+function createMockLabScopeChecks(scope: LabAuthorizationScope) {
+  const now = Date.now();
+  return [
+    {
+      name: "Authorization approved",
+      passed: scope.status === "Approved" && new Date(scope.expiresAt).getTime() > now,
+      detail: scope.status === "Approved" ? `Approved by ${scope.approver} until ${scope.expiresAt}.` : "Scope is expired.",
+    },
+    {
+      name: "Pentest scope structured",
+      passed: scope.pentestScopeStructurallyValid,
+      detail: scope.pentestScopeReference,
+    },
+    {
+      name: "Target endpoints documented",
+      passed: scope.targetEndpoints.length > 0,
+      detail: scope.targetEndpoints.join(", ") || "Target endpoint references are required.",
+    },
+    {
+      name: "Provider coverage documented",
+      passed: scope.providerCoverage.length > 0,
+      detail: scope.providerCoverage.join(", ") || "Provider coverage is required.",
+    },
+    {
+      name: "Allowed and excluded actions documented",
+      passed: scope.allowedActions.length > 0 && scope.excludedActions.length > 0,
+      detail: `${scope.allowedActions.length} allowed / ${scope.excludedActions.length} excluded.`,
+    },
+    {
+      name: "Rollback owner assigned",
+      passed: Boolean(scope.rollbackOwner),
+      detail: scope.rollbackOwner || "Rollback owner is required.",
+    },
+    {
+      name: "Evidence references documented",
+      passed: scope.evidenceReferences.length > 0,
+      detail: scope.evidenceReferences.join(", ") || "Evidence references are required.",
+    },
+  ];
 }
 
 function createMockVmLifecycleProof(gate: ControlledProvisioningGate, actor: string): VmLifecycleProof {
@@ -4268,7 +4398,9 @@ function createMockAdapterEnablementRecord({
   const config = integrationConfigs.find((item) => item.name === provider);
   const credentialDiagnostic = credentialDiagnostics.find((item) => item.provider === provider);
   const activeScope = labAuthorizationScopes.find(
-    (scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid
+    (scope) =>
+      scope.providerCoverage.includes(provider) &&
+      createMockLabScopeChecks(scope).every((check) => check.passed)
   );
   const checks = [
     {
@@ -4276,7 +4408,7 @@ function createMockAdapterEnablementRecord({
       passed: Boolean(activeScope),
       detail: activeScope
         ? `${activeScope.project} / ${activeScope.cluster} / ${activeScope.network}`
-        : "Approved lab scope with structurally valid pentest reference is required.",
+        : "Approved, unexpired lab scope with pentest, endpoint, provider coverage, evidence, and rollback owner is required.",
     },
     {
       name: "Credential reference approved",
@@ -4323,6 +4455,7 @@ function createMockAdapterEnablementRecord({
     checks,
     evidence: [
       `Lab scope: ${activeScope?.id ?? "missing"}.`,
+      `Lab scope version: ${activeScope?.version ?? "missing"}.`,
       `Credential diagnostic: ${credentialDiagnostic?.status ?? "missing"}.`,
       `Provider readiness: ${config?.status ?? "missing"}.`,
       `Audit exports prepared: ${auditExports.length}.`,

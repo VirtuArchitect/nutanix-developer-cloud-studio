@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.3.0-adapter-enable-contract-hardening`.
+This project uses release tags for public milestones. The current release is `v2.4.0-lab-scope-pentest-evidence-hardening`.
 
 ## [Unreleased]
 
@@ -11,6 +11,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.4.0-lab-scope-pentest-evidence-hardening] - 2026-07-07
+
+### Added
+
+- Versioned lab authorization scope records with target environment, provider coverage, endpoint references, evidence references, and rollback owner.
+- Lab scope diagnostics API for readiness checks, provider coverage, expiry, and adapter-review readiness.
+- Admin Control Plane diagnostics for provider coverage, target endpoints, evidence references, and rollback ownership.
+- Tests proving expired or incomplete lab scope evidence blocks adapter enablement.
+
+### Notes
+
+- Pentest evidence is metadata-only and must not contain secrets.
+- Production readiness and adapter enablement now share the stricter active lab-scope predicate.
+- Real Nutanix mutation operations remain disabled.
 
 ## [v2.3.0-adapter-enable-contract-hardening] - 2026-07-06
 

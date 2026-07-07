@@ -2,6 +2,7 @@ import type {
   AdapterEnablementRecord,
   ProvisioningAdapterName,
 } from "../src/data/cloudStudioDomain";
+import { getActiveLabAuthorizationScope, isLabScopeReadyForProvider } from "./authorizationEvidence";
 import { createCredentialReferenceDiagnostics } from "./credentialReferences";
 import { createAuditRetentionDiagnostics } from "./privateCloudOperations";
 import type { ApiState, CreateAdapterEnablementRecordRequest } from "./types";
@@ -32,9 +33,8 @@ export function createAdapterEnablementRecord(
   const credentialDiagnostic = createCredentialReferenceDiagnostics(state.integrationConfigs).find(
     (item) => item.provider === provider
   );
-  const activeScope = state.labAuthorizationScopes.find(
-    (scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid
-  );
+  const activeScope = getActiveLabAuthorizationScope(state);
+  const scopeReady = isLabScopeReadyForProvider(activeScope, provider);
   const auditRetention = createAuditRetentionDiagnostics(state);
   const auditExportReady = state.auditExports.length > 0 && auditRetention.exportDestination.valid;
   const rollbackOwner = request.rollbackOwner?.trim() || "Cloud Operations";
@@ -42,10 +42,10 @@ export function createAdapterEnablementRecord(
   const checks = [
     {
       name: "Approved lab scope",
-      passed: Boolean(activeScope),
+      passed: scopeReady,
       detail: activeScope
-        ? `${activeScope.project} / ${activeScope.cluster} / ${activeScope.network}`
-        : "Approved lab scope with structurally valid pentest reference is required.",
+        ? `${activeScope.project} / ${activeScope.cluster} / ${activeScope.network} / ${activeScope.providerCoverage.join(", ")}`
+        : "Approved, unexpired lab scope with pentest, endpoint, provider coverage, evidence, and rollback owner is required.",
     },
     {
       name: "Credential reference approved",
@@ -100,6 +100,7 @@ export function createAdapterEnablementRecord(
     checks,
     evidence: [
       `Lab scope: ${activeScope?.id ?? "missing"}.`,
+      `Lab scope version: ${activeScope?.version ?? "missing"}.`,
       `Credential diagnostic: ${credentialDiagnostic?.status ?? "missing"}.`,
       `Provider readiness: ${config?.status ?? "missing"}.`,
       `Audit exports prepared: ${state.auditExports.length}.`,

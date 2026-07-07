@@ -58,7 +58,7 @@ The GitHub Pages demo remains a static frontend. The on-premises starter adds a 
 - Control plane jobs: queued orchestration records with worker transitions, retries, failures, and audit evidence
 - VM sandbox dry-run plans: AHV VM planning records with validation, quota, cost, expiry, approval evidence, and rollback evidence
 - Controlled provisioning gates: operator review records attached to dry-run plans with manual approval, scope, rollback, destroy, and kill-switch evidence
-- Lab authorization scopes: approved project, cluster, network, test window, allowed actions, excluded actions, and pentest scope evidence
+- Lab authorization scopes: versioned project, cluster, network, provider coverage, target endpoint, test window, allowed action, excluded action, evidence reference, rollback owner, and pentest scope evidence
 - VM lifecycle proofs: controlled gate, rollback, and destroy verification records
 - AHV controlled-provisioning runs: fail-closed preflight records for controlled create/destroy readiness
 - Platform-service requests: NKP, NDB, NUS, and NAI planning records gated by VM lifecycle proof
@@ -113,6 +113,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Optional strict trusted-header mode and session diagnostics
 - Provider credential reference diagnostics and validation
 - Adapter enablement contract review API and Admin Providers UI
+- Lab scope and pentest evidence diagnostics API and Admin Control Plane UI
 - Postgres repository scaffold and SQL migration files for production persistence planning
 - Postgres repository configuration validator and migration scaffold validation
 - AHV VM sandbox dry-run planner for safe validation before any real provisioning phase
@@ -156,6 +157,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - VM sandbox dry-run planning validates candidate inputs but does not create, clone, power, resize, tag, or delete VMs.
 - Controlled provisioning gate reviews can be approved or rejected, but approval does not enable real AHV mutation in this release.
 - Lab authorization and lifecycle proof records are evidence records only; they do not execute AHV operations.
+- Lab scope diagnostics store metadata and evidence references only, not pentest report contents, endpoint secrets, credentials, or tokens.
 - AHV controlled-provisioning preflight records checks only; Prism Central mutation calls remain disabled.
 - Platform-service requests validate catalog and dependency readiness but do not call NKP, NDB, NUS, or NAI APIs.
 - Platform-service preflight records check readiness only; NKP, NDB, NUS, and NAI mutation calls remain disabled.

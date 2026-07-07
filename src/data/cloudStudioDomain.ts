@@ -344,7 +344,9 @@ export type ControlledProvisioningGate = {
 
 export type LabAuthorizationScope = {
   id: string;
+  version: string;
   name: string;
+  targetEnvironment: string;
   owner: string;
   approver: string;
   approvedAt: string;
@@ -352,12 +354,39 @@ export type LabAuthorizationScope = {
   project: string;
   cluster: string;
   network: string;
+  providerCoverage: ProvisioningAdapterName[];
+  targetEndpoints: string[];
   allowedActions: string[];
   excludedActions: string[];
   pentestScopeReference: string;
   pentestScopeStructurallyValid: boolean;
+  evidenceReferences: string[];
+  rollbackOwner: string;
   status: "Approved" | "Expired";
   createdAt: string;
+};
+
+export type LabScopeDiagnostics = {
+  generatedAt: string;
+  totalScopes: number;
+  readyScopes: number;
+  providerCoverage: Array<{
+    provider: ProvisioningAdapterName;
+    covered: boolean;
+    scopeId?: string;
+  }>;
+  latest?: {
+    scopeId: string;
+    status: LabAuthorizationScope["status"];
+    expiresAt: string;
+    daysUntilExpiry: number;
+    checks: Array<{
+      name: string;
+      passed: boolean;
+      detail: string;
+    }>;
+    readyForAdapterReview: boolean;
+  };
 };
 
 export type VmLifecycleProof = {
