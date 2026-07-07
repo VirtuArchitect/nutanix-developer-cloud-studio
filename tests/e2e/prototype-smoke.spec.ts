@@ -365,6 +365,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution final turnover record")).toBeVisible();
   await expect(page.getByText("Execution final turnover evidence")).toBeVisible();
   await expect(page.getByText("Service acceptance ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production operational closure" })).toBeVisible();
+  await page.getByRole("button", { name: "Record operational closure" }).click();
+  await expect(page.getByText("Production execution operational closure record")).toBeVisible();
+  await expect(page.getByText("Execution operational closure evidence")).toBeVisible();
+  await expect(page.getByText("Final turnover ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

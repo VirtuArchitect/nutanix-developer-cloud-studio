@@ -193,6 +193,10 @@ import {
   ProductionExecutionFinalTurnoverRecordError,
 } from "./productionExecutionFinalTurnoverRecord";
 import {
+  createProductionExecutionOperationalClosureRecord,
+  ProductionExecutionOperationalClosureRecordError,
+} from "./productionExecutionOperationalClosureRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -322,6 +326,7 @@ import type {
   CreateProductionExecutionSupportReadinessRecordRequest,
   CreateProductionExecutionServiceAcceptanceRecordRequest,
   CreateProductionExecutionFinalTurnoverRecordRequest,
+  CreateProductionExecutionOperationalClosureRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -837,6 +842,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionFinalTurnoverRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionOperationalClosureRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1425,6 +1440,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionFinalTurnoverRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-operational-closure-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionOperationalClosureRecords });
     return;
   }
 
@@ -2944,6 +2968,34 @@ async function routeApi(
       record.provider,
       {
         serviceAcceptanceRecordId: record.serviceAcceptanceRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-operational-closure-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionOperationalClosureRecordRequest>(request);
+    const record = createProductionExecutionOperationalClosureRecord(state, body, context.session.user);
+    state.productionExecutionOperationalClosureRecords = [
+      record,
+      ...state.productionExecutionOperationalClosureRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-operational-closure.recorded",
+      context.session.user,
+      record.provider,
+      {
+        finalTurnoverRecordId: record.finalTurnoverRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

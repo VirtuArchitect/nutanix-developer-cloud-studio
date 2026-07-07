@@ -55,6 +55,7 @@ import {
   createProductionExecutionSupportReadinessRecordViaApi,
   createProductionExecutionServiceAcceptanceRecordViaApi,
   createProductionExecutionFinalTurnoverRecordViaApi,
+  createProductionExecutionOperationalClosureRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -127,6 +128,7 @@ import {
   fetchProductionExecutionSupportReadinessRecordsFromApi,
   fetchProductionExecutionServiceAcceptanceRecordsFromApi,
   fetchProductionExecutionFinalTurnoverRecordsFromApi,
+  fetchProductionExecutionOperationalClosureRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -636,6 +638,10 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionFinalTurnoverRecordViaApi({
       serviceAcceptanceRecordId: "production-execution-service-acceptance-record-ndb-1",
     });
+    await fetchProductionExecutionOperationalClosureRecordsFromApi();
+    await createProductionExecutionOperationalClosureRecordViaApi({
+      finalTurnoverRecordId: "production-execution-final-turnover-record-ndb-1",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -1016,6 +1022,19 @@ describe("cloudStudioApi", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining("production-execution-service-acceptance-record-ndb-1"),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      87,
+      "/api/real-adapter/production-execution-operational-closure-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      88,
+      "/api/real-adapter/production-execution-operational-closure-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("production-execution-final-turnover-record-ndb-1"),
       })
     );
   });

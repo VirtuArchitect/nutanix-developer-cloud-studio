@@ -614,6 +614,15 @@ Production execution final turnover records capture turnover evidence after serv
 
 Required role: `Platform Admin`.
 
+### Production Execution Operational Closure Records
+
+- `GET /api/real-adapter/production-execution-operational-closure-records`
+- `POST /api/real-adapter/production-execution-operational-closure-records`
+
+Production execution operational closure records capture closure evidence after final turnover and before any future post-implementation review phase. Records require a ready final turnover record, closure owner, steady-state operating model, SLO review proof, support backlog handoff, residual-risk acceptance, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

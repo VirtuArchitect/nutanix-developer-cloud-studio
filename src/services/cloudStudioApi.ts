@@ -65,6 +65,7 @@ import type {
   ProductionExecutionSupportReadinessRecord,
   ProductionExecutionServiceAcceptanceRecord,
   ProductionExecutionFinalTurnoverRecord,
+  ProductionExecutionOperationalClosureRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -520,6 +521,12 @@ export async function fetchProductionExecutionServiceAcceptanceRecordsFromApi() 
 export async function fetchProductionExecutionFinalTurnoverRecordsFromApi() {
   return fetchJson<ProductionExecutionFinalTurnoverRecord[]>(
     "/api/real-adapter/production-execution-final-turnover-records"
+  );
+}
+
+export async function fetchProductionExecutionOperationalClosureRecordsFromApi() {
+  return fetchJson<ProductionExecutionOperationalClosureRecord[]>(
+    "/api/real-adapter/production-execution-operational-closure-records"
   );
 }
 
@@ -1111,6 +1118,19 @@ export async function createProductionExecutionFinalTurnoverRecordViaApi(payload
 }) {
   return fetchJson<ProductionExecutionFinalTurnoverRecord>(
     "/api/real-adapter/production-execution-final-turnover-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionOperationalClosureRecordViaApi(payload: {
+  finalTurnoverRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionOperationalClosureRecord>(
+    "/api/real-adapter/production-execution-operational-closure-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

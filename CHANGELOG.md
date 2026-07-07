@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.54.0-production-execution-final-turnover-record`.
+This project uses release tags for public milestones. The current release is `v2.55.0-production-execution-operational-closure-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution operational closure records after final turnover records are complete.
+- Add production execution post-implementation review records after operational closure records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.55.0-production-execution-operational-closure-record] - 2026-07-07
+
+### Added
+
+- Production execution operational closure records linked to production execution final turnover records.
+- API endpoints for listing and recording production execution operational closure records.
+- Admin Operations production operational closure panel.
+- Closure owner, steady-state operating model reference, SLO review proof, support backlog handoff, and residual-risk acceptance checks.
+- Tests proving missing final turnover records or incomplete operational closure evidence block operational closure readiness.
+
+### Notes
+
+- Production execution operational closure records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.54.0-production-execution-final-turnover-record] - 2026-07-07
 
