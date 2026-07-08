@@ -125,6 +125,7 @@ export function createDefaultState(): ApiState {
     prismInventory: [],
     mockPrismStatus: createMockPrismSimulatorStatus(),
     mockPrismExecutions: [],
+    readOnlyPrismLabGates: [],
     prismSimulatorProfiles: createDefaultPrismSimulatorProfiles(),
     prismFailureScenarios: createDefaultPrismFailureScenarios(),
     realPrismPreflightRuns: [],

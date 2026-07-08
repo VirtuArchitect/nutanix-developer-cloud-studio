@@ -115,6 +115,8 @@ import {
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
+  fetchPrismReadOnlyAdapterDiagnosticsFromApi,
+  fetchReadOnlyPrismLabGatesFromApi,
   fetchPrismFailureScenariosFromApi,
   fetchPrismSimulatorProfilesFromApi,
   fetchPolicyBundlesFromApi,
@@ -182,6 +184,7 @@ import {
   requestEnvironmentDestroyViaApi,
   activatePrismFailureScenarioViaApi,
   createRealPrismPreflightRunViaApi,
+  createReadOnlyPrismLabGateViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
   runLabDiscoveryViaApi,
@@ -324,6 +327,9 @@ describe("cloudStudioApi", () => {
     await fetchMockPrismStatusFromApi();
     await fetchMockPrismExecutionsFromApi();
     await fetchPrismAdapterDiagnosticsFromApi();
+    await fetchPrismReadOnlyAdapterDiagnosticsFromApi();
+    await fetchReadOnlyPrismLabGatesFromApi();
+    await createReadOnlyPrismLabGateViaApi();
     await fetchPrismSimulatorProfilesFromApi();
     await selectPrismSimulatorProfileViaApi("sim-image-ubuntu-2404");
     await fetchPrismFailureScenariosFromApi();
@@ -340,21 +346,28 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/mock-prism/status", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/mock-prism/executions", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/adapter-diagnostics", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/prism/simulator-profiles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/prism/read-only-adapter/diagnostics", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/prism/read-only-lab-gates", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      7,
+      8,
+      "/api/prism/read-only-lab-gates",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/prism/simulator-profiles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      10,
       "/api/prism/simulator-profiles/sim-image-ubuntu-2404/select",
       expect.objectContaining({ method: "POST" })
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(8, "/api/prism/failure-scenarios", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(11, "/api/prism/failure-scenarios", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      9,
+      12,
       "/api/prism/failure-scenarios/task-failed/activate",
       expect.objectContaining({ method: "POST" })
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(10, "/api/prism/real-preflight-runs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(13, "/api/prism/real-preflight-runs", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      11,
+      14,
       "/api/prism/real-preflight-runs",
       expect.objectContaining({ method: "POST" })
     );

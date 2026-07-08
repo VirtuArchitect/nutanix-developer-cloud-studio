@@ -183,6 +183,9 @@ Required role: `Platform Admin`.
 - `POST /api/lab-adapters/:name/discover`
 - `GET /api/prism/inventory`
 - `POST /api/prism/inventory/import`
+- `GET /api/prism/read-only-adapter/diagnostics`
+- `GET /api/prism/read-only-lab-gates`
+- `POST /api/prism/read-only-lab-gates`
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
 - `GET /api/prism/adapter-diagnostics`
@@ -202,6 +205,10 @@ The mock Prism API endpoints expose simulator readiness and VM execution evidenc
 The simulator profile endpoints select mock project, cluster, image, subnet, and category records used by `MockPrismAdapter` planning. The failure scenario endpoints switch the simulator between normal success, failed task, timed-out task, and common readiness-failure paths. These controls only affect mock task evidence.
 
 The real Prism preflight endpoints create readiness evidence for endpoint references, credential references, lab authorization scope, and the mutation boundary. They do not open a network connection to Prism Central and always return `provisioningEnabled=false`.
+
+`GET /api/prism/read-only-adapter/diagnostics` returns the disabled read-only Prism adapter scaffold. It includes fixture-only request plans for clusters, projects, images, subnets, categories, and VMs. The response explicitly reports `networkCallEnabled=false` and `provisioningEnabled=false`.
+
+`POST /api/prism/read-only-lab-gates` records read-only lab gate evidence. A gate is ready only when NCI is reachable, a credential reference is configured, an approved lab scope exists, all Prism list operations are allowed, and mutation operations are explicitly excluded. This gate does not enable real Prism calls.
 
 ### Mock Prism Central Simulator
 

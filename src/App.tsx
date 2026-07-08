@@ -81,6 +81,7 @@ import {
   type PrismAdapterDiagnostics,
   type PrismInventoryImportResult,
   type PrismInventoryRecord,
+  type PrismReadOnlyAdapterDiagnostics,
   type ProvisioningAdapterReadiness,
   type ProductionAdapterAuthorizationPacket,
   type ProductionChangeFreezeRecord,
@@ -125,6 +126,7 @@ import {
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
   type RealAdapterLabScopeActivation,
+  type ReadOnlyPrismLabGate,
   type RealAdapterSwitchStateAuditPackage,
   type RealPrismPreflightRun,
   type ReleaseEvidenceExportRecord,
@@ -327,6 +329,8 @@ import {
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
+  fetchPrismReadOnlyAdapterDiagnosticsFromApi,
+  fetchReadOnlyPrismLabGatesFromApi,
   fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
@@ -345,6 +349,7 @@ import {
   requestEnvironmentDestroyViaApi,
   activatePrismFailureScenarioViaApi,
   createRealPrismPreflightRunViaApi,
+  createReadOnlyPrismLabGateViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
   runIntegrationCheckViaApi,
@@ -389,6 +394,8 @@ export function App() {
   );
   const [prismInventory, setPrismInventory] = useState<PrismInventoryRecord[]>([]);
   const [prismInventoryImport, setPrismInventoryImport] = useState<PrismInventoryImportResult | undefined>();
+  const [prismReadOnlyAdapterDiagnostics, setPrismReadOnlyAdapterDiagnostics] = useState<PrismReadOnlyAdapterDiagnostics | null>(null);
+  const [readOnlyPrismLabGates, setReadOnlyPrismLabGates] = useState<ReadOnlyPrismLabGate[]>([]);
   const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
   const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
   const [prismAdapterDiagnostics, setPrismAdapterDiagnostics] = useState<PrismAdapterDiagnostics | null>(null);
@@ -613,6 +620,8 @@ export function App() {
             apiLabAuthorizationScopes,
             apiLabScopeDiagnostics,
             apiPrismInventory,
+            apiPrismReadOnlyAdapterDiagnostics,
+            apiReadOnlyPrismLabGates,
             apiMockPrismStatus,
             apiMockPrismExecutions,
             apiPrismAdapterDiagnostics,
@@ -716,6 +725,8 @@ export function App() {
             fetchLabAuthorizationScopesFromApi(),
             fetchLabScopeDiagnosticsFromApi(),
             fetchPrismInventoryFromApi(),
+            fetchPrismReadOnlyAdapterDiagnosticsFromApi(),
+            fetchReadOnlyPrismLabGatesFromApi(),
             fetchMockPrismStatusFromApi(),
             fetchMockPrismExecutionsFromApi(),
             fetchPrismAdapterDiagnosticsFromApi(),
@@ -821,6 +832,8 @@ export function App() {
             setLabScopeDiagnostics(apiLabScopeDiagnostics);
             setPrismInventory(apiPrismInventory.records);
             setPrismInventoryImport(apiPrismInventory.lastImport);
+            setPrismReadOnlyAdapterDiagnostics(apiPrismReadOnlyAdapterDiagnostics);
+            setReadOnlyPrismLabGates(apiReadOnlyPrismLabGates);
             setMockPrismStatus(apiMockPrismStatus);
             setMockPrismExecutions(apiMockPrismExecutions);
             setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -1081,6 +1094,8 @@ export function App() {
       apiLabAuthorizationScopes,
       apiLabScopeDiagnostics,
       apiPrismInventory,
+      apiPrismReadOnlyAdapterDiagnostics,
+      apiReadOnlyPrismLabGates,
       apiMockPrismStatus,
       apiMockPrismExecutions,
       apiPrismAdapterDiagnostics,
@@ -1184,6 +1199,8 @@ export function App() {
       fetchLabAuthorizationScopesFromApi(),
       fetchLabScopeDiagnosticsFromApi(),
       fetchPrismInventoryFromApi(),
+      fetchPrismReadOnlyAdapterDiagnosticsFromApi(),
+      fetchReadOnlyPrismLabGatesFromApi(),
       fetchMockPrismStatusFromApi(),
       fetchMockPrismExecutionsFromApi(),
       fetchPrismAdapterDiagnosticsFromApi(),
@@ -1288,6 +1305,8 @@ export function App() {
     setLabScopeDiagnostics(apiLabScopeDiagnostics);
     setPrismInventory(apiPrismInventory.records);
     setPrismInventoryImport(apiPrismInventory.lastImport);
+    setPrismReadOnlyAdapterDiagnostics(apiPrismReadOnlyAdapterDiagnostics);
+    setReadOnlyPrismLabGates(apiReadOnlyPrismLabGates);
     setMockPrismStatus(apiMockPrismStatus);
     setMockPrismExecutions(apiMockPrismExecutions);
     setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -1597,6 +1616,13 @@ export function App() {
   async function createRealPrismPreflightRun() {
     if (apiHealth.mode === "api") {
       await createRealPrismPreflightRunViaApi();
+      await refreshApiState();
+    }
+  }
+
+  async function createReadOnlyPrismLabGate() {
+    if (apiHealth.mode === "api") {
+      await createReadOnlyPrismLabGateViaApi();
       await refreshApiState();
     }
   }
@@ -3595,6 +3621,8 @@ export function App() {
             labScopeDiagnostics={labScopeDiagnostics}
             prismInventory={prismInventory}
             prismInventoryImport={prismInventoryImport}
+            prismReadOnlyAdapterDiagnostics={prismReadOnlyAdapterDiagnostics}
+            readOnlyPrismLabGates={readOnlyPrismLabGates}
             mockPrismStatus={mockPrismStatus}
             mockPrismExecutions={mockPrismExecutions}
             prismAdapterDiagnostics={prismAdapterDiagnostics}
@@ -3712,6 +3740,7 @@ export function App() {
             selectPrismSimulatorProfile={selectPrismSimulatorProfile}
             activatePrismFailureScenario={activatePrismFailureScenario}
             createRealPrismPreflightRun={createRealPrismPreflightRun}
+            createReadOnlyPrismLabGate={createReadOnlyPrismLabGate}
             runControlPlaneJobAction={runControlPlaneJobAction}
             createVmSandboxDryRun={createVmSandboxDryRun}
             recordLabAuthorizationScope={recordLabAuthorizationScope}
@@ -4293,6 +4322,8 @@ function AdminView({
   labScopeDiagnostics,
   prismInventory,
   prismInventoryImport,
+  prismReadOnlyAdapterDiagnostics,
+  readOnlyPrismLabGates,
   mockPrismStatus,
   mockPrismExecutions,
   prismAdapterDiagnostics,
@@ -4394,6 +4425,7 @@ function AdminView({
   selectPrismSimulatorProfile,
   activatePrismFailureScenario,
   createRealPrismPreflightRun,
+  createReadOnlyPrismLabGate,
   runControlPlaneJobAction,
   createVmSandboxDryRun,
   recordLabAuthorizationScope,
@@ -4490,6 +4522,8 @@ function AdminView({
   labScopeDiagnostics: LabScopeDiagnostics;
   prismInventory: PrismInventoryRecord[];
   prismInventoryImport?: PrismInventoryImportResult;
+  prismReadOnlyAdapterDiagnostics: PrismReadOnlyAdapterDiagnostics | null;
+  readOnlyPrismLabGates: ReadOnlyPrismLabGate[];
   mockPrismStatus: MockPrismSimulatorStatus | null;
   mockPrismExecutions: MockPrismExecution[];
   prismAdapterDiagnostics: PrismAdapterDiagnostics | null;
@@ -4594,6 +4628,7 @@ function AdminView({
   selectPrismSimulatorProfile: (profileId: string) => void;
   activatePrismFailureScenario: (scenarioId: PrismSimulatorFailureScenarioId) => void;
   createRealPrismPreflightRun: () => void;
+  createReadOnlyPrismLabGate: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   createVmSandboxDryRun: () => void;
   recordLabAuthorizationScope: () => void;
@@ -4779,6 +4814,15 @@ function AdminView({
               records={prismInventory}
               lastImport={prismInventoryImport}
               importPrismInventory={importPrismInventory}
+            />
+          </Panel>
+          <Panel title="Read-only Prism adapter scaffold" action={prismReadOnlyAdapterDiagnostics?.mode ?? "Not loaded"}>
+            <PrismReadOnlyAdapterPanel diagnostics={prismReadOnlyAdapterDiagnostics} />
+          </Panel>
+          <Panel title="Read-only Prism lab gate" action={`${readOnlyPrismLabGates.length} gates`}>
+            <ReadOnlyPrismLabGatePanel
+              gates={readOnlyPrismLabGates}
+              createReadOnlyPrismLabGate={createReadOnlyPrismLabGate}
             />
           </Panel>
           <Panel title="Mock Prism simulator" action={mockPrismStatus?.status ?? "Checking"}>
@@ -6020,6 +6064,105 @@ function PrismInventoryPanel({
               </span>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PrismReadOnlyAdapterPanel({ diagnostics }: { diagnostics: PrismReadOnlyAdapterDiagnostics | null }) {
+  if (!diagnostics) {
+    return <p className="emptyState">Read-only adapter diagnostics have not been loaded from the API yet.</p>;
+  }
+
+  return (
+    <div className="prismInventoryPanel">
+      <div className="guardrailBanner">
+        <TerminalSquare size={18} />
+        <div>
+          <strong>{diagnostics.adapter}</strong>
+          <span>{diagnostics.mode}; request plans are fixture-only and network execution is disabled.</span>
+        </div>
+      </div>
+      <div className="controlGrid">
+        <CheckLine icon={Network} label="Endpoint ref" value={diagnostics.endpointConfigured ? "Configured" : "Required"} passed={diagnostics.endpointConfigured} />
+        <CheckLine icon={LockKeyhole} label="Credential ref" value={diagnostics.credentialReferenceConfigured ? "Configured" : "Required"} passed={diagnostics.credentialReferenceConfigured} />
+        <CheckLine icon={ShieldCheck} label="Network calls" value="Disabled" passed={!diagnostics.networkCallEnabled} />
+        <CheckLine icon={Gauge} label="Read-only ops" value={`${diagnostics.supportedOperations.length}`} passed />
+      </div>
+      <div className="dryRunValidationList">
+        {diagnostics.checks.map((check) => (
+          <div className="dryRunValidationRow" key={check.name}>
+            <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+            <div>
+              <strong>{check.name}</strong>
+              <small>{check.detail}</small>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Request scaffold</strong>
+        {diagnostics.requestPlans.slice(0, 4).map((plan) => (
+          <span key={plan.operation}>{plan.operation}: {plan.method} {plan.path}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReadOnlyPrismLabGatePanel({
+  gates,
+  createReadOnlyPrismLabGate,
+}: {
+  gates: ReadOnlyPrismLabGate[];
+  createReadOnlyPrismLabGate: () => void;
+}) {
+  const latest = gates[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Read-only lab authorization gate</strong>
+          <span>Requires allowed list operations, excluded mutations, reachable NCI config, and approved lab scope.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createReadOnlyPrismLabGate} type="button">
+          <Play size={15} />
+          Record gate
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No read-only Prism lab gate has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.scopeRef}</strong>
+              <span>{latest.allowedOperations.length} allowed read-only operations / network disabled</span>
+            </div>
+            <span className={`status ${latest.status === "Blocked" ? "failed" : "approval"}`}>{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={ShieldCheck} label="Allowed ops" value={`${latest.allowedOperations.length}`} passed />
+            <CheckLine icon={LockKeyhole} label="Excluded ops" value={`${latest.excludedOperations.length}`} passed />
+            <CheckLine icon={Network} label="Network calls" value="Disabled" passed={!latest.networkCallEnabled} />
+            <CheckLine icon={Gauge} label="Provisioning" value="Disabled" passed={!latest.provisioningEnabled} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

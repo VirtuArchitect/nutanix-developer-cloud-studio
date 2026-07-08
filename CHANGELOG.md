@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.81.0-adapter-contract-test-harness`.
+This project uses release tags for public milestones. The current release is `v2.85.0-operator-runbook-rollback-pack`.
 
 ## [Unreleased]
 
@@ -12,6 +12,52 @@ This project uses release tags for public milestones. The current release is `v2
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.85.0-operator-runbook-rollback-pack] - 2026-07-08
+
+### Added
+
+- Operator runbook covering install, upgrade, backup, restore, rollback, emergency stop, release validation, and evidence capture.
+- Rollback pack with trigger conditions, required files, rollback procedure, acceptance criteria, and stop conditions.
+
+### Notes
+
+- The runbook does not authorize real Prism calls or real provisioning.
+
+## [v2.84.0-read-only-inventory-contract-tests] - 2026-07-08
+
+### Added
+
+- Fixture-driven read-only inventory contract tests for clusters, projects, images, subnets, categories, and VMs.
+- Assertions that fixture imports remain deterministic and mutation-blocked.
+
+### Notes
+
+- Inventory contract tests do not call Prism Central.
+
+## [v2.83.0-prism-read-only-lab-gate] - 2026-07-08
+
+### Added
+
+- API-backed read-only Prism lab gate records.
+- Gate checks for active lab scope, reachable NCI configuration, credential reference, allowed list operations, excluded mutation operations, and disabled network execution.
+- Admin Providers panel for read-only lab gate evidence.
+
+### Notes
+
+- Gates are evidence-only and do not enable real Prism network calls.
+
+## [v2.82.0-read-only-prism-adapter-scaffold] - 2026-07-08
+
+### Added
+
+- Disabled read-only Prism adapter scaffold that builds fixture-only request plans for cluster, project, image, subnet, category, and VM list operations.
+- API-backed adapter diagnostics at `/api/prism/read-only-adapter/diagnostics`.
+- Admin Providers panel showing request plans, checks, and disabled network/provisioning guardrails.
+
+### Notes
+
+- `networkCallEnabled=false` and `provisioningEnabled=false` remain hard guardrails.
 
 ## [v2.81.0-adapter-contract-test-harness] - 2026-07-08
 

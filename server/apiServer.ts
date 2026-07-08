@@ -327,6 +327,8 @@ import {
   createMockPrismInventoryAdapter,
   createPrismReadOnlyScope,
 } from "./prismInventoryAdapter";
+import { createDisabledReadOnlyPrismAdapter } from "./readOnlyPrismAdapter";
+import { createReadOnlyPrismLabGate } from "./readOnlyPrismLabGate";
 import {
   AuthorizationError,
   createRequestContext,
@@ -1277,6 +1279,20 @@ async function routeApi(
         lastImport: state.prismInventoryImport,
       },
     });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-adapter/diagnostics") {
+    const integrationConfig = state.integrationConfigs.find((item) => item.name === "NCI");
+    sendJson(response, 200, {
+      data: createDisabledReadOnlyPrismAdapter().diagnostics(integrationConfig, state.platformConfig),
+    });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-lab-gates") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.readOnlyPrismLabGates });
     return;
   }
 
@@ -2273,6 +2289,21 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 200, { data: state.prismInventoryImport });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-lab-gates") {
+    requireRole(context, ["Platform Admin"]);
+    const gate = createReadOnlyPrismLabGate(state, context.session.user);
+    addAuditEvent(state, "prism.readonly.lab-gate.recorded", context.session.user, "NCI", {
+      status: gate.status,
+      allowedOperations: gate.allowedOperations,
+      excludedOperationCount: gate.excludedOperations.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: gate });
     return;
   }
 

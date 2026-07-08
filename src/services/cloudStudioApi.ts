@@ -48,6 +48,7 @@ import type {
   PolicyBundle,
   PrismInventoryImportResult,
   PrismInventoryRecord,
+  PrismReadOnlyAdapterDiagnostics,
   ProvisioningAdapterReadiness,
   ProductionAdapterAuthorizationPacket,
   ProductionChangeFreezeRecord,
@@ -92,6 +93,7 @@ import type {
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
+  ReadOnlyPrismLabGate,
   RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
   ReleaseEvidenceExportRecord,
@@ -240,6 +242,20 @@ export async function fetchLabAdaptersFromApi() {
 
 export async function fetchPrismInventoryFromApi() {
   return fetchJson<PrismInventoryEnvelope>("/api/prism/inventory");
+}
+
+export async function fetchPrismReadOnlyAdapterDiagnosticsFromApi() {
+  return fetchJson<PrismReadOnlyAdapterDiagnostics>("/api/prism/read-only-adapter/diagnostics");
+}
+
+export async function fetchReadOnlyPrismLabGatesFromApi() {
+  return fetchJson<ReadOnlyPrismLabGate[]>("/api/prism/read-only-lab-gates");
+}
+
+export async function createReadOnlyPrismLabGateViaApi() {
+  return fetchJson<ReadOnlyPrismLabGate>("/api/prism/read-only-lab-gates", {
+    method: "POST",
+  });
 }
 
 export async function fetchMockPrismStatusFromApi() {
