@@ -186,12 +186,22 @@ Required role: `Platform Admin`.
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
 - `GET /api/prism/adapter-diagnostics`
+- `GET /api/prism/simulator-profiles`
+- `POST /api/prism/simulator-profiles/:id/select`
+- `GET /api/prism/failure-scenarios`
+- `POST /api/prism/failure-scenarios/:id/activate`
+- `GET /api/prism/real-preflight-runs`
+- `POST /api/prism/real-preflight-runs`
 
 The discovery endpoint simulates read-only adapter readiness. The Prism inventory import endpoint imports mock read-only cluster, project, image, network, category, and VM records after NCI integration config is reachable. Imported image records are mapped into draft AHV image profile candidates for registry review. Provisioning remains disabled in the API response and UI.
 
 The mock Prism API endpoints expose simulator readiness and VM execution evidence recorded during VM-targeted environment creation. Execution records include the selected project, cluster, image, subnet, category set, task UUID, task state, and `provisioningEnabled=false`.
 
-`GET /api/prism/adapter-diagnostics` reports the active Prism adapter mode, supported adapter operations, the mock endpoint, real endpoint configuration state, latest mock task, and blocked reasons for real Prism adapter use. The current active adapter is `MockPrismAdapter`; `DisabledRealPrismAdapter` documents future real-adapter requirements while keeping all mutation paths disabled.
+`GET /api/prism/adapter-diagnostics` reports the active Prism adapter mode, supported adapter operations, the mock endpoint, real endpoint configuration state, latest mock task, readiness checks, operator actions, real-adapter boundary, and blocked reasons for real Prism adapter use. The current active adapter is `MockPrismAdapter`; `DisabledRealPrismAdapter` documents future real-adapter requirements while keeping all mutation paths disabled.
+
+The simulator profile endpoints select mock project, cluster, image, subnet, and category records used by `MockPrismAdapter` planning. The failure scenario endpoints switch the simulator between normal success, failed task, timed-out task, and common readiness-failure paths. These controls only affect mock task evidence.
+
+The real Prism preflight endpoints create readiness evidence for endpoint references, credential references, lab authorization scope, and the mutation boundary. They do not open a network connection to Prism Central and always return `provisioningEnabled=false`.
 
 ### Mock Prism Central Simulator
 

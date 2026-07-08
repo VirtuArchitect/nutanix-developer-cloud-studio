@@ -17,6 +17,7 @@ import {
 } from "../src/data/cloudStudioDomain";
 import type { ApiState } from "./types";
 import { createMockPrismSimulatorStatus } from "./mockPrismCentral";
+import { createDefaultPrismFailureScenarios, createDefaultPrismSimulatorProfiles } from "./prismSimulatorControls";
 
 const auditRetentionEvents = Number(process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500);
 
@@ -124,6 +125,9 @@ export function createDefaultState(): ApiState {
     prismInventory: [],
     mockPrismStatus: createMockPrismSimulatorStatus(),
     mockPrismExecutions: [],
+    prismSimulatorProfiles: createDefaultPrismSimulatorProfiles(),
+    prismFailureScenarios: createDefaultPrismFailureScenarios(),
+    realPrismPreflightRuns: [],
     platformConfig,
     provisioningAdapters: defaultProvisioningAdapters(),
     adapterEnablementRecords: [],

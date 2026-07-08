@@ -31,6 +31,8 @@ import type {
   LifecycleOperationRecord,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
+  PrismSimulatorFailureScenario,
+  PrismSimulatorProfile,
   PlatformConfig,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -46,6 +48,7 @@ import type {
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
+  RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
   ReleaseEvidenceExportRecord,
   SwitchExecutionHandoffPackage,
@@ -117,6 +120,9 @@ export type ApiState = {
   prismInventoryImport?: PrismInventoryImportResult;
   mockPrismStatus: MockPrismSimulatorStatus;
   mockPrismExecutions: MockPrismExecution[];
+  prismSimulatorProfiles: PrismSimulatorProfile[];
+  prismFailureScenarios: PrismSimulatorFailureScenario[];
+  realPrismPreflightRuns: RealPrismPreflightRun[];
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
   adapterEnablementRecords: AdapterEnablementRecord[];

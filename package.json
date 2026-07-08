@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.73.0-adapter-contract-split",
+  "version": "2.81.0-adapter-contract-test-harness",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -13,7 +13,10 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run --pool=threads --maxWorkers=1",
     "test:e2e": "playwright test",
-    "test:all": "npm run test && npm run build:all && npm run test:e2e"
+    "test:all": "npm run test && npm run build:all && npm run test:e2e",
+    "validate:runtime": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-runtime-package.ps1",
+    "validate:onprem": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-onprem-config.ps1",
+    "validate:backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-state-backup-restore.ps1"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

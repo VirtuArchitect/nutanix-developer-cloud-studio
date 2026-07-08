@@ -25,7 +25,20 @@ $sampleState = @{
 Set-Content -LiteralPath $stateFile -Value $sampleState -Encoding utf8
 
 & .\scripts\backup-state.ps1 -DataFile $stateFile -BackupDirectory $backupDir -BackupName "smoke-backup.json" | Out-Null
-& .\scripts\restore-state.ps1 -BackupFile (Join-Path $backupDir "smoke-backup.json") -DataFile $restoreFile | Out-Null
+$backupFile = Join-Path $backupDir "smoke-backup.json"
+$manifestFile = "$backupFile.manifest.json"
+
+if (-not (Test-Path $manifestFile)) {
+  throw "Backup manifest was not created."
+}
+
+$manifest = Get-Content -Raw -LiteralPath $manifestFile | ConvertFrom-Json
+$hash = Get-FileHash -Algorithm SHA256 -LiteralPath $backupFile
+if ($manifest.sha256 -ne $hash.Hash.ToLowerInvariant()) {
+  throw "Backup manifest checksum validation failed."
+}
+
+& .\scripts\restore-state.ps1 -BackupFile $backupFile -DataFile $restoreFile | Out-Null
 
 $restored = Get-Content -Raw -LiteralPath $restoreFile | ConvertFrom-Json
 if ($restored.environments[0].name -ne "backup-smoke") {

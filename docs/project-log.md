@@ -2,6 +2,22 @@
 
 ## 2026-07-08
 
+- Released `v2.81.0-adapter-contract-test-harness`.
+- Added direct Prism adapter contract tests for simulator success, failure, timeout, non-VM behavior, and disabled real-adapter fail-closed behavior.
+- Released `v2.80.0-state-and-backup-hardening`.
+- Added checksum-backed JSON state backup manifests and restore-time manifest validation.
+- Released `v2.79.0-on-prem-runtime-packaging`.
+- Added runtime package validation for Dockerfile, Compose, environment template, API startup, static serving, healthcheck, and disabled adapter guardrails.
+- Released `v2.78.0-release-and-deployment-hygiene`.
+- Added release notes for v2.74.0 through v2.81.0 and aligned current release metadata across docs.
+- Released `v2.77.0-controlled-real-prism-preflight`.
+- Added controlled real Prism preflight evidence records that check endpoint, credential, lab scope, and mutation-boundary readiness without opening a network connection.
+- Released `v2.76.0-simulator-failure-scenarios`.
+- Added mock Prism failure scenarios for negative-path task evidence, including failed and timed-out simulator tasks.
+- Released `v2.75.0-simulator-profile-registry`.
+- Added API-backed simulator profiles for mock Prism project, cluster, image, subnet, and category selection.
+- Released `v2.74.0-adapter-mode-readiness`.
+- Expanded Prism adapter diagnostics with readiness checks, operator actions, and the real-adapter boundary.
 - Released `v2.73.0-adapter-contract-split`.
 - Added Prism adapter contract diagnostics with active mode, supported operations, latest mock task, and real-adapter blocked reasons.
 - Moved VM-targeted environment create evidence behind `MockPrismAdapter` and added `DisabledRealPrismAdapter` for the future live boundary.

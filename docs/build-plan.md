@@ -28,6 +28,14 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.81.0-adapter-contract-test-harness` adds direct Prism adapter contract tests for simulator success, failure, timeout, non-VM behavior, and disabled real-adapter fail-closed behavior.
+- `v2.80.0-state-and-backup-hardening` adds checksum-backed JSON state backup manifests and restore validation.
+- `v2.79.0-on-prem-runtime-packaging` adds runtime package validation for Dockerfile, Compose, environment template, static/API serving, and disabled adapter guardrails.
+- `v2.78.0-release-and-deployment-hygiene` adds release-note files and aligns current-release metadata across docs.
+- `v2.77.0-controlled-real-prism-preflight` adds API-backed real Prism preflight evidence records that check references and blocked mutation paths without connecting to Prism Central.
+- `v2.76.0-simulator-failure-scenarios` adds API-backed mock Prism failure modes for failed and timed-out task evidence.
+- `v2.75.0-simulator-profile-registry` adds selectable simulator profiles for mock Prism project, cluster, image, subnet, and category planning.
+- `v2.74.0-adapter-mode-readiness` expands Prism adapter diagnostics with readiness checks, operator actions, and an explicit real-adapter boundary.
 - `v2.73.0-adapter-contract-split` formalizes the Prism adapter interface, moves VM create simulation behind `MockPrismAdapter`, adds `DisabledRealPrismAdapter`, and exposes adapter diagnostics in Admin.
 - `v2.72.0-mock-prism-adapter-flow` connects VM-targeted environment creation to mock Prism Central task evidence and surfaces simulator readiness in Admin and environment detail views.
 - `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record` adds evidence-only archive recovery final operations handoff records linked to monitoring ownership closure records and an Admin Operations archive recovery final operations handoff panel.

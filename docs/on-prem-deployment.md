@@ -35,9 +35,10 @@ On-prem configuration validation:
 
 ```powershell
 .\scripts\validate-onprem-config.ps1
+.\scripts\validate-runtime-package.ps1
 ```
 
-The validation script checks the JSON state path, audit retention minimum, rate-limit range, repository mode, and the disabled real Prism adapter guardrail.
+The configuration validator checks the JSON state path, audit retention minimum, rate-limit range, repository mode, and the disabled real Prism adapter guardrail. The runtime package validator checks Dockerfile, Compose, `.env.example`, static/API serving, healthcheck, and disabled adapter packaging guardrails.
 
 ## Runtime Configuration
 
@@ -114,6 +115,8 @@ The starter uses a JSON file for mock state. For local evaluation, back up the s
 .\scripts\restore-state.ps1 -BackupFile .data\backups\ndc-studio-YYYYMMDD-HHMMSS.json
 .\scripts\test-state-backup-restore.ps1
 ```
+
+Backups now create a `.manifest.json` file beside the backup. Restore verifies the manifest schema, SHA-256 checksum, and file size when the manifest is present.
 
 For a Docker volume:
 

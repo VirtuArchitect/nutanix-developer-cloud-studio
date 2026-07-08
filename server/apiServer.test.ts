@@ -464,6 +464,8 @@ describe("api server", () => {
     const mockPrismStatus = await requestJson("/api/mock-prism/status");
     const mockPrismExecutions = await requestJson("/api/mock-prism/executions");
     const adapterDiagnostics = await requestJson("/api/prism/adapter-diagnostics");
+    const simulatorProfiles = await requestJson("/api/prism/simulator-profiles");
+    const failureScenarios = await requestJson("/api/prism/failure-scenarios");
     const detail = await requestJson("/api/environments/api-created-dev");
 
     expect(environments.data[0]).toMatchObject({ name: "api-created-dev" });
@@ -494,6 +496,9 @@ describe("api server", () => {
       activeMode: "mock-prism",
       activeAdapter: "MockPrismAdapter",
       provisioningEnabled: false,
+      readinessChecks: expect.arrayContaining([expect.objectContaining({ name: "Simulator profiles" })]),
+      operatorActions: expect.arrayContaining([expect.objectContaining({ label: "Run real Prism preflight" })]),
+      realAdapterBoundary: expect.stringContaining("DisabledRealPrismAdapter"),
       lastMockTask: expect.objectContaining({
         environmentName: "api-created-dev",
         taskUuid: created.data.mockPrismExecution.task.uuid,
@@ -504,6 +509,55 @@ describe("api server", () => {
     );
     expect(detail.data.mockPrismExecutions).toEqual(
       expect.arrayContaining([expect.objectContaining({ environmentName: "api-created-dev" })])
+    );
+    expect(simulatorProfiles.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ kind: "Image", selected: true })])
+    );
+    expect(failureScenarios.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "none", active: true })])
+    );
+  });
+
+  it("selects simulator profiles, records failure scenarios, and blocks real Prism preflight", async () => {
+    const selectedImage = await requestJson("/api/prism/simulator-profiles/sim-image-ubuntu-2404/select", {
+      method: "POST",
+    });
+    const activatedFailure = await requestJson("/api/prism/failure-scenarios/task-failed/activate", {
+      method: "POST",
+    });
+    const failedCreate = await requestJson("/api/environments", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "api-failure-scenario-dev",
+        templateId: "vm-app",
+        owner: "demo.user",
+        region: "Berlin Lab",
+        targets: ["VM"],
+      }),
+    });
+    const preflight = await requestJson("/api/prism/real-preflight-runs", { method: "POST" });
+    const preflightRuns = await requestJson("/api/prism/real-preflight-runs");
+    const adapterDiagnostics = await requestJson("/api/prism/adapter-diagnostics");
+
+    expect(selectedImage.data).toMatchObject({ id: "sim-image-ubuntu-2404", selected: true });
+    expect(activatedFailure.data).toMatchObject({ id: "task-failed", active: true, taskState: "FAILED" });
+    expect(failedCreate.data.mockPrismExecution).toMatchObject({
+      request: expect.objectContaining({ image: "ubuntu-24.04-lts-golden" }),
+      task: expect.objectContaining({
+        state: "FAILED",
+        percentageComplete: 70,
+      }),
+      provisioningEnabled: false,
+    });
+    expect(preflight.data).toMatchObject({
+      status: "Blocked",
+      provisioningEnabled: false,
+      evidence: expect.arrayContaining([expect.stringContaining("without opening a network connection")]),
+      mutationOperationsBlocked: expect.arrayContaining(["createVm", "deleteVm"]),
+    });
+    expect(preflightRuns.data[0]).toMatchObject({ id: preflight.data.id });
+    expect(adapterDiagnostics.data.readinessChecks).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Failure scenario", passed: false })])
     );
   });
 
