@@ -288,7 +288,12 @@ import {
 } from "./mockPlatform";
 import { routeMockPrismCentral } from "./mockPrismCentral";
 import { createPlatformServiceRequest, PlatformServiceError } from "./platformServices";
-import { createPrismAdapterDiagnostics } from "./prismAdapterContract";
+import { createPrismAdapterDiagnostics, createRealPrismBlockedReasons } from "./prismAdapterContract";
+import {
+  activatePrismFailureScenario,
+  createRealPrismPreflightRun,
+  selectPrismSimulatorProfile,
+} from "./prismSimulatorControls";
 import {
   createDisabledPlatformServiceAdapterContract,
   PlatformServiceAdapterContractError,
@@ -1287,6 +1292,51 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/prism/adapter-diagnostics") {
     sendJson(response, 200, { data: createPrismAdapterDiagnostics(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/simulator-profiles") {
+    sendJson(response, 200, { data: state.prismSimulatorProfiles });
+    return;
+  }
+
+  const simulatorProfileSelectMatch = url.pathname.match(/^\/api\/prism\/simulator-profiles\/([^/]+)\/select$/);
+  if (request.method === "POST" && simulatorProfileSelectMatch) {
+    requireRole(context, ["Platform Admin"]);
+    const profile = selectPrismSimulatorProfile(state, decodeURIComponent(simulatorProfileSelectMatch[1]));
+    await store.save(state);
+    sendJson(response, 200, { data: profile });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/failure-scenarios") {
+    sendJson(response, 200, { data: state.prismFailureScenarios });
+    return;
+  }
+
+  const failureScenarioActivateMatch = url.pathname.match(/^\/api\/prism\/failure-scenarios\/([^/]+)\/activate$/);
+  if (request.method === "POST" && failureScenarioActivateMatch) {
+    requireRole(context, ["Platform Admin"]);
+    const scenario = activatePrismFailureScenario(
+      state,
+      decodeURIComponent(failureScenarioActivateMatch[1]) as Parameters<typeof activatePrismFailureScenario>[1]
+    );
+    await store.save(state);
+    sendJson(response, 200, { data: scenario });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/real-preflight-runs") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.realPrismPreflightRuns });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/real-preflight-runs") {
+    requireRole(context, ["Platform Admin"]);
+    const run = createRealPrismPreflightRun(state, context.session.user, createRealPrismBlockedReasons(state));
+    await store.save(state);
+    sendJson(response, 201, { data: run });
     return;
   }
 

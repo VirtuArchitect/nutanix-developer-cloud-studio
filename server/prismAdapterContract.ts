@@ -12,6 +12,7 @@ import {
   createMockPrismTask,
   getMockPrismEntity,
 } from "./mockPrismCentral";
+import { getActivePrismFailureScenario, getSelectedPrismSimulatorProfile } from "./prismSimulatorControls";
 import type { ApiState } from "./types";
 
 export type PrismVmCreatePlan = {
@@ -55,6 +56,10 @@ export class MockPrismAdapter implements PrismAdapter {
       provisioningEnabled: false,
       supportedOperations: [...this.supportedOperations],
       blockedReasons: createRealPrismBlockedReasons(state),
+      readinessChecks: createPrismReadinessChecks(state),
+      operatorActions: createPrismOperatorActions(state),
+      realAdapterBoundary:
+        "MockPrismAdapter can plan and simulate VM create tasks only. DisabledRealPrismAdapter keeps real Prism calls and all mutation operations blocked.",
       lastMockTask: latest
         ? {
             environmentName: latest.environmentName,
@@ -70,17 +75,21 @@ export class MockPrismAdapter implements PrismAdapter {
     return createMockPrismSimulatorStatus().availableInventory;
   }
 
-  createVmPlan(_state: ApiState, _environment: Environment, template: Template, targets: Target[]): PrismVmCreatePlan {
-    const project = getMockPrismEntity("projects");
-    const cluster = getMockPrismEntity("clusters");
-    const image = selectMockImage(template);
-    const subnet = getMockPrismEntity("subnets");
+  createVmPlan(state: ApiState, _environment: Environment, template: Template, targets: Target[]): PrismVmCreatePlan {
+    const project = getSelectedPrismSimulatorProfile(state, "Project")?.name ?? getMockPrismEntity("projects").metadata.name;
+    const cluster = getSelectedPrismSimulatorProfile(state, "Cluster")?.name ?? getMockPrismEntity("clusters").metadata.name;
+    const image =
+      selectSimulatorImage(state, template)?.name ?? selectMockImage(template).metadata.name ?? selectMockImage(template).metadata.uuid;
+    const subnet = getSelectedPrismSimulatorProfile(state, "Subnet")?.name ?? getMockPrismEntity("subnets").metadata.name;
+    const categories = state.prismSimulatorProfiles
+      .filter((profile) => profile.kind === "Category" && profile.selected && profile.status === "Active")
+      .map((profile) => profile.name);
     return {
-      project: project.metadata.name ?? project.metadata.uuid,
-      cluster: cluster.metadata.name ?? cluster.metadata.uuid,
-      image: image.metadata.name ?? image.metadata.uuid,
-      subnet: subnet.metadata.name ?? subnet.metadata.uuid,
-      categories: ["Lifecycle:30-day-expiry", "CostCenter:Sandbox"],
+      project: project ?? "NDC-Sandbox",
+      cluster: cluster ?? "PHX-Berlin-A",
+      image,
+      subnet: subnet ?? "dev-overlay-10.42.0.0",
+      categories: categories.length ? categories : ["Lifecycle:30-day-expiry", "CostCenter:Sandbox"],
       targets,
     };
   }
@@ -97,7 +106,12 @@ export class MockPrismAdapter implements PrismAdapter {
 
     const status = createMockPrismSimulatorStatus();
     const plan = this.createVmPlan(state, environment, template, targets);
-    const task = createMockPrismTask(`Mock Prism Central accepted VM create for ${environment.name}. No real VM was created.`);
+    const activeScenario = getActivePrismFailureScenario(state);
+    const task = createMockPrismTask(
+      activeScenario.id === "none"
+        ? `Mock Prism Central accepted VM create for ${environment.name}. No real VM was created.`
+        : `${activeScenario.label}: ${activeScenario.effect} No real VM was created.`
+    );
     const execution = {
       id: `mock-prism-${environment.name}-${Date.now()}`,
       environmentName: environment.name,
@@ -107,13 +121,17 @@ export class MockPrismAdapter implements PrismAdapter {
       request: plan,
       task: {
         uuid: task.metadata.uuid,
-        state: task.status.state,
-        percentageComplete: task.status.percentage_complete,
-        message: task.status.message,
+        state: activeScenario.taskState,
+        percentageComplete: activeScenario.percentageComplete,
+        message:
+          activeScenario.id === "none"
+            ? task.status.message
+            : `${activeScenario.label}: ${activeScenario.effect} Provisioning remains simulated and disabled.`,
       },
       evidence: [
         "Mock Prism Central VM create contract exercised through MockPrismAdapter.",
         `Selected ${plan.image} on ${plan.cluster}.`,
+        `Simulator scenario: ${activeScenario.label}.`,
         "Provisioning remains disabled; this record is simulator evidence only.",
       ],
       provisioningEnabled: false,
@@ -155,6 +173,10 @@ export class DisabledRealPrismAdapter implements PrismAdapter {
       provisioningEnabled: false,
       supportedOperations: [...this.supportedOperations],
       blockedReasons: createRealPrismBlockedReasons(state),
+      readinessChecks: createPrismReadinessChecks(state),
+      operatorActions: createPrismOperatorActions(state),
+      realAdapterBoundary:
+        "DisabledRealPrismAdapter exposes the contract shape only. It must not open real Prism connections or execute mutation paths.",
       lastMockTask: undefined,
     };
   }
@@ -202,7 +224,7 @@ export function createPrismAdapterDiagnostics(state: ApiState): PrismAdapterDiag
   return createActivePrismAdapter().health(state);
 }
 
-function createRealPrismBlockedReasons(state: ApiState): PrismAdapterBlockedReason[] {
+export function createRealPrismBlockedReasons(state: ApiState): PrismAdapterBlockedReason[] {
   const latestLabScope = state.labAuthorizationScopes[0];
   const nciConfig = state.integrationConfigs.find((config) => config.name === "NCI");
   const latestProductionAuthorization = state.productionAdapterAuthorizationPackets[0];
@@ -247,4 +269,64 @@ function selectMockImage(template: Template) {
   }
 
   return getMockPrismEntity("images");
+}
+
+function selectSimulatorImage(state: ApiState, template: Template) {
+  const images = state.prismSimulatorProfiles.filter((profile) => profile.kind === "Image" && profile.status === "Active");
+  const preferredOs = template.runtime.toLowerCase().includes("ubuntu") ? "ubuntu" : "rhel";
+  return images.find((profile) => profile.selected && profile.name.toLowerCase().includes(preferredOs)) ?? images.find((profile) => profile.selected);
+}
+
+function createPrismReadinessChecks(state: ApiState) {
+  const nciConfig = state.integrationConfigs.find((config) => config.name === "NCI");
+  const activeScenario = getActivePrismFailureScenario(state);
+  return [
+    {
+      name: "Simulator profiles",
+      passed: ["Project", "Cluster", "Image", "Subnet"].every((kind) =>
+        Boolean(getSelectedPrismSimulatorProfile(state, kind as Parameters<typeof getSelectedPrismSimulatorProfile>[1]))
+      ),
+      detail: "Project, cluster, image, and subnet selections are required for deterministic simulator planning.",
+    },
+    {
+      name: "Failure scenario",
+      passed: activeScenario.id === "none",
+      detail:
+        activeScenario.id === "none"
+          ? "Normal simulator success path is active."
+          : `${activeScenario.label} is active for negative-path testing.`,
+    },
+    {
+      name: "Real endpoint reference",
+      passed: Boolean(process.env.NUTANIX_PRISM_CENTRAL_URL),
+      detail: "Endpoint references are checked for readiness only; no real Prism connection is opened.",
+    },
+    {
+      name: "NCI credential reference",
+      passed: Boolean(nciConfig?.credentialProfile),
+      detail: "Credential profile must be an external reference. Secret values must not be stored in this repository or API state.",
+    },
+  ];
+}
+
+function createPrismOperatorActions(state: ApiState) {
+  const blockedReasons = createRealPrismBlockedReasons(state);
+  const activeScenario = getActivePrismFailureScenario(state);
+  return [
+    {
+      label: "Validate mock success path",
+      status: activeScenario.id === "none" ? "Ready" : "Required",
+      detail: activeScenario.id === "none" ? "Create a VM environment to record a successful simulator task." : "Reset failure scenario to normal success path before release evidence.",
+    },
+    {
+      label: "Exercise negative-path scenarios",
+      status: state.mockPrismExecutions.some((execution) => execution.task.state !== "SUCCEEDED") ? "Ready" : "Required",
+      detail: "Activate a simulator failure scenario and create a VM request to capture failed-task evidence.",
+    },
+    {
+      label: "Run real Prism preflight",
+      status: blockedReasons.length ? "Blocked" : "Ready",
+      detail: "Preflight records readiness evidence only; real Prism calls and mutations remain disabled.",
+    },
+  ] satisfies PrismAdapterDiagnostics["operatorActions"];
 }

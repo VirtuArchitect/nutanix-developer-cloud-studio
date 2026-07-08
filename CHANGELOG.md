@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.73.0-adapter-contract-split`.
+This project uses release tags for public milestones. The current release is `v2.81.0-adapter-contract-test-harness`.
 
 ## [Unreleased]
 
@@ -12,6 +12,100 @@ This project uses release tags for public milestones. The current release is `v2
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.81.0-adapter-contract-test-harness] - 2026-07-08
+
+### Added
+
+- Formal Prism adapter contract test harness for health, inventory, planning, submit, poll, success, failure, timeout, and non-VM target behavior.
+- Fail-closed tests for `DisabledRealPrismAdapter` planning, submit, and poll operations.
+- Runtime validation scripts exposed through npm commands.
+
+### Notes
+
+- Contract tests assert that real provisioning remains disabled.
+
+## [v2.80.0-state-and-backup-hardening] - 2026-07-08
+
+### Added
+
+- JSON state backup manifests with schema version, timestamp, file size, SHA-256 checksum, and guardrail notes.
+- Restore-time manifest validation.
+- Backup/restore smoke validation for manifest creation and checksum verification.
+
+### Notes
+
+- JSON backup tooling remains prototype starter tooling, not a production database backup system.
+
+## [v2.79.0-on-prem-runtime-packaging] - 2026-07-08
+
+### Added
+
+- Runtime package validator for Dockerfile, Docker Compose, `.env.example`, API startup, static frontend serving, healthcheck, and disabled real-adapter guardrails.
+- `npm run validate:runtime`, `npm run validate:onprem`, and `npm run validate:backup` shortcuts.
+
+### Notes
+
+- Runtime packaging validation does not call Nutanix services.
+
+## [v2.78.0-release-and-deployment-hygiene] - 2026-07-08
+
+### Added
+
+- Release notes for v2.74.0 through v2.81.0.
+- Updated version metadata, README, changelog, API docs, build plan, and project log for the latest release chain.
+
+### Notes
+
+- GitHub release publication still requires committing, pushing, tagging, and publishing release entries.
+
+## [v2.77.0-controlled-real-prism-preflight] - 2026-07-08
+
+### Added
+
+- API-backed controlled real Prism preflight runs that record readiness evidence without opening a Prism Central network connection.
+- Admin Providers preflight panel with blocked operations, readiness checks, endpoint-reference state, and provisioning disabled evidence.
+- Tests proving real Prism preflight stays blocked and mutation operations remain disabled.
+
+### Notes
+
+- Real Prism calls and all mutation paths remain disabled.
+
+## [v2.76.0-simulator-failure-scenarios] - 2026-07-08
+
+### Added
+
+- API-backed mock Prism failure scenarios for image-not-found, quota-exceeded, subnet-unavailable, approval-missing, task-failed, and task-timeout testing.
+- Mock Prism execution records can now capture `FAILED` and `TIMEOUT` task states as simulator evidence.
+- Admin Providers controls for activating a negative-path scenario before creating a VM request.
+
+### Notes
+
+- Failure scenarios affect simulator evidence only and do not provision infrastructure.
+
+## [v2.75.0-simulator-profile-registry] - 2026-07-08
+
+### Added
+
+- API-backed Prism simulator profile registry for project, cluster, image, subnet, and category selections.
+- MockPrismAdapter now plans VM simulator requests from selected profiles.
+- Admin Providers panel for selecting active simulator profiles.
+
+### Notes
+
+- Profile selections are mock placement inputs only.
+
+## [v2.74.0-adapter-mode-readiness] - 2026-07-08
+
+### Added
+
+- Prism adapter diagnostics now include readiness checks, operator actions, and an explicit real-adapter boundary.
+- Admin Providers panel surfaces readiness checks and next operator actions alongside blocked real-adapter reasons.
+- API and client tests cover the expanded diagnostics payload.
+
+### Notes
+
+- `DisabledRealPrismAdapter` remains contract-only.
 
 ## [v2.73.0-adapter-contract-split] - 2026-07-08
 

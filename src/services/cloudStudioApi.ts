@@ -36,6 +36,9 @@ import type {
   MockPrismExecution,
   MockPrismSimulatorStatus,
   PrismAdapterDiagnostics,
+  PrismSimulatorFailureScenario,
+  PrismSimulatorFailureScenarioId,
+  PrismSimulatorProfile,
   PlatformConfig,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -89,6 +92,7 @@ import type {
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
+  RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
   ReleaseEvidenceExportRecord,
   ResourceProfile,
@@ -248,6 +252,37 @@ export async function fetchMockPrismExecutionsFromApi() {
 
 export async function fetchPrismAdapterDiagnosticsFromApi() {
   return fetchJson<PrismAdapterDiagnostics>("/api/prism/adapter-diagnostics");
+}
+
+export async function fetchPrismSimulatorProfilesFromApi() {
+  return fetchJson<PrismSimulatorProfile[]>("/api/prism/simulator-profiles");
+}
+
+export async function selectPrismSimulatorProfileViaApi(profileId: string) {
+  return fetchJson<PrismSimulatorProfile>(`/api/prism/simulator-profiles/${encodeURIComponent(profileId)}/select`, {
+    method: "POST",
+  });
+}
+
+export async function fetchPrismFailureScenariosFromApi() {
+  return fetchJson<PrismSimulatorFailureScenario[]>("/api/prism/failure-scenarios");
+}
+
+export async function activatePrismFailureScenarioViaApi(scenarioId: PrismSimulatorFailureScenarioId) {
+  return fetchJson<PrismSimulatorFailureScenario>(
+    `/api/prism/failure-scenarios/${encodeURIComponent(scenarioId)}/activate`,
+    { method: "POST" }
+  );
+}
+
+export async function fetchRealPrismPreflightRunsFromApi() {
+  return fetchJson<RealPrismPreflightRun[]>("/api/prism/real-preflight-runs");
+}
+
+export async function createRealPrismPreflightRunViaApi() {
+  return fetchJson<RealPrismPreflightRun>("/api/prism/real-preflight-runs", {
+    method: "POST",
+  });
 }
 
 export async function importPrismInventoryViaApi() {

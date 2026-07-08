@@ -288,8 +288,8 @@ export type MockPrismExecution = {
   };
   task: {
     uuid: string;
-    state: "SUCCEEDED";
-    percentageComplete: 100;
+    state: "SUCCEEDED" | "FAILED" | "TIMEOUT";
+    percentageComplete: number;
     message: string;
   };
   evidence: string[];
@@ -318,12 +318,74 @@ export type PrismAdapterDiagnostics = {
   provisioningEnabled: false;
   supportedOperations: ReadonlyArray<"health" | "listInventory" | "createVmPlan" | "submitVmCreate" | "pollTask">;
   blockedReasons: PrismAdapterBlockedReason[];
+  readinessChecks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  operatorActions: Array<{
+    label: string;
+    status: "Ready" | "Required" | "Blocked";
+    detail: string;
+  }>;
+  realAdapterBoundary: string;
   lastMockTask?: {
     environmentName: string;
     taskUuid: string;
     state: MockPrismExecution["task"]["state"];
     createdAt: string;
   };
+};
+
+export type PrismSimulatorProfileKind = "Project" | "Cluster" | "Image" | "Subnet" | "Category";
+export type PrismSimulatorProfileStatus = "Active" | "Draft" | "Deprecated";
+
+export type PrismSimulatorProfile = {
+  id: string;
+  kind: PrismSimulatorProfileKind;
+  name: string;
+  status: PrismSimulatorProfileStatus;
+  provider: "NCI";
+  region: string;
+  selected: boolean;
+  attributes: Record<string, string | number | boolean>;
+  updatedAt: string;
+};
+
+export type PrismSimulatorFailureScenarioId =
+  | "none"
+  | "image-not-found"
+  | "quota-exceeded"
+  | "subnet-unavailable"
+  | "approval-missing"
+  | "task-failed"
+  | "task-timeout";
+
+export type PrismSimulatorFailureScenario = {
+  id: PrismSimulatorFailureScenarioId;
+  label: string;
+  active: boolean;
+  effect: string;
+  taskState: MockPrismExecution["task"]["state"];
+  percentageComplete: number;
+  updatedAt: string;
+};
+
+export type RealPrismPreflightRun = {
+  id: string;
+  status: "Blocked" | "Ready for read-only validation";
+  requestedBy: string;
+  createdAt: string;
+  endpointConfigured: boolean;
+  provisioningEnabled: false;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  blockedReasons: PrismAdapterBlockedReason[];
+  mutationOperationsBlocked: string[];
+  evidence: string[];
 };
 
 export type VmSandboxDryRunRequest = {

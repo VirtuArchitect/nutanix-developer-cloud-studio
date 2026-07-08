@@ -65,6 +65,9 @@ import {
   type ManualRealAdapterSwitchReview,
   type MockPrismExecution,
   type MockPrismSimulatorStatus,
+  type PrismSimulatorFailureScenario,
+  type PrismSimulatorFailureScenarioId,
+  type PrismSimulatorProfile,
   platformConfig as defaultPlatformConfig,
   policyBundles as defaultPolicyBundles,
   templateRegistry as defaultTemplateRegistry,
@@ -123,6 +126,7 @@ import {
   type ProviderReleaseReadinessSummary,
   type RealAdapterLabScopeActivation,
   type RealAdapterSwitchStateAuditPackage,
+  type RealPrismPreflightRun,
   type ReleaseEvidenceExportRecord,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
@@ -311,6 +315,8 @@ import {
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
+  fetchPrismFailureScenariosFromApi,
+  fetchPrismSimulatorProfilesFromApi,
   fetchLabAdaptersFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -321,6 +327,7 @@ import {
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
+  fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
   fetchPrismInventoryFromApi,
@@ -336,6 +343,8 @@ import {
   fetchVmSandboxDryRunsFromApi,
   fetchVmLifecycleProofsFromApi,
   requestEnvironmentDestroyViaApi,
+  activatePrismFailureScenarioViaApi,
+  createRealPrismPreflightRunViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
   runIntegrationCheckViaApi,
@@ -343,6 +352,7 @@ import {
   runLabDiscoveryViaApi,
   runTemplateRegistryActionViaApi,
   saveIntegrationConfigViaApi,
+  selectPrismSimulatorProfileViaApi,
   type ApiHealth,
   type EnvironmentDetail,
 } from "./services/cloudStudioApi";
@@ -382,6 +392,9 @@ export function App() {
   const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
   const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
   const [prismAdapterDiagnostics, setPrismAdapterDiagnostics] = useState<PrismAdapterDiagnostics | null>(null);
+  const [prismSimulatorProfiles, setPrismSimulatorProfiles] = useState<PrismSimulatorProfile[]>([]);
+  const [prismFailureScenarios, setPrismFailureScenarios] = useState<PrismSimulatorFailureScenario[]>([]);
+  const [realPrismPreflightRuns, setRealPrismPreflightRuns] = useState<RealPrismPreflightRun[]>([]);
   const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
   const [policyBundles, setPolicyBundles] = useState<PolicyBundle[]>(defaultPolicyBundles);
   const [templateRegistry, setTemplateRegistry] = useState<TemplateRegistryEntry[]>(defaultTemplateRegistry);
@@ -603,6 +616,9 @@ export function App() {
             apiMockPrismStatus,
             apiMockPrismExecutions,
             apiPrismAdapterDiagnostics,
+            apiPrismSimulatorProfiles,
+            apiPrismFailureScenarios,
+            apiRealPrismPreflightRuns,
             apiControlPlaneJobs,
             apiResourceProfiles,
             apiPolicyBundles,
@@ -703,6 +719,9 @@ export function App() {
             fetchMockPrismStatusFromApi(),
             fetchMockPrismExecutionsFromApi(),
             fetchPrismAdapterDiagnosticsFromApi(),
+            fetchPrismSimulatorProfilesFromApi(),
+            fetchPrismFailureScenariosFromApi(),
+            fetchRealPrismPreflightRunsFromApi(),
             fetchControlPlaneJobsFromApi(),
             fetchResourceProfilesFromApi(),
             fetchPolicyBundlesFromApi(),
@@ -805,6 +824,9 @@ export function App() {
             setMockPrismStatus(apiMockPrismStatus);
             setMockPrismExecutions(apiMockPrismExecutions);
             setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
+            setPrismSimulatorProfiles(apiPrismSimulatorProfiles);
+            setPrismFailureScenarios(apiPrismFailureScenarios);
+            setRealPrismPreflightRuns(apiRealPrismPreflightRuns);
             setControlPlaneJobs(apiControlPlaneJobs);
             setResourceProfiles(apiResourceProfiles);
             setPolicyBundles(apiPolicyBundles);
@@ -1062,6 +1084,9 @@ export function App() {
       apiMockPrismStatus,
       apiMockPrismExecutions,
       apiPrismAdapterDiagnostics,
+      apiPrismSimulatorProfiles,
+      apiPrismFailureScenarios,
+      apiRealPrismPreflightRuns,
       apiControlPlaneJobs,
       apiResourceProfiles,
       apiPolicyBundles,
@@ -1162,6 +1187,9 @@ export function App() {
       fetchMockPrismStatusFromApi(),
       fetchMockPrismExecutionsFromApi(),
       fetchPrismAdapterDiagnosticsFromApi(),
+      fetchPrismSimulatorProfilesFromApi(),
+      fetchPrismFailureScenariosFromApi(),
+      fetchRealPrismPreflightRunsFromApi(),
       fetchControlPlaneJobsFromApi(),
       fetchResourceProfilesFromApi(),
       fetchPolicyBundlesFromApi(),
@@ -1263,6 +1291,9 @@ export function App() {
     setMockPrismStatus(apiMockPrismStatus);
     setMockPrismExecutions(apiMockPrismExecutions);
     setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
+    setPrismSimulatorProfiles(apiPrismSimulatorProfiles);
+    setPrismFailureScenarios(apiPrismFailureScenarios);
+    setRealPrismPreflightRuns(apiRealPrismPreflightRuns);
     setControlPlaneJobs(apiControlPlaneJobs);
     setResourceProfiles(apiResourceProfiles);
     setPolicyBundles(apiPolicyBundles);
@@ -1524,6 +1555,50 @@ export function App() {
         message: "Browser mock Prism inventory imported. Provisioning remains disabled.",
       })
     );
+  }
+
+  async function selectPrismSimulatorProfile(profileId: string) {
+    if (apiHealth.mode === "api") {
+      await selectPrismSimulatorProfileViaApi(profileId);
+      await refreshApiState();
+      return;
+    }
+
+    setPrismSimulatorProfiles((current) => {
+      const selected = current.find((profile) => profile.id === profileId);
+      if (!selected) {
+        return current;
+      }
+
+      return current.map((profile) =>
+        profile.kind === selected.kind
+          ? { ...profile, selected: profile.id === profileId, updatedAt: new Date().toISOString() }
+          : profile
+      );
+    });
+  }
+
+  async function activatePrismFailureScenario(scenarioId: PrismSimulatorFailureScenarioId) {
+    if (apiHealth.mode === "api") {
+      await activatePrismFailureScenarioViaApi(scenarioId);
+      await refreshApiState();
+      return;
+    }
+
+    setPrismFailureScenarios((current) =>
+      current.map((scenario) => ({
+        ...scenario,
+        active: scenario.id === scenarioId,
+        updatedAt: new Date().toISOString(),
+      }))
+    );
+  }
+
+  async function createRealPrismPreflightRun() {
+    if (apiHealth.mode === "api") {
+      await createRealPrismPreflightRunViaApi();
+      await refreshApiState();
+    }
   }
 
   async function runControlPlaneJobAction(jobId: string, action: "advance" | "retry" | "fail") {
@@ -3523,6 +3598,9 @@ export function App() {
             mockPrismStatus={mockPrismStatus}
             mockPrismExecutions={mockPrismExecutions}
             prismAdapterDiagnostics={prismAdapterDiagnostics}
+            prismSimulatorProfiles={prismSimulatorProfiles}
+            prismFailureScenarios={prismFailureScenarios}
+            realPrismPreflightRuns={realPrismPreflightRuns}
             resourceProfiles={resourceProfiles}
             policyBundles={policyBundles}
             templateRegistry={templateRegistry}
@@ -3631,6 +3709,9 @@ export function App() {
             runIntegrationCheck={runIntegrationCheck}
             runLabDiscovery={runLabDiscovery}
             importPrismInventory={importPrismInventory}
+            selectPrismSimulatorProfile={selectPrismSimulatorProfile}
+            activatePrismFailureScenario={activatePrismFailureScenario}
+            createRealPrismPreflightRun={createRealPrismPreflightRun}
             runControlPlaneJobAction={runControlPlaneJobAction}
             createVmSandboxDryRun={createVmSandboxDryRun}
             recordLabAuthorizationScope={recordLabAuthorizationScope}
@@ -4215,6 +4296,9 @@ function AdminView({
   mockPrismStatus,
   mockPrismExecutions,
   prismAdapterDiagnostics,
+  prismSimulatorProfiles,
+  prismFailureScenarios,
+  realPrismPreflightRuns,
   resourceProfiles,
   policyBundles,
   templateRegistry,
@@ -4307,6 +4391,9 @@ function AdminView({
   runIntegrationCheck,
   runLabDiscovery,
   importPrismInventory,
+  selectPrismSimulatorProfile,
+  activatePrismFailureScenario,
+  createRealPrismPreflightRun,
   runControlPlaneJobAction,
   createVmSandboxDryRun,
   recordLabAuthorizationScope,
@@ -4406,6 +4493,9 @@ function AdminView({
   mockPrismStatus: MockPrismSimulatorStatus | null;
   mockPrismExecutions: MockPrismExecution[];
   prismAdapterDiagnostics: PrismAdapterDiagnostics | null;
+  prismSimulatorProfiles: PrismSimulatorProfile[];
+  prismFailureScenarios: PrismSimulatorFailureScenario[];
+  realPrismPreflightRuns: RealPrismPreflightRun[];
   resourceProfiles: ResourceProfile[];
   policyBundles: PolicyBundle[];
   templateRegistry: TemplateRegistryEntry[];
@@ -4501,6 +4591,9 @@ function AdminView({
   runIntegrationCheck: (integrationName: string) => void;
   runLabDiscovery: (adapterName: string) => void;
   importPrismInventory: () => void;
+  selectPrismSimulatorProfile: (profileId: string) => void;
+  activatePrismFailureScenario: (scenarioId: PrismSimulatorFailureScenarioId) => void;
+  createRealPrismPreflightRun: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   createVmSandboxDryRun: () => void;
   recordLabAuthorizationScope: () => void;
@@ -4693,6 +4786,24 @@ function AdminView({
           </Panel>
           <Panel title="Prism adapter contract" action={prismAdapterDiagnostics?.activeMode ?? "Not loaded"}>
             <PrismAdapterContractPanel diagnostics={prismAdapterDiagnostics} />
+          </Panel>
+          <Panel title="Prism simulator profiles" action={`${prismSimulatorProfiles.filter((profile) => profile.selected).length} selected`}>
+            <PrismSimulatorProfilePanel
+              profiles={prismSimulatorProfiles}
+              selectPrismSimulatorProfile={selectPrismSimulatorProfile}
+            />
+          </Panel>
+          <Panel title="Prism failure scenarios" action={prismFailureScenarios.find((scenario) => scenario.active)?.label ?? "Not loaded"}>
+            <PrismFailureScenarioPanel
+              scenarios={prismFailureScenarios}
+              activatePrismFailureScenario={activatePrismFailureScenario}
+            />
+          </Panel>
+          <Panel title="Real Prism preflight" action={`${realPrismPreflightRuns.length} runs`}>
+            <RealPrismPreflightPanel
+              runs={realPrismPreflightRuns}
+              createRealPrismPreflightRun={createRealPrismPreflightRun}
+            />
           </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
             <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
@@ -11093,6 +11204,28 @@ function PrismAdapterContractPanel({ diagnostics }: { diagnostics: PrismAdapterD
         />
       </div>
       <div className="eventList">
+        {diagnostics.readinessChecks.map((check) => (
+          <div className="eventRow" key={check.name}>
+            <strong>{check.name}</strong>
+            <span>{check.detail}</span>
+            <small>{check.passed ? "passed" : "gate"}</small>
+          </div>
+        ))}
+      </div>
+      <div className="eventList">
+        {diagnostics.operatorActions.map((action) => (
+          <div className="eventRow" key={action.label}>
+            <strong>{action.label}</strong>
+            <span>{action.detail}</span>
+            <small>{action.status}</small>
+          </div>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Real adapter boundary</strong>
+        <span>{diagnostics.realAdapterBoundary}</span>
+      </div>
+      <div className="eventList">
         {diagnostics.blockedReasons.slice(0, 5).map((reason) => (
           <div className="eventRow" key={reason.code}>
             <strong>{reason.message}</strong>
@@ -11101,6 +11234,148 @@ function PrismAdapterContractPanel({ diagnostics }: { diagnostics: PrismAdapterD
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function PrismSimulatorProfilePanel({
+  profiles,
+  selectPrismSimulatorProfile,
+}: {
+  profiles: PrismSimulatorProfile[];
+  selectPrismSimulatorProfile: (profileId: string) => void;
+}) {
+  if (!profiles.length) {
+    return <p className="emptyState">Simulator profiles have not been loaded from the API yet.</p>;
+  }
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Layers3 size={18} />
+        <div>
+          <strong>Profile registry drives mock placement</strong>
+          <span>Selected project, cluster, image, subnet, and category records are used by MockPrismAdapter.</span>
+        </div>
+      </div>
+      <div className="dryRunValidationList">
+        {profiles.map((profile) => (
+          <div className="dryRunValidationRow" key={profile.id}>
+            <span className={`status ${profile.selected ? "ready" : "approval"}`}>
+              {profile.selected ? "Selected" : profile.status}
+            </span>
+            <div>
+              <strong>{profile.kind}: {profile.name}</strong>
+              <small>{profile.region} / {Object.entries(profile.attributes).map(([key, value]) => `${key}: ${value}`).join(", ")}</small>
+            </div>
+            {!profile.selected && profile.status === "Active" ? (
+              <button className="iconButton" type="button" onClick={() => selectPrismSimulatorProfile(profile.id)} title={`Select ${profile.name}`}>
+                <CheckCircle2 size={15} />
+              </button>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrismFailureScenarioPanel({
+  scenarios,
+  activatePrismFailureScenario,
+}: {
+  scenarios: PrismSimulatorFailureScenario[];
+  activatePrismFailureScenario: (scenarioId: PrismSimulatorFailureScenarioId) => void;
+}) {
+  if (!scenarios.length) {
+    return <p className="emptyState">Failure scenarios have not been loaded from the API yet.</p>;
+  }
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Gauge size={18} />
+        <div>
+          <strong>Negative-path simulator controls</strong>
+          <span>Activate one scenario, create a VM environment, and capture task evidence without provisioning anything.</span>
+        </div>
+      </div>
+      <div className="dryRunValidationList">
+        {scenarios.map((scenario) => (
+          <div className="dryRunValidationRow" key={scenario.id}>
+            <span className={`status ${scenario.active ? "ready" : "approval"}`}>
+              {scenario.active ? "Active" : "Standby"}
+            </span>
+            <div>
+              <strong>{scenario.label}</strong>
+              <small>{scenario.effect} Task state: {scenario.taskState}, {scenario.percentageComplete}%.</small>
+            </div>
+            {!scenario.active ? (
+              <button className="iconButton" type="button" onClick={() => activatePrismFailureScenario(scenario.id)} title={`Activate ${scenario.label}`}>
+                <Play size={15} />
+              </button>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RealPrismPreflightPanel({
+  runs,
+  createRealPrismPreflightRun,
+}: {
+  runs: RealPrismPreflightRun[];
+  createRealPrismPreflightRun: () => void;
+}) {
+  const latest = runs[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Controlled real Prism preflight</strong>
+          <span>Records readiness gates only. No endpoint connection or mutation operation is executed.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createRealPrismPreflightRun} type="button">
+          <Play size={15} />
+          Run preflight
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No real Prism preflight run has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.id}</strong>
+              <span>{latest.requestedBy} / endpoint {latest.endpointConfigured ? "configured" : "not configured"}</span>
+            </div>
+            <span className={`status ${latest.status === "Blocked" ? "failed" : "approval"}`}>{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={!latest.provisioningEnabled} />
+            <CheckLine icon={Gauge} label="Blocked ops" value={`${latest.mutationOperationsBlocked.length}`} passed={false} />
+            <CheckLine icon={ShieldCheck} label="Checks" value={`${latest.checks.filter((check) => check.passed).length}/${latest.checks.length} passed`} passed={latest.checks.every((check) => check.passed)} />
+            <CheckLine icon={Activity} label="Blocking reasons" value={`${latest.blockedReasons.length}`} passed={latest.blockedReasons.length === 0} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

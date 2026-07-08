@@ -115,6 +115,8 @@ import {
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
+  fetchPrismFailureScenariosFromApi,
+  fetchPrismSimulatorProfilesFromApi,
   fetchPolicyBundlesFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -167,6 +169,7 @@ import {
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
+  fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
@@ -177,6 +180,8 @@ import {
   fetchVmSandboxDryRunsFromApi,
   fetchVmLifecycleProofsFromApi,
   requestEnvironmentDestroyViaApi,
+  activatePrismFailureScenarioViaApi,
+  createRealPrismPreflightRunViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
   runLabDiscoveryViaApi,
@@ -184,6 +189,7 @@ import {
   runIntegrationCheckViaApi,
   runTemplateRegistryActionViaApi,
   saveIntegrationConfigViaApi,
+  selectPrismSimulatorProfileViaApi,
 } from "./cloudStudioApi";
 
 describe("cloudStudioApi", () => {
@@ -318,6 +324,12 @@ describe("cloudStudioApi", () => {
     await fetchMockPrismStatusFromApi();
     await fetchMockPrismExecutionsFromApi();
     await fetchPrismAdapterDiagnosticsFromApi();
+    await fetchPrismSimulatorProfilesFromApi();
+    await selectPrismSimulatorProfileViaApi("sim-image-ubuntu-2404");
+    await fetchPrismFailureScenariosFromApi();
+    await activatePrismFailureScenarioViaApi("task-failed");
+    await fetchRealPrismPreflightRunsFromApi();
+    await createRealPrismPreflightRunViaApi();
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/inventory", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -328,6 +340,24 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/mock-prism/status", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/mock-prism/executions", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/adapter-diagnostics", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/prism/simulator-profiles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      7,
+      "/api/prism/simulator-profiles/sim-image-ubuntu-2404/select",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(8, "/api/prism/failure-scenarios", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      9,
+      "/api/prism/failure-scenarios/task-failed/activate",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(10, "/api/prism/real-preflight-runs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      11,
+      "/api/prism/real-preflight-runs",
+      expect.objectContaining({ method: "POST" })
+    );
   });
 
   it("fetches and advances control-plane jobs", async () => {
