@@ -330,6 +330,15 @@ import {
 import { createDisabledReadOnlyPrismAdapter } from "./readOnlyPrismAdapter";
 import { createReadOnlyPrismLabGate } from "./readOnlyPrismLabGate";
 import {
+  advanceLabPilotRunbookWorkflow,
+  createLabPilotRunbookWorkflow,
+  createOperatorEvidenceExportPack,
+  createPrismFixtureReplayRecord,
+  createReadOnlyAdapterAuthorizationGate,
+  createReadOnlyLabConnectionProfile,
+  ReadOnlyLabPilotError,
+} from "./readOnlyLabPilot";
+import {
   AuthorizationError,
   createAuthBoundaryDiagnostics,
   createRequestContext,
@@ -424,6 +433,7 @@ import type {
   CreateProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordRequest,
   CreateProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
+  CreateLabPilotRunbookWorkflowRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
   CreateLabEvidenceReviewRequest,
@@ -437,6 +447,11 @@ import type {
   CreateRollbackDestroyProofRequest,
   CreateVmLifecycleProofRequest,
   CreateVmSandboxDryRunRequest,
+  CreateOperatorEvidenceExportPackRequest,
+  CreatePrismFixtureReplayRequest,
+  CreateReadOnlyAdapterAuthorizationGateRequest,
+  CreateReadOnlyLabConnectionProfileRequest,
+  LabPilotRunbookWorkflowAction,
   RegistryAction,
   UpdateIntegrationConfigRequest,
 } from "./types";
@@ -558,6 +573,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ReleaseEvidenceExportError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ReadOnlyLabPilotError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1335,6 +1360,36 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/prism/read-only-lab-gates") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.readOnlyPrismLabGates });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-lab-profiles") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.readOnlyLabConnectionProfiles });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/fixture-replays") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.prismFixtureReplayRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-authorization-gates") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.readOnlyAdapterAuthorizationGates });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/operator/evidence-exports") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.operatorEvidenceExportPacks });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-pilot/runbook-workflows") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labPilotRunbookWorkflows });
     return;
   }
 
@@ -2346,6 +2401,120 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: gate });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-lab-profiles") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateReadOnlyLabConnectionProfileRequest>(request);
+    const profile = createReadOnlyLabConnectionProfile(state, body, context.session.user);
+    state.readOnlyLabConnectionProfiles = [profile, ...state.readOnlyLabConnectionProfiles];
+    addAuditEvent(state, "prism.readonly.lab-profile.recorded", context.session.user, profile.name, {
+      status: profile.approvalState,
+      provider: profile.provider,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: profile });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/fixture-replays") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreatePrismFixtureReplayRequest>(request);
+    const replay = createPrismFixtureReplayRecord(body, context.session.user);
+    state.prismFixtureReplayRecords = [replay, ...state.prismFixtureReplayRecords];
+    addAuditEvent(state, "prism.fixture.replay.recorded", context.session.user, replay.fixtureName, {
+      status: replay.status,
+      recordCount: replay.recordCount,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: replay });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-authorization-gates") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateReadOnlyAdapterAuthorizationGateRequest>(request);
+    const gate = createReadOnlyAdapterAuthorizationGate(state, body, context.session.user);
+    state.readOnlyAdapterAuthorizationGates = [gate, ...state.readOnlyAdapterAuthorizationGates];
+    addAuditEvent(state, "prism.readonly.authorization-gate.recorded", context.session.user, gate.id, {
+      status: gate.status,
+      approvedOperations: gate.authorizationPacket.approvedOperations,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: gate });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/operator/evidence-exports") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateOperatorEvidenceExportPackRequest>(request);
+    const pack = createOperatorEvidenceExportPack(state, body, context.session.user, {
+      readiness: createProductionReadinessScorecard(state),
+      authBoundary: createAuthBoundaryDiagnostics(context, request),
+      configValidation: createContainerConfigValidationManifest(),
+      liveDesign: createLiveReadOnlyPrismCallDesign(),
+    });
+    state.operatorEvidenceExportPacks = [pack, ...state.operatorEvidenceExportPacks];
+    addAuditEvent(state, "operator.evidence-export.prepared", context.session.user, pack.id, {
+      artifactCount: pack.includedArtifacts.reduce((sum, artifact) => sum + artifact.count, 0),
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: pack });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-pilot/runbook-workflows") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabPilotRunbookWorkflowRequest>(request);
+    const workflow = createLabPilotRunbookWorkflow(state, body, context.session.user);
+    state.labPilotRunbookWorkflows = [workflow, ...state.labPilotRunbookWorkflows];
+    addAuditEvent(state, "lab-pilot.runbook.prepared", context.session.user, workflow.id, {
+      phase: workflow.phase,
+      status: workflow.status,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: workflow });
+    return;
+  }
+
+  const labPilotActionMatch = url.pathname.match(/^\/api\/lab-pilot\/runbook-workflows\/([^/]+)\/(approve|execute-dry-run|review-evidence|close)$/);
+  if (request.method === "POST" && labPilotActionMatch) {
+    requireRole(context, ["Platform Admin"]);
+    const workflowId = decodeURIComponent(labPilotActionMatch[1]);
+    const action = labPilotActionMatch[2] as LabPilotRunbookWorkflowAction;
+    const workflow = state.labPilotRunbookWorkflows.find((item) => item.id === workflowId);
+    if (!workflow) {
+      sendJson(response, 404, {
+        error: {
+          code: "lab_pilot_workflow_not_found",
+          message: `Lab pilot workflow not found: ${workflowId}`,
+        },
+      });
+      return;
+    }
+    const updated = advanceLabPilotRunbookWorkflow(workflow, action, context.session.user);
+    state.labPilotRunbookWorkflows = state.labPilotRunbookWorkflows.map((item) =>
+      item.id === updated.id ? updated : item
+    );
+    addAuditEvent(state, `lab-pilot.runbook.${action}`, context.session.user, updated.id, {
+      phase: updated.phase,
+      status: updated.status,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
     return;
   }
 

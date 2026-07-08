@@ -198,6 +198,12 @@ Required role: `Platform Admin`.
 - `GET /api/prism/read-only-adapter/diagnostics`
 - `GET /api/prism/read-only-lab-gates`
 - `POST /api/prism/read-only-lab-gates`
+- `GET /api/prism/read-only-lab-profiles`
+- `POST /api/prism/read-only-lab-profiles`
+- `GET /api/prism/fixture-replays`
+- `POST /api/prism/fixture-replays`
+- `GET /api/prism/read-only-authorization-gates`
+- `POST /api/prism/read-only-authorization-gates`
 - `GET /api/prism/live-read-only-design`
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
@@ -224,6 +230,27 @@ The real Prism preflight endpoints create readiness evidence for endpoint refere
 `POST /api/prism/read-only-lab-gates` records read-only lab gate evidence. A gate is ready only when NCI is reachable, a credential reference is configured, an approved lab scope exists, all Prism list operations are allowed, and mutation operations are explicitly excluded. This gate does not enable real Prism calls.
 
 `GET /api/prism/live-read-only-design` returns the future live read-only Prism Central call contract, including allowed list operations, endpoint paths, timeout/retry policy, redaction rules, error taxonomy, and enablement gates. This is a design-only response; it reports `realPrismCallsEnabled=false` and performs no network calls.
+
+`POST /api/prism/read-only-lab-profiles` records a read-only lab connection profile with Prism Central endpoint reference, credential profile reference, bounded provider scope, owner, expiry, and approval state. The profile stores references only.
+
+`POST /api/prism/fixture-replays` replays bundled or uploaded sanitized Prism inventory fixtures through the read-only adapter contract without a live call. Unsanitized URL, token, password, secret, and credential-like values block replay readiness.
+
+`POST /api/prism/read-only-authorization-gates` records an explicit authorization packet tying together an approved lab profile, successful fixture replay, and ready read-only lab gate. The packet is evidence-only and does not enable live calls.
+
+### Operator Evidence And Lab Pilot Workflow
+
+- `GET /api/operator/evidence-exports`
+- `POST /api/operator/evidence-exports`
+- `GET /api/lab-pilot/runbook-workflows`
+- `POST /api/lab-pilot/runbook-workflows`
+- `POST /api/lab-pilot/runbook-workflows/:id/approve`
+- `POST /api/lab-pilot/runbook-workflows/:id/execute-dry-run`
+- `POST /api/lab-pilot/runbook-workflows/:id/review-evidence`
+- `POST /api/lab-pilot/runbook-workflows/:id/close`
+
+Operator evidence export packs prepare redacted metadata bundles for readiness scorecard, auth diagnostics, config validation, lab gates, lab profiles, fixture replays, authorization gates, and live read-only design evidence.
+
+Lab pilot runbook workflows turn the operator runbook into an API-backed evidence path: prepare, approve, execute dry-run, review evidence, and close pilot. Dry-run execution is metadata-only and keeps `realPrismCallsEnabled=false`.
 
 ### Mock Prism Central Simulator
 

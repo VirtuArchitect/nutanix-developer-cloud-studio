@@ -28,6 +28,11 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.95.0-lab-pilot-runbook-workflow` turns the lab pilot runbook into API-backed prepare, approve, execute dry-run, review evidence, and close workflow records.
+- `v2.94.0-operator-evidence-export-pack` adds redacted operator evidence export packs for readiness, auth, config, lab gate, profile, fixture replay, authorization, and live design evidence.
+- `v2.93.0-read-only-adapter-authorization-gate` adds explicit read-only adapter authorization packets that require profile, fixture replay, and lab gate evidence before future live-readiness review.
+- `v2.92.0-prism-fixture-replay-harness` adds sanitized Prism inventory fixture replay without live calls.
+- `v2.91.0-lab-connection-profile-model` adds formal read-only lab connection profiles with endpoint reference, credential profile reference, bounded scope, owner, expiry, and approval state.
 - `v2.90.0-live-read-only-prism-call-design` adds a design-only live read-only Prism Central call contract, Admin provider panel, timeout/retry policy, redaction rules, and enablement gates while keeping real calls disabled.
 - `v2.89.0-container-and-config-validation-pack` adds a container/config validation API manifest, Admin operations panel, and `validate:container-config` command for on-prem guardrails.
 - `v2.88.0-production-readiness-scorecard` adds an API-backed production readiness scorecard and Admin Overview score panel.

@@ -31,6 +31,7 @@ import type {
   LabWindowEvidenceExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
+  LabPilotRunbookWorkflow,
   LabScopeDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
@@ -49,8 +50,10 @@ import type {
   PlatformServiceRequest,
   PlatformSession,
   PolicyBundle,
+  OperatorEvidenceExportPack,
   PrismInventoryImportResult,
   PrismInventoryRecord,
+  PrismFixtureReplayRecord,
   PrismReadOnlyAdapterDiagnostics,
   ProvisioningAdapterReadiness,
   ProductionAdapterAuthorizationPacket,
@@ -98,6 +101,8 @@ import type {
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
   ReadOnlyPrismLabGate,
+  ReadOnlyLabConnectionProfile,
+  ReadOnlyAdapterAuthorizationGate,
   RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
   ReleaseEvidenceExportRecord,
@@ -281,6 +286,78 @@ export async function createReadOnlyPrismLabGateViaApi() {
   return fetchJson<ReadOnlyPrismLabGate>("/api/prism/read-only-lab-gates", {
     method: "POST",
   });
+}
+
+export async function fetchReadOnlyLabConnectionProfilesFromApi() {
+  return fetchJson<ReadOnlyLabConnectionProfile[]>("/api/prism/read-only-lab-profiles");
+}
+
+export async function createReadOnlyLabConnectionProfileViaApi(payload: Partial<ReadOnlyLabConnectionProfile> = {}) {
+  return fetchJson<ReadOnlyLabConnectionProfile>("/api/prism/read-only-lab-profiles", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchPrismFixtureReplaysFromApi() {
+  return fetchJson<PrismFixtureReplayRecord[]>("/api/prism/fixture-replays");
+}
+
+export async function createPrismFixtureReplayViaApi(payload: Partial<PrismFixtureReplayRecord> = {}) {
+  return fetchJson<PrismFixtureReplayRecord>("/api/prism/fixture-replays", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchReadOnlyAdapterAuthorizationGatesFromApi() {
+  return fetchJson<ReadOnlyAdapterAuthorizationGate[]>("/api/prism/read-only-authorization-gates");
+}
+
+export async function createReadOnlyAdapterAuthorizationGateViaApi(payload: {
+  profileId?: string;
+  fixtureReplayId?: string;
+  labGateId?: string;
+} = {}) {
+  return fetchJson<ReadOnlyAdapterAuthorizationGate>("/api/prism/read-only-authorization-gates", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchOperatorEvidenceExportPacksFromApi() {
+  return fetchJson<OperatorEvidenceExportPack[]>("/api/operator/evidence-exports");
+}
+
+export async function createOperatorEvidenceExportPackViaApi() {
+  return fetchJson<OperatorEvidenceExportPack>("/api/operator/evidence-exports", {
+    method: "POST",
+  });
+}
+
+export async function fetchLabPilotRunbookWorkflowsFromApi() {
+  return fetchJson<LabPilotRunbookWorkflow[]>("/api/lab-pilot/runbook-workflows");
+}
+
+export async function createLabPilotRunbookWorkflowViaApi(payload: {
+  profileId?: string;
+  authorizationGateId?: string;
+  evidenceExportId?: string;
+} = {}) {
+  return fetchJson<LabPilotRunbookWorkflow>("/api/lab-pilot/runbook-workflows", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function runLabPilotRunbookWorkflowActionViaApi(
+  workflowId: string,
+  action: "approve" | "execute-dry-run" | "review-evidence" | "close"
+) {
+  return fetchJson<LabPilotRunbookWorkflow>(
+    `/api/lab-pilot/runbook-workflows/${encodeURIComponent(workflowId)}/${action}`,
+    { method: "POST" }
+  );
 }
 
 export async function fetchMockPrismStatusFromApi() {

@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.90.0-live-read-only-prism-call-design`.
+This project uses release tags for public milestones. The current release is `v2.95.0-lab-pilot-runbook-workflow`.
 
 ## [Unreleased]
 
@@ -12,6 +12,61 @@ This project uses release tags for public milestones. The current release is `v2
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.95.0-lab-pilot-runbook-workflow] - 2026-07-08
+
+### Added
+
+- API-backed lab pilot runbook workflows with prepare, approve, execute dry-run, review evidence, and close phases.
+- Admin Operations panel for lab pilot workflow progression.
+
+### Notes
+
+- Workflow dry-runs are evidence-only and keep `realPrismCallsEnabled=false`.
+
+## [v2.94.0-operator-evidence-export-pack] - 2026-07-08
+
+### Added
+
+- Operator evidence export packs at `/api/operator/evidence-exports`.
+- Redacted manifest covering readiness scorecard, auth diagnostics, config validation, lab gates, and live read-only design.
+
+### Notes
+
+- Export packs store references and metadata only.
+
+## [v2.93.0-read-only-adapter-authorization-gate] - 2026-07-08
+
+### Added
+
+- Read-only adapter authorization gate records at `/api/prism/read-only-authorization-gates`.
+- Explicit packet tying approved lab profile, fixture replay, and read-only lab gate evidence together.
+
+### Notes
+
+- Authorization gates do not enable live Prism calls.
+
+## [v2.92.0-prism-fixture-replay-harness] - 2026-07-08
+
+### Added
+
+- Prism fixture replay harness at `/api/prism/fixture-replays`.
+- Sanitized fixture validation for read-only adapter contract replay without live calls.
+
+### Notes
+
+- Unsanitized URL, token, password, secret, and credential-like fixture values block replay readiness.
+
+## [v2.91.0-lab-connection-profile-model] - 2026-07-08
+
+### Added
+
+- Read-only lab connection profile records at `/api/prism/read-only-lab-profiles`.
+- Profile fields for endpoint reference, credential profile reference, bounded provider scope, owner, expiry, and approval state.
+
+### Notes
+
+- Profiles store references only and keep real Prism calls disabled.
 
 ## [v2.90.0-live-read-only-prism-call-design] - 2026-07-08
 

@@ -42,7 +42,13 @@ import type {
   PolicyBundle,
   PrismInventoryImportResult,
   PrismInventoryRecord,
+  PrismFixtureReplayRecord,
   ReadOnlyPrismLabGate,
+  ReadOnlyLabConnectionProfile,
+  ReadOnlyAdapterAuthorizationGate,
+  OperatorEvidenceExportPack,
+  LabPilotRunbookWorkflow,
+  SanitizedPrismInventoryFixtureRecord,
   MockPrismSimulatorStatus,
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
@@ -120,6 +126,11 @@ export type ApiState = {
   prismInventory: PrismInventoryRecord[];
   prismInventoryImport?: PrismInventoryImportResult;
   readOnlyPrismLabGates: ReadOnlyPrismLabGate[];
+  readOnlyLabConnectionProfiles: ReadOnlyLabConnectionProfile[];
+  prismFixtureReplayRecords: PrismFixtureReplayRecord[];
+  readOnlyAdapterAuthorizationGates: ReadOnlyAdapterAuthorizationGate[];
+  operatorEvidenceExportPacks: OperatorEvidenceExportPack[];
+  labPilotRunbookWorkflows: LabPilotRunbookWorkflow[];
   mockPrismStatus: MockPrismSimulatorStatus;
   mockPrismExecutions: MockPrismExecution[];
   prismSimulatorProfiles: PrismSimulatorProfile[];
@@ -268,6 +279,47 @@ export type CreateLabAuthorizationScopeRequest = {
   evidenceReferences?: string[];
   rollbackOwner?: string;
 };
+
+export type CreateReadOnlyLabConnectionProfileRequest = {
+  name?: string;
+  prismCentralEndpointRef?: string;
+  credentialProfileRef?: string;
+  owner?: string;
+  approvedBy?: string;
+  approvalState?: ReadOnlyLabConnectionProfile["approvalState"];
+  expiresAt?: string;
+  allowedProviderScope?: Partial<ReadOnlyLabConnectionProfile["allowedProviderScope"]>;
+  evidence?: string[];
+};
+
+export type CreatePrismFixtureReplayRequest = {
+  fixtureName?: string;
+  source?: PrismFixtureReplayRecord["source"];
+  records?: SanitizedPrismInventoryFixtureRecord[];
+};
+
+export type CreateReadOnlyAdapterAuthorizationGateRequest = {
+  profileId?: string;
+  fixtureReplayId?: string;
+  labGateId?: string;
+};
+
+export type CreateOperatorEvidenceExportPackRequest = {
+  includeReadiness?: boolean;
+  includeAuthBoundary?: boolean;
+  includeConfigValidation?: boolean;
+  includeLabGates?: boolean;
+  includeLiveDesign?: boolean;
+};
+
+export type CreateLabPilotRunbookWorkflowRequest = {
+  profileId?: string;
+  authorizationGateId?: string;
+  evidenceExportId?: string;
+  owner?: string;
+};
+
+export type LabPilotRunbookWorkflowAction = "approve" | "execute-dry-run" | "review-evidence" | "close";
 
 export type CreateVmLifecycleProofRequest = {
   gateId?: string;
