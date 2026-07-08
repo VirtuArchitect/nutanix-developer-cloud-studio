@@ -1,12 +1,21 @@
-import { allTargets, type ApprovalRequest, type Environment, type Target, type Template } from "../src/data/cloudStudioDomain";
+import {
+  allTargets,
+  type ApprovalRequest,
+  type Environment,
+  type MockPrismExecution,
+  type Target,
+  type Template,
+} from "../src/data/cloudStudioDomain";
 import { createMockNutanixAdapters, type ProvisioningJob } from "../src/services/nutanixAdapters";
 import { estimateMonthlyCost, upsertRequestedEnvironment } from "../src/services/provisioningService";
 import { enqueueControlPlaneJob, enqueueDestroyControlPlaneJob, releaseApprovalPausedJobs } from "./controlPlane";
+import { recordMockPrismVmExecution } from "./mockPrismAdapter";
 import type { ApiState, AuditEvent, CreateEnvironmentRequest } from "./types";
 
 export type CreateEnvironmentResult = {
   environment: Environment;
   jobs: ProvisioningJob[];
+  mockPrismExecution?: MockPrismExecution;
   approval?: ApprovalRequest;
   auditEvent: AuditEvent;
 };
@@ -53,6 +62,7 @@ export function createEnvironmentRequest(state: ApiState, request: CreateEnviron
       estimatedCost: cost,
     })
   );
+  const mockPrismExecution = recordMockPrismVmExecution(state, environment, template, targets);
 
   const auditEvent: AuditEvent = {
     id: `audit-${Date.now()}`,
@@ -64,6 +74,9 @@ export function createEnvironmentRequest(state: ApiState, request: CreateEnviron
       templateId: template.id,
       targets,
       estimatedCost: cost,
+      mockPrismTaskUuid: mockPrismExecution?.task.uuid,
+      mockPrismEndpoint: mockPrismExecution?.endpoint,
+      provisioningEnabled: false,
     },
   };
 
@@ -85,12 +98,30 @@ export function createEnvironmentRequest(state: ApiState, request: CreateEnviron
     item.name === environment.name ? environment : item
   );
   state.jobs = [...jobs, ...state.jobs.filter((job) => job.environmentName !== environment.name)];
-  enqueueControlPlaneJob(state, {
+  const controlPlaneJob = enqueueControlPlaneJob(state, {
     environment,
     template,
     targets,
     approvalRequired,
   });
+  if (mockPrismExecution) {
+    state.controlPlaneJobs = state.controlPlaneJobs.map((job) =>
+      job.id === controlPlaneJob.id
+        ? {
+            ...job,
+            transitions: [
+              {
+                state: job.state,
+                actor: "mock-prism",
+                message: `Mock Prism task ${mockPrismExecution.task.uuid} recorded for ${mockPrismExecution.request.image}.`,
+                createdAt: mockPrismExecution.createdAt,
+              },
+              ...job.transitions,
+            ],
+          }
+        : job
+    );
+  }
   if (approval) {
     state.approvals = [approval, ...state.approvals.filter((item) => item.environmentName !== environment.name)];
   }
@@ -99,6 +130,7 @@ export function createEnvironmentRequest(state: ApiState, request: CreateEnviron
   return {
     environment,
     jobs,
+    mockPrismExecution,
     approval,
     auditEvent,
   };

@@ -183,8 +183,12 @@ Required role: `Platform Admin`.
 - `POST /api/lab-adapters/:name/discover`
 - `GET /api/prism/inventory`
 - `POST /api/prism/inventory/import`
+- `GET /api/mock-prism/status`
+- `GET /api/mock-prism/executions`
 
 The discovery endpoint simulates read-only adapter readiness. The Prism inventory import endpoint imports mock read-only cluster, project, image, network, category, and VM records after NCI integration config is reachable. Imported image records are mapped into draft AHV image profile candidates for registry review. Provisioning remains disabled in the API response and UI.
+
+The mock Prism API endpoints expose simulator readiness and VM execution evidence recorded during VM-targeted environment creation. Execution records include the selected project, cluster, image, subnet, category set, task UUID, task state, and `provisioningEnabled=false`.
 
 ### Mock Prism Central Simulator
 
@@ -211,6 +215,8 @@ Example simulated VM create request:
 ```
 
 The response returns an accepted mock task reference. Polling the task endpoint returns `SUCCEEDED` with a message that no real VM was created.
+
+When an environment request includes the `VM` target, the API records a matching mock Prism execution evidence record and links the task UUID into the control-plane transition history. This proves the adapter contract path without calling real Nutanix infrastructure.
 
 ### Control Plane Jobs
 

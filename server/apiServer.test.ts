@@ -435,9 +435,10 @@ describe("api server", () => {
       method: "POST",
       body: JSON.stringify({
         name: "api-created-dev",
-        templateId: "spring-postgres",
+        templateId: "vm-app",
         owner: "demo.user",
         region: "Berlin Lab",
+        targets: ["VM"],
       }),
     });
 
@@ -446,18 +447,51 @@ describe("api server", () => {
       status: "Provisioning",
     });
     expect(created.data.jobs.length).toBeGreaterThan(0);
+    expect(created.data.mockPrismExecution).toMatchObject({
+      environmentName: "api-created-dev",
+      provider: "NCI",
+      adapterMode: "Mock Prism Central",
+      provisioningEnabled: false,
+      task: expect.objectContaining({
+        state: "SUCCEEDED",
+        percentageComplete: 100,
+      }),
+    });
 
     const environments = await requestJson("/api/environments");
     const auditEvents = await requestJson("/api/audit-events");
     const controlPlaneJobs = await requestJson("/api/control-plane/jobs");
+    const mockPrismStatus = await requestJson("/api/mock-prism/status");
+    const mockPrismExecutions = await requestJson("/api/mock-prism/executions");
+    const detail = await requestJson("/api/environments/api-created-dev");
 
     expect(environments.data[0]).toMatchObject({ name: "api-created-dev" });
-    expect(auditEvents.data[0]).toMatchObject({ action: "environment.requested" });
+    expect(auditEvents.data[0]).toMatchObject({
+      action: "environment.requested",
+      metadata: expect.objectContaining({
+        mockPrismTaskUuid: created.data.mockPrismExecution.task.uuid,
+        provisioningEnabled: false,
+      }),
+    });
     expect(controlPlaneJobs.data[0]).toMatchObject({
       environmentName: "api-created-dev",
       state: "Queued",
       provisioningEnabled: false,
     });
+    expect(controlPlaneJobs.data[0].transitions).toEqual(
+      expect.arrayContaining([expect.objectContaining({ actor: "mock-prism" })])
+    );
+    expect(mockPrismStatus.data).toMatchObject({
+      service: "Mock Prism Central",
+      status: "Healthy",
+      mutationBoundary: "No real Nutanix infrastructure is contacted.",
+    });
+    expect(mockPrismExecutions.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ environmentName: "api-created-dev" })])
+    );
+    expect(detail.data.mockPrismExecutions).toEqual(
+      expect.arrayContaining([expect.objectContaining({ environmentName: "api-created-dev" })])
+    );
   });
 
   it("creates AHV VM sandbox dry-run plans without provisioning", async () => {

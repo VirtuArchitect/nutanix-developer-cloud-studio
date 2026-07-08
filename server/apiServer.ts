@@ -1274,6 +1274,16 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/mock-prism/status") {
+    sendJson(response, 200, { data: state.mockPrismStatus });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/mock-prism/executions") {
+    sendJson(response, 200, { data: state.mockPrismExecutions });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/resource-profiles") {
     sendJson(response, 200, { data: state.resourceProfiles });
     return;
@@ -1890,6 +1900,7 @@ async function routeApi(
         environment,
         jobs: state.jobs.filter((job) => job.environmentName === environmentName),
         controlPlaneJobs: state.controlPlaneJobs.filter((job) => job.environmentName === environmentName),
+        mockPrismExecutions: state.mockPrismExecutions.filter((execution) => execution.environmentName === environmentName),
         approvals: state.approvals.filter((approval) => approval.environmentName === environmentName),
         auditEvents: state.auditEvents.filter((event) => event.target === environmentName),
       },

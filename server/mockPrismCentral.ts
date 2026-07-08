@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import type { MockPrismSimulatorStatus } from "../src/data/cloudStudioDomain";
 import { securityHeaders } from "./security";
 
 type PrismEntityKind = "clusters" | "projects" | "images" | "subnets" | "categories" | "vms";
@@ -89,12 +90,7 @@ export async function routeMockPrismCentral(
 
   if (request.method === "GET" && url.pathname === "/mock-prism/health") {
     sendMockPrismJson(response, 200, {
-      data: {
-        service: "Mock Prism Central",
-        status: "Healthy",
-        mode: "Simulated",
-        mutationBoundary: "No real Nutanix infrastructure is contacted.",
-      },
+      data: createMockPrismSimulatorStatus(),
     });
     return true;
   }
@@ -102,7 +98,7 @@ export async function routeMockPrismCentral(
   const listMatch = url.pathname.match(/^\/mock-prism\/api\/nutanix\/v3\/(clusters|projects|images|subnets|categories|vms)\/list$/);
   if (request.method === "POST" && listMatch) {
     const kind = listMatch[1] as PrismEntityKind;
-    sendMockPrismJson(response, 200, prismListResponse(kind));
+    sendMockPrismJson(response, 200, createMockPrismListResponse(kind));
     return true;
   }
 
@@ -119,7 +115,7 @@ export async function routeMockPrismCentral(
     }
 
     const name = extractVmName(body);
-    const task = createMockTask(`Mock VM create accepted for ${name}. No real VM was created.`);
+    const task = createMockPrismTask(`Mock VM create accepted for ${name}. No real VM was created.`);
     sendMockPrismJson(response, 202, {
       metadata: { kind: "vm_create_response" },
       status: {
@@ -134,7 +130,7 @@ export async function routeMockPrismCentral(
 
   const taskMatch = url.pathname.match(/^\/mock-prism\/api\/nutanix\/v3\/tasks\/([^/]+)$/);
   if (request.method === "GET" && taskMatch) {
-    sendMockPrismJson(response, 200, createMockTask(`Mock task ${decodeURIComponent(taskMatch[1])} completed.`));
+    sendMockPrismJson(response, 200, createMockPrismTask(`Mock task ${decodeURIComponent(taskMatch[1])} completed.`));
     return true;
   }
 
@@ -147,7 +143,25 @@ export async function routeMockPrismCentral(
   return true;
 }
 
-function prismListResponse(kind: PrismEntityKind) {
+export function createMockPrismSimulatorStatus(endpoint = process.env.NUTANIX_MOCK_PRISM_CENTRAL_URL ?? "http://localhost:8080/mock-prism"): MockPrismSimulatorStatus {
+  return {
+    service: "Mock Prism Central",
+    status: "Healthy",
+    mode: "Simulated",
+    endpoint,
+    mutationBoundary: "No real Nutanix infrastructure is contacted.",
+    availableInventory: {
+      clusters: mockPrismEntities.clusters.length,
+      projects: mockPrismEntities.projects.length,
+      images: mockPrismEntities.images.length,
+      subnets: mockPrismEntities.subnets.length,
+      categories: mockPrismEntities.categories.length,
+      vms: mockPrismEntities.vms.length,
+    },
+  };
+}
+
+export function createMockPrismListResponse(kind: PrismEntityKind) {
   const entities = mockPrismEntities[kind];
   return {
     metadata: {
@@ -158,6 +172,10 @@ function prismListResponse(kind: PrismEntityKind) {
     },
     entities,
   };
+}
+
+export function getMockPrismEntity(kind: PrismEntityKind, index = 0) {
+  return mockPrismEntities[kind][index];
 }
 
 function entity(kind: string, uuid: string, name: string, status: Record<string, unknown>): PrismEntity {
@@ -183,7 +201,7 @@ function reference(kind: string, uuid: string, name: string) {
   return { kind, uuid, name };
 }
 
-function createMockTask(message: string): PrismTask {
+export function createMockPrismTask(message: string): PrismTask {
   return {
     metadata: {
       kind: "task",

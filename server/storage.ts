@@ -16,6 +16,7 @@ import {
   type TemplateGovernance,
 } from "../src/data/cloudStudioDomain";
 import type { ApiState } from "./types";
+import { createMockPrismSimulatorStatus } from "./mockPrismCentral";
 
 const auditRetentionEvents = Number(process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500);
 
@@ -121,6 +122,8 @@ export function createDefaultState(): ApiState {
     policyBundles,
     templateRegistry,
     prismInventory: [],
+    mockPrismStatus: createMockPrismSimulatorStatus(),
+    mockPrismExecutions: [],
     platformConfig,
     provisioningAdapters: defaultProvisioningAdapters(),
     adapterEnablementRecords: [],

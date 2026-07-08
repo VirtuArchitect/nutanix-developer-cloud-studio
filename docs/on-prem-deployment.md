@@ -156,6 +156,8 @@ http://localhost:8080/mock-prism
 
 The simulator exposes Prism-shaped list, VM-create, and task-poll responses for adapter contract testing. It is not a Nutanix emulator and does not persist or mutate real infrastructure.
 
+VM-targeted environment requests use the simulator to record task evidence in the API state. Admin Providers and environment detail views show the simulator endpoint, selected mock inventory, task UUID, and no-mutation boundary. This is useful for on-prem workflow testing when no Nutanix lab exists.
+
 Before any real API call is added, document:
 
 - Authorized lab systems and endpoints.
