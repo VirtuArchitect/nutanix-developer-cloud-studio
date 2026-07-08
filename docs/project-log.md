@@ -2,6 +2,16 @@
 
 ## 2026-07-08
 
+- Released `v3.0.0-production-readiness-decision-gate`.
+- Added production readiness decision gate records for go/no-go, approvers, rollback owner, support contact, retention policy, checklist blockers, and CAB-ready evidence.
+- Released `v2.99.0-lab-pilot-operator-console`.
+- Added consolidated lab pilot operator console status for runtime mode, authorization gate, runbook closure, inventory pilot, observability, and readiness counters.
+- Released `v2.98.0-adapter-observability-redaction`.
+- Added redacted read-only adapter traces, latency summaries, blocked mutation counts, and audit evidence.
+- Released `v2.97.0-live-read-only-inventory-adapter`.
+- Added controlled read-only inventory pilot records for authorized lab mode while keeping network calls disabled.
+- Released `v2.96.0-adapter-runtime-mode-switch`.
+- Added fail-closed read-only adapter runtime mode records for simulated, fixture replay, and authorized read-only lab modes.
 - Released `v2.95.0-lab-pilot-runbook-workflow`.
 - Added API-backed lab pilot runbook workflows for prepare, approve, execute dry-run, review evidence, and close pilot.
 - Released `v2.94.0-operator-evidence-export-pack`.

@@ -339,6 +339,14 @@ import {
   ReadOnlyLabPilotError,
 } from "./readOnlyLabPilot";
 import {
+  createLabPilotOperatorConsole,
+  createLiveReadOnlyInventoryPilotRecord,
+  createProductionReadinessDecisionGate,
+  createReadOnlyAdapterObservabilityRecord,
+  ReadOnlyAdapterPilotError,
+  setReadOnlyAdapterRuntimeMode,
+} from "./readOnlyAdapterPilot";
+import {
   AuthorizationError,
   createAuthBoundaryDiagnostics,
   createRequestContext,
@@ -448,9 +456,13 @@ import type {
   CreateVmLifecycleProofRequest,
   CreateVmSandboxDryRunRequest,
   CreateOperatorEvidenceExportPackRequest,
+  CreateLiveReadOnlyInventoryPilotRequest,
+  CreateProductionReadinessDecisionGateRequest,
   CreatePrismFixtureReplayRequest,
+  CreateReadOnlyAdapterObservabilityRequest,
   CreateReadOnlyAdapterAuthorizationGateRequest,
   CreateReadOnlyLabConnectionProfileRequest,
+  SetReadOnlyAdapterRuntimeModeRequest,
   LabPilotRunbookWorkflowAction,
   RegistryAction,
   UpdateIntegrationConfigRequest,
@@ -583,6 +595,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ReadOnlyLabPilotError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ReadOnlyAdapterPilotError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1390,6 +1412,36 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/lab-pilot/runbook-workflows") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.labPilotRunbookWorkflows });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-runtime-modes") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.readOnlyAdapterRuntimeModeRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/live-read-only-inventory-pilots") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.liveReadOnlyInventoryPilots });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-observability") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.readOnlyAdapterObservabilityRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-pilot/operator-console") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createLabPilotOperatorConsole(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/production/readiness-decision-gates") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionReadinessDecisionGates });
     return;
   }
 
@@ -2485,6 +2537,75 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: workflow });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-runtime-modes") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<SetReadOnlyAdapterRuntimeModeRequest>(request);
+    const modeRecord = setReadOnlyAdapterRuntimeMode(state, body, context.session.user);
+    state.readOnlyAdapterRuntimeModeRecords = [modeRecord, ...state.readOnlyAdapterRuntimeModeRecords];
+    addAuditEvent(state, "prism.readonly.runtime-mode.selected", context.session.user, modeRecord.activeMode, {
+      requestedMode: modeRecord.requestedMode,
+      status: modeRecord.status,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: modeRecord });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/live-read-only-inventory-pilots") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLiveReadOnlyInventoryPilotRequest>(request);
+    const pilot = createLiveReadOnlyInventoryPilotRecord(state, body, context.session.user);
+    state.liveReadOnlyInventoryPilots = [pilot, ...state.liveReadOnlyInventoryPilots];
+    addAuditEvent(state, "prism.readonly.inventory-pilot.recorded", context.session.user, pilot.id, {
+      status: pilot.status,
+      recordsImported: pilot.recordsImported,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: pilot });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-observability") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateReadOnlyAdapterObservabilityRequest>(request);
+    const observability = createReadOnlyAdapterObservabilityRecord(state, body, context.session.user);
+    state.readOnlyAdapterObservabilityRecords = [observability, ...state.readOnlyAdapterObservabilityRecords];
+    addAuditEvent(state, "prism.readonly.observability.prepared", context.session.user, observability.id, {
+      observedOperations: observability.summary.observedOperations,
+      blockedMutations: observability.summary.blockedMutations,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: observability });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/production/readiness-decision-gates") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionReadinessDecisionGateRequest>(request);
+    const gate = createProductionReadinessDecisionGate(state, body, context.session.user);
+    state.productionReadinessDecisionGates = [gate, ...state.productionReadinessDecisionGates];
+    addAuditEvent(state, "production.readiness-decision-gate.recorded", context.session.user, gate.id, {
+      decision: gate.decision,
+      status: gate.status,
+      blockerCount: gate.blockers.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: gate });
     return;
   }
 

@@ -32,9 +32,11 @@ import type {
   LabAdapterSnapshot,
   LabAuthorizationScope,
   LabPilotRunbookWorkflow,
+  LabPilotOperatorConsole,
   LabScopeDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
+  LiveReadOnlyInventoryPilotRecord,
   LiveReadOnlyPrismCallDesign,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
@@ -55,6 +57,9 @@ import type {
   PrismInventoryRecord,
   PrismFixtureReplayRecord,
   PrismReadOnlyAdapterDiagnostics,
+  ReadOnlyAdapterObservabilityRecord,
+  ReadOnlyAdapterRuntimeMode,
+  ReadOnlyAdapterRuntimeModeRecord,
   ProvisioningAdapterReadiness,
   ProductionAdapterAuthorizationPacket,
   ProductionChangeFreezeRecord,
@@ -96,6 +101,7 @@ import type {
   ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
   ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord,
   ProductionReadinessReview,
+  ProductionReadinessDecisionGate,
   ProductionReadinessScorecard,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -358,6 +364,66 @@ export async function runLabPilotRunbookWorkflowActionViaApi(
     `/api/lab-pilot/runbook-workflows/${encodeURIComponent(workflowId)}/${action}`,
     { method: "POST" }
   );
+}
+
+export async function fetchReadOnlyAdapterRuntimeModesFromApi() {
+  return fetchJson<ReadOnlyAdapterRuntimeModeRecord[]>("/api/prism/read-only-runtime-modes");
+}
+
+export async function setReadOnlyAdapterRuntimeModeViaApi(payload: {
+  mode?: ReadOnlyAdapterRuntimeMode;
+  authorizationGateId?: string;
+  runbookWorkflowId?: string;
+  evidenceExportId?: string;
+} = {}) {
+  return fetchJson<ReadOnlyAdapterRuntimeModeRecord>("/api/prism/read-only-runtime-modes", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchLiveReadOnlyInventoryPilotsFromApi() {
+  return fetchJson<LiveReadOnlyInventoryPilotRecord[]>("/api/prism/live-read-only-inventory-pilots");
+}
+
+export async function createLiveReadOnlyInventoryPilotViaApi(payload: {
+  runtimeModeRecordId?: string;
+  authorizationGateId?: string;
+  runbookWorkflowId?: string;
+} = {}) {
+  return fetchJson<LiveReadOnlyInventoryPilotRecord>("/api/prism/live-read-only-inventory-pilots", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchReadOnlyAdapterObservabilityFromApi() {
+  return fetchJson<ReadOnlyAdapterObservabilityRecord[]>("/api/prism/read-only-observability");
+}
+
+export async function createReadOnlyAdapterObservabilityViaApi(payload: {
+  runtimeModeRecordId?: string;
+  inventoryPilotId?: string;
+} = {}) {
+  return fetchJson<ReadOnlyAdapterObservabilityRecord>("/api/prism/read-only-observability", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchLabPilotOperatorConsoleFromApi() {
+  return fetchJson<LabPilotOperatorConsole>("/api/lab-pilot/operator-console");
+}
+
+export async function fetchProductionReadinessDecisionGatesFromApi() {
+  return fetchJson<ProductionReadinessDecisionGate[]>("/api/production/readiness-decision-gates");
+}
+
+export async function createProductionReadinessDecisionGateViaApi(payload: Partial<ProductionReadinessDecisionGate> = {}) {
+  return fetchJson<ProductionReadinessDecisionGate>("/api/production/readiness-decision-gates", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function fetchMockPrismStatusFromApi() {

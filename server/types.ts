@@ -27,8 +27,10 @@ import type {
   LabExecutionProposalExportRecord,
   LabAdapterSnapshot,
   LabAuthorizationScope,
+  LabPilotOperatorConsole,
   LifecycleOperationKind,
   LifecycleOperationRecord,
+  LiveReadOnlyInventoryPilotRecord,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
   PrismSimulatorFailureScenario,
@@ -43,6 +45,9 @@ import type {
   PrismInventoryImportResult,
   PrismInventoryRecord,
   PrismFixtureReplayRecord,
+  ReadOnlyAdapterObservabilityRecord,
+  ReadOnlyAdapterRuntimeMode,
+  ReadOnlyAdapterRuntimeModeRecord,
   ReadOnlyPrismLabGate,
   ReadOnlyLabConnectionProfile,
   ReadOnlyAdapterAuthorizationGate,
@@ -54,6 +59,7 @@ import type {
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
+  ProductionReadinessDecisionGate,
   RealAdapterLabScopeActivation,
   RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
@@ -131,6 +137,10 @@ export type ApiState = {
   readOnlyAdapterAuthorizationGates: ReadOnlyAdapterAuthorizationGate[];
   operatorEvidenceExportPacks: OperatorEvidenceExportPack[];
   labPilotRunbookWorkflows: LabPilotRunbookWorkflow[];
+  readOnlyAdapterRuntimeModeRecords: ReadOnlyAdapterRuntimeModeRecord[];
+  liveReadOnlyInventoryPilots: LiveReadOnlyInventoryPilotRecord[];
+  readOnlyAdapterObservabilityRecords: ReadOnlyAdapterObservabilityRecord[];
+  productionReadinessDecisionGates: ProductionReadinessDecisionGate[];
   mockPrismStatus: MockPrismSimulatorStatus;
   mockPrismExecutions: MockPrismExecution[];
   prismSimulatorProfiles: PrismSimulatorProfile[];
@@ -320,6 +330,32 @@ export type CreateLabPilotRunbookWorkflowRequest = {
 };
 
 export type LabPilotRunbookWorkflowAction = "approve" | "execute-dry-run" | "review-evidence" | "close";
+
+export type SetReadOnlyAdapterRuntimeModeRequest = {
+  mode?: ReadOnlyAdapterRuntimeMode;
+  authorizationGateId?: string;
+  runbookWorkflowId?: string;
+  evidenceExportId?: string;
+};
+
+export type CreateLiveReadOnlyInventoryPilotRequest = {
+  runtimeModeRecordId?: string;
+  authorizationGateId?: string;
+  runbookWorkflowId?: string;
+};
+
+export type CreateReadOnlyAdapterObservabilityRequest = {
+  runtimeModeRecordId?: string;
+  inventoryPilotId?: string;
+};
+
+export type CreateProductionReadinessDecisionGateRequest = {
+  decision?: ProductionReadinessDecisionGate["decision"];
+  approvers?: string[];
+  rollbackOwner?: string;
+  supportContact?: string;
+  retentionPolicy?: string;
+};
 
 export type CreateVmLifecycleProofRequest = {
   gateId?: string;

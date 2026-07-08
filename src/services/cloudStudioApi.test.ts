@@ -74,8 +74,11 @@ import {
   createProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordViaApi,
   createProductionReadinessReviewViaApi,
   createLabPilotRunbookWorkflowViaApi,
+  createLiveReadOnlyInventoryPilotViaApi,
   createOperatorEvidenceExportPackViaApi,
+  createProductionReadinessDecisionGateViaApi,
   createPrismFixtureReplayViaApi,
+  createReadOnlyAdapterObservabilityViaApi,
   createReadOnlyAdapterAuthorizationGateViaApi,
   createReadOnlyLabConnectionProfileViaApi,
   createReleaseEvidenceExportViaApi,
@@ -113,6 +116,7 @@ import {
   fetchExecutionBrokerQueueRecordsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabPilotOperatorConsoleFromApi,
   fetchLabPilotRunbookWorkflowsFromApi,
   fetchLabEvidenceReviewsFromApi,
   fetchLabExecutionProposalEnvelopesFromApi,
@@ -120,13 +124,16 @@ import {
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
   fetchLiveReadOnlyPrismCallDesignFromApi,
+  fetchLiveReadOnlyInventoryPilotsFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
   fetchPrismFixtureReplaysFromApi,
   fetchPrismReadOnlyAdapterDiagnosticsFromApi,
+  fetchReadOnlyAdapterObservabilityFromApi,
   fetchReadOnlyAdapterAuthorizationGatesFromApi,
+  fetchReadOnlyAdapterRuntimeModesFromApi,
   fetchReadOnlyLabConnectionProfilesFromApi,
   fetchReadOnlyPrismLabGatesFromApi,
   fetchPrismFailureScenariosFromApi,
@@ -182,6 +189,7 @@ import {
   fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
+  fetchProductionReadinessDecisionGatesFromApi,
   fetchProductionReadinessScorecardFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -203,6 +211,7 @@ import {
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
   runLabPilotRunbookWorkflowActionViaApi,
+  setReadOnlyAdapterRuntimeModeViaApi,
   runLabDiscoveryViaApi,
   runControlPlaneJobActionViaApi,
   runIntegrationCheckViaApi,
@@ -456,6 +465,47 @@ describe("cloudStudioApi", () => {
       11,
       "/api/lab-pilot/runbook-workflows/workflow-1/approve",
       expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and records controlled read-only adapter pilot evidence", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchReadOnlyAdapterRuntimeModesFromApi();
+    await setReadOnlyAdapterRuntimeModeViaApi({ mode: "authorized-read-only-lab", authorizationGateId: "auth-1" });
+    await fetchLiveReadOnlyInventoryPilotsFromApi();
+    await createLiveReadOnlyInventoryPilotViaApi({ runtimeModeRecordId: "mode-1" });
+    await fetchReadOnlyAdapterObservabilityFromApi();
+    await createReadOnlyAdapterObservabilityViaApi({ runtimeModeRecordId: "mode-1", inventoryPilotId: "pilot-1" });
+    await fetchLabPilotOperatorConsoleFromApi();
+    await fetchProductionReadinessDecisionGatesFromApi();
+    await createProductionReadinessDecisionGateViaApi({ decision: "Go" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/read-only-runtime-modes", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/prism/read-only-runtime-modes",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("authorized-read-only-lab") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/prism/live-read-only-inventory-pilots", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/prism/live-read-only-inventory-pilots",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("mode-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/read-only-observability", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      6,
+      "/api/prism/read-only-observability",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("pilot-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/lab-pilot/operator-console", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(8, "/api/production/readiness-decision-gates", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      9,
+      "/api/production/readiness-decision-gates",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("Go") })
     );
   });
 
