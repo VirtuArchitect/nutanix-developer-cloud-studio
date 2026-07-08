@@ -185,10 +185,13 @@ Required role: `Platform Admin`.
 - `POST /api/prism/inventory/import`
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
+- `GET /api/prism/adapter-diagnostics`
 
 The discovery endpoint simulates read-only adapter readiness. The Prism inventory import endpoint imports mock read-only cluster, project, image, network, category, and VM records after NCI integration config is reachable. Imported image records are mapped into draft AHV image profile candidates for registry review. Provisioning remains disabled in the API response and UI.
 
 The mock Prism API endpoints expose simulator readiness and VM execution evidence recorded during VM-targeted environment creation. Execution records include the selected project, cluster, image, subnet, category set, task UUID, task state, and `provisioningEnabled=false`.
+
+`GET /api/prism/adapter-diagnostics` reports the active Prism adapter mode, supported adapter operations, the mock endpoint, real endpoint configuration state, latest mock task, and blocked reasons for real Prism adapter use. The current active adapter is `MockPrismAdapter`; `DisabledRealPrismAdapter` documents future real-adapter requirements while keeping all mutation paths disabled.
 
 ### Mock Prism Central Simulator
 

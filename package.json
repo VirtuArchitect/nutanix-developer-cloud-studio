@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.72.0-mock-prism-adapter-flow",
+  "version": "2.73.0-adapter-contract-split",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

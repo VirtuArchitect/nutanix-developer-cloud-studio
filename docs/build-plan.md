@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.73.0-adapter-contract-split` formalizes the Prism adapter interface, moves VM create simulation behind `MockPrismAdapter`, adds `DisabledRealPrismAdapter`, and exposes adapter diagnostics in Admin.
 - `v2.72.0-mock-prism-adapter-flow` connects VM-targeted environment creation to mock Prism Central task evidence and surfaces simulator readiness in Admin and environment detail views.
 - `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record` adds evidence-only archive recovery final operations handoff records linked to monitoring ownership closure records and an Admin Operations archive recovery final operations handoff panel.
 - `v2.68.0-production-execution-archive-recovery-service-management-handoff-record` adds evidence-only archive recovery service management handoff records linked to operational continuity records and an Admin Operations archive recovery service management handoff panel.

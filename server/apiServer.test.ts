@@ -463,6 +463,7 @@ describe("api server", () => {
     const controlPlaneJobs = await requestJson("/api/control-plane/jobs");
     const mockPrismStatus = await requestJson("/api/mock-prism/status");
     const mockPrismExecutions = await requestJson("/api/mock-prism/executions");
+    const adapterDiagnostics = await requestJson("/api/prism/adapter-diagnostics");
     const detail = await requestJson("/api/environments/api-created-dev");
 
     expect(environments.data[0]).toMatchObject({ name: "api-created-dev" });
@@ -488,6 +489,18 @@ describe("api server", () => {
     });
     expect(mockPrismExecutions.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ environmentName: "api-created-dev" })])
+    );
+    expect(adapterDiagnostics.data).toMatchObject({
+      activeMode: "mock-prism",
+      activeAdapter: "MockPrismAdapter",
+      provisioningEnabled: false,
+      lastMockTask: expect.objectContaining({
+        environmentName: "api-created-dev",
+        taskUuid: created.data.mockPrismExecution.task.uuid,
+      }),
+    });
+    expect(adapterDiagnostics.data.blockedReasons).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: "real_adapter_disabled" })])
     );
     expect(detail.data.mockPrismExecutions).toEqual(
       expect.arrayContaining([expect.objectContaining({ environmentName: "api-created-dev" })])

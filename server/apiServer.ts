@@ -288,6 +288,7 @@ import {
 } from "./mockPlatform";
 import { routeMockPrismCentral } from "./mockPrismCentral";
 import { createPlatformServiceRequest, PlatformServiceError } from "./platformServices";
+import { createPrismAdapterDiagnostics } from "./prismAdapterContract";
 import {
   createDisabledPlatformServiceAdapterContract,
   PlatformServiceAdapterContractError,
@@ -1281,6 +1282,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/mock-prism/executions") {
     sendJson(response, 200, { data: state.mockPrismExecutions });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/adapter-diagnostics") {
+    sendJson(response, 200, { data: createPrismAdapterDiagnostics(state) });
     return;
   }
 

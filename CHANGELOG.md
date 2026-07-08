@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.72.0-mock-prism-adapter-flow`.
+This project uses release tags for public milestones. The current release is `v2.73.0-adapter-contract-split`.
 
 ## [Unreleased]
 
@@ -12,6 +12,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.73.0-adapter-contract-split] - 2026-07-08
+
+### Added
+
+- Typed Prism adapter contract with `health`, `listInventory`, `createVmPlan`, `submitVmCreate`, and `pollTask` operations.
+- `MockPrismAdapter` implementation behind the environment create flow.
+- `DisabledRealPrismAdapter` stub that documents blocked real-adapter operations.
+- API-backed Prism adapter diagnostics endpoint for active mode, supported operations, blocked reasons, and latest mock task.
+- Admin Providers panel showing the adapter contract boundary and real-adapter blocked reasons.
+
+### Notes
+
+- Real Prism execution remains disabled.
+- The mock adapter continues to record simulator evidence only.
 
 ## [v2.72.0-mock-prism-adapter-flow] - 2026-07-08
 

@@ -35,6 +35,7 @@ import type {
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
   MockPrismSimulatorStatus,
+  PrismAdapterDiagnostics,
   PlatformConfig,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -243,6 +244,10 @@ export async function fetchMockPrismStatusFromApi() {
 
 export async function fetchMockPrismExecutionsFromApi() {
   return fetchJson<MockPrismExecution[]>("/api/mock-prism/executions");
+}
+
+export async function fetchPrismAdapterDiagnosticsFromApi() {
+  return fetchJson<PrismAdapterDiagnostics>("/api/prism/adapter-diagnostics");
 }
 
 export async function importPrismInventoryViaApi() {
