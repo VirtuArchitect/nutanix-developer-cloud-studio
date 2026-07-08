@@ -37,6 +37,61 @@ describe("api server", () => {
     await expectJson("/readyz", 200, { data: { ready: true } });
   });
 
+  it("serves Mock Prism Central inventory and simulated VM task endpoints", async () => {
+    const health = await requestJson("/mock-prism/health");
+    const clusters = await requestJson("/mock-prism/api/nutanix/v3/clusters/list", { method: "POST" });
+    const images = await requestJson("/mock-prism/api/nutanix/v3/images/list", { method: "POST" });
+    const subnets = await requestJson("/mock-prism/api/nutanix/v3/subnets/list", { method: "POST" });
+    const vms = await requestJson("/mock-prism/api/nutanix/v3/vms/list", { method: "POST" });
+    const create = await requestJson("/mock-prism/api/nutanix/v3/vms", {
+      method: "POST",
+      body: JSON.stringify({ spec: { name: "ndc-simulated-dev" } }),
+    });
+    const taskUuid = create.task_reference.uuid;
+    const task = await requestJson(`/mock-prism/api/nutanix/v3/tasks/${taskUuid}`);
+
+    expect(health.data).toMatchObject({
+      service: "Mock Prism Central",
+      status: "Healthy",
+      mutationBoundary: "No real Nutanix infrastructure is contacted.",
+    });
+    expect(clusters.entities).toEqual(
+      expect.arrayContaining([expect.objectContaining({ metadata: expect.objectContaining({ kind: "cluster" }) })])
+    );
+    expect(images.entities).toEqual(
+      expect.arrayContaining([expect.objectContaining({ metadata: expect.objectContaining({ name: "Rocky Linux 9 Hardened" }) })])
+    );
+    expect(subnets.entities).toEqual(
+      expect.arrayContaining([expect.objectContaining({ metadata: expect.objectContaining({ name: "dev-segment" }) })])
+    );
+    expect(vms.entities).toEqual(
+      expect.arrayContaining([expect.objectContaining({ metadata: expect.objectContaining({ name: "payments-dev" }) })])
+    );
+    expect(create.status).toMatchObject({
+      execution_context: "mock-prism",
+      state: "ACCEPTED",
+    });
+    expect(task.status).toMatchObject({
+      state: "SUCCEEDED",
+      percentage_complete: 100,
+    });
+  });
+
+  it("rejects invalid Mock Prism Central VM create payloads", async () => {
+    const response = await nodeRequest("/mock-prism/api/nutanix/v3/vms", {
+      method: "POST",
+      body: "{",
+    });
+
+    expect(response.status).toBe(400);
+    expect(JSON.parse(response.body)).toEqual({
+      error: {
+        code: "mock_prism_invalid_json",
+        message: "Mock Prism Central request body must be valid JSON.",
+      },
+    });
+  });
+
   it("lists templates and integrations", async () => {
     const templates = await requestJson("/api/templates");
     const integrations = await requestJson("/api/integrations");

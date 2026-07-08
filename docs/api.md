@@ -186,6 +186,32 @@ Required role: `Platform Admin`.
 
 The discovery endpoint simulates read-only adapter readiness. The Prism inventory import endpoint imports mock read-only cluster, project, image, network, category, and VM records after NCI integration config is reachable. Imported image records are mapped into draft AHV image profile candidates for registry review. Provisioning remains disabled in the API response and UI.
 
+### Mock Prism Central Simulator
+
+- `GET /mock-prism/health`
+- `POST /mock-prism/api/nutanix/v3/clusters/list`
+- `POST /mock-prism/api/nutanix/v3/projects/list`
+- `POST /mock-prism/api/nutanix/v3/images/list`
+- `POST /mock-prism/api/nutanix/v3/subnets/list`
+- `POST /mock-prism/api/nutanix/v3/categories/list`
+- `POST /mock-prism/api/nutanix/v3/vms/list`
+- `POST /mock-prism/api/nutanix/v3/vms`
+- `GET /mock-prism/api/nutanix/v3/tasks/:uuid`
+
+The mock Prism Central simulator is a local HTTP target for adapter contract testing when no Nutanix lab is available. It returns Prism-shaped cluster, project, image, subnet, category, VM, task, and simulated VM-create responses. It does not contact Nutanix infrastructure, does not store secrets, and marks task execution as mock-only.
+
+Example simulated VM create request:
+
+```json
+{
+  "spec": {
+    "name": "ndc-simulated-dev"
+  }
+}
+```
+
+The response returns an accepted mock task reference. Polling the task endpoint returns `SUCCEEDED` with a message that no real VM was created.
+
 ### Control Plane Jobs
 
 - `GET /api/control-plane/jobs`

@@ -2,6 +2,9 @@
 
 ## 2026-07-08
 
+- Added Mock Prism Central simulator endpoints for local adapter contract testing without a Nutanix lab.
+- Added Prism-shaped health, inventory list, simulated VM create, and task-poll responses under `/mock-prism`.
+- Documented the simulator as a test double that does not contact or mutate real infrastructure.
 - Released `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record`.
 - Added production execution archive recovery final operations handoff records linked to production execution archive recovery monitoring ownership closure records.
 - Added API endpoints for production execution archive recovery final operations handoff records.
