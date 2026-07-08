@@ -2,6 +2,9 @@
 
 ## 2026-07-08
 
+- Released `v2.73.0-adapter-contract-split`.
+- Added Prism adapter contract diagnostics with active mode, supported operations, latest mock task, and real-adapter blocked reasons.
+- Moved VM-targeted environment create evidence behind `MockPrismAdapter` and added `DisabledRealPrismAdapter` for the future live boundary.
 - Released `v2.72.0-mock-prism-adapter-flow`.
 - Connected VM-targeted environment creation to mock Prism Central execution evidence.
 - Added API-backed mock Prism status and execution records for Admin and environment detail views.

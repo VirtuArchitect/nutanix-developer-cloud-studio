@@ -158,6 +158,8 @@ The simulator exposes Prism-shaped list, VM-create, and task-poll responses for 
 
 VM-targeted environment requests use the simulator to record task evidence in the API state. Admin Providers and environment detail views show the simulator endpoint, selected mock inventory, task UUID, and no-mutation boundary. This is useful for on-prem workflow testing when no Nutanix lab exists.
 
+`v2.73.0-adapter-contract-split` adds a typed Prism adapter boundary. `MockPrismAdapter` is the active implementation, while `DisabledRealPrismAdapter` reports blocked reasons for live Prism use. This keeps on-prem testing realistic without allowing accidental infrastructure mutation.
+
 Before any real API call is added, document:
 
 - Authorized lab systems and endpoints.

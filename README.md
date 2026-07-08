@@ -4,7 +4,7 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
-Current release: `v2.72.0-mock-prism-adapter-flow`
+Current release: `v2.73.0-adapter-contract-split`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 

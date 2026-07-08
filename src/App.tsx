@@ -75,6 +75,7 @@ import {
   type PlatformServicePreflightRun,
   type PlatformServiceRequest,
   type PolicyBundle,
+  type PrismAdapterDiagnostics,
   type PrismInventoryImportResult,
   type PrismInventoryRecord,
   type ProvisioningAdapterReadiness,
@@ -319,6 +320,7 @@ import {
   fetchProviderReleaseGateRecordsFromApi,
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
+  fetchPrismAdapterDiagnosticsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
   fetchPrismInventoryFromApi,
@@ -379,6 +381,7 @@ export function App() {
   const [prismInventoryImport, setPrismInventoryImport] = useState<PrismInventoryImportResult | undefined>();
   const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
   const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
+  const [prismAdapterDiagnostics, setPrismAdapterDiagnostics] = useState<PrismAdapterDiagnostics | null>(null);
   const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
   const [policyBundles, setPolicyBundles] = useState<PolicyBundle[]>(defaultPolicyBundles);
   const [templateRegistry, setTemplateRegistry] = useState<TemplateRegistryEntry[]>(defaultTemplateRegistry);
@@ -599,6 +602,7 @@ export function App() {
             apiPrismInventory,
             apiMockPrismStatus,
             apiMockPrismExecutions,
+            apiPrismAdapterDiagnostics,
             apiControlPlaneJobs,
             apiResourceProfiles,
             apiPolicyBundles,
@@ -698,6 +702,7 @@ export function App() {
             fetchPrismInventoryFromApi(),
             fetchMockPrismStatusFromApi(),
             fetchMockPrismExecutionsFromApi(),
+            fetchPrismAdapterDiagnosticsFromApi(),
             fetchControlPlaneJobsFromApi(),
             fetchResourceProfilesFromApi(),
             fetchPolicyBundlesFromApi(),
@@ -799,6 +804,7 @@ export function App() {
             setPrismInventoryImport(apiPrismInventory.lastImport);
             setMockPrismStatus(apiMockPrismStatus);
             setMockPrismExecutions(apiMockPrismExecutions);
+            setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
             setControlPlaneJobs(apiControlPlaneJobs);
             setResourceProfiles(apiResourceProfiles);
             setPolicyBundles(apiPolicyBundles);
@@ -996,6 +1002,7 @@ export function App() {
         setControlPlaneJobs(await fetchControlPlaneJobsFromApi());
         setMockPrismStatus(await fetchMockPrismStatusFromApi());
         setMockPrismExecutions(await fetchMockPrismExecutionsFromApi());
+        setPrismAdapterDiagnostics(await fetchPrismAdapterDiagnosticsFromApi());
         if (result.approval) {
           setApprovals((current) => [result.approval as ApprovalRequest, ...current]);
         }
@@ -1054,6 +1061,7 @@ export function App() {
       apiPrismInventory,
       apiMockPrismStatus,
       apiMockPrismExecutions,
+      apiPrismAdapterDiagnostics,
       apiControlPlaneJobs,
       apiResourceProfiles,
       apiPolicyBundles,
@@ -1153,6 +1161,7 @@ export function App() {
       fetchPrismInventoryFromApi(),
       fetchMockPrismStatusFromApi(),
       fetchMockPrismExecutionsFromApi(),
+      fetchPrismAdapterDiagnosticsFromApi(),
       fetchControlPlaneJobsFromApi(),
       fetchResourceProfilesFromApi(),
       fetchPolicyBundlesFromApi(),
@@ -1253,6 +1262,7 @@ export function App() {
     setPrismInventoryImport(apiPrismInventory.lastImport);
     setMockPrismStatus(apiMockPrismStatus);
     setMockPrismExecutions(apiMockPrismExecutions);
+    setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
     setControlPlaneJobs(apiControlPlaneJobs);
     setResourceProfiles(apiResourceProfiles);
     setPolicyBundles(apiPolicyBundles);
@@ -3512,6 +3522,7 @@ export function App() {
             prismInventoryImport={prismInventoryImport}
             mockPrismStatus={mockPrismStatus}
             mockPrismExecutions={mockPrismExecutions}
+            prismAdapterDiagnostics={prismAdapterDiagnostics}
             resourceProfiles={resourceProfiles}
             policyBundles={policyBundles}
             templateRegistry={templateRegistry}
@@ -4203,6 +4214,7 @@ function AdminView({
   prismInventoryImport,
   mockPrismStatus,
   mockPrismExecutions,
+  prismAdapterDiagnostics,
   resourceProfiles,
   policyBundles,
   templateRegistry,
@@ -4393,6 +4405,7 @@ function AdminView({
   prismInventoryImport?: PrismInventoryImportResult;
   mockPrismStatus: MockPrismSimulatorStatus | null;
   mockPrismExecutions: MockPrismExecution[];
+  prismAdapterDiagnostics: PrismAdapterDiagnostics | null;
   resourceProfiles: ResourceProfile[];
   policyBundles: PolicyBundle[];
   templateRegistry: TemplateRegistryEntry[];
@@ -4677,6 +4690,9 @@ function AdminView({
           </Panel>
           <Panel title="Mock Prism simulator" action={mockPrismStatus?.status ?? "Checking"}>
             <MockPrismSimulatorPanel status={mockPrismStatus} executions={mockPrismExecutions} />
+          </Panel>
+          <Panel title="Prism adapter contract" action={prismAdapterDiagnostics?.activeMode ?? "Not loaded"}>
+            <PrismAdapterContractPanel diagnostics={prismAdapterDiagnostics} />
           </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
             <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
@@ -11044,6 +11060,47 @@ function MockPrismSimulatorPanel({
       ) : (
         <p className="emptyState">Create a VM environment to record the first simulated Prism task.</p>
       )}
+    </div>
+  );
+}
+
+function PrismAdapterContractPanel({ diagnostics }: { diagnostics: PrismAdapterDiagnostics | null }) {
+  if (!diagnostics) {
+    return <p className="emptyState">Adapter diagnostics have not been loaded from the API yet.</p>;
+  }
+
+  return (
+    <div className="prismInventoryPanel">
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>{diagnostics.activeAdapter}</strong>
+          <span>
+            Active mode {diagnostics.activeMode}; real Prism endpoint{" "}
+            {diagnostics.realEndpointConfigured ? "configured" : "not configured"}.
+          </span>
+        </div>
+      </div>
+      <div className="controlGrid">
+        <CheckLine icon={TerminalSquare} label="Contract" value={diagnostics.supportedOperations.join(", ")} passed />
+        <CheckLine icon={Cloud} label="Mock endpoint" value={diagnostics.mockEndpoint} passed />
+        <CheckLine icon={LockKeyhole} label="Real adapter" value="Disabled" passed={!diagnostics.provisioningEnabled} />
+        <CheckLine
+          icon={Activity}
+          label="Last mock task"
+          value={diagnostics.lastMockTask?.taskUuid ?? "None recorded"}
+          passed={Boolean(diagnostics.lastMockTask)}
+        />
+      </div>
+      <div className="eventList">
+        {diagnostics.blockedReasons.slice(0, 5).map((reason) => (
+          <div className="eventRow" key={reason.code}>
+            <strong>{reason.message}</strong>
+            <span>{reason.evidenceRequired}</span>
+            <small>{reason.code}</small>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -114,6 +114,7 @@ import {
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
+  fetchPrismAdapterDiagnosticsFromApi,
   fetchPolicyBundlesFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -316,6 +317,7 @@ describe("cloudStudioApi", () => {
     await importPrismInventoryViaApi();
     await fetchMockPrismStatusFromApi();
     await fetchMockPrismExecutionsFromApi();
+    await fetchPrismAdapterDiagnosticsFromApi();
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/inventory", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -325,6 +327,7 @@ describe("cloudStudioApi", () => {
     );
     expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/mock-prism/status", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/mock-prism/executions", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/adapter-diagnostics", expect.any(Object));
   });
 
   it("fetches and advances control-plane jobs", async () => {

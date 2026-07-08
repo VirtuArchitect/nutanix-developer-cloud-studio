@@ -297,6 +297,35 @@ export type MockPrismExecution = {
   createdAt: string;
 };
 
+export type PrismAdapterMode = "mock-prism" | "real-prism-disabled";
+
+export type PrismAdapterBlockedReason = {
+  code:
+    | "lab_scope_required"
+    | "credential_reference_required"
+    | "authorization_packet_required"
+    | "kill_switch_closed"
+    | "real_adapter_disabled";
+  message: string;
+  evidenceRequired: string;
+};
+
+export type PrismAdapterDiagnostics = {
+  activeMode: PrismAdapterMode;
+  activeAdapter: "MockPrismAdapter" | "DisabledRealPrismAdapter";
+  mockEndpoint: string;
+  realEndpointConfigured: boolean;
+  provisioningEnabled: false;
+  supportedOperations: ReadonlyArray<"health" | "listInventory" | "createVmPlan" | "submitVmCreate" | "pollTask">;
+  blockedReasons: PrismAdapterBlockedReason[];
+  lastMockTask?: {
+    environmentName: string;
+    taskUuid: string;
+    state: MockPrismExecution["task"]["state"];
+    createdAt: string;
+  };
+};
+
 export type VmSandboxDryRunRequest = {
   environmentName: string;
   owner: string;
