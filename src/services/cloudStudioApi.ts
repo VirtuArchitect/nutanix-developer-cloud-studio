@@ -1,5 +1,6 @@
 import type {
   ApprovalRequest,
+  AuthBoundaryDiagnostics,
   AdapterPromotionReadinessDossier,
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
@@ -14,6 +15,7 @@ import type {
   ControlledLabDryRunWindowRecord,
   ControlledLabReleaseRunbookRecord,
   ControlledSwitchConfigurationRequest,
+  ContainerConfigValidationManifest,
   CredentialReferenceDiagnostic,
   ControlledProvisioningGate,
   ControlPlaneJob,
@@ -32,6 +34,7 @@ import type {
   LabScopeDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
+  LiveReadOnlyPrismCallDesign,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
   MockPrismSimulatorStatus,
@@ -90,6 +93,7 @@ import type {
   ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
   ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord,
   ProductionReadinessReview,
+  ProductionReadinessScorecard,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
@@ -99,6 +103,7 @@ import type {
   ReleaseEvidenceExportRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
+  RuntimeObservabilitySnapshot,
   SessionDiagnostics,
   TemplateRegistryEntry,
   SystemStatus,
@@ -204,8 +209,28 @@ export async function fetchSessionDiagnosticsFromApi() {
   return fetchJson<SessionDiagnostics>("/api/session/diagnostics");
 }
 
+export async function fetchAuthBoundaryDiagnosticsFromApi() {
+  return fetchJson<AuthBoundaryDiagnostics>("/api/auth/boundary-diagnostics");
+}
+
 export async function fetchSystemStatusFromApi() {
   return fetchJson<SystemStatus>("/api/system/status");
+}
+
+export async function fetchRuntimeObservabilityFromApi() {
+  return fetchJson<RuntimeObservabilitySnapshot>("/api/observability/runtime");
+}
+
+export async function fetchProductionReadinessScorecardFromApi() {
+  return fetchJson<ProductionReadinessScorecard>("/api/production/readiness-scorecard");
+}
+
+export async function fetchContainerConfigValidationManifestFromApi() {
+  return fetchJson<ContainerConfigValidationManifest>("/api/deployment/config-validation");
+}
+
+export async function fetchLiveReadOnlyPrismCallDesignFromApi() {
+  return fetchJson<LiveReadOnlyPrismCallDesign>("/api/prism/live-read-only-design");
 }
 
 export async function fetchIntegrationsFromApi() {

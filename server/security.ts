@@ -1,5 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { AuthorizationMatrixEntry, PlatformRole, PlatformSession, SessionDiagnostics } from "../src/data/cloudStudioDomain";
+import type {
+  AuthBoundaryDiagnostics,
+  AuthorizationMatrixEntry,
+  PlatformRole,
+  PlatformSession,
+  SessionDiagnostics,
+} from "../src/data/cloudStudioDomain";
 
 export type RequestContext = {
   requestId: string;
@@ -40,6 +46,7 @@ export function createRequestContext(request: IncomingMessage): RequestContext {
   const requestId = headerValue(request, "x-request-id") || `req-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const user = headerValue(request, "x-ndc-user") || "platform.admin";
   const displayName = headerValue(request, "x-ndc-display-name") || titleizeUser(user);
+  validateTrustedIdentityHeaders(request);
   const roles = parseRoles(headerValue(request, "x-ndc-roles"));
   const issuer = headerValue(request, "x-ndc-issuer") || process.env.OIDC_ISSUER_URL || "NDC Studio local identity stub";
 
@@ -68,6 +75,52 @@ export function createSessionDiagnostics(context: RequestContext, request: Incom
   };
 }
 
+export function createAuthBoundaryDiagnostics(context: RequestContext, request: IncomingMessage): AuthBoundaryDiagnostics {
+  const missing = missingTrustedHeaders(request);
+  const rawRoles = headerValue(request, "x-ndc-roles");
+  const rawUser = headerValue(request, "x-ndc-user");
+  const rawIssuer = headerValue(request, "x-ndc-issuer");
+  const malformed = Boolean(
+    (rawRoles && parseInvalidRoles(rawRoles).length > 0) ||
+      (rawUser && !isSafeIdentityValue(rawUser)) ||
+      (rawIssuer && !isSafeIdentityValue(rawIssuer, true))
+  );
+
+  return {
+    mode: trustedHeaderModeRequired() ? "Required" : "Optional",
+    user: context.session.user,
+    issuer: context.session.identityProvider,
+    roles: context.session.roles,
+    rejectedMalformedHeaders: trustedHeaderModeRequired() && malformed,
+    auditEventRecorded: true,
+    headerChecks: [
+      {
+        name: "Required headers present",
+        passed: missing.length === 0,
+        detail: missing.length === 0 ? "Trusted identity headers are present." : `Missing: ${missing.join(", ")}.`,
+      },
+      {
+        name: "Roles valid",
+        passed: !rawRoles || parseInvalidRoles(rawRoles).length === 0,
+        detail:
+          !rawRoles || parseInvalidRoles(rawRoles).length === 0
+            ? "Role header maps to known platform roles."
+            : `Invalid roles: ${parseInvalidRoles(rawRoles).join(", ")}.`,
+      },
+      {
+        name: "User header safe",
+        passed: !rawUser || isSafeIdentityValue(rawUser),
+        detail: "User header must be a short identifier without control characters.",
+      },
+      {
+        name: "Issuer header safe",
+        passed: !rawIssuer || isSafeIdentityValue(rawIssuer, true),
+        detail: "Issuer header must be a bounded URL or issuer reference without control characters.",
+      },
+    ],
+  };
+}
+
 export function requireRole(context: RequestContext, allowedRoles: PlatformRole[]) {
   if (!allowedRoles.some((role) => context.session.roles.includes(role))) {
     throw new AuthorizationError("forbidden", "The current session does not have permission for this action.");
@@ -76,7 +129,7 @@ export function requireRole(context: RequestContext, allowedRoles: PlatformRole[
 
 export class AuthorizationError extends Error {
   constructor(
-    readonly code: "forbidden" | "unauthenticated",
+    readonly code: "forbidden" | "unauthenticated" | "invalid_identity_header",
     message: string
   ) {
     super(message);
@@ -171,6 +224,52 @@ function parseRoles(value: string | undefined): PlatformRole[] {
     .map((role) => role.trim())
     .filter((role): role is PlatformRole => role === "Developer" || role === "Approver" || role === "Platform Admin");
   return roles.length > 0 ? roles : ["Developer"];
+}
+
+function validateTrustedIdentityHeaders(request: IncomingMessage) {
+  if (!trustedHeaderModeRequired() || isPublicHealthPath(request)) {
+    return;
+  }
+
+  const user = headerValue(request, "x-ndc-user");
+  const issuer = headerValue(request, "x-ndc-issuer");
+  const roles = headerValue(request, "x-ndc-roles");
+
+  if (user && !isSafeIdentityValue(user)) {
+    throw new AuthorizationError("invalid_identity_header", "Trusted user header is malformed.");
+  }
+
+  if (issuer && !isSafeIdentityValue(issuer, true)) {
+    throw new AuthorizationError("invalid_identity_header", "Trusted issuer header is malformed.");
+  }
+
+  const invalidRoles = parseInvalidRoles(roles);
+  if (invalidRoles.length > 0) {
+    throw new AuthorizationError(
+      "invalid_identity_header",
+      `Trusted role header contains unsupported roles: ${invalidRoles.join(", ")}.`
+    );
+  }
+}
+
+function parseInvalidRoles(value: string | undefined) {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((role) => role.trim())
+    .filter(Boolean)
+    .filter((role) => role !== "Developer" && role !== "Approver" && role !== "Platform Admin");
+}
+
+function isSafeIdentityValue(value: string, allowUrl = false) {
+  if (value.length < 1 || value.length > 200 || /[\r\n\t]/.test(value)) {
+    return false;
+  }
+
+  return allowUrl ? /^[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]+$/.test(value) : /^[A-Za-z0-9._@-]+$/.test(value);
 }
 
 function titleizeUser(user: string) {

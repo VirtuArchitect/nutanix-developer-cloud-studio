@@ -32,8 +32,10 @@ import {
   type AdapterEnablementRecord,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
+  type AuthBoundaryDiagnostics,
   type AuditExportRecord,
   type AuditRetentionDiagnostics,
+  type ContainerConfigValidationManifest,
   type ControlledLabExecutionApprovalGate,
   type ControlledLabDryRunExecutionChecklist,
   type ControlledLabExecutionEvidenceLedger,
@@ -62,6 +64,7 @@ import {
   type LabScopeDiagnostics,
   type LifecycleOperationKind,
   type LifecycleOperationRecord,
+  type LiveReadOnlyPrismCallDesign,
   type ManualRealAdapterSwitchReview,
   type MockPrismExecution,
   type MockPrismSimulatorStatus,
@@ -123,6 +126,7 @@ import {
   type ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
   type ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord,
   type ProductionReadinessReview,
+  type ProductionReadinessScorecard,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
   type RealAdapterLabScopeActivation,
@@ -134,6 +138,7 @@ import {
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
   type RollbackDestroyProofRecord,
+  type RuntimeObservabilitySnapshot,
   type SessionDiagnostics,
   type SystemStatus,
   type SwitchClosureRetentionPackage,
@@ -244,6 +249,7 @@ import {
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
+  fetchAuthBoundaryDiagnosticsFromApi,
   fetchProductionAdapterAuthorizationPacketsFromApi,
   fetchProductionChangeFreezeRecordsFromApi,
   fetchProductionCabHandoffPacketsFromApi,
@@ -298,6 +304,7 @@ import {
   fetchControlledLabDryRunWindowsFromApi,
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlledSwitchConfigurationRequestsFromApi,
+  fetchContainerConfigValidationManifestFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
   fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchSwitchClosureRetentionPackagesFromApi,
@@ -314,6 +321,7 @@ import {
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
+  fetchLiveReadOnlyPrismCallDesignFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
@@ -337,9 +345,11 @@ import {
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
+  fetchProductionReadinessScorecardFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
+  fetchRuntimeObservabilityFromApi,
   fetchSessionFromApi,
   fetchSessionDiagnosticsFromApi,
   fetchSystemStatusFromApi,
@@ -384,8 +394,23 @@ export function App() {
   const [sessionDiagnostics, setSessionDiagnostics] = useState<SessionDiagnostics>(() =>
     createMockSessionDiagnostics(mockSession)
   );
+  const [authBoundaryDiagnostics, setAuthBoundaryDiagnostics] = useState<AuthBoundaryDiagnostics>(() =>
+    createMockAuthBoundaryDiagnostics(mockSession)
+  );
   const [systemStatus, setSystemStatus] = useState<SystemStatus>(() =>
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
+  );
+  const [runtimeObservability, setRuntimeObservability] = useState<RuntimeObservabilitySnapshot>(() =>
+    createMockRuntimeObservability(mockSession)
+  );
+  const [productionReadinessScorecard, setProductionReadinessScorecard] = useState<ProductionReadinessScorecard>(() =>
+    createMockProductionReadinessScorecard()
+  );
+  const [containerConfigValidation, setContainerConfigValidation] = useState<ContainerConfigValidationManifest>(() =>
+    createMockContainerConfigValidation()
+  );
+  const [liveReadOnlyPrismCallDesign, setLiveReadOnlyPrismCallDesign] = useState<LiveReadOnlyPrismCallDesign>(() =>
+    createMockLiveReadOnlyPrismCallDesign()
   );
   const [labAdapters, setLabAdapters] = useState<LabAdapterSnapshot[]>(() => deriveMockLabAdapters(integrations));
   const [labAuthorizationScopes, setLabAuthorizationScopes] = useState<LabAuthorizationScope[]>([]);
@@ -615,7 +640,12 @@ export function App() {
             apiCredentialDiagnostics,
             apiSession,
             apiSessionDiagnostics,
+            apiAuthBoundaryDiagnostics,
             apiSystemStatus,
+            apiRuntimeObservability,
+            apiProductionReadinessScorecard,
+            apiContainerConfigValidation,
+            apiLiveReadOnlyPrismCallDesign,
             apiLabAdapters,
             apiLabAuthorizationScopes,
             apiLabScopeDiagnostics,
@@ -720,7 +750,12 @@ export function App() {
             fetchCredentialReferenceDiagnosticsFromApi(),
             fetchSessionFromApi(),
             fetchSessionDiagnosticsFromApi(),
+            fetchAuthBoundaryDiagnosticsFromApi(),
             fetchSystemStatusFromApi(),
+            fetchRuntimeObservabilityFromApi(),
+            fetchProductionReadinessScorecardFromApi(),
+            fetchContainerConfigValidationManifestFromApi(),
+            fetchLiveReadOnlyPrismCallDesignFromApi(),
             fetchLabAdaptersFromApi(),
             fetchLabAuthorizationScopesFromApi(),
             fetchLabScopeDiagnosticsFromApi(),
@@ -826,7 +861,12 @@ export function App() {
             setCredentialDiagnostics(apiCredentialDiagnostics);
             setSession(apiSession);
             setSessionDiagnostics(apiSessionDiagnostics);
+            setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
             setSystemStatus(apiSystemStatus);
+            setRuntimeObservability(apiRuntimeObservability);
+            setProductionReadinessScorecard(apiProductionReadinessScorecard);
+            setContainerConfigValidation(apiContainerConfigValidation);
+            setLiveReadOnlyPrismCallDesign(apiLiveReadOnlyPrismCallDesign);
             setLabAdapters(apiLabAdapters);
             setLabAuthorizationScopes(apiLabAuthorizationScopes);
             setLabScopeDiagnostics(apiLabScopeDiagnostics);
@@ -1089,7 +1129,12 @@ export function App() {
       apiCredentialDiagnostics,
       apiSession,
       apiSessionDiagnostics,
+      apiAuthBoundaryDiagnostics,
       apiSystemStatus,
+      apiRuntimeObservability,
+      apiProductionReadinessScorecard,
+      apiContainerConfigValidation,
+      apiLiveReadOnlyPrismCallDesign,
       apiLabAdapters,
       apiLabAuthorizationScopes,
       apiLabScopeDiagnostics,
@@ -1194,7 +1239,12 @@ export function App() {
       fetchCredentialReferenceDiagnosticsFromApi(),
       fetchSessionFromApi(),
       fetchSessionDiagnosticsFromApi(),
+      fetchAuthBoundaryDiagnosticsFromApi(),
       fetchSystemStatusFromApi(),
+      fetchRuntimeObservabilityFromApi(),
+      fetchProductionReadinessScorecardFromApi(),
+      fetchContainerConfigValidationManifestFromApi(),
+      fetchLiveReadOnlyPrismCallDesignFromApi(),
       fetchLabAdaptersFromApi(),
       fetchLabAuthorizationScopesFromApi(),
       fetchLabScopeDiagnosticsFromApi(),
@@ -1299,7 +1349,12 @@ export function App() {
     setCredentialDiagnostics(apiCredentialDiagnostics);
     setSession(apiSession);
     setSessionDiagnostics(apiSessionDiagnostics);
+    setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
     setSystemStatus(apiSystemStatus);
+    setRuntimeObservability(apiRuntimeObservability);
+    setProductionReadinessScorecard(apiProductionReadinessScorecard);
+    setContainerConfigValidation(apiContainerConfigValidation);
+    setLiveReadOnlyPrismCallDesign(apiLiveReadOnlyPrismCallDesign);
     setLabAdapters(apiLabAdapters);
     setLabAuthorizationScopes(apiLabAuthorizationScopes);
     setLabScopeDiagnostics(apiLabScopeDiagnostics);
@@ -3615,7 +3670,12 @@ export function App() {
             credentialDiagnostics={credentialDiagnostics}
             session={session}
             sessionDiagnostics={sessionDiagnostics}
+            authBoundaryDiagnostics={authBoundaryDiagnostics}
             systemStatus={systemStatus}
+            runtimeObservability={runtimeObservability}
+            productionReadinessScorecard={productionReadinessScorecard}
+            containerConfigValidation={containerConfigValidation}
+            liveReadOnlyPrismCallDesign={liveReadOnlyPrismCallDesign}
             labAdapters={labAdapters}
             labAuthorizationScopes={labAuthorizationScopes}
             labScopeDiagnostics={labScopeDiagnostics}
@@ -4316,7 +4376,12 @@ function AdminView({
   credentialDiagnostics,
   session,
   sessionDiagnostics,
+  authBoundaryDiagnostics,
   systemStatus,
+  runtimeObservability,
+  productionReadinessScorecard,
+  containerConfigValidation,
+  liveReadOnlyPrismCallDesign,
   labAdapters,
   labAuthorizationScopes,
   labScopeDiagnostics,
@@ -4516,7 +4581,12 @@ function AdminView({
   credentialDiagnostics: CredentialReferenceDiagnostic[];
   session: PlatformSession;
   sessionDiagnostics: SessionDiagnostics;
+  authBoundaryDiagnostics: AuthBoundaryDiagnostics;
   systemStatus: SystemStatus;
+  runtimeObservability: RuntimeObservabilitySnapshot;
+  productionReadinessScorecard: ProductionReadinessScorecard;
+  containerConfigValidation: ContainerConfigValidationManifest;
+  liveReadOnlyPrismCallDesign: LiveReadOnlyPrismCallDesign;
   labAdapters: LabAdapterSnapshot[];
   labAuthorizationScopes: LabAuthorizationScope[];
   labScopeDiagnostics: LabScopeDiagnostics;
@@ -4757,6 +4827,8 @@ function AdminView({
               <CheckLine icon={LockKeyhole} label="Trusted headers" value={`${sessionDiagnostics.trustedHeaderMode} mode`} passed={sessionDiagnostics.missingRequiredHeaders.length === 0} />
             </div>
             <SessionDiagnosticsPanel diagnostics={sessionDiagnostics} />
+            <AuthBoundaryDiagnosticsPanel diagnostics={authBoundaryDiagnostics} />
+            <RuntimeObservabilityPanel snapshot={runtimeObservability} />
           </Panel>
           <Panel title="Integration readiness" action="API connected">
             <div className="integrationList">
@@ -4781,6 +4853,7 @@ function AdminView({
             </div>
           </Panel>
           <Panel title="Production readiness review" action={`${productionReadinessReviews.length} reviews`}>
+            <ProductionReadinessScorecardPanel scorecard={productionReadinessScorecard} />
             <ProductionReadinessPanel
               reviews={productionReadinessReviews}
               createProductionReadinessReview={createProductionReadinessReview}
@@ -4848,6 +4921,9 @@ function AdminView({
               runs={realPrismPreflightRuns}
               createRealPrismPreflightRun={createRealPrismPreflightRun}
             />
+          </Panel>
+          <Panel title="Live read-only Prism call design" action={liveReadOnlyPrismCallDesign.status}>
+            <LiveReadOnlyPrismCallDesignPanel design={liveReadOnlyPrismCallDesign} />
           </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
             <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
@@ -4948,6 +5024,9 @@ function AdminView({
 
       {activeTab === "operations" && (
         <div className="adminTabPanel">
+          <Panel title="Container and config validation" action={containerConfigValidation.status}>
+            <ContainerConfigValidationPanel manifest={containerConfigValidation} />
+          </Panel>
           <Panel title="Private cloud lifecycle" action={`${lifecycleOperations.length} records`}>
             <PrivateCloudOperationsPanel
               environments={environments}
@@ -5774,6 +5853,148 @@ function SessionDiagnosticsPanel({ diagnostics }: { diagnostics: SessionDiagnost
           <small>{entry.boundary}</small>
         </div>
       ))}
+    </div>
+  );
+}
+
+function AuthBoundaryDiagnosticsPanel({ diagnostics }: { diagnostics: AuthBoundaryDiagnostics }) {
+  return (
+    <div className="dryRunSummary">
+      <div className="platformConfigGrid">
+        <CheckLine icon={UserRound} label="Identity" value={diagnostics.user} passed />
+        <CheckLine icon={ShieldCheck} label="Trusted mode" value={diagnostics.mode} passed={diagnostics.mode === "Required"} />
+        <CheckLine icon={LockKeyhole} label="Issuer" value={diagnostics.issuer} passed={diagnostics.issuer !== "mock"} />
+        <CheckLine icon={Archive} label="Audit event" value={diagnostics.auditEventRecorded ? "Recorded" : "Pending"} passed={diagnostics.auditEventRecorded} />
+      </div>
+      <div className="dryRunValidationList">
+        {diagnostics.headerChecks.map((check) => (
+          <div className="dryRunValidationRow" key={check.name}>
+            <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+            <div>
+              <strong>{check.name}</strong>
+              <small>{check.detail}</small>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RuntimeObservabilityPanel({ snapshot }: { snapshot: RuntimeObservabilitySnapshot }) {
+  return (
+    <div className="dryRunSummary">
+      <div className="platformConfigGrid">
+        <CheckLine icon={Code2} label="Version" value={snapshot.version} passed />
+        <CheckLine icon={Archive} label="Storage" value={snapshot.storageMode} passed={snapshot.storageMode !== "memory"} />
+        <CheckLine icon={Activity} label="Audit events" value={`${snapshot.auditEventsRetained} retained`} passed={snapshot.auditEventsRetained >= 0} />
+        <CheckLine icon={Gauge} label="Rate limit" value={`${snapshot.rateLimitPerMinute}/min`} passed={snapshot.rateLimitPerMinute > 0} />
+      </div>
+      <div className="dryRunValidationList">
+        {snapshot.guardrails.map((guardrail) => (
+          <div className="dryRunValidationRow" key={guardrail.name}>
+            <span className={`status ${guardrail.passed ? "ready" : "failed"}`}>{guardrail.passed ? "Pass" : "Gate"}</span>
+            <div>
+              <strong>{guardrail.name}</strong>
+              <small>{guardrail.detail}</small>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProductionReadinessScorecardPanel({ scorecard }: { scorecard: ProductionReadinessScorecard }) {
+  return (
+    <div className="dryRunSummary">
+      <div className="integrationConfigHeader">
+        <div>
+          <strong>{scorecard.score}% production readiness</strong>
+          <span>{scorecard.version}</span>
+        </div>
+        <span className={`status ${scorecard.status === "Ready for controlled read-only pilot" ? "ready" : "failed"}`}>
+          {scorecard.status}
+        </span>
+      </div>
+      <div className="platformConfigGrid">
+        <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={!scorecard.provisioningEnabled} />
+        <CheckLine icon={Network} label="Real Prism calls" value="Disabled" passed={!scorecard.realPrismCallsEnabled} />
+        <CheckLine icon={ShieldCheck} label="Categories" value={`${scorecard.categories.length} scored`} passed />
+        <CheckLine icon={Archive} label="Blockers" value={`${scorecard.blockers.length} open`} passed={scorecard.blockers.length === 0} />
+      </div>
+      <div className="readinessList">
+        {scorecard.categories.map((category) => (
+          <div className="readinessRow" key={category.name}>
+            <strong>{category.name}</strong>
+            <span>
+              {category.passed}/{category.total} checks passing
+            </span>
+            <small>{category.checks.find((check) => !check.passed)?.detail ?? "Evidence is currently complete for this category."}</small>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ContainerConfigValidationPanel({ manifest }: { manifest: ContainerConfigValidationManifest }) {
+  return (
+    <div className="dryRunSummary">
+      <div className="guardrailBanner">
+        <TerminalSquare size={18} />
+        <div>
+          <strong>{manifest.status}</strong>
+          <span>Container and environment settings are validated without contacting Nutanix endpoints.</span>
+        </div>
+      </div>
+      <div className="dryRunValidationList">
+        {manifest.checks.map((check) => (
+          <div className="dryRunValidationRow" key={check.name}>
+            <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+            <div>
+              <strong>{check.name}</strong>
+              <small>{check.detail}</small>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Evidence</strong>
+        {manifest.evidence.map((item) => (
+          <span key={item}>{item}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LiveReadOnlyPrismCallDesignPanel({ design }: { design: LiveReadOnlyPrismCallDesign }) {
+  return (
+    <div className="dryRunSummary">
+      <div className="platformConfigGrid">
+        <CheckLine icon={Network} label="Status" value={design.status} passed={false} />
+        <CheckLine icon={Gauge} label="Timeout" value={`${design.timeoutMs} ms`} passed />
+        <CheckLine icon={RefreshCw} label="Retries" value={`${design.retryPolicy.attempts} attempts`} passed />
+        <CheckLine icon={LockKeyhole} label="Real calls" value="Disabled" passed={!design.realPrismCallsEnabled} />
+      </div>
+      <div className="readinessList">
+        {design.allowedEndpoints.map((endpoint) => (
+          <div className="readinessRow" key={endpoint.operation}>
+            <strong>{endpoint.operation}</strong>
+            <span>
+              {endpoint.method} {endpoint.path}
+            </span>
+            <small>Design-only endpoint contract; no live Prism Central call is executed.</small>
+          </div>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Enablement gates</strong>
+        {design.enablementGates.map((gate) => (
+          <span key={gate}>{gate}</span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -11999,6 +12220,163 @@ function createMockSessionDiagnostics(session: PlatformSession): SessionDiagnost
         boundary: "Administrative control-plane records only; real adapters remain disabled.",
       },
     ],
+  };
+}
+
+function createMockAuthBoundaryDiagnostics(session: PlatformSession): AuthBoundaryDiagnostics {
+  return {
+    mode: "Optional",
+    user: session.user,
+    issuer: session.identityProvider,
+    roles: session.roles,
+    headerChecks: [
+      {
+        name: "Trusted identity headers optional",
+        passed: true,
+        detail: "Browser mock mode does not require ingress-provided trusted headers.",
+      },
+      {
+        name: "Known role claims",
+        passed: true,
+        detail: session.roles.join(", "),
+      },
+      {
+        name: "Malformed headers rejected when required",
+        passed: true,
+        detail: "API mode rejects unsafe identity and role header values when trusted identity mode is required.",
+      },
+    ],
+    rejectedMalformedHeaders: false,
+    auditEventRecorded: false,
+  };
+}
+
+function createMockRuntimeObservability(session: PlatformSession): RuntimeObservabilitySnapshot {
+  return {
+    version: "2.90.0-live-read-only-prism-call-design",
+    generatedAt: new Date().toISOString(),
+    requestId: "browser-mock",
+    actor: session.user,
+    storageMode: "memory",
+    staticServing: true,
+    rateLimitPerMinute: 120,
+    auditEventsRetained: 0,
+    latestAuditEvents: [],
+    guardrails: [
+      {
+        name: "Real provisioning disabled",
+        passed: true,
+        detail: "Browser prototype cannot mutate Nutanix infrastructure.",
+      },
+      {
+        name: "Real Prism calls disabled",
+        passed: true,
+        detail: "Read-only live call path is design-only until a lab is authorized.",
+      },
+      {
+        name: "Audit retention configured",
+        passed: true,
+        detail: "API mode retains bounded audit evidence.",
+      },
+    ],
+  };
+}
+
+function createMockProductionReadinessScorecard(): ProductionReadinessScorecard {
+  return {
+    version: "2.90.0-live-read-only-prism-call-design",
+    generatedAt: new Date().toISOString(),
+    score: 72,
+    status: "Needs evidence",
+    categories: [
+      {
+        name: "Identity",
+        passed: 1,
+        total: 2,
+        checks: [
+          { name: "Trusted header mode can be required", passed: true, detail: "API supports required trusted identity mode." },
+          { name: "Production IdP configured", passed: false, detail: "Browser mock mode is still active." },
+        ],
+      },
+      {
+        name: "Prism read-only readiness",
+        passed: 1,
+        total: 3,
+        checks: [
+          { name: "Read-only design available", passed: true, detail: "Live call design is documented and exposed." },
+          { name: "Lab scope approved", passed: false, detail: "No authorized Prism Central lab scope exists yet." },
+          { name: "Credential reference configured", passed: false, detail: "Credential references must be externalized before pilot." },
+        ],
+      },
+      {
+        name: "Security boundary",
+        passed: 2,
+        total: 2,
+        checks: [
+          { name: "Provisioning disabled", passed: true, detail: "Real provisioning remains disabled." },
+          { name: "Real Prism calls disabled", passed: true, detail: "No live Prism Central calls are executed." },
+        ],
+      },
+    ],
+    blockers: ["Prism read-only readiness: Lab scope approved", "Prism read-only readiness: Credential reference configured"],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockContainerConfigValidation(): ContainerConfigValidationManifest {
+  return {
+    version: "2.90.0-live-read-only-prism-call-design",
+    generatedAt: new Date().toISOString(),
+    status: "Passed",
+    checks: [
+      { name: "Runtime host configured", passed: true, detail: "Browser mock uses static hosting." },
+      { name: "Static directory configured", passed: true, detail: "GitHub Pages serves the prototype bundle." },
+      { name: "Real Prism adapter disabled", passed: true, detail: "No live adapter flag is enabled in browser mode." },
+      { name: "Rate limit sane", passed: true, detail: "API mode applies request rate limiting." },
+    ],
+    evidence: [
+      "Static prototype mode is metadata-only.",
+      "No Nutanix endpoint is contacted.",
+      "Real provisioning remains disabled.",
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockLiveReadOnlyPrismCallDesign(): LiveReadOnlyPrismCallDesign {
+  return {
+    version: "2.90.0-live-read-only-prism-call-design",
+    generatedAt: new Date().toISOString(),
+    status: "Design only",
+    allowedEndpoints: [
+      { operation: "listClusters", method: "POST", path: "/api/nutanix/v3/clusters/list" },
+      { operation: "listProjects", method: "POST", path: "/api/nutanix/v3/projects/list" },
+      { operation: "listImages", method: "POST", path: "/api/nutanix/v3/images/list" },
+      { operation: "listSubnets", method: "POST", path: "/api/nutanix/v3/subnets/list" },
+      { operation: "listCategories", method: "POST", path: "/api/nutanix/v3/categories/list" },
+      { operation: "listVms", method: "POST", path: "/api/nutanix/v3/vms/list" },
+    ],
+    timeoutMs: 5000,
+    retryPolicy: {
+      attempts: 2,
+      backoff: "fixed",
+      retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+    },
+    redactionRules: ["Never log Authorization headers.", "Store only credential profile references."],
+    errorTaxonomy: [
+      { code: "prism_readonly_not_authorized", meaning: "Lab scope or credential reference is missing." },
+      { code: "prism_readonly_timeout", meaning: "Read-only call exceeded timeout policy." },
+    ],
+    enablementGates: [
+      "Approved read-only lab scope.",
+      "Credential reference stored outside NDC Studio.",
+      "Security review completed.",
+      "Real mutation operations remain excluded.",
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
   };
 }
 
