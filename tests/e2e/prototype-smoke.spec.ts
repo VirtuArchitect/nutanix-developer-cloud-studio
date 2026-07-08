@@ -425,6 +425,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution archive recovery evidence custody closure record")).toBeVisible();
   await expect(page.getByText("Execution archive recovery evidence custody closure evidence")).toBeVisible();
   await expect(page.getByText("Final compliance archive ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production archive recovery operational continuity" })).toBeVisible();
+  await page.getByRole("button", { name: "Record operational continuity" }).click();
+  await expect(page.getByText("Production execution archive recovery operational continuity record")).toBeVisible();
+  await expect(page.getByText("Execution archive recovery operational continuity evidence")).toBeVisible();
+  await expect(page.getByText("Evidence custody closure ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

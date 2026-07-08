@@ -241,6 +241,10 @@ import {
   ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordError,
 } from "./productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord";
 import {
+  createProductionExecutionArchiveRecoveryOperationalContinuityRecord,
+  ProductionExecutionArchiveRecoveryOperationalContinuityRecordError,
+} from "./productionExecutionArchiveRecoveryOperationalContinuityRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -382,6 +386,7 @@ import type {
   CreateProductionExecutionArchiveRecoveryAuditCertificationRecordRequest,
   CreateProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordRequest,
   CreateProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordRequest,
+  CreateProductionExecutionArchiveRecoveryOperationalContinuityRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -1017,6 +1022,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionArchiveRecoveryOperationalContinuityRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1713,6 +1728,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-operational-continuity-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryOperationalContinuityRecords });
     return;
   }
 
@@ -3576,6 +3600,38 @@ async function routeApi(
       record.provider,
       {
         finalComplianceArchiveRecordId: record.finalComplianceArchiveRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-operational-continuity-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionArchiveRecoveryOperationalContinuityRecordRequest>(request);
+    const record = createProductionExecutionArchiveRecoveryOperationalContinuityRecord(
+      state,
+      body,
+      context.session.user
+    );
+    state.productionExecutionArchiveRecoveryOperationalContinuityRecords = [
+      record,
+      ...state.productionExecutionArchiveRecoveryOperationalContinuityRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-archive-recovery-operational-continuity.recorded",
+      context.session.user,
+      record.provider,
+      {
+        evidenceCustodyClosureRecordId: record.evidenceCustodyClosureRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.67.0-production-execution-archive-recovery-operational-continuity-record` adds evidence-only archive recovery operational continuity records linked to evidence custody closure records and an Admin Operations archive recovery operational continuity panel.
 - `v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record` adds evidence-only archive recovery evidence custody closure records linked to final compliance archive records and an Admin Operations archive recovery evidence custody closure panel.
 - `v2.65.0-production-execution-archive-recovery-final-compliance-archive-record` adds evidence-only archive recovery final compliance archive records linked to archive recovery audit certification records and an Admin Operations archive recovery final compliance archive panel.
 - `v2.64.0-production-execution-archive-recovery-audit-certification-record` adds evidence-only archive recovery audit certification records linked to archive recovery closure records and an Admin Operations archive recovery audit certification panel.

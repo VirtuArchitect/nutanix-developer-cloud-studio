@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record`.
+This project uses release tags for public milestones. The current release is `v2.67.0-production-execution-archive-recovery-operational-continuity-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery operational continuity records after evidence custody closure records are complete.
+- Add production execution archive recovery service management handoff records after operational continuity records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.67.0-production-execution-archive-recovery-operational-continuity-record] - 2026-07-07
+
+### Added
+
+- Production execution archive recovery operational continuity records linked to production execution archive recovery evidence custody closure records.
+- API endpoints for listing and recording production execution archive recovery operational continuity records.
+- Admin Operations production archive recovery operational continuity panel.
+- Continuity owner, runbook update, KPI baseline, support handoff, and continuity sign-off checks.
+- Tests proving missing evidence custody closure records or incomplete operational continuity evidence block readiness.
+
+### Notes
+
+- Production execution archive recovery operational continuity records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record] - 2026-07-07
 

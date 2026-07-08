@@ -2,6 +2,12 @@
 
 ## 2026-07-07
 
+- Released `v2.67.0-production-execution-archive-recovery-operational-continuity-record`.
+- Added production execution archive recovery operational continuity records linked to production execution archive recovery evidence custody closure records.
+- Added API endpoints for production execution archive recovery operational continuity records.
+- Added Admin Operations production archive recovery operational continuity panel.
+- Added tests proving missing evidence custody closure records or incomplete operational continuity evidence block readiness.
+- Planned `v2.68.0-production-execution-archive-recovery-service-management-handoff-record` for evidence-only archive recovery service management handoff records.
 - Released `v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record`.
 - Added production execution archive recovery evidence custody closure records linked to production execution archive recovery final compliance archive records.
 - Added API endpoints for production execution archive recovery evidence custody closure records.

@@ -196,6 +196,7 @@ export function createDefaultState(): ApiState {
     productionExecutionArchiveRecoveryAuditCertificationRecords: [],
     productionExecutionArchiveRecoveryFinalComplianceArchiveRecords: [],
     productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords: [],
+    productionExecutionArchiveRecoveryOperationalContinuityRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

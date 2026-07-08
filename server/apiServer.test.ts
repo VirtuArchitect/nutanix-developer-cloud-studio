@@ -1284,6 +1284,19 @@ describe("api server", () => {
     const productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords = await requestJson(
       "/api/real-adapter/production-execution-archive-recovery-evidence-custody-closure-records"
     );
+    const productionExecutionArchiveRecoveryOperationalContinuityRecord = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-operational-continuity-records",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          evidenceCustodyClosureRecordId:
+            productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord.data.id,
+        }),
+      }
+    );
+    const productionExecutionArchiveRecoveryOperationalContinuityRecords = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-operational-continuity-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -2313,6 +2326,25 @@ describe("api server", () => {
         expect.objectContaining({ id: productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord.data.id }),
       ])
     );
+    expect(productionExecutionArchiveRecoveryOperationalContinuityRecord.data).toMatchObject({
+      provider: "NDB",
+      evidenceCustodyClosureRecordId: productionExecutionArchiveRecoveryEvidenceCustodyClosureRecord.data.id,
+      finalComplianceArchiveRecordId: productionExecutionArchiveRecoveryFinalComplianceArchiveRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionExecutionArchiveRecoveryOperationalContinuityRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Evidence custody closure ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not execute adapter", passed: true }),
+      ])
+    );
+    expect(productionExecutionArchiveRecoveryOperationalContinuityRecords.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: productionExecutionArchiveRecoveryOperationalContinuityRecord.data.id }),
+      ])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -2441,6 +2473,10 @@ describe("api server", () => {
         }),
         expect.objectContaining({
           action: "real-adapter.production-execution-archive-recovery-evidence-custody-closure.recorded",
+          target: "NDB",
+        }),
+        expect.objectContaining({
+          action: "real-adapter.production-execution-archive-recovery-operational-continuity.recorded",
           target: "NDB",
         }),
       ])

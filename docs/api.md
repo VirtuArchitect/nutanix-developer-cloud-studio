@@ -722,6 +722,15 @@ Production execution archive recovery evidence custody closure records capture c
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Operational Continuity Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-operational-continuity-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-operational-continuity-records`
+
+Production execution archive recovery operational continuity records capture continuity evidence after evidence custody closure and before any future service management handoff phase. Records require a ready evidence custody closure record, continuity owner, runbook update, KPI baseline, support handoff, continuity sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

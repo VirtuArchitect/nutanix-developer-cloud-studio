@@ -1497,6 +1497,23 @@ Promotion criteria:
 - Archive recovery operational continuity records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.68.0-production-execution-archive-recovery-service-management-handoff-record
+
+Goal: record service management handoff evidence after operational continuity without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery service management handoff records linked to operational continuity records.
+- Require service owner, support queue mapping, knowledge article reference, escalation matrix, and service management handoff sign-off.
+- Add Admin Operations archive recovery service management handoff panel with blockers and evidence references.
+- Add tests proving missing ready operational continuity records, service owners, support queue mappings, knowledge articles, escalation matrices, or service management handoff sign-offs block handoff readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery service management handoff APIs and UI are tested.
+- Archive recovery service management handoff records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:
