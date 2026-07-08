@@ -80,6 +80,7 @@ import type {
   ProductionExecutionArchiveRecoveryOperationalContinuityRecord,
   ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
   ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord,
+  ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -625,6 +626,12 @@ export async function fetchProductionExecutionArchiveRecoveryServiceManagementHa
 export async function fetchProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordsFromApi() {
   return fetchJson<ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord[]>(
     "/api/real-adapter/production-execution-archive-recovery-support-ownership-acceptance-records"
+  );
+}
+
+export async function fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi() {
+  return fetchJson<ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord[]>(
+    "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records"
   );
 }
 
@@ -1411,6 +1418,19 @@ export async function createProductionExecutionArchiveRecoverySupportOwnershipAc
 }) {
   return fetchJson<ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord>(
     "/api/real-adapter/production-execution-archive-recovery-support-ownership-acceptance-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi(payload: {
+  supportOwnershipAcceptanceRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord>(
+    "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

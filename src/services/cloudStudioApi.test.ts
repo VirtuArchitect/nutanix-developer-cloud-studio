@@ -70,6 +70,7 @@ import {
   createProductionExecutionArchiveRecoveryOperationalContinuityRecordViaApi,
   createProductionExecutionArchiveRecoveryServiceManagementHandoffRecordViaApi,
   createProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordViaApi,
+  createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -157,6 +158,7 @@ import {
   fetchProductionExecutionArchiveRecoveryOperationalContinuityRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryServiceManagementHandoffRecordsFromApi,
   fetchProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -729,6 +731,11 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordViaApi({
       serviceManagementHandoffRecordId:
         "production-execution-archive-recovery-service-management-handoff-record-ndb-1",
+    });
+    await fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi();
+    await createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi({
+      supportOwnershipAcceptanceRecordId:
+        "production-execution-archive-recovery-support-ownership-acceptance-record-ndb-1",
     });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
@@ -1310,6 +1317,21 @@ describe("cloudStudioApi", () => {
         method: "POST",
         body: expect.stringContaining(
           "production-execution-archive-recovery-service-management-handoff-record-ndb-1"
+        ),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      117,
+      "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      118,
+      "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining(
+          "production-execution-archive-recovery-support-ownership-acceptance-record-ndb-1"
         ),
       })
     );

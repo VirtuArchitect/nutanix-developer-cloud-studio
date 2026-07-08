@@ -87,6 +87,7 @@ import type {
   ProductionExecutionArchiveRecoveryOperationalContinuityRecord,
   ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
   ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord,
+  ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -189,6 +190,7 @@ export type ApiState = {
   productionExecutionArchiveRecoveryOperationalContinuityRecords: ProductionExecutionArchiveRecoveryOperationalContinuityRecord[];
   productionExecutionArchiveRecoveryServiceManagementHandoffRecords: ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[];
   productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecords: ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord[];
+  productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecords: ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -876,6 +878,16 @@ export type CreateProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRe
   escalationTestProofReference?: string;
   monitoringOwnershipProofReference?: string;
   supportOwnershipSignOffReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordRequest = {
+  supportOwnershipAcceptanceRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  monitoringOwner?: string;
+  alertOwnershipTransferReference?: string;
+  dashboardAcceptanceReference?: string;
+  escalationMonitoringValidationReference?: string;
+  monitoringOwnershipClosureSignOffReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

@@ -749,6 +749,15 @@ Production execution archive recovery support ownership acceptance records captu
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Monitoring Ownership Closure Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records`
+
+Production execution archive recovery monitoring ownership closure records capture monitoring ownership closure evidence after support ownership acceptance and before any future final operations handoff phase. Records require a ready support ownership acceptance record, monitoring owner, alert ownership transfer, dashboard acceptance, escalation monitoring validation, monitoring ownership closure sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

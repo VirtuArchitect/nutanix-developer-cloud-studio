@@ -2843,6 +2843,24 @@ export type ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord =
   createdAt: string;
 };
 
+export type ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord = Omit<
+  ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord,
+  "id" | "status" | "requestedBy" | "checks" | "evidence" | "createdAt"
+> & {
+  id: string;
+  supportOwnershipAcceptanceRecordId: string;
+  status: "Blocked" | "Ready for production execution archive recovery monitoring ownership closure review";
+  requestedBy: string;
+  monitoringOwner: string;
+  alertOwnershipTransferReference: string;
+  dashboardAcceptanceReference: string;
+  escalationMonitoringValidationReference: string;
+  monitoringOwnershipClosureSignOffReference: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

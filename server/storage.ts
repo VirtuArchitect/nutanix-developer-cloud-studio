@@ -199,6 +199,7 @@ export function createDefaultState(): ApiState {
     productionExecutionArchiveRecoveryOperationalContinuityRecords: [],
     productionExecutionArchiveRecoveryServiceManagementHandoffRecords: [],
     productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecords: [],
+    productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecords: [],
     productionReadinessReviews: [],
     lifecycleOperations: [],
     auditExports: [],

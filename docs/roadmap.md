@@ -678,10 +678,17 @@
 
 ## Phase 92 - Production Execution Archive Recovery Monitoring Ownership Closure Record (`v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record`)
 
-- Add production execution archive recovery monitoring ownership closure records linked to support ownership acceptance records - planned
-- Require monitoring owner, alert ownership transfer, dashboard acceptance, escalation monitoring validation, and monitoring ownership closure sign-off - planned
-- Add Admin Operations archive recovery monitoring ownership closure panel - planned
-- Keep archive recovery monitoring ownership closure records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery monitoring ownership closure records linked to support ownership acceptance records - done
+- Require monitoring owner, alert ownership transfer, dashboard acceptance, escalation monitoring validation, and monitoring ownership closure sign-off - done
+- Add Admin Operations archive recovery monitoring ownership closure panel - done
+- Keep archive recovery monitoring ownership closure records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 93 - Production Execution Archive Recovery Final Operations Handoff Record (`v2.71.0-production-execution-archive-recovery-final-operations-handoff-record`)
+
+- Add production execution archive recovery final operations handoff records linked to monitoring ownership closure records - planned
+- Require final operations owner, runbook publication, on-call schedule handoff, monitoring closure acceptance, and operations handoff sign-off - planned
+- Add Admin Operations archive recovery final operations handoff panel - planned
+- Keep archive recovery final operations handoff records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

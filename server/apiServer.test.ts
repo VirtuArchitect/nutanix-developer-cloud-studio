@@ -1323,6 +1323,19 @@ describe("api server", () => {
     const productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecords = await requestJson(
       "/api/real-adapter/production-execution-archive-recovery-support-ownership-acceptance-records"
     );
+    const productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          supportOwnershipAcceptanceRecordId:
+            productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord.data.id,
+        }),
+      }
+    );
+    const productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecords = await requestJson(
+      "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records"
+    );
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(run.data).toMatchObject({
@@ -2409,6 +2422,26 @@ describe("api server", () => {
         expect.objectContaining({ id: productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord.data.id }),
       ])
     );
+    expect(productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord.data).toMatchObject({
+      provider: "NDB",
+      supportOwnershipAcceptanceRecordId:
+        productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord.data.id,
+      serviceManagementHandoffRecordId: productionExecutionArchiveRecoveryServiceManagementHandoffRecord.data.id,
+      status: "Blocked",
+      provisioningEnabled: false,
+      killSwitch: expect.objectContaining({ name: "NDC_NDB_REAL_ADAPTER_ENABLED", enabled: false }),
+    });
+    expect(productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Support ownership acceptance ready", passed: false }),
+        expect.objectContaining({ name: "Prototype does not execute adapter", passed: true }),
+      ])
+    );
+    expect(productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecords.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord.data.id }),
+      ])
+    );
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "platform-service.preflight.recorded", target: "app-postgres-dev" }),
@@ -2549,6 +2582,10 @@ describe("api server", () => {
         }),
         expect.objectContaining({
           action: "real-adapter.production-execution-archive-recovery-support-ownership-acceptance.recorded",
+          target: "NDB",
+        }),
+        expect.objectContaining({
+          action: "real-adapter.production-execution-archive-recovery-monitoring-ownership-closure.recorded",
           target: "NDB",
         }),
       ])

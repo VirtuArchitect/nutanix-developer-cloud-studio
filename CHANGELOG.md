@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record`.
+This project uses release tags for public milestones. The current release is `v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery monitoring ownership closure records after support ownership acceptance records are complete.
+- Add production execution archive recovery final operations handoff records after monitoring ownership closure records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record] - 2026-07-08
+
+### Added
+
+- Production execution archive recovery monitoring ownership closure records linked to production execution archive recovery support ownership acceptance records.
+- API endpoints for listing and recording production execution archive recovery monitoring ownership closure records.
+- Admin Operations production archive recovery monitoring ownership closure panel.
+- Monitoring owner, alert ownership transfer, dashboard acceptance, escalation monitoring validation, and monitoring ownership closure sign-off checks.
+- Tests proving missing support ownership acceptance records or incomplete monitoring ownership closure evidence block readiness.
+
+### Notes
+
+- Production execution archive recovery monitoring ownership closure records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record] - 2026-07-08
 

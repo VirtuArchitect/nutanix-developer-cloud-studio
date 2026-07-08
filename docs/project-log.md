@@ -2,6 +2,12 @@
 
 ## 2026-07-08
 
+- Released `v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record`.
+- Added production execution archive recovery monitoring ownership closure records linked to production execution archive recovery support ownership acceptance records.
+- Added API endpoints for production execution archive recovery monitoring ownership closure records.
+- Added Admin Operations production archive recovery monitoring ownership closure panel.
+- Added tests proving missing support ownership acceptance records or incomplete monitoring ownership closure evidence block readiness.
+- Planned `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record` for evidence-only archive recovery final operations handoff records.
 - Released `v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record`.
 - Added production execution archive recovery support ownership acceptance records linked to production execution archive recovery service management handoff records.
 - Added API endpoints for production execution archive recovery support ownership acceptance records.

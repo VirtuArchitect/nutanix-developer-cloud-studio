@@ -1548,6 +1548,23 @@ Promotion criteria:
 - Archive recovery monitoring ownership closure records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.71.0-production-execution-archive-recovery-final-operations-handoff-record
+
+Goal: record final operations handoff evidence after monitoring ownership closure without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery final operations handoff records linked to monitoring ownership closure records.
+- Require final operations owner, runbook publication, on-call schedule handoff, monitoring closure acceptance, and operations handoff sign-off.
+- Add Admin Operations archive recovery final operations handoff panel with blockers and evidence references.
+- Add tests proving missing ready monitoring ownership closure records, final operations owners, runbook publications, on-call handoffs, monitoring closure acceptance, or operations handoff sign-offs block readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery final operations handoff APIs and UI are tested.
+- Archive recovery final operations handoff records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:
