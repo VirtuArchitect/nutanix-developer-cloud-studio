@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record",
+  "version": "2.71.0-production-execution-archive-recovery-final-operations-handoff-record",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

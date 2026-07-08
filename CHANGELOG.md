@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record`.
+This project uses release tags for public milestones. The current release is `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery final operations handoff records after monitoring ownership closure records are complete.
+- Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.71.0-production-execution-archive-recovery-final-operations-handoff-record] - 2026-07-08
+
+### Added
+
+- Production execution archive recovery final operations handoff records linked to production execution archive recovery monitoring ownership closure records.
+- API endpoints for listing and recording production execution archive recovery final operations handoff records.
+- Admin Operations production archive recovery final operations handoff panel.
+- Final operations owner, runbook publication, on-call schedule handoff, monitoring closure acceptance, and operations handoff sign-off checks.
+- Tests proving missing monitoring ownership closure records or incomplete final operations handoff evidence block readiness.
+
+### Notes
+
+- Production execution archive recovery final operations handoff records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record] - 2026-07-08
 

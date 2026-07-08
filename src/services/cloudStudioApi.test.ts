@@ -71,6 +71,7 @@ import {
   createProductionExecutionArchiveRecoveryServiceManagementHandoffRecordViaApi,
   createProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordViaApi,
   createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi,
+  createProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordViaApi,
   createProductionReadinessReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
@@ -159,6 +160,7 @@ import {
   fetchProductionExecutionArchiveRecoveryServiceManagementHandoffRecordsFromApi,
   fetchProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
@@ -736,6 +738,11 @@ describe("cloudStudioApi", () => {
     await createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi({
       supportOwnershipAcceptanceRecordId:
         "production-execution-archive-recovery-support-ownership-acceptance-record-ndb-1",
+    });
+    await fetchProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordsFromApi();
+    await createProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordViaApi({
+      monitoringOwnershipClosureRecordId:
+        "production-execution-archive-recovery-monitoring-ownership-closure-record-ndb-1",
     });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/controlled-lab-release/runbooks", expect.any(Object));
@@ -1332,6 +1339,21 @@ describe("cloudStudioApi", () => {
         method: "POST",
         body: expect.stringContaining(
           "production-execution-archive-recovery-support-ownership-acceptance-record-ndb-1"
+        ),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      119,
+      "/api/real-adapter/production-execution-archive-recovery-final-operations-handoff-records",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      120,
+      "/api/real-adapter/production-execution-archive-recovery-final-operations-handoff-records",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining(
+          "production-execution-archive-recovery-monitoring-ownership-closure-record-ndb-1"
         ),
       })
     );

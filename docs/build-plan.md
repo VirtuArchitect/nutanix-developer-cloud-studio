@@ -28,7 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
-- `v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record` adds evidence-only archive recovery monitoring ownership closure records linked to support ownership acceptance records and an Admin Operations archive recovery monitoring ownership closure panel.
+- `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record` adds evidence-only archive recovery final operations handoff records linked to monitoring ownership closure records and an Admin Operations archive recovery final operations handoff panel.
 - `v2.68.0-production-execution-archive-recovery-service-management-handoff-record` adds evidence-only archive recovery service management handoff records linked to operational continuity records and an Admin Operations archive recovery service management handoff panel.
 - `v2.67.0-production-execution-archive-recovery-operational-continuity-record` adds evidence-only archive recovery operational continuity records linked to evidence custody closure records and an Admin Operations archive recovery operational continuity panel.
 - `v2.66.0-production-execution-archive-recovery-evidence-custody-closure-record` adds evidence-only archive recovery evidence custody closure records linked to final compliance archive records and an Admin Operations archive recovery evidence custody closure panel.

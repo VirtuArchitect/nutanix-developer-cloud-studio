@@ -81,6 +81,7 @@ import type {
   ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
   ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord,
   ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
+  ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -632,6 +633,12 @@ export async function fetchProductionExecutionArchiveRecoverySupportOwnershipAcc
 export async function fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi() {
   return fetchJson<ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord[]>(
     "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records"
+  );
+}
+
+export async function fetchProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordsFromApi() {
+  return fetchJson<ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord[]>(
+    "/api/real-adapter/production-execution-archive-recovery-final-operations-handoff-records"
   );
 }
 
@@ -1431,6 +1438,19 @@ export async function createProductionExecutionArchiveRecoveryMonitoringOwnershi
 }) {
   return fetchJson<ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord>(
     "/api/real-adapter/production-execution-archive-recovery-monitoring-ownership-closure-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordViaApi(payload: {
+  monitoringOwnershipClosureRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord>(
+    "/api/real-adapter/production-execution-archive-recovery-final-operations-handoff-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

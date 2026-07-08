@@ -1565,6 +1565,23 @@ Promotion criteria:
 - Archive recovery final operations handoff records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.72.0-production-execution-archive-recovery-service-restoration-acceptance-record
+
+Goal: record service restoration acceptance evidence after final operations handoff without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery service restoration acceptance records linked to final operations handoff records.
+- Require service restoration owner, restored-service checklist, user validation, support readiness acceptance, and service restoration sign-off.
+- Add Admin Operations archive recovery service restoration acceptance panel with blockers and evidence references.
+- Add tests proving missing ready final operations handoff records, restoration owners, restored-service checklists, user validations, support readiness acceptance, or service restoration sign-offs block readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery service restoration acceptance APIs and UI are tested.
+- Archive recovery service restoration acceptance records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

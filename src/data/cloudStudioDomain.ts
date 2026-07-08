@@ -2861,6 +2861,24 @@ export type ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord =
   createdAt: string;
 };
 
+export type ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord = Omit<
+  ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
+  "id" | "status" | "requestedBy" | "checks" | "evidence" | "createdAt"
+> & {
+  id: string;
+  monitoringOwnershipClosureRecordId: string;
+  status: "Blocked" | "Ready for production execution archive recovery final operations handoff review";
+  requestedBy: string;
+  finalOperationsOwner: string;
+  runbookPublicationReference: string;
+  onCallScheduleHandoffReference: string;
+  monitoringClosureAcceptanceReference: string;
+  operationsHandoffSignOffReference: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  createdAt: string;
+};
+
 export type ProductionReadinessReview = {
   id: string;
   status: "Blocked" | "Ready for review";

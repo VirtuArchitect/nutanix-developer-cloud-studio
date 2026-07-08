@@ -88,6 +88,7 @@ import type {
   ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
   ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord,
   ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord,
+  ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -191,6 +192,7 @@ export type ApiState = {
   productionExecutionArchiveRecoveryServiceManagementHandoffRecords: ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[];
   productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecords: ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord[];
   productionExecutionArchiveRecoveryMonitoringOwnershipClosureRecords: ProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecord[];
+  productionExecutionArchiveRecoveryFinalOperationsHandoffRecords: ProductionExecutionArchiveRecoveryFinalOperationsHandoffRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -888,6 +890,16 @@ export type CreateProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRe
   dashboardAcceptanceReference?: string;
   escalationMonitoringValidationReference?: string;
   monitoringOwnershipClosureSignOffReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordRequest = {
+  monitoringOwnershipClosureRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  finalOperationsOwner?: string;
+  runbookPublicationReference?: string;
+  onCallScheduleHandoffReference?: string;
+  monitoringClosureAcceptanceReference?: string;
+  operationsHandoffSignOffReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

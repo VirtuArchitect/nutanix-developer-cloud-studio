@@ -758,6 +758,15 @@ Production execution archive recovery monitoring ownership closure records captu
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Final Operations Handoff Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-final-operations-handoff-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-final-operations-handoff-records`
+
+Production execution archive recovery final operations handoff records capture final operations evidence after monitoring ownership closure and before any future service restoration acceptance phase. Records require a ready monitoring ownership closure record, final operations owner, runbook publication, on-call schedule handoff, monitoring closure acceptance, operations handoff sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

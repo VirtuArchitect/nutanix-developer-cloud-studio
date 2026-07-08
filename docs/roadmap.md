@@ -685,10 +685,17 @@
 
 ## Phase 93 - Production Execution Archive Recovery Final Operations Handoff Record (`v2.71.0-production-execution-archive-recovery-final-operations-handoff-record`)
 
-- Add production execution archive recovery final operations handoff records linked to monitoring ownership closure records - planned
-- Require final operations owner, runbook publication, on-call schedule handoff, monitoring closure acceptance, and operations handoff sign-off - planned
-- Add Admin Operations archive recovery final operations handoff panel - planned
-- Keep archive recovery final operations handoff records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery final operations handoff records linked to monitoring ownership closure records - done
+- Require final operations owner, runbook publication, on-call schedule handoff, monitoring closure acceptance, and operations handoff sign-off - done
+- Add Admin Operations archive recovery final operations handoff panel - done
+- Keep archive recovery final operations handoff records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 94 - Production Execution Archive Recovery Service Restoration Acceptance Record (`v2.72.0-production-execution-archive-recovery-service-restoration-acceptance-record`)
+
+- Add production execution archive recovery service restoration acceptance records linked to final operations handoff records - planned
+- Require service restoration owner, restored-service checklist, user validation, support readiness acceptance, and service restoration sign-off - planned
+- Add Admin Operations archive recovery service restoration acceptance panel - planned
+- Keep archive recovery service restoration acceptance records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 
