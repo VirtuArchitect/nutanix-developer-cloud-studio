@@ -205,6 +205,12 @@ Required role: `Platform Admin`.
 - `GET /api/prism/read-only-authorization-gates`
 - `POST /api/prism/read-only-authorization-gates`
 - `GET /api/prism/live-read-only-design`
+- `GET /api/prism/read-only-runtime-modes`
+- `POST /api/prism/read-only-runtime-modes`
+- `GET /api/prism/live-read-only-inventory-pilots`
+- `POST /api/prism/live-read-only-inventory-pilots`
+- `GET /api/prism/read-only-observability`
+- `POST /api/prism/read-only-observability`
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
 - `GET /api/prism/adapter-diagnostics`
@@ -237,12 +243,19 @@ The real Prism preflight endpoints create readiness evidence for endpoint refere
 
 `POST /api/prism/read-only-authorization-gates` records an explicit authorization packet tying together an approved lab profile, successful fixture replay, and ready read-only lab gate. The packet is evidence-only and does not enable live calls.
 
+`POST /api/prism/read-only-runtime-modes` records the adapter runtime mode selection for `simulated`, `fixture-replay`, or `authorized-read-only-lab`. The switch is fail-closed: missing authorization, open runbook workflow, or missing evidence keeps the active mode at `simulated`.
+
+`POST /api/prism/live-read-only-inventory-pilots` records controlled read-only inventory pilot evidence for NCI after runtime mode, authorization gate, runbook workflow, and sanitized fixture replay evidence are present. This release does not open Prism Central network calls and returns `networkCallEnabled=false`.
+
+`POST /api/prism/read-only-observability` prepares redacted adapter traces, latency summaries, blocked mutation counts, and audit evidence for the read-only pilot. Endpoint values, credential references, authorization headers, and tokens are excluded.
+
 ### Operator Evidence And Lab Pilot Workflow
 
 - `GET /api/operator/evidence-exports`
 - `POST /api/operator/evidence-exports`
 - `GET /api/lab-pilot/runbook-workflows`
 - `POST /api/lab-pilot/runbook-workflows`
+- `GET /api/lab-pilot/operator-console`
 - `POST /api/lab-pilot/runbook-workflows/:id/approve`
 - `POST /api/lab-pilot/runbook-workflows/:id/execute-dry-run`
 - `POST /api/lab-pilot/runbook-workflows/:id/review-evidence`
@@ -251,6 +264,15 @@ The real Prism preflight endpoints create readiness evidence for endpoint refere
 Operator evidence export packs prepare redacted metadata bundles for readiness scorecard, auth diagnostics, config validation, lab gates, lab profiles, fixture replays, authorization gates, and live read-only design evidence.
 
 Lab pilot runbook workflows turn the operator runbook into an API-backed evidence path: prepare, approve, execute dry-run, review evidence, and close pilot. Dry-run execution is metadata-only and keeps `realPrismCallsEnabled=false`.
+
+`GET /api/lab-pilot/operator-console` returns a consolidated operator snapshot for runtime mode, authorization gate, runbook closure, inventory pilot, observability, evidence export, and readiness counters.
+
+### Production Decision Gates
+
+- `GET /api/production/readiness-decision-gates`
+- `POST /api/production/readiness-decision-gates`
+
+Production readiness decision gates record go/no-go evidence for CAB review, approvers, rollback owner, support contact, retention policy, and blocker state. They do not enable real adapters, real provisioning, or real Prism calls.
 
 ### Mock Prism Central Simulator
 

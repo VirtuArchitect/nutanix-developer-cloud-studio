@@ -385,6 +385,157 @@ describe("api server", () => {
     );
   });
 
+  it("records controlled read-only adapter pilot evidence through production decision gate", async () => {
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Read-only adapter pilot scope",
+        pentestScopeReference: "readonly-adapter-pilot-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        allowedActions: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+        excludedActions: [
+          "create_vm",
+          "clone_vm",
+          "delete_vm",
+          "power_on",
+          "power_off",
+          "update_network",
+          "resize_disk",
+          "attach_category",
+          "create_project",
+          "delete_image",
+        ],
+        evidenceReferences: ["readonly-adapter-pilot-scope.md", "operator-runbook.md"],
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    const labGate = await requestJson("/api/prism/read-only-lab-gates", { method: "POST" });
+    const profile = await requestJson("/api/prism/read-only-lab-profiles", { method: "POST" });
+    const replay = await requestJson("/api/prism/fixture-replays", { method: "POST" });
+    const authorization = await requestJson("/api/prism/read-only-authorization-gates", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        fixtureReplayId: replay.data.id,
+        labGateId: labGate.data.id,
+      }),
+    });
+    const evidence = await requestJson("/api/operator/evidence-exports", { method: "POST" });
+    let workflow = await requestJson("/api/lab-pilot/runbook-workflows", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        authorizationGateId: authorization.data.id,
+        evidenceExportId: evidence.data.id,
+      }),
+    });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/approve`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/execute-dry-run`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/review-evidence`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/close`, { method: "POST" });
+    const runtimeMode = await requestJson("/api/prism/read-only-runtime-modes", {
+      method: "POST",
+      body: JSON.stringify({
+        mode: "authorized-read-only-lab",
+        authorizationGateId: authorization.data.id,
+        runbookWorkflowId: workflow.data.id,
+        evidenceExportId: evidence.data.id,
+      }),
+    });
+    const inventoryPilot = await requestJson("/api/prism/live-read-only-inventory-pilots", {
+      method: "POST",
+      body: JSON.stringify({
+        runtimeModeRecordId: runtimeMode.data.id,
+        authorizationGateId: authorization.data.id,
+        runbookWorkflowId: workflow.data.id,
+      }),
+    });
+    const observability = await requestJson("/api/prism/read-only-observability", {
+      method: "POST",
+      body: JSON.stringify({
+        runtimeModeRecordId: runtimeMode.data.id,
+        inventoryPilotId: inventoryPilot.data.id,
+      }),
+    });
+    const consoleSnapshot = await requestJson("/api/lab-pilot/operator-console");
+    const decisionGate = await requestJson("/api/production/readiness-decision-gates", {
+      method: "POST",
+      body: JSON.stringify({
+        decision: "Go",
+        approvers: ["platform.admin", "cloud.operations"],
+        rollbackOwner: "Cloud Operations",
+        supportContact: "platform-support@example.invalid",
+        retentionPolicy: "Retain pilot evidence for 180 days",
+      }),
+    });
+    const runtimeModes = await requestJson("/api/prism/read-only-runtime-modes");
+    const inventoryPilots = await requestJson("/api/prism/live-read-only-inventory-pilots");
+    const observabilityRecords = await requestJson("/api/prism/read-only-observability");
+    const decisionGates = await requestJson("/api/production/readiness-decision-gates");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(runtimeMode.data).toMatchObject({
+      requestedMode: "authorized-read-only-lab",
+      activeMode: "authorized-read-only-lab",
+      status: "Active",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(inventoryPilot.data).toMatchObject({
+      status: "Completed",
+      mode: "Authorized read-only lab pilot",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(inventoryPilot.data.inventorySummary).toEqual(
+      expect.arrayContaining([expect.objectContaining({ kind: "Image", count: 1 })])
+    );
+    expect(observability.data).toMatchObject({
+      status: "Prepared",
+      summary: expect.objectContaining({ latestStatus: "Healthy", blockedMutations: expect.any(Number) }),
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(consoleSnapshot.data).toMatchObject({
+      status: "Ready for production decision",
+      activeRuntimeMode: "authorized-read-only-lab",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(decisionGate.data).toMatchObject({
+      decision: "Go",
+      status: "Ready for CAB review",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(runtimeModes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: runtimeMode.data.id })]));
+    expect(inventoryPilots.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: inventoryPilot.data.id })]));
+    expect(observabilityRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: observability.data.id })]));
+    expect(decisionGates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: decisionGate.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "prism.readonly.runtime-mode.selected" }),
+        expect.objectContaining({ action: "prism.readonly.inventory-pilot.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.observability.prepared" }),
+        expect.objectContaining({ action: "production.readiness-decision-gate.recorded" }),
+      ])
+    );
+  });
+
   it("blocks fixture replay records that contain unsanitized endpoint data", async () => {
     const replay = await requestJson("/api/prism/fixture-replays", {
       method: "POST",

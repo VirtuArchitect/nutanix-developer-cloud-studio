@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.95.0-lab-pilot-runbook-workflow",
+  "version": "3.0.0-production-readiness-decision-gate",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

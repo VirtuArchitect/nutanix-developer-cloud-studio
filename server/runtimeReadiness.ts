@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "2.95.0-lab-pilot-runbook-workflow";
+  return process.env.npm_package_version ?? "3.0.0-production-readiness-decision-gate";
 }
 
 export function createRuntimeObservabilitySnapshot(

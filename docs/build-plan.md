@@ -28,6 +28,11 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v3.0.0-production-readiness-decision-gate` adds production readiness decision gate records for go/no-go, approvers, rollback owner, support contact, retention, blockers, and CAB-ready evidence.
+- `v2.99.0-lab-pilot-operator-console` adds a consolidated lab pilot operator console snapshot for runtime mode, authorization, runbook closure, inventory pilot, observability, and readiness counters.
+- `v2.98.0-adapter-observability-redaction` adds redacted read-only adapter observability records with trace metadata, blocked mutation counts, and audit evidence.
+- `v2.97.0-live-read-only-inventory-adapter` adds controlled read-only inventory pilot evidence records for authorized lab mode without enabling live network calls.
+- `v2.96.0-adapter-runtime-mode-switch` adds API-backed read-only adapter runtime mode switching for simulated, fixture replay, and authorized read-only lab modes with fail-closed rollback.
 - `v2.95.0-lab-pilot-runbook-workflow` turns the lab pilot runbook into API-backed prepare, approve, execute dry-run, review evidence, and close workflow records.
 - `v2.94.0-operator-evidence-export-pack` adds redacted operator evidence export packs for readiness, auth, config, lab gate, profile, fixture replay, authorization, and live design evidence.
 - `v2.93.0-read-only-adapter-authorization-gate` adds explicit read-only adapter authorization packets that require profile, fixture replay, and lab gate evidence before future live-readiness review.

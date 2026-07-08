@@ -409,6 +409,114 @@ export type LabPilotRunbookWorkflow = {
   updatedAt: string;
 };
 
+export type ReadOnlyAdapterRuntimeMode = "simulated" | "fixture-replay" | "authorized-read-only-lab";
+
+export type ReadOnlyAdapterRuntimeModeRecord = {
+  id: string;
+  requestedBy: string;
+  requestedMode: ReadOnlyAdapterRuntimeMode;
+  activeMode: ReadOnlyAdapterRuntimeMode;
+  status: "Active" | "Blocked";
+  source: "Mock Prism Central" | "Sanitized fixture replay" | "Authorized lab pilot";
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  rollbackMode: "simulated";
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type LiveReadOnlyInventoryPilotRecord = {
+  id: string;
+  requestedBy: string;
+  runtimeModeRecordId: string;
+  authorizationGateId: string;
+  runbookWorkflowId: string;
+  status: "Blocked" | "Completed";
+  adapter: "NCI";
+  mode: "Authorized read-only lab pilot";
+  operations: PrismReadOnlyOperation[];
+  recordsImported: number;
+  profileCandidates: number;
+  inventorySummary: Array<{ kind: PrismInventoryKind; count: number }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  redactionRules: string[];
+  evidence: string[];
+  mutationOperationsBlocked: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type ReadOnlyAdapterObservabilityRecord = {
+  id: string;
+  requestedBy: string;
+  runtimeModeRecordId?: string;
+  inventoryPilotId?: string;
+  status: "Prepared";
+  traces: Array<{
+    operation: PrismReadOnlyOperation;
+    requestId: string;
+    status: "Simulated" | "Blocked" | "Observed";
+    latencyMs: number;
+    redacted: boolean;
+  }>;
+  summary: {
+    observedOperations: number;
+    blockedMutations: number;
+    redactedFields: string[];
+    latestStatus: "Healthy" | "Blocked" | "Needs review";
+  };
+  auditEventCount: number;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type LabPilotOperatorConsole = {
+  id: string;
+  generatedAt: string;
+  status: "Blocked" | "Ready for pilot review" | "Ready for production decision";
+  activeRuntimeMode: ReadOnlyAdapterRuntimeMode;
+  activeAuthorizationGate?: string;
+  activeRunbookWorkflow?: string;
+  latestInventoryPilot?: string;
+  latestEvidenceExport?: string;
+  readiness: Array<{ name: string; status: "Ready" | "Required" | "Blocked"; detail: string }>;
+  counters: {
+    profiles: number;
+    fixtureReplays: number;
+    authorizationGates: number;
+    inventoryPilots: number;
+    observabilityRecords: number;
+  };
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type ProductionReadinessDecisionGate = {
+  id: string;
+  requestedBy: string;
+  decision: "Go" | "No-go";
+  status: "Ready for CAB review" | "Blocked";
+  approvers: string[];
+  rollbackOwner: string;
+  supportContact: string;
+  retentionPolicy: string;
+  checklist: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  blockers: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
 export type PrismInventoryRecord = {
   id: string;
   kind: PrismInventoryKind;

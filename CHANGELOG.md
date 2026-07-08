@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.95.0-lab-pilot-runbook-workflow`.
+This project uses release tags for public milestones. The current release is `v3.0.0-production-readiness-decision-gate`.
 
 ## [Unreleased]
 
@@ -12,6 +12,61 @@ This project uses release tags for public milestones. The current release is `v2
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v3.0.0-production-readiness-decision-gate] - 2026-07-08
+
+### Added
+
+- Production readiness decision gate records at `/api/production/readiness-decision-gates`.
+- Admin Operations panel for go/no-go evidence, approvers, rollback owner, support contact, retention policy, and blocked checklist items.
+
+### Notes
+
+- The decision gate is evidence-only and does not enable provisioning or real Prism calls.
+
+## [v2.99.0-lab-pilot-operator-console] - 2026-07-08
+
+### Added
+
+- Operator console snapshot at `/api/lab-pilot/operator-console`.
+- Admin Operations panel summarizing runtime mode, authorization gate, runbook, inventory pilot, observability, and readiness counters.
+
+### Notes
+
+- The console is a read-only readiness view.
+
+## [v2.98.0-adapter-observability-redaction] - 2026-07-08
+
+### Added
+
+- Read-only adapter observability records at `/api/prism/read-only-observability`.
+- Redacted traces, blocked mutation counts, audit-event summaries, and operator diagnostics.
+
+### Notes
+
+- Trace records are metadata-only and keep endpoint, credential, authorization, and token values redacted.
+
+## [v2.97.0-live-read-only-inventory-adapter] - 2026-07-08
+
+### Added
+
+- Controlled live read-only inventory pilot records at `/api/prism/live-read-only-inventory-pilots`.
+- Inventory summary evidence for clusters, projects, images, networks, categories, and VMs based on authorized read-only pilot records.
+
+### Notes
+
+- The pilot path remains fail-closed with `networkCallEnabled=false` and `realPrismCallsEnabled=false` until real lab connectivity is separately authorized.
+
+## [v2.96.0-adapter-runtime-mode-switch] - 2026-07-08
+
+### Added
+
+- Read-only adapter runtime mode switch records at `/api/prism/read-only-runtime-modes`.
+- Admin Providers panel for simulated, fixture replay, and authorized read-only lab mode evidence with simulated rollback target.
+
+### Notes
+
+- Unsafe mode changes fall back to simulated mode and do not open Prism Central network calls.
 
 ## [v2.95.0-lab-pilot-runbook-workflow] - 2026-07-08
 
