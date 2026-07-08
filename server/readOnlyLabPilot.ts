@@ -53,6 +53,12 @@ const defaultFixtureRecords: SanitizedPrismInventoryFixtureRecord[] = [
     categories: ["network:dev"],
   },
   {
+    kind: "Category",
+    name: "env:lab",
+    rawRef: "fixture-category-env-lab",
+    categories: ["scope:lab"],
+  },
+  {
     kind: "VM",
     name: "payments-dev",
     cluster: "berlin-ahv-lab",
@@ -99,11 +105,17 @@ export function createReadOnlyLabConnectionProfile(
     checks: [
       check(
         "Endpoint reference configured",
-        Boolean((request.prismCentralEndpointRef ?? state.platformConfig.prismCentralUrl) || "prism-central-ref"),
-        "Endpoint is stored as a reference only."
+        safeValue((request.prismCentralEndpointRef ?? state.platformConfig.prismCentralUrl) || "prism-central-ref"),
+        "Endpoint must be stored as a reference only, not as a URL or hostname."
       ),
-      check("Credential profile reference configured", Boolean(request.credentialProfileRef ?? state.platformConfig.credentialReference), "Credential material is not stored in NDC Studio."),
-      check("Provider scope bounded", scope.projects.length > 0 && scope.clusters.length > 0 && scope.networks.length > 0, "Projects, clusters, and networks are explicitly bounded."),
+      check("Credential profile reference configured", safeValue(request.credentialProfileRef ?? state.platformConfig.credentialReference), "Credential material is not stored in NDC Studio."),
+      check("Owner present", safeValue(request.owner ?? actor), "Owner must be a safe identity reference."),
+      check("Approver present", safeValue(request.approvedBy ?? actor), "Approver must be a safe identity reference."),
+      check(
+        "Provider scope bounded",
+        bounded(scope.projects) && bounded(scope.clusters) && bounded(scope.networks) && bounded(scope.categories),
+        "Projects, clusters, networks, and categories are explicitly bounded."
+      ),
       check("Approval state accepted", (request.approvalState ?? "Approved") === "Approved", `Approval state is ${request.approvalState ?? "Approved"}.`),
       check("Expiry in future", new Date(expiresAt).getTime() > now.getTime(), `Expires at ${expiresAt}.`),
     ],
@@ -356,5 +368,9 @@ function isAllowedKind(kind: PrismInventoryKind) {
 }
 
 function safeValue(value: string) {
-  return value.length > 0 && value.length <= 120 && !/[\\\r\n\t]|:\/\/|Bearer|token|password|secret|apikey|api_key/i.test(value);
+  return value.length > 0 && value.length <= 120 && !/[\\\r\n\t]|:\/\/|Bearer|token|password|secret|apikey|api_key|=|\$/i.test(value);
+}
+
+function bounded(values: string[]) {
+  return values.length > 0 && values.length <= 20 && values.every(safeValue);
 }

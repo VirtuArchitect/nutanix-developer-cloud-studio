@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "3.0.0-production-readiness-decision-gate";
+  return process.env.npm_package_version ?? "4.5.0-emergency-stop-rollback-drill";
 }
 
 export function createRuntimeObservabilitySnapshot(

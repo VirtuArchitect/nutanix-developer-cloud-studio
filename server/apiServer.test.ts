@@ -536,6 +536,547 @@ describe("api server", () => {
     );
   });
 
+  it("records real read-only adapter preparation evidence without live calls", async () => {
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Real read-only adapter prep scope",
+        pentestScopeReference: "readonly-adapter-prep-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        allowedActions: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+        excludedActions: [
+          "create_vm",
+          "clone_vm",
+          "delete_vm",
+          "power_on",
+          "power_off",
+          "update_network",
+          "resize_disk",
+          "attach_category",
+          "create_project",
+          "delete_image",
+        ],
+        evidenceReferences: ["readonly-adapter-prep-scope.md"],
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    const labGate = await requestJson("/api/prism/read-only-lab-gates", { method: "POST" });
+    const profile = await requestJson("/api/prism/read-only-lab-profiles", { method: "POST" });
+    const replay = await requestJson("/api/prism/fixture-replays", { method: "POST" });
+    const authorization = await requestJson("/api/prism/read-only-authorization-gates", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        fixtureReplayId: replay.data.id,
+        labGateId: labGate.data.id,
+      }),
+    });
+    const evidence = await requestJson("/api/operator/evidence-exports", { method: "POST" });
+    let workflow = await requestJson("/api/lab-pilot/runbook-workflows", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        authorizationGateId: authorization.data.id,
+        evidenceExportId: evidence.data.id,
+      }),
+    });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/approve`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/execute-dry-run`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/review-evidence`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/close`, { method: "POST" });
+    const runtimeMode = await requestJson("/api/prism/read-only-runtime-modes", {
+      method: "POST",
+      body: JSON.stringify({
+        mode: "authorized-read-only-lab",
+        authorizationGateId: authorization.data.id,
+        runbookWorkflowId: workflow.data.id,
+        evidenceExportId: evidence.data.id,
+      }),
+    });
+    const inventoryPilot = await requestJson("/api/prism/live-read-only-inventory-pilots", {
+      method: "POST",
+      body: JSON.stringify({
+        runtimeModeRecordId: runtimeMode.data.id,
+        authorizationGateId: authorization.data.id,
+        runbookWorkflowId: workflow.data.id,
+      }),
+    });
+    await requestJson("/api/prism/read-only-observability", {
+      method: "POST",
+      body: JSON.stringify({
+        runtimeModeRecordId: runtimeMode.data.id,
+        inventoryPilotId: inventoryPilot.data.id,
+      }),
+    });
+    const decisionGate = await requestJson("/api/production/readiness-decision-gates", {
+      method: "POST",
+      body: JSON.stringify({
+        decision: "Go",
+        approvers: ["platform.admin", "cloud.operations"],
+      }),
+    });
+    const configBoundary = await requestJson("/api/prism/real-read-only/config-boundaries", {
+      method: "POST",
+      body: JSON.stringify({
+        endpointRef: "prism-central-ref",
+        credentialProviderRef: "vault-ref-nci-readonly",
+        tlsValidationMode: "private-ca-ref",
+        timeoutSeconds: 10,
+        retry: { maxAttempts: 2, backoffMs: 500 },
+        killSwitch: "Closed",
+      }),
+    });
+    const credentialContract = await requestJson("/api/credentials/provider-contracts", {
+      method: "POST",
+      body: JSON.stringify({
+        credentialProviderRef: "vault-ref-nci-readonly",
+        provider: "MockVault",
+      }),
+    });
+    const adapterInterface = await requestJson("/api/prism/real-read-only/adapter-interfaces", {
+      method: "POST",
+      body: JSON.stringify({
+        configBoundaryId: configBoundary.data.id,
+        credentialContractId: credentialContract.data.id,
+      }),
+    });
+    const replaySuite = await requestJson("/api/prism/offline-contract-replays", {
+      method: "POST",
+      body: JSON.stringify({
+        adapterInterfaceId: adapterInterface.data.id,
+        fixtureReplayId: replay.data.id,
+      }),
+    });
+    const dryRun = await requestJson("/api/prism/authorized-lab-dry-runs", {
+      method: "POST",
+      body: JSON.stringify({
+        configBoundaryId: configBoundary.data.id,
+        credentialContractId: credentialContract.data.id,
+        adapterInterfaceId: adapterInterface.data.id,
+        offlineReplaySuiteId: replaySuite.data.id,
+        productionDecisionGateId: decisionGate.data.id,
+      }),
+    });
+    const configBoundaries = await requestJson("/api/prism/real-read-only/config-boundaries");
+    const credentialContracts = await requestJson("/api/credentials/provider-contracts");
+    const adapterInterfaces = await requestJson("/api/prism/real-read-only/adapter-interfaces");
+    const replaySuites = await requestJson("/api/prism/offline-contract-replays");
+    const dryRuns = await requestJson("/api/prism/authorized-lab-dry-runs");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(configBoundary.data).toMatchObject({
+      status: "Ready for credential contract",
+      tlsValidationMode: "private-ca-ref",
+      killSwitch: "Closed",
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(credentialContract.data).toMatchObject({
+      resolverStatus: "Validated reference",
+      resolvedSecretAvailable: false,
+      networkCallEnabled: false,
+    });
+    expect(adapterInterface.data).toMatchObject({
+      status: "Interface ready; execution disabled",
+      adapter: "PrismCentralReadOnlyAdapter",
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(replaySuite.data).toMatchObject({
+      status: "Passed",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+    });
+    expect(replaySuite.data.coverage).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "Cluster", operation: "listClusters", expectedCount: 1, normalizedCount: 1, passed: true }),
+        expect.objectContaining({ kind: "Project", operation: "listProjects", expectedCount: 1, normalizedCount: 1, passed: true }),
+        expect.objectContaining({ kind: "Image", operation: "listImages", expectedCount: 1, normalizedCount: 1, passed: true }),
+        expect.objectContaining({ kind: "Network", operation: "listSubnets", expectedCount: 1, normalizedCount: 1, passed: true }),
+        expect.objectContaining({ kind: "Category", operation: "listCategories", expectedCount: 1, normalizedCount: 1, passed: true }),
+        expect.objectContaining({ kind: "VM", operation: "listVms", expectedCount: 1, normalizedCount: 1, passed: true }),
+      ])
+    );
+    expect(dryRun.data).toMatchObject({
+      status: "Ready for authorized lab connection review",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(configBoundaries.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: configBoundary.data.id })]));
+    expect(credentialContracts.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: credentialContract.data.id })]));
+    expect(adapterInterfaces.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: adapterInterface.data.id })]));
+    expect(replaySuites.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: replaySuite.data.id })]));
+    expect(dryRuns.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: dryRun.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "prism.real-readonly.config-boundary.recorded" }),
+        expect.objectContaining({ action: "credential.provider-contract.recorded" }),
+        expect.objectContaining({ action: "prism.real-readonly.adapter-interface.recorded" }),
+        expect.objectContaining({ action: "prism.offline-contract-replay.recorded" }),
+        expect.objectContaining({ action: "prism.authorized-lab-dry-run.recorded" }),
+      ])
+    );
+  });
+
+  it("records controlled read-only lab enablement gates and production pilot controls without live calls", async () => {
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "prism-central-ref",
+        credentialProfile: "nci-lab-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Controlled read-only enablement scope",
+        pentestScopeReference: "readonly-enable-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        allowedActions: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+        excludedActions: [
+          "create_vm",
+          "clone_vm",
+          "delete_vm",
+          "power_on",
+          "power_off",
+          "update_network",
+          "resize_disk",
+          "attach_category",
+          "create_project",
+          "delete_image",
+        ],
+        evidenceReferences: ["readonly-enable-scope.md", "rollback-runbook.md"],
+      }),
+    });
+    const labGate = await requestJson("/api/prism/read-only-lab-gates", { method: "POST" });
+    const profile = await requestJson("/api/prism/read-only-lab-profiles", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Prism Central read-only lab profile",
+        prismCentralEndpointRef: "prism-central-ref",
+        credentialProfileRef: "nci-lab-readonly",
+        allowedProviderScope: {
+          projects: ["developer-cloud-lab"],
+          clusters: ["berlin-ahv-lab"],
+          networks: ["dev-segment"],
+          categories: ["env:lab", "owner:platform"],
+        },
+        approvalState: "Approved",
+      }),
+    });
+    const fixture = await requestJson("/api/prism/fixture-replays", { method: "POST" });
+    const authorization = await requestJson("/api/prism/read-only-authorization-gates", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        fixtureReplayId: fixture.data.id,
+        labGateId: labGate.data.id,
+      }),
+    });
+    const evidence = await requestJson("/api/operator/evidence-exports", { method: "POST" });
+    let workflow = await requestJson("/api/lab-pilot/runbook-workflows", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        authorizationGateId: authorization.data.id,
+        evidenceExportId: evidence.data.id,
+      }),
+    });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/approve`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/execute-dry-run`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/review-evidence`, { method: "POST" });
+    workflow = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/close`, { method: "POST" });
+    const runtimeMode = await requestJson("/api/prism/read-only-runtime-modes", {
+      method: "POST",
+      body: JSON.stringify({
+        mode: "authorized-read-only-lab",
+        authorizationGateId: authorization.data.id,
+        runbookWorkflowId: workflow.data.id,
+        evidenceExportId: evidence.data.id,
+      }),
+    });
+    const pilot = await requestJson("/api/prism/live-read-only-inventory-pilots", {
+      method: "POST",
+      body: JSON.stringify({
+        runtimeModeRecordId: runtimeMode.data.id,
+        authorizationGateId: authorization.data.id,
+        runbookWorkflowId: workflow.data.id,
+      }),
+    });
+    await requestJson("/api/prism/read-only-observability", {
+      method: "POST",
+      body: JSON.stringify({
+        runtimeModeRecordId: runtimeMode.data.id,
+        inventoryPilotId: pilot.data.id,
+      }),
+    });
+    const decisionGate = await requestJson("/api/production/readiness-decision-gates", {
+      method: "POST",
+      body: JSON.stringify({ decision: "Go", approvers: ["platform.admin", "cloud.operations"] }),
+    });
+    const configBoundary = await requestJson("/api/prism/real-read-only/config-boundaries", {
+      method: "POST",
+      body: JSON.stringify({
+        endpointRef: "prism-central-ref",
+        credentialProviderRef: "vault-ref-nci-readonly",
+        caCertificateRef: "platform-ca-bundle-ref",
+        tlsValidationMode: "private-ca-ref",
+        timeoutSeconds: 10,
+        retry: { maxAttempts: 2, backoffMs: 500 },
+        killSwitch: "Closed",
+      }),
+    });
+    const credentialContract = await requestJson("/api/credentials/provider-contracts", {
+      method: "POST",
+      body: JSON.stringify({ credentialProviderRef: "vault-ref-nci-readonly", provider: "MockVault" }),
+    });
+    const adapterInterface = await requestJson("/api/prism/real-read-only/adapter-interfaces", {
+      method: "POST",
+      body: JSON.stringify({
+        configBoundaryId: configBoundary.data.id,
+        credentialContractId: credentialContract.data.id,
+      }),
+    });
+    const replaySuite = await requestJson("/api/prism/offline-contract-replays", {
+      method: "POST",
+      body: JSON.stringify({
+        adapterInterfaceId: adapterInterface.data.id,
+        fixtureReplayId: fixture.data.id,
+      }),
+    });
+    const dryRun = await requestJson("/api/prism/authorized-lab-dry-runs", {
+      method: "POST",
+      body: JSON.stringify({
+        configBoundaryId: configBoundary.data.id,
+        credentialContractId: credentialContract.data.id,
+        adapterInterfaceId: adapterInterface.data.id,
+        offlineReplaySuiteId: replaySuite.data.id,
+        productionDecisionGateId: decisionGate.data.id,
+      }),
+    });
+    const hardenedProfile = await requestJson("/api/prism/read-only-lab-profile-hardening", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        caCertificateRef: "platform-ca-bundle-ref",
+      }),
+    });
+    const resolverStub = await requestJson("/api/credentials/resolver-stubs", {
+      method: "POST",
+      body: JSON.stringify({
+        credentialContractId: credentialContract.data.id,
+        provider: "MockVault",
+      }),
+    });
+    const httpClient = await requestJson("/api/prism/read-only-http-clients", {
+      method: "POST",
+      body: JSON.stringify({
+        adapterInterfaceId: adapterInterface.data.id,
+        configBoundaryId: configBoundary.data.id,
+        credentialResolverStubId: resolverStub.data.id,
+      }),
+    });
+    const preflight = await requestJson("/api/prism/lab-connectivity-preflights", {
+      method: "POST",
+      body: JSON.stringify({
+        hardenedProfileReviewId: hardenedProfile.data.id,
+        configBoundaryId: configBoundary.data.id,
+        credentialResolverStubId: resolverStub.data.id,
+        httpClientRecordId: httpClient.data.id,
+      }),
+    });
+    const pilotGate = await requestJson("/api/prism/authorized-read-only-pilot-gates", {
+      method: "POST",
+      body: JSON.stringify({
+        preflightId: preflight.data.id,
+        dryRunId: dryRun.data.id,
+        productionDecisionGateId: decisionGate.data.id,
+        requiredApprovers: ["platform.admin", "cloud.operations"],
+        operatorAcknowledgements: ["read-only-only", "no-inventory-import", "emergency-stop-ready"],
+      }),
+    });
+    const runtimePolicy = await requestJson("/api/prism/read-only-runtime-policies", {
+      method: "POST",
+      body: JSON.stringify({
+        pilotGateId: pilotGate.data.id,
+        requiredApprovals: ["platform-owner", "security-reviewer", "operations-owner"],
+        allowedEnvironments: ["readonly-lab"],
+        emergencyStopOwner: "Cloud Operations",
+        emergencyStopContact: "cloud-operations-oncall",
+        emergencyStopProcedureRef: "rollback-pack.md",
+        emergencyStopTested: true,
+      }),
+    });
+    const pilotSession = await requestJson("/api/prism/read-only-pilot-sessions", {
+      method: "POST",
+      body: JSON.stringify({
+        policyId: runtimePolicy.data.id,
+        approvedGateId: pilotGate.data.id,
+        operator: "Cloud Operations Pilot Operator",
+        evidenceLinks: ["pilot-session-approval.md", "operator-roster.md", "readonly-lab-window.md"],
+      }),
+    });
+    const callEnvelope = await requestJson("/api/prism/live-read-only-call-envelopes", {
+      method: "POST",
+      body: JSON.stringify({
+        pilotSessionId: pilotSession.data.id,
+        httpClientRecordId: httpClient.data.id,
+      }),
+    });
+    const evidenceReview = await requestJson("/api/prism/pilot-evidence-reviews", {
+      method: "POST",
+      body: JSON.stringify({
+        callEnvelopeId: callEnvelope.data.id,
+        pilotSessionId: pilotSession.data.id,
+        reviewer: "Security Reviewer",
+        decision: "Approve",
+      }),
+    });
+    const rollbackDrill = await requestJson("/api/prism/emergency-stop-rollback-drills", {
+      method: "POST",
+      body: JSON.stringify({
+        pilotEvidenceReviewId: evidenceReview.data.id,
+        policyId: runtimePolicy.data.id,
+        simulatedModeRestored: true,
+        evidencePreserved: true,
+        emergencyStopOwner: "Cloud Operations",
+      }),
+    });
+    const hardeningRecords = await requestJson("/api/prism/read-only-lab-profile-hardening");
+    const resolverRecords = await requestJson("/api/credentials/resolver-stubs");
+    const clientRecords = await requestJson("/api/prism/read-only-http-clients");
+    const preflightRecords = await requestJson("/api/prism/lab-connectivity-preflights");
+    const pilotGateRecords = await requestJson("/api/prism/authorized-read-only-pilot-gates");
+    const runtimePolicyRecords = await requestJson("/api/prism/read-only-runtime-policies");
+    const pilotSessionRecords = await requestJson("/api/prism/read-only-pilot-sessions");
+    const callEnvelopeRecords = await requestJson("/api/prism/live-read-only-call-envelopes");
+    const evidenceReviewRecords = await requestJson("/api/prism/pilot-evidence-reviews");
+    const rollbackDrillRecords = await requestJson("/api/prism/emergency-stop-rollback-drills");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(hardenedProfile.data).toMatchObject({
+      status: "Hardened",
+      endpointRef: "prism-central-ref",
+      caCertificateRef: "platform-ca-bundle-ref",
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(resolverStub.data).toMatchObject({
+      status: "Stub ready; resolver disabled",
+      resolvedSecretAvailable: false,
+      networkCallEnabled: false,
+    });
+    expect(httpClient.data).toMatchObject({
+      status: "Client shape ready; execution disabled",
+      requiredRuntimeFlag: "NDC_PRISM_READONLY_HTTP_ENABLED",
+      authorizationGateRequired: true,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(httpClient.data.requestShape).toEqual(
+      expect.arrayContaining([expect.objectContaining({ operation: "listVms", path: "/api/nutanix/v3/vms/list" })])
+    );
+    expect(preflight.data).toMatchObject({
+      status: "Ready for operator pilot gate",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(pilotGate.data).toMatchObject({
+      status: "Ready for future live read-only pilot",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(runtimePolicy.data).toMatchObject({
+      status: "Policy ready for pilot session",
+      runtimeFlag: "NDC_PRISM_READONLY_HTTP_ENABLED",
+      rollbackMode: "simulated",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(pilotSession.data).toMatchObject({
+      status: "Session window ready",
+      runtimeMode: "authorized-read-only-lab",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(callEnvelope.data).toMatchObject({
+      status: "Envelope ready; execution disabled",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(callEnvelope.data.operationEnvelopes).toHaveLength(6);
+    expect(callEnvelope.data.operationEnvelopes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          operation: "listVms",
+          method: "POST",
+          path: "/api/nutanix/v3/vms/list",
+          executionEnabled: false,
+        }),
+      ])
+    );
+    expect(callEnvelope.data.operationEnvelopes.every((item: { executionEnabled: boolean }) => item.executionEnabled === false)).toBe(true);
+    expect(evidenceReview.data).toMatchObject({
+      status: "Approved for rollback drill",
+      decision: "Approve",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(rollbackDrill.data).toMatchObject({
+      status: "Drill passed",
+      rollbackMode: "simulated",
+      simulatedModeRestored: true,
+      evidencePreserved: true,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(hardeningRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: hardenedProfile.data.id })]));
+    expect(resolverRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: resolverStub.data.id })]));
+    expect(clientRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: httpClient.data.id })]));
+    expect(preflightRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: preflight.data.id })]));
+    expect(pilotGateRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: pilotGate.data.id })]));
+    expect(runtimePolicyRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: runtimePolicy.data.id })]));
+    expect(pilotSessionRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: pilotSession.data.id })]));
+    expect(callEnvelopeRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: callEnvelope.data.id })]));
+    expect(evidenceReviewRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: evidenceReview.data.id })]));
+    expect(rollbackDrillRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: rollbackDrill.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "prism.readonly.lab-profile-hardening.recorded" }),
+        expect.objectContaining({ action: "credential.resolver-stub.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.http-client.recorded" }),
+        expect.objectContaining({ action: "prism.lab-connectivity-preflight.recorded" }),
+        expect.objectContaining({ action: "prism.authorized-readonly-pilot-gate.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.runtime-policy.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.pilot-session.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.call-envelope.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.evidence-review.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.rollback-drill.recorded" }),
+      ])
+    );
+  });
+
   it("blocks fixture replay records that contain unsanitized endpoint data", async () => {
     const replay = await requestJson("/api/prism/fixture-replays", {
       method: "POST",

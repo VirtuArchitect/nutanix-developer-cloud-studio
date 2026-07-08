@@ -211,6 +211,36 @@ Required role: `Platform Admin`.
 - `POST /api/prism/live-read-only-inventory-pilots`
 - `GET /api/prism/read-only-observability`
 - `POST /api/prism/read-only-observability`
+- `GET /api/prism/real-read-only/config-boundaries`
+- `POST /api/prism/real-read-only/config-boundaries`
+- `GET /api/credentials/provider-contracts`
+- `POST /api/credentials/provider-contracts`
+- `GET /api/prism/real-read-only/adapter-interfaces`
+- `POST /api/prism/real-read-only/adapter-interfaces`
+- `GET /api/prism/offline-contract-replays`
+- `POST /api/prism/offline-contract-replays`
+- `GET /api/prism/authorized-lab-dry-runs`
+- `POST /api/prism/authorized-lab-dry-runs`
+- `GET /api/prism/read-only-lab-profile-hardening`
+- `POST /api/prism/read-only-lab-profile-hardening`
+- `GET /api/credentials/resolver-stubs`
+- `POST /api/credentials/resolver-stubs`
+- `GET /api/prism/read-only-http-clients`
+- `POST /api/prism/read-only-http-clients`
+- `GET /api/prism/lab-connectivity-preflights`
+- `POST /api/prism/lab-connectivity-preflights`
+- `GET /api/prism/authorized-read-only-pilot-gates`
+- `POST /api/prism/authorized-read-only-pilot-gates`
+- `GET /api/prism/read-only-runtime-policies`
+- `POST /api/prism/read-only-runtime-policies`
+- `GET /api/prism/read-only-pilot-sessions`
+- `POST /api/prism/read-only-pilot-sessions`
+- `GET /api/prism/live-read-only-call-envelopes`
+- `POST /api/prism/live-read-only-call-envelopes`
+- `GET /api/prism/pilot-evidence-reviews`
+- `POST /api/prism/pilot-evidence-reviews`
+- `GET /api/prism/emergency-stop-rollback-drills`
+- `POST /api/prism/emergency-stop-rollback-drills`
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
 - `GET /api/prism/adapter-diagnostics`
@@ -218,6 +248,34 @@ Required role: `Platform Admin`.
 - `POST /api/prism/simulator-profiles/:id/select`
 - `GET /api/prism/failure-scenarios`
 - `POST /api/prism/failure-scenarios/:id/activate`
+
+The real read-only preparation endpoints add a fail-closed bridge from simulated pilot evidence toward a future authorized lab connection:
+
+- Configuration boundaries store endpoint and credential-provider references, CA validation mode, timeout, retry, allowed read-only operations, and a closed kill switch.
+- Credential provider contracts validate reference shape and redaction behavior through a disabled/mock resolver. They do not resolve or persist secrets.
+- Disabled adapter interface records map Prism Central read-only inventory operations to list endpoints while keeping execution disabled.
+- Offline contract replay suites compare sanitized Prism-shaped fixture records against normalized inventory kinds.
+- Authorized lab connection dry runs validate config, credential reference, TLS mode, endpoint allowlist, redaction, audit evidence, and production decision readiness without calling Prism Central.
+
+All lab adapter pilot and real read-only preparation routes require `Platform Admin` for write operations and keep `provisioningEnabled=false`, `networkCallEnabled=false`, and `realPrismCallsEnabled=false`.
+
+The controlled read-only lab enablement endpoints add the final non-executing runway before any future live read-only pilot:
+
+- Lab profile hardening validates reference-only endpoint, CA bundle, owner, approver, expiry, and bounded scope.
+- Credential resolver stubs model Vault, CyberArk, and environment references while keeping secret resolution disabled.
+- Disabled Prism read-only HTTP client records document request shape, timeout, retry, runtime flag, and authorization-gate requirements.
+- Lab connectivity preflights validate readiness without opening sockets or importing inventory.
+- Authorized read-only pilot gates collect approvers, acknowledgements, stop conditions, and final readiness evidence while keeping all execution disabled.
+
+The production read-only pilot control endpoints add formal governance before any future `NDC_PRISM_READONLY_HTTP_ENABLED` enablement:
+
+- Runtime enablement policies document required approvals, allowed environments, expiry, simulated rollback mode, and emergency stop procedure for the future flag.
+- Read-only pilot sessions record operator, approved gate, session start/end window, runtime mode, and evidence links.
+- Live read-only call envelopes model each Prism list operation with method, path, timeout, retry, request ID, redaction fields, and expected response shape while recording `executionEnabled=false`.
+- Pilot evidence reviews capture reviewer approval or rejection before any future live read-only HTTP enablement.
+- Emergency stop rollback drills prove simulated-mode rollback and evidence preservation.
+
+These controls are evidence-only. They do not enable live HTTP, resolve secrets, provision resources, import live inventory, or call Prism Central.
 - `GET /api/prism/real-preflight-runs`
 - `POST /api/prism/real-preflight-runs`
 

@@ -30,6 +30,8 @@ import {
   templates,
   type AdapterPromotionReadinessDossier,
   type AdapterEnablementRecord,
+  type AuthorizedLabConnectionDryRunRecord,
+  type AuthorizedReadOnlyLabPilotGateRecord,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
   type AuthBoundaryDiagnostics,
@@ -44,7 +46,11 @@ import {
   type ControlledLabDryRunWindowRecord,
   type ControlledLabReleaseRunbookRecord,
   type ControlledSwitchConfigurationRequest,
+  type CredentialResolverAdapterStubRecord,
   type CredentialReferenceDiagnostic,
+  type CredentialProviderContractRecord,
+  type DisabledRealReadOnlyAdapterInterfaceRecord,
+  type DisabledPrismReadOnlyHttpClientRecord,
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
@@ -54,10 +60,12 @@ import {
   type ExecutionBrokerQueueRecord,
   type Integration,
   type IntegrationConfig,
+  type HardenedLabConnectionProfileReview,
   type LabEvidenceReviewRecord,
   type LabExecutionProposalEnvelope,
   type LabExecutionProposalExportRecord,
   type LabWindowEvidenceExportRecord,
+  type LabConnectivityPreflightRecord,
   type JobState,
   type LabAdapterSnapshot,
   type LabAuthorizationScope,
@@ -66,11 +74,14 @@ import {
   type LabScopeDiagnostics,
   type LifecycleOperationKind,
   type LifecycleOperationRecord,
+  type LiveReadOnlyCallEnvelopeRecord,
   type LiveReadOnlyPrismCallDesign,
   type LiveReadOnlyInventoryPilotRecord,
   type ManualRealAdapterSwitchReview,
   type MockPrismExecution,
   type MockPrismSimulatorStatus,
+  type OfflineContractReplaySuiteRecord,
+  type PilotEvidenceReviewRecord,
   type PrismSimulatorFailureScenario,
   type PrismSimulatorFailureScenarioId,
   type PrismSimulatorProfile,
@@ -139,11 +150,15 @@ import {
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
   type RealAdapterLabScopeActivation,
+  type RealReadOnlyAdapterConfigBoundary,
   type ReadOnlyPrismLabGate,
   type ReadOnlyLabConnectionProfile,
+  type ReadOnlyPilotSessionRecord,
+  type ReadOnlyRuntimeEnablementPolicyRecord,
   type ReadOnlyAdapterAuthorizationGate,
   type RealAdapterSwitchStateAuditPackage,
   type RealPrismPreflightRun,
+  type EmergencyStopRollbackDrillRecord,
   type ReleaseEvidenceExportRecord,
   type RegistryStatus,
   resourceProfiles as defaultResourceProfiles,
@@ -178,6 +193,7 @@ import {
 import {
   checkApiHealth,
   createAdapterPromotionReadinessDossierViaApi,
+  createAuthorizedLabConnectionDryRunViaApi,
   createProductionAdapterAuthorizationPacketViaApi,
   createProductionChangeFreezeRecordViaApi,
   createProductionCabHandoffPacketViaApi,
@@ -218,6 +234,8 @@ import {
   createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi,
   createProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordViaApi,
   createAdapterEnablementRecordViaApi,
+  createAuthorizedReadOnlyLabPilotGateViaApi,
+  createEmergencyStopRollbackDrillViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
@@ -229,6 +247,9 @@ import {
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createControlledSwitchConfigurationRequestViaApi,
+  createCredentialResolverAdapterStubViaApi,
+  createCredentialProviderContractViaApi,
+  createDisabledPrismReadOnlyHttpClientViaApi,
   createSwitchExecutionHandoffPackageViaApi,
   createSwitchExecutionOutcomeRecordViaApi,
   createSwitchClosureRetentionPackageViaApi,
@@ -238,8 +259,10 @@ import {
   createLabExecutionProposalEnvelopeViaApi,
   createLabExecutionProposalExportViaApi,
   createLabWindowEvidenceExportViaApi,
+  createLiveReadOnlyCallEnvelopeViaApi,
   createManualRealAdapterSwitchReviewViaApi,
   createLabAuthorizationScopeViaApi,
+  createLabConnectivityPreflightViaApi,
   createLifecycleOperationViaApi,
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
@@ -249,14 +272,21 @@ import {
   createPlatformServicePreflightRunViaApi,
   createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
+  createHardenedLabConnectionProfileReviewViaApi,
   createLabPilotRunbookWorkflowViaApi,
   createLiveReadOnlyInventoryPilotViaApi,
+  createDisabledRealReadOnlyAdapterInterfaceViaApi,
+  createOfflineContractReplaySuiteViaApi,
   createOperatorEvidenceExportPackViaApi,
   createProductionReadinessDecisionGateViaApi,
   createPrismFixtureReplayViaApi,
+  createRealReadOnlyAdapterConfigBoundaryViaApi,
   createReadOnlyAdapterObservabilityViaApi,
   createReadOnlyAdapterAuthorizationGateViaApi,
   createReadOnlyLabConnectionProfileViaApi,
+  createReadOnlyPilotSessionViaApi,
+  createReadOnlyRuntimeEnablementPolicyViaApi,
+  createPilotEvidenceReviewViaApi,
   createRealAdapterLabScopeActivationViaApi,
   createRealAdapterSwitchStateAuditPackageViaApi,
   createReleaseEvidenceExportViaApi,
@@ -309,9 +339,13 @@ import {
   fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
+  fetchAuthorizedLabConnectionDryRunsFromApi,
+  fetchAuthorizedReadOnlyLabPilotGatesFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
+  fetchCredentialResolverAdapterStubsFromApi,
+  fetchCredentialProviderContractsFromApi,
   fetchControlPlaneJobsFromApi,
   fetchControlledLabExecutionApprovalsFromApi,
   fetchControlledLabDryRunExecutionChecklistsFromApi,
@@ -328,6 +362,9 @@ import {
   fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchSwitchClosureRetentionPackagesFromApi,
   fetchEnvironmentsFromApi,
+  fetchDisabledPrismReadOnlyHttpClientsFromApi,
+  fetchDisabledRealReadOnlyAdapterInterfacesFromApi,
+  fetchEmergencyStopRollbackDrillsFromApi,
   fetchEnvironmentDetailFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
   fetchExecutionBrokerQueueRecordsFromApi,
@@ -335,12 +372,14 @@ import {
   fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabConnectivityPreflightsFromApi,
   fetchLabEvidenceReviewsFromApi,
   fetchLabExecutionProposalEnvelopesFromApi,
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
   fetchLiveReadOnlyPrismCallDesignFromApi,
+  fetchHardenedLabConnectionProfileReviewsFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
@@ -351,6 +390,7 @@ import {
   fetchLabPilotRunbookWorkflowsFromApi,
   fetchLabPilotOperatorConsoleFromApi,
   fetchPlatformConfigFromApi,
+  fetchLiveReadOnlyCallEnvelopesFromApi,
   fetchPlatformServiceAdapterContractReviewsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
   fetchPlatformServiceRequestsFromApi,
@@ -358,15 +398,20 @@ import {
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
   fetchOperatorEvidenceExportPacksFromApi,
+  fetchOfflineContractReplaySuitesFromApi,
   fetchLiveReadOnlyInventoryPilotsFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
   fetchPrismFixtureReplaysFromApi,
+  fetchPilotEvidenceReviewsFromApi,
   fetchPrismReadOnlyAdapterDiagnosticsFromApi,
   fetchReadOnlyPrismLabGatesFromApi,
   fetchReadOnlyAdapterObservabilityFromApi,
   fetchReadOnlyAdapterRuntimeModesFromApi,
   fetchReadOnlyLabConnectionProfilesFromApi,
   fetchReadOnlyAdapterAuthorizationGatesFromApi,
+  fetchReadOnlyPilotSessionsFromApi,
+  fetchReadOnlyRuntimeEnablementPoliciesFromApi,
+  fetchRealReadOnlyAdapterConfigBoundariesFromApi,
   fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
@@ -464,6 +509,21 @@ export function App() {
     createMockLabPilotOperatorConsole([], [], [], [], [])
   );
   const [productionReadinessDecisionGates, setProductionReadinessDecisionGates] = useState<ProductionReadinessDecisionGate[]>([]);
+  const [realReadOnlyAdapterConfigBoundaries, setRealReadOnlyAdapterConfigBoundaries] = useState<RealReadOnlyAdapterConfigBoundary[]>([]);
+  const [credentialProviderContractRecords, setCredentialProviderContractRecords] = useState<CredentialProviderContractRecord[]>([]);
+  const [disabledRealReadOnlyAdapterInterfaceRecords, setDisabledRealReadOnlyAdapterInterfaceRecords] = useState<DisabledRealReadOnlyAdapterInterfaceRecord[]>([]);
+  const [offlineContractReplaySuiteRecords, setOfflineContractReplaySuiteRecords] = useState<OfflineContractReplaySuiteRecord[]>([]);
+  const [authorizedLabConnectionDryRunRecords, setAuthorizedLabConnectionDryRunRecords] = useState<AuthorizedLabConnectionDryRunRecord[]>([]);
+  const [hardenedLabConnectionProfileReviews, setHardenedLabConnectionProfileReviews] = useState<HardenedLabConnectionProfileReview[]>([]);
+  const [credentialResolverAdapterStubRecords, setCredentialResolverAdapterStubRecords] = useState<CredentialResolverAdapterStubRecord[]>([]);
+  const [disabledPrismReadOnlyHttpClientRecords, setDisabledPrismReadOnlyHttpClientRecords] = useState<DisabledPrismReadOnlyHttpClientRecord[]>([]);
+  const [labConnectivityPreflightRecords, setLabConnectivityPreflightRecords] = useState<LabConnectivityPreflightRecord[]>([]);
+  const [authorizedReadOnlyLabPilotGateRecords, setAuthorizedReadOnlyLabPilotGateRecords] = useState<AuthorizedReadOnlyLabPilotGateRecord[]>([]);
+  const [readOnlyRuntimeEnablementPolicies, setReadOnlyRuntimeEnablementPolicies] = useState<ReadOnlyRuntimeEnablementPolicyRecord[]>([]);
+  const [readOnlyPilotSessions, setReadOnlyPilotSessions] = useState<ReadOnlyPilotSessionRecord[]>([]);
+  const [liveReadOnlyCallEnvelopes, setLiveReadOnlyCallEnvelopes] = useState<LiveReadOnlyCallEnvelopeRecord[]>([]);
+  const [pilotEvidenceReviewRecords, setPilotEvidenceReviewRecords] = useState<PilotEvidenceReviewRecord[]>([]);
+  const [emergencyStopRollbackDrillRecords, setEmergencyStopRollbackDrillRecords] = useState<EmergencyStopRollbackDrillRecord[]>([]);
   const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
   const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
   const [prismAdapterDiagnostics, setPrismAdapterDiagnostics] = useState<PrismAdapterDiagnostics | null>(null);
@@ -705,6 +765,21 @@ export function App() {
             apiReadOnlyAdapterObservabilityRecords,
             apiLabPilotOperatorConsole,
             apiProductionReadinessDecisionGates,
+            apiRealReadOnlyAdapterConfigBoundaries,
+            apiCredentialProviderContractRecords,
+            apiDisabledRealReadOnlyAdapterInterfaceRecords,
+            apiOfflineContractReplaySuiteRecords,
+            apiAuthorizedLabConnectionDryRunRecords,
+            apiHardenedLabConnectionProfileReviews,
+            apiCredentialResolverAdapterStubRecords,
+            apiDisabledPrismReadOnlyHttpClientRecords,
+            apiLabConnectivityPreflightRecords,
+            apiAuthorizedReadOnlyLabPilotGateRecords,
+            apiReadOnlyRuntimeEnablementPolicies,
+            apiReadOnlyPilotSessions,
+            apiLiveReadOnlyCallEnvelopes,
+            apiPilotEvidenceReviewRecords,
+            apiEmergencyStopRollbackDrillRecords,
             apiMockPrismStatus,
             apiMockPrismExecutions,
             apiPrismAdapterDiagnostics,
@@ -825,6 +900,21 @@ export function App() {
             fetchReadOnlyAdapterObservabilityFromApi(),
             fetchLabPilotOperatorConsoleFromApi(),
             fetchProductionReadinessDecisionGatesFromApi(),
+            fetchRealReadOnlyAdapterConfigBoundariesFromApi(),
+            fetchCredentialProviderContractsFromApi(),
+            fetchDisabledRealReadOnlyAdapterInterfacesFromApi(),
+            fetchOfflineContractReplaySuitesFromApi(),
+            fetchAuthorizedLabConnectionDryRunsFromApi(),
+            fetchHardenedLabConnectionProfileReviewsFromApi(),
+            fetchCredentialResolverAdapterStubsFromApi(),
+            fetchDisabledPrismReadOnlyHttpClientsFromApi(),
+            fetchLabConnectivityPreflightsFromApi(),
+            fetchAuthorizedReadOnlyLabPilotGatesFromApi(),
+            fetchReadOnlyRuntimeEnablementPoliciesFromApi(),
+            fetchReadOnlyPilotSessionsFromApi(),
+            fetchLiveReadOnlyCallEnvelopesFromApi(),
+            fetchPilotEvidenceReviewsFromApi(),
+            fetchEmergencyStopRollbackDrillsFromApi(),
             fetchMockPrismStatusFromApi(),
             fetchMockPrismExecutionsFromApi(),
             fetchPrismAdapterDiagnosticsFromApi(),
@@ -947,6 +1037,21 @@ export function App() {
             setReadOnlyAdapterObservabilityRecords(apiReadOnlyAdapterObservabilityRecords);
             setLabPilotOperatorConsole(apiLabPilotOperatorConsole);
             setProductionReadinessDecisionGates(apiProductionReadinessDecisionGates);
+            setRealReadOnlyAdapterConfigBoundaries(apiRealReadOnlyAdapterConfigBoundaries);
+            setCredentialProviderContractRecords(apiCredentialProviderContractRecords);
+            setDisabledRealReadOnlyAdapterInterfaceRecords(apiDisabledRealReadOnlyAdapterInterfaceRecords);
+            setOfflineContractReplaySuiteRecords(apiOfflineContractReplaySuiteRecords);
+            setAuthorizedLabConnectionDryRunRecords(apiAuthorizedLabConnectionDryRunRecords);
+            setHardenedLabConnectionProfileReviews(apiHardenedLabConnectionProfileReviews);
+            setCredentialResolverAdapterStubRecords(apiCredentialResolverAdapterStubRecords);
+            setDisabledPrismReadOnlyHttpClientRecords(apiDisabledPrismReadOnlyHttpClientRecords);
+            setLabConnectivityPreflightRecords(apiLabConnectivityPreflightRecords);
+            setAuthorizedReadOnlyLabPilotGateRecords(apiAuthorizedReadOnlyLabPilotGateRecords);
+            setReadOnlyRuntimeEnablementPolicies(apiReadOnlyRuntimeEnablementPolicies);
+            setReadOnlyPilotSessions(apiReadOnlyPilotSessions);
+            setLiveReadOnlyCallEnvelopes(apiLiveReadOnlyCallEnvelopes);
+            setPilotEvidenceReviewRecords(apiPilotEvidenceReviewRecords);
+            setEmergencyStopRollbackDrillRecords(apiEmergencyStopRollbackDrillRecords);
             setMockPrismStatus(apiMockPrismStatus);
             setMockPrismExecutions(apiMockPrismExecutions);
             setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -1224,6 +1329,21 @@ export function App() {
       apiReadOnlyAdapterObservabilityRecords,
       apiLabPilotOperatorConsole,
       apiProductionReadinessDecisionGates,
+      apiRealReadOnlyAdapterConfigBoundaries,
+      apiCredentialProviderContractRecords,
+      apiDisabledRealReadOnlyAdapterInterfaceRecords,
+      apiOfflineContractReplaySuiteRecords,
+      apiAuthorizedLabConnectionDryRunRecords,
+      apiHardenedLabConnectionProfileReviews,
+      apiCredentialResolverAdapterStubRecords,
+      apiDisabledPrismReadOnlyHttpClientRecords,
+      apiLabConnectivityPreflightRecords,
+      apiAuthorizedReadOnlyLabPilotGateRecords,
+      apiReadOnlyRuntimeEnablementPolicies,
+      apiReadOnlyPilotSessions,
+      apiLiveReadOnlyCallEnvelopes,
+      apiPilotEvidenceReviewRecords,
+      apiEmergencyStopRollbackDrillRecords,
       apiMockPrismStatus,
       apiMockPrismExecutions,
       apiPrismAdapterDiagnostics,
@@ -1344,6 +1464,21 @@ export function App() {
       fetchReadOnlyAdapterObservabilityFromApi(),
       fetchLabPilotOperatorConsoleFromApi(),
       fetchProductionReadinessDecisionGatesFromApi(),
+      fetchRealReadOnlyAdapterConfigBoundariesFromApi(),
+      fetchCredentialProviderContractsFromApi(),
+      fetchDisabledRealReadOnlyAdapterInterfacesFromApi(),
+      fetchOfflineContractReplaySuitesFromApi(),
+      fetchAuthorizedLabConnectionDryRunsFromApi(),
+      fetchHardenedLabConnectionProfileReviewsFromApi(),
+      fetchCredentialResolverAdapterStubsFromApi(),
+      fetchDisabledPrismReadOnlyHttpClientsFromApi(),
+      fetchLabConnectivityPreflightsFromApi(),
+      fetchAuthorizedReadOnlyLabPilotGatesFromApi(),
+      fetchReadOnlyRuntimeEnablementPoliciesFromApi(),
+      fetchReadOnlyPilotSessionsFromApi(),
+      fetchLiveReadOnlyCallEnvelopesFromApi(),
+      fetchPilotEvidenceReviewsFromApi(),
+      fetchEmergencyStopRollbackDrillsFromApi(),
       fetchMockPrismStatusFromApi(),
       fetchMockPrismExecutionsFromApi(),
       fetchPrismAdapterDiagnosticsFromApi(),
@@ -1465,6 +1600,21 @@ export function App() {
     setReadOnlyAdapterObservabilityRecords(apiReadOnlyAdapterObservabilityRecords);
     setLabPilotOperatorConsole(apiLabPilotOperatorConsole);
     setProductionReadinessDecisionGates(apiProductionReadinessDecisionGates);
+    setRealReadOnlyAdapterConfigBoundaries(apiRealReadOnlyAdapterConfigBoundaries);
+    setCredentialProviderContractRecords(apiCredentialProviderContractRecords);
+    setDisabledRealReadOnlyAdapterInterfaceRecords(apiDisabledRealReadOnlyAdapterInterfaceRecords);
+    setOfflineContractReplaySuiteRecords(apiOfflineContractReplaySuiteRecords);
+    setAuthorizedLabConnectionDryRunRecords(apiAuthorizedLabConnectionDryRunRecords);
+    setHardenedLabConnectionProfileReviews(apiHardenedLabConnectionProfileReviews);
+    setCredentialResolverAdapterStubRecords(apiCredentialResolverAdapterStubRecords);
+    setDisabledPrismReadOnlyHttpClientRecords(apiDisabledPrismReadOnlyHttpClientRecords);
+    setLabConnectivityPreflightRecords(apiLabConnectivityPreflightRecords);
+    setAuthorizedReadOnlyLabPilotGateRecords(apiAuthorizedReadOnlyLabPilotGateRecords);
+    setReadOnlyRuntimeEnablementPolicies(apiReadOnlyRuntimeEnablementPolicies);
+    setReadOnlyPilotSessions(apiReadOnlyPilotSessions);
+    setLiveReadOnlyCallEnvelopes(apiLiveReadOnlyCallEnvelopes);
+    setPilotEvidenceReviewRecords(apiPilotEvidenceReviewRecords);
+    setEmergencyStopRollbackDrillRecords(apiEmergencyStopRollbackDrillRecords);
     setMockPrismStatus(apiMockPrismStatus);
     setMockPrismExecutions(apiMockPrismExecutions);
     setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -1995,6 +2145,299 @@ export function App() {
         liveReadOnlyInventoryPilots[0],
         readOnlyAdapterObservabilityRecords[0]
       ),
+      ...current,
+    ]);
+  }
+
+  async function createRealReadOnlyAdapterConfigBoundary() {
+    if (apiHealth.mode === "api") {
+      await createRealReadOnlyAdapterConfigBoundaryViaApi({
+        endpointRef: "prism-central-ref",
+        credentialProviderRef: "vault-ref-nci-readonly",
+        tlsValidationMode: "private-ca-ref",
+        timeoutSeconds: 10,
+        retry: { maxAttempts: 2, backoffMs: 500 },
+        killSwitch: "Closed",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setRealReadOnlyAdapterConfigBoundaries((current) => [createMockRealReadOnlyAdapterConfigBoundary(session.user), ...current]);
+  }
+
+  async function createCredentialProviderContract() {
+    if (apiHealth.mode === "api") {
+      await createCredentialProviderContractViaApi({
+        credentialProviderRef: realReadOnlyAdapterConfigBoundaries[0]?.credentialProviderRef ?? "vault-ref-nci-readonly",
+        provider: "MockVault",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setCredentialProviderContractRecords((current) => [
+      createMockCredentialProviderContract(session.user, realReadOnlyAdapterConfigBoundaries[0]),
+      ...current,
+    ]);
+  }
+
+  async function createDisabledRealReadOnlyAdapterInterface() {
+    if (apiHealth.mode === "api") {
+      await createDisabledRealReadOnlyAdapterInterfaceViaApi({
+        configBoundaryId: realReadOnlyAdapterConfigBoundaries[0]?.id,
+        credentialContractId: credentialProviderContractRecords[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setDisabledRealReadOnlyAdapterInterfaceRecords((current) => [
+      createMockDisabledRealReadOnlyAdapterInterface(
+        session.user,
+        realReadOnlyAdapterConfigBoundaries[0],
+        credentialProviderContractRecords[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function createOfflineContractReplaySuite() {
+    if (apiHealth.mode === "api") {
+      await createOfflineContractReplaySuiteViaApi({
+        adapterInterfaceId: disabledRealReadOnlyAdapterInterfaceRecords[0]?.id,
+        fixtureReplayId: prismFixtureReplayRecords[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setOfflineContractReplaySuiteRecords((current) => [
+      createMockOfflineContractReplaySuite(
+        session.user,
+        disabledRealReadOnlyAdapterInterfaceRecords[0],
+        prismFixtureReplayRecords[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function createAuthorizedLabConnectionDryRun() {
+    if (apiHealth.mode === "api") {
+      await createAuthorizedLabConnectionDryRunViaApi({
+        configBoundaryId: realReadOnlyAdapterConfigBoundaries[0]?.id,
+        credentialContractId: credentialProviderContractRecords[0]?.id,
+        adapterInterfaceId: disabledRealReadOnlyAdapterInterfaceRecords[0]?.id,
+        offlineReplaySuiteId: offlineContractReplaySuiteRecords[0]?.id,
+        productionDecisionGateId: productionReadinessDecisionGates[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setAuthorizedLabConnectionDryRunRecords((current) => [
+      createMockAuthorizedLabConnectionDryRun(
+        session.user,
+        realReadOnlyAdapterConfigBoundaries[0],
+        credentialProviderContractRecords[0],
+        disabledRealReadOnlyAdapterInterfaceRecords[0],
+        offlineContractReplaySuiteRecords[0],
+        productionReadinessDecisionGates[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function createHardenedLabConnectionProfileReview() {
+    if (apiHealth.mode === "api") {
+      await createHardenedLabConnectionProfileReviewViaApi({
+        profileId: readOnlyLabConnectionProfiles[0]?.id,
+        caCertificateRef: "platform-ca-bundle-ref",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setHardenedLabConnectionProfileReviews((current) => [
+      createMockHardenedLabConnectionProfileReview(session.user, readOnlyLabConnectionProfiles[0]),
+      ...current,
+    ]);
+  }
+
+  async function createCredentialResolverAdapterStub() {
+    if (apiHealth.mode === "api") {
+      await createCredentialResolverAdapterStubViaApi({
+        credentialContractId: credentialProviderContractRecords[0]?.id,
+        provider: "MockVault",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setCredentialResolverAdapterStubRecords((current) => [
+      createMockCredentialResolverAdapterStub(session.user, credentialProviderContractRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createDisabledPrismReadOnlyHttpClient() {
+    if (apiHealth.mode === "api") {
+      await createDisabledPrismReadOnlyHttpClientViaApi({
+        adapterInterfaceId: disabledRealReadOnlyAdapterInterfaceRecords[0]?.id,
+        configBoundaryId: realReadOnlyAdapterConfigBoundaries[0]?.id,
+        credentialResolverStubId: credentialResolverAdapterStubRecords[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setDisabledPrismReadOnlyHttpClientRecords((current) => [
+      createMockDisabledPrismReadOnlyHttpClient(
+        session.user,
+        disabledRealReadOnlyAdapterInterfaceRecords[0],
+        realReadOnlyAdapterConfigBoundaries[0],
+        credentialResolverAdapterStubRecords[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function createLabConnectivityPreflight() {
+    if (apiHealth.mode === "api") {
+      await createLabConnectivityPreflightViaApi({
+        hardenedProfileReviewId: hardenedLabConnectionProfileReviews[0]?.id,
+        configBoundaryId: realReadOnlyAdapterConfigBoundaries[0]?.id,
+        credentialResolverStubId: credentialResolverAdapterStubRecords[0]?.id,
+        httpClientRecordId: disabledPrismReadOnlyHttpClientRecords[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setLabConnectivityPreflightRecords((current) => [
+      createMockLabConnectivityPreflight(
+        session.user,
+        hardenedLabConnectionProfileReviews[0],
+        realReadOnlyAdapterConfigBoundaries[0],
+        credentialResolverAdapterStubRecords[0],
+        disabledPrismReadOnlyHttpClientRecords[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function createAuthorizedReadOnlyLabPilotGate() {
+    if (apiHealth.mode === "api") {
+      await createAuthorizedReadOnlyLabPilotGateViaApi({
+        preflightId: labConnectivityPreflightRecords[0]?.id,
+        dryRunId: authorizedLabConnectionDryRunRecords[0]?.id,
+        productionDecisionGateId: productionReadinessDecisionGates[0]?.id,
+        requiredApprovers: ["platform.admin", "cloud.operations"],
+        operatorAcknowledgements: ["read-only-only", "no-inventory-import", "emergency-stop-ready"],
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setAuthorizedReadOnlyLabPilotGateRecords((current) => [
+      createMockAuthorizedReadOnlyLabPilotGate(
+        session.user,
+        labConnectivityPreflightRecords[0],
+        authorizedLabConnectionDryRunRecords[0],
+        productionReadinessDecisionGates[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function createReadOnlyRuntimeEnablementPolicy() {
+    if (apiHealth.mode === "api") {
+      await createReadOnlyRuntimeEnablementPolicyViaApi({
+        pilotGateId: authorizedReadOnlyLabPilotGateRecords[0]?.id,
+        requiredApprovals: ["platform-owner", "security-reviewer", "operations-owner"],
+        allowedEnvironments: ["readonly-lab"],
+        emergencyStopOwner: "Cloud Operations",
+        emergencyStopContact: "cloud-operations-oncall",
+        emergencyStopProcedureRef: "docs/rollback-pack.md",
+        emergencyStopTested: true,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setReadOnlyRuntimeEnablementPolicies((current) => [
+      createMockReadOnlyRuntimeEnablementPolicy(session.user, authorizedReadOnlyLabPilotGateRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createReadOnlyPilotSession() {
+    if (apiHealth.mode === "api") {
+      await createReadOnlyPilotSessionViaApi({
+        policyId: readOnlyRuntimeEnablementPolicies[0]?.id,
+        approvedGateId: authorizedReadOnlyLabPilotGateRecords[0]?.id,
+        operator: "Cloud Operations Pilot Operator",
+        evidenceLinks: ["pilot-session-approval.md", "operator-roster.md", "readonly-lab-window.md"],
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setReadOnlyPilotSessions((current) => [
+      createMockReadOnlyPilotSession(session.user, readOnlyRuntimeEnablementPolicies[0], authorizedReadOnlyLabPilotGateRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createLiveReadOnlyCallEnvelope() {
+    if (apiHealth.mode === "api") {
+      await createLiveReadOnlyCallEnvelopeViaApi({
+        pilotSessionId: readOnlyPilotSessions[0]?.id,
+        httpClientRecordId: disabledPrismReadOnlyHttpClientRecords[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setLiveReadOnlyCallEnvelopes((current) => [
+      createMockLiveReadOnlyCallEnvelope(session.user, readOnlyPilotSessions[0], disabledPrismReadOnlyHttpClientRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createPilotEvidenceReview() {
+    if (apiHealth.mode === "api") {
+      await createPilotEvidenceReviewViaApi({
+        callEnvelopeId: liveReadOnlyCallEnvelopes[0]?.id,
+        pilotSessionId: readOnlyPilotSessions[0]?.id,
+        reviewer: "Security Reviewer",
+        decision: "Approve",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setPilotEvidenceReviewRecords((current) => [
+      createMockPilotEvidenceReview(session.user, liveReadOnlyCallEnvelopes[0], readOnlyPilotSessions[0]),
+      ...current,
+    ]);
+  }
+
+  async function createEmergencyStopRollbackDrill() {
+    if (apiHealth.mode === "api") {
+      await createEmergencyStopRollbackDrillViaApi({
+        pilotEvidenceReviewId: pilotEvidenceReviewRecords[0]?.id,
+        policyId: readOnlyRuntimeEnablementPolicies[0]?.id,
+        simulatedModeRestored: true,
+        evidencePreserved: true,
+        emergencyStopOwner: "Cloud Operations",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setEmergencyStopRollbackDrillRecords((current) => [
+      createMockEmergencyStopRollbackDrill(session.user, pilotEvidenceReviewRecords[0], readOnlyRuntimeEnablementPolicies[0]),
       ...current,
     ]);
   }
@@ -4010,6 +4453,21 @@ export function App() {
             readOnlyAdapterObservabilityRecords={readOnlyAdapterObservabilityRecords}
             labPilotOperatorConsole={labPilotOperatorConsole}
             productionReadinessDecisionGates={productionReadinessDecisionGates}
+            realReadOnlyAdapterConfigBoundaries={realReadOnlyAdapterConfigBoundaries}
+            credentialProviderContractRecords={credentialProviderContractRecords}
+            disabledRealReadOnlyAdapterInterfaceRecords={disabledRealReadOnlyAdapterInterfaceRecords}
+            offlineContractReplaySuiteRecords={offlineContractReplaySuiteRecords}
+            authorizedLabConnectionDryRunRecords={authorizedLabConnectionDryRunRecords}
+            hardenedLabConnectionProfileReviews={hardenedLabConnectionProfileReviews}
+            credentialResolverAdapterStubRecords={credentialResolverAdapterStubRecords}
+            disabledPrismReadOnlyHttpClientRecords={disabledPrismReadOnlyHttpClientRecords}
+            labConnectivityPreflightRecords={labConnectivityPreflightRecords}
+            authorizedReadOnlyLabPilotGateRecords={authorizedReadOnlyLabPilotGateRecords}
+            readOnlyRuntimeEnablementPolicies={readOnlyRuntimeEnablementPolicies}
+            readOnlyPilotSessions={readOnlyPilotSessions}
+            liveReadOnlyCallEnvelopes={liveReadOnlyCallEnvelopes}
+            pilotEvidenceReviewRecords={pilotEvidenceReviewRecords}
+            emergencyStopRollbackDrillRecords={emergencyStopRollbackDrillRecords}
             mockPrismStatus={mockPrismStatus}
             mockPrismExecutions={mockPrismExecutions}
             prismAdapterDiagnostics={prismAdapterDiagnostics}
@@ -4138,6 +4596,21 @@ export function App() {
             createLiveReadOnlyInventoryPilot={createLiveReadOnlyInventoryPilot}
             createReadOnlyAdapterObservability={createReadOnlyAdapterObservability}
             createProductionReadinessDecisionGate={createProductionReadinessDecisionGate}
+            createRealReadOnlyAdapterConfigBoundary={createRealReadOnlyAdapterConfigBoundary}
+            createCredentialProviderContract={createCredentialProviderContract}
+            createDisabledRealReadOnlyAdapterInterface={createDisabledRealReadOnlyAdapterInterface}
+            createOfflineContractReplaySuite={createOfflineContractReplaySuite}
+            createAuthorizedLabConnectionDryRun={createAuthorizedLabConnectionDryRun}
+            createHardenedLabConnectionProfileReview={createHardenedLabConnectionProfileReview}
+            createCredentialResolverAdapterStub={createCredentialResolverAdapterStub}
+            createDisabledPrismReadOnlyHttpClient={createDisabledPrismReadOnlyHttpClient}
+            createLabConnectivityPreflight={createLabConnectivityPreflight}
+            createAuthorizedReadOnlyLabPilotGate={createAuthorizedReadOnlyLabPilotGate}
+            createReadOnlyRuntimeEnablementPolicy={createReadOnlyRuntimeEnablementPolicy}
+            createReadOnlyPilotSession={createReadOnlyPilotSession}
+            createLiveReadOnlyCallEnvelope={createLiveReadOnlyCallEnvelope}
+            createPilotEvidenceReview={createPilotEvidenceReview}
+            createEmergencyStopRollbackDrill={createEmergencyStopRollbackDrill}
             runControlPlaneJobAction={runControlPlaneJobAction}
             createVmSandboxDryRun={createVmSandboxDryRun}
             recordLabAuthorizationScope={recordLabAuthorizationScope}
@@ -4736,6 +5209,21 @@ function AdminView({
   readOnlyAdapterObservabilityRecords,
   labPilotOperatorConsole,
   productionReadinessDecisionGates,
+  realReadOnlyAdapterConfigBoundaries,
+  credentialProviderContractRecords,
+  disabledRealReadOnlyAdapterInterfaceRecords,
+  offlineContractReplaySuiteRecords,
+  authorizedLabConnectionDryRunRecords,
+  hardenedLabConnectionProfileReviews,
+  credentialResolverAdapterStubRecords,
+  disabledPrismReadOnlyHttpClientRecords,
+  labConnectivityPreflightRecords,
+  authorizedReadOnlyLabPilotGateRecords,
+  readOnlyRuntimeEnablementPolicies,
+  readOnlyPilotSessions,
+  liveReadOnlyCallEnvelopes,
+  pilotEvidenceReviewRecords,
+  emergencyStopRollbackDrillRecords,
   mockPrismStatus,
   mockPrismExecutions,
   prismAdapterDiagnostics,
@@ -4848,6 +5336,21 @@ function AdminView({
   createLiveReadOnlyInventoryPilot,
   createReadOnlyAdapterObservability,
   createProductionReadinessDecisionGate,
+  createRealReadOnlyAdapterConfigBoundary,
+  createCredentialProviderContract,
+  createDisabledRealReadOnlyAdapterInterface,
+  createOfflineContractReplaySuite,
+  createAuthorizedLabConnectionDryRun,
+  createHardenedLabConnectionProfileReview,
+  createCredentialResolverAdapterStub,
+  createDisabledPrismReadOnlyHttpClient,
+  createLabConnectivityPreflight,
+  createAuthorizedReadOnlyLabPilotGate,
+  createReadOnlyRuntimeEnablementPolicy,
+  createReadOnlyPilotSession,
+  createLiveReadOnlyCallEnvelope,
+  createPilotEvidenceReview,
+  createEmergencyStopRollbackDrill,
   runControlPlaneJobAction,
   createVmSandboxDryRun,
   recordLabAuthorizationScope,
@@ -4961,6 +5464,21 @@ function AdminView({
   readOnlyAdapterObservabilityRecords: ReadOnlyAdapterObservabilityRecord[];
   labPilotOperatorConsole: LabPilotOperatorConsole;
   productionReadinessDecisionGates: ProductionReadinessDecisionGate[];
+  realReadOnlyAdapterConfigBoundaries: RealReadOnlyAdapterConfigBoundary[];
+  credentialProviderContractRecords: CredentialProviderContractRecord[];
+  disabledRealReadOnlyAdapterInterfaceRecords: DisabledRealReadOnlyAdapterInterfaceRecord[];
+  offlineContractReplaySuiteRecords: OfflineContractReplaySuiteRecord[];
+  authorizedLabConnectionDryRunRecords: AuthorizedLabConnectionDryRunRecord[];
+  hardenedLabConnectionProfileReviews: HardenedLabConnectionProfileReview[];
+  credentialResolverAdapterStubRecords: CredentialResolverAdapterStubRecord[];
+  disabledPrismReadOnlyHttpClientRecords: DisabledPrismReadOnlyHttpClientRecord[];
+  labConnectivityPreflightRecords: LabConnectivityPreflightRecord[];
+  authorizedReadOnlyLabPilotGateRecords: AuthorizedReadOnlyLabPilotGateRecord[];
+  readOnlyRuntimeEnablementPolicies: ReadOnlyRuntimeEnablementPolicyRecord[];
+  readOnlyPilotSessions: ReadOnlyPilotSessionRecord[];
+  liveReadOnlyCallEnvelopes: LiveReadOnlyCallEnvelopeRecord[];
+  pilotEvidenceReviewRecords: PilotEvidenceReviewRecord[];
+  emergencyStopRollbackDrillRecords: EmergencyStopRollbackDrillRecord[];
   mockPrismStatus: MockPrismSimulatorStatus | null;
   mockPrismExecutions: MockPrismExecution[];
   prismAdapterDiagnostics: PrismAdapterDiagnostics | null;
@@ -5079,6 +5597,21 @@ function AdminView({
   createLiveReadOnlyInventoryPilot: () => void;
   createReadOnlyAdapterObservability: () => void;
   createProductionReadinessDecisionGate: () => void;
+  createRealReadOnlyAdapterConfigBoundary: () => void;
+  createCredentialProviderContract: () => void;
+  createDisabledRealReadOnlyAdapterInterface: () => void;
+  createOfflineContractReplaySuite: () => void;
+  createAuthorizedLabConnectionDryRun: () => void;
+  createHardenedLabConnectionProfileReview: () => void;
+  createCredentialResolverAdapterStub: () => void;
+  createDisabledPrismReadOnlyHttpClient: () => void;
+  createLabConnectivityPreflight: () => void;
+  createAuthorizedReadOnlyLabPilotGate: () => void;
+  createReadOnlyRuntimeEnablementPolicy: () => void;
+  createReadOnlyPilotSession: () => void;
+  createLiveReadOnlyCallEnvelope: () => void;
+  createPilotEvidenceReview: () => void;
+  createEmergencyStopRollbackDrill: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   createVmSandboxDryRun: () => void;
   recordLabAuthorizationScope: () => void;
@@ -5334,6 +5867,171 @@ function AdminView({
           </Panel>
           <Panel title="Live read-only Prism call design" action={liveReadOnlyPrismCallDesign.status}>
             <LiveReadOnlyPrismCallDesignPanel design={liveReadOnlyPrismCallDesign} />
+          </Panel>
+          <Panel title="Real read-only config boundary" action={`${realReadOnlyAdapterConfigBoundaries.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Adapter configuration boundary"
+              records={realReadOnlyAdapterConfigBoundaries}
+              createRecord={createRealReadOnlyAdapterConfigBoundary}
+              buttonLabel="Record config"
+              emptyText="No real read-only adapter configuration boundary has been recorded."
+              renderSummary={(record) => `${record.endpointRef} / ${record.tlsValidationMode} / kill switch ${record.killSwitch}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Credential provider contract" action={`${credentialProviderContractRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Credential resolver contract"
+              records={credentialProviderContractRecords}
+              createRecord={createCredentialProviderContract}
+              buttonLabel="Validate reference"
+              emptyText="No credential provider contract has been recorded."
+              renderSummary={(record) => `${record.provider} / ${record.credentialProviderRef}`}
+              renderStatus={(record) => record.resolverStatus}
+            />
+          </Panel>
+          <Panel title="Disabled real read-only interface" action={`${disabledRealReadOnlyAdapterInterfaceRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Prism read-only adapter interface"
+              records={disabledRealReadOnlyAdapterInterfaceRecords}
+              createRecord={createDisabledRealReadOnlyAdapterInterface}
+              buttonLabel="Build interface"
+              emptyText="No disabled real read-only adapter interface has been recorded."
+              renderSummary={(record) => `${record.adapter} / ${record.supportedOperations.length} operations`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Offline contract replay suite" action={`${offlineContractReplaySuiteRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Offline replay normalization"
+              records={offlineContractReplaySuiteRecords}
+              createRecord={createOfflineContractReplaySuite}
+              buttonLabel="Run replay suite"
+              emptyText="No offline contract replay suite has been recorded."
+              renderSummary={(record) => `${record.coverage.length} coverage checks`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Authorized lab connection dry run" action={`${authorizedLabConnectionDryRunRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Lab connection dry run"
+              records={authorizedLabConnectionDryRunRecords}
+              createRecord={createAuthorizedLabConnectionDryRun}
+              buttonLabel="Run dry run"
+              emptyText="No authorized lab connection dry run has been recorded."
+              renderSummary={(record) => `${record.validations.length} validations / ${record.allowedEndpointPaths.length} paths`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Lab profile hardening" action={`${hardenedLabConnectionProfileReviews.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Profile hardening review"
+              records={hardenedLabConnectionProfileReviews}
+              createRecord={createHardenedLabConnectionProfileReview}
+              buttonLabel="Harden profile"
+              emptyText="No hardened lab profile review has been recorded."
+              renderSummary={(record) => `${record.endpointRef} / CA ${record.caCertificateRef}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Credential resolver adapter stub" action={`${credentialResolverAdapterStubRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Disabled resolver stub"
+              records={credentialResolverAdapterStubRecords}
+              createRecord={createCredentialResolverAdapterStub}
+              buttonLabel="Build resolver stub"
+              emptyText="No credential resolver adapter stub has been recorded."
+              renderSummary={(record) => `${record.provider} / ${record.supportedReferenceSchemes.join(", ")}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Prism read-only HTTP client" action={`${disabledPrismReadOnlyHttpClientRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Disabled HTTP client shape"
+              records={disabledPrismReadOnlyHttpClientRecords}
+              createRecord={createDisabledPrismReadOnlyHttpClient}
+              buttonLabel="Shape client"
+              emptyText="No disabled Prism read-only HTTP client has been recorded."
+              renderSummary={(record) => `${record.requestShape.length} paths / ${record.requiredRuntimeFlag}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Lab connectivity preflight" action={`${labConnectivityPreflightRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Connectivity preflight"
+              records={labConnectivityPreflightRecords}
+              createRecord={createLabConnectivityPreflight}
+              buttonLabel="Run preflight"
+              emptyText="No lab connectivity preflight has been recorded."
+              renderSummary={(record) => `${record.validations.length} validations / ${record.allowedEndpointPaths.length} paths`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Authorized read-only pilot gate" action={`${authorizedReadOnlyLabPilotGateRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Final pilot gate"
+              records={authorizedReadOnlyLabPilotGateRecords}
+              createRecord={createAuthorizedReadOnlyLabPilotGate}
+              buttonLabel="Record pilot gate"
+              emptyText="No authorized read-only lab pilot gate has been recorded."
+              renderSummary={(record) => `${record.requiredApprovers.length} approvers / ${record.stopConditions.length} stop conditions`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Runtime enablement policy" action={`${readOnlyRuntimeEnablementPolicies.length} policies`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Read-only runtime policy"
+              records={readOnlyRuntimeEnablementPolicies}
+              createRecord={createReadOnlyRuntimeEnablementPolicy}
+              buttonLabel="Record policy"
+              emptyText="No read-only runtime enablement policy has been recorded."
+              renderSummary={(record) => `${record.runtimeFlag} / ${record.rollbackMode} rollback`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Read-only pilot sessions" action={`${readOnlyPilotSessions.length} sessions`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Controlled pilot window"
+              records={readOnlyPilotSessions}
+              createRecord={createReadOnlyPilotSession}
+              buttonLabel="Open session"
+              emptyText="No controlled read-only pilot session has been recorded."
+              renderSummary={(record) => `${record.operator} / ${record.runtimeMode}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Live read-only call envelopes" action={`${liveReadOnlyCallEnvelopes.length} envelopes`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Non-executing call envelopes"
+              records={liveReadOnlyCallEnvelopes}
+              createRecord={createLiveReadOnlyCallEnvelope}
+              buttonLabel="Shape envelopes"
+              emptyText="No live read-only call envelope has been recorded."
+              renderSummary={(record) => `${record.operationEnvelopes.length} operations / execution disabled`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Pilot evidence review queue" action={`${pilotEvidenceReviewRecords.length} reviews`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Evidence review"
+              records={pilotEvidenceReviewRecords}
+              createRecord={createPilotEvidenceReview}
+              buttonLabel="Review evidence"
+              emptyText="No pilot evidence review has been recorded."
+              renderSummary={(record) => `${record.decision} / ${record.findings.length} findings`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Emergency stop rollback drill" action={`${emergencyStopRollbackDrillRecords.length} drills`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Rollback drill"
+              records={emergencyStopRollbackDrillRecords}
+              createRecord={createEmergencyStopRollbackDrill}
+              buttonLabel="Record drill"
+              emptyText="No emergency stop rollback drill has been recorded."
+              renderSummary={(record) => `${record.rollbackMode} / ${record.steps.length} steps`}
+              renderStatus={(record) => record.status}
+            />
           </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
             <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
@@ -7499,6 +8197,85 @@ function ProductionReadinessDecisionGatePanel({
               </div>
             ))}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RealReadOnlyAdapterPreparationPanel<
+  T extends {
+    id: string;
+    createdAt: string;
+    provisioningEnabled: false;
+    networkCallEnabled?: false;
+    realPrismCallsEnabled?: false;
+    checks?: Array<{ name: string; passed: boolean; detail: string }>;
+    validations?: Array<{ name: string; passed: boolean; detail: string }>;
+    mockContractTests?: Array<{ name: string; passed: boolean; detail: string }>;
+    evidence?: string[];
+    auditEvidence?: string[];
+    blockedReasons?: string[];
+  },
+>({
+  title,
+  records,
+  createRecord,
+  buttonLabel,
+  emptyText,
+  renderSummary,
+  renderStatus,
+}: {
+  title: string;
+  records: T[];
+  createRecord: () => void;
+  buttonLabel: string;
+  emptyText: string;
+  renderSummary: (record: T) => string;
+  renderStatus: (record: T) => string;
+}) {
+  const latest = records[0];
+  const checks = latest?.checks ?? latest?.validations ?? latest?.mockContractTests ?? [];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createRecord} type="button">
+          <ShieldCheck size={15} />
+          {buttonLabel}
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">{emptyText}</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{title}</strong>
+              <span>{renderSummary(latest)}</span>
+            </div>
+            <span className={`status ${renderStatus(latest).includes("Blocked") ? "failed" : "ready"}`}>
+              {renderStatus(latest)}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={!latest.provisioningEnabled} />
+            <CheckLine icon={Network} label="Network calls" value="Disabled" passed={latest.networkCallEnabled === false} />
+            <CheckLine icon={ShieldCheck} label="Real Prism" value="Disabled" passed={latest.realPrismCallsEnabled === false} />
+          </div>
+          {checks.length > 0 && (
+            <div className="dryRunValidationList">
+              {checks.slice(0, 5).map((check) => (
+                <div className="dryRunValidationRow" key={check.name}>
+                  <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                  <div>
+                    <strong>{check.name}</strong>
+                    <small>{check.detail}</small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -13708,6 +14485,504 @@ function createMockProductionReadinessDecisionGate(
     checklist,
     evidence: ["Browser mock production readiness decision gate recorded."],
     blockers,
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockRealReadOnlyAdapterConfigBoundary(actor: string): RealReadOnlyAdapterConfigBoundary {
+  return {
+    id: `mock-real-readonly-config-${Date.now()}`,
+    requestedBy: actor,
+    status: "Ready for credential contract",
+    endpointRef: "prism-central-ref",
+    credentialProviderRef: "vault-ref-nci-readonly",
+    caCertificateRef: "platform-ca-bundle-ref",
+    tlsValidationMode: "private-ca-ref",
+    timeoutSeconds: 10,
+    retry: { maxAttempts: 2, backoffMs: 500 },
+    allowedOperations: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+    killSwitch: "Closed",
+    checks: [
+      { name: "Endpoint reference configured", passed: true, detail: "Endpoint is a reference only." },
+      { name: "Credential provider reference configured", passed: true, detail: "Credential material remains outside NDC Studio." },
+      { name: "Kill switch closed", passed: true, detail: "Live calls remain disabled." },
+    ],
+    evidence: ["Browser mock config boundary recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockCredentialProviderContract(
+  actor: string,
+  config?: RealReadOnlyAdapterConfigBoundary
+): CredentialProviderContractRecord {
+  return {
+    id: `mock-credential-provider-contract-${Date.now()}`,
+    requestedBy: actor,
+    provider: "MockVault",
+    credentialProviderRef: config?.credentialProviderRef ?? "vault-ref-nci-readonly",
+    resolverStatus: "Validated reference",
+    resolvedSecretAvailable: false,
+    checks: [
+      { name: "Credential reference shape", passed: true, detail: "Reference contains no inline access material." },
+      { name: "Resolver disabled", passed: true, detail: "No secret material is resolved." },
+    ],
+    redactionRules: ["Do not persist resolved secret values.", "Redact Authorization headers.", "Emit credential references only."],
+    evidence: ["Browser mock credential provider contract recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockDisabledRealReadOnlyAdapterInterface(
+  actor: string,
+  config?: RealReadOnlyAdapterConfigBoundary,
+  credential?: CredentialProviderContractRecord
+): DisabledRealReadOnlyAdapterInterfaceRecord {
+  const ready = config?.status === "Ready for credential contract" && credential?.resolverStatus === "Validated reference";
+  return {
+    id: `mock-disabled-real-readonly-interface-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Interface ready; execution disabled" : "Blocked",
+    adapter: "PrismCentralReadOnlyAdapter",
+    configBoundaryId: config?.id ?? "config-required",
+    credentialContractId: credential?.id ?? "credential-contract-required",
+    supportedOperations: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+    endpointPaths: [
+      { operation: "listClusters", method: "POST", path: "/api/nutanix/v3/clusters/list" },
+      { operation: "listProjects", method: "POST", path: "/api/nutanix/v3/projects/list" },
+      { operation: "listImages", method: "POST", path: "/api/nutanix/v3/images/list" },
+      { operation: "listSubnets", method: "POST", path: "/api/nutanix/v3/subnets/list" },
+      { operation: "listCategories", method: "POST", path: "/api/nutanix/v3/categories/list" },
+      { operation: "listVms", method: "POST", path: "/api/nutanix/v3/vms/list" },
+    ],
+    normalizationTargets: ["Cluster", "Project", "Image", "Network", "Category", "VM"],
+    checks: [
+      { name: "Configuration boundary ready", passed: config?.status === "Ready for credential contract", detail: config?.id ?? "Config boundary required." },
+      { name: "Credential contract validated", passed: credential?.resolverStatus === "Validated reference", detail: credential?.id ?? "Credential contract required." },
+      { name: "Execution disabled", passed: true, detail: "Interface cannot execute HTTP calls." },
+    ],
+    blockedReasons: ["HTTP execution is disabled.", "Credential resolver does not return secret values.", "Kill switch remains closed."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockOfflineContractReplaySuite(
+  actor: string,
+  adapter?: DisabledRealReadOnlyAdapterInterfaceRecord,
+  replay?: PrismFixtureReplayRecord
+): OfflineContractReplaySuiteRecord {
+  const kinds = ["Cluster", "Project", "Image", "Network", "Category", "VM"] as PrismInventoryKind[];
+  const operations = ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"] as const;
+  const coverage = kinds.map((kind, index) => {
+    const count = replay?.replayedRecords.filter((record) => record.kind === kind).length ?? 0;
+    return { kind, operation: operations[index], expectedCount: count, normalizedCount: count, passed: true };
+  });
+  const ready = adapter?.status === "Interface ready; execution disabled" && replay?.status === "Passed";
+  return {
+    id: `mock-offline-contract-replay-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Passed" : "Blocked",
+    adapterInterfaceId: adapter?.id ?? "adapter-interface-required",
+    fixtureReplayId: replay?.id ?? "fixture-replay-required",
+    coverage,
+    checks: [
+      { name: "Adapter interface ready", passed: adapter?.status === "Interface ready; execution disabled", detail: adapter?.id ?? "Adapter interface required." },
+      { name: "Fixture replay passed", passed: replay?.status === "Passed", detail: replay?.id ?? "Fixture replay required." },
+      { name: "Normalization matches expected counts", passed: true, detail: "Fixture records normalize to inventory kinds." },
+    ],
+    evidence: ["Browser mock offline contract replay recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAuthorizedLabConnectionDryRun(
+  actor: string,
+  config?: RealReadOnlyAdapterConfigBoundary,
+  credential?: CredentialProviderContractRecord,
+  adapter?: DisabledRealReadOnlyAdapterInterfaceRecord,
+  replay?: OfflineContractReplaySuiteRecord,
+  decision?: ProductionReadinessDecisionGate
+): AuthorizedLabConnectionDryRunRecord {
+  const ready =
+    config?.status === "Ready for credential contract" &&
+    credential?.resolverStatus === "Validated reference" &&
+    adapter?.status === "Interface ready; execution disabled" &&
+    replay?.status === "Passed" &&
+    decision?.status === "Ready for CAB review";
+  const allowedEndpointPaths = adapter?.endpointPaths.map((item) => ({ operation: item.operation, path: item.path })) ?? [];
+  return {
+    id: `mock-authorized-lab-dry-run-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Ready for authorized lab connection review" : "Blocked",
+    configBoundaryId: config?.id ?? "config-required",
+    credentialContractId: credential?.id ?? "credential-contract-required",
+    adapterInterfaceId: adapter?.id ?? "adapter-interface-required",
+    offlineReplaySuiteId: replay?.id ?? "offline-replay-required",
+    productionDecisionGateId: decision?.id ?? "decision-gate-required",
+    validations: [
+      { name: "Configuration boundary ready", passed: config?.status === "Ready for credential contract", detail: config?.id ?? "Config required." },
+      { name: "Credential reference validated", passed: credential?.resolverStatus === "Validated reference", detail: credential?.id ?? "Credential contract required." },
+      { name: "Offline replay passed", passed: replay?.status === "Passed", detail: replay?.id ?? "Replay required." },
+      { name: "Production decision ready", passed: decision?.status === "Ready for CAB review", detail: decision?.id ?? "Decision gate required." },
+      { name: "No network call executed", passed: true, detail: "Browser mock dry run validates contracts only." },
+    ],
+    auditEvidence: ["Browser mock authorized lab connection dry run recorded."],
+    redactionSummary: credential?.redactionRules ?? ["Credential values are not stored."],
+    allowedEndpointPaths,
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockHardenedLabConnectionProfileReview(
+  actor: string,
+  profile?: ReadOnlyLabConnectionProfile
+): HardenedLabConnectionProfileReview {
+  const ready = profile?.approvalState === "Approved";
+  return {
+    id: `mock-hardened-lab-profile-${Date.now()}`,
+    requestedBy: actor,
+    profileId: profile?.id ?? "profile-required",
+    status: ready ? "Hardened" : "Blocked",
+    endpointRef: profile?.prismCentralEndpointRef ?? "prism-central-ref",
+    caCertificateRef: "platform-ca-bundle-ref",
+    expiresAt: profile?.expiresAt ?? new Date().toISOString(),
+    owner: profile?.owner ?? actor,
+    approver: profile?.approvedBy ?? actor,
+    boundedProviderScope: profile?.allowedProviderScope ?? {
+      projects: ["developer-cloud-lab"],
+      clusters: ["berlin-ahv-lab"],
+      networks: ["dev-segment"],
+      categories: ["env:lab", "owner:platform"],
+    },
+    checks: [
+      { name: "Profile approved", passed: profile?.approvalState === "Approved", detail: profile?.id ?? "Profile required." },
+      { name: "Endpoint reference", passed: true, detail: "Endpoint is a reference only." },
+      { name: "CA bundle reference", passed: true, detail: "CA bundle is stored as a reference." },
+      { name: "Provider scope bounded", passed: true, detail: "Projects, clusters, networks, and categories are bounded." },
+    ],
+    evidence: ["Browser mock lab profile hardening recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockCredentialResolverAdapterStub(
+  actor: string,
+  contract?: CredentialProviderContractRecord
+): CredentialResolverAdapterStubRecord {
+  const ready = contract?.resolverStatus === "Validated reference";
+  return {
+    id: `mock-credential-resolver-stub-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Stub ready; resolver disabled" : "Blocked",
+    provider: "MockVault",
+    credentialProviderRef: contract?.credentialProviderRef ?? "vault-ref-nci-readonly",
+    contractRecordId: contract?.id ?? "credential-contract-required",
+    supportedReferenceSchemes: ["vault-ref", "cyberark-ref", "env-ref"],
+    mockContractTests: [
+      { name: "Credential contract validated", passed: contract?.resolverStatus === "Validated reference", detail: contract?.id ?? "Contract required." },
+      { name: "Resolver disabled", passed: true, detail: "Stub does not resolve credential values." },
+      { name: "Redaction rules present", passed: true, detail: "Authorization and token fields remain redacted." },
+    ],
+    redactionRules: contract?.redactionRules ?? ["Credential values are not persisted.", "Authorization headers are redacted."],
+    failClosedReasons: ["Runtime resolver execution is disabled.", "Resolved secret values are unavailable."],
+    resolvedSecretAvailable: false,
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockDisabledPrismReadOnlyHttpClient(
+  actor: string,
+  adapter?: DisabledRealReadOnlyAdapterInterfaceRecord,
+  config?: RealReadOnlyAdapterConfigBoundary,
+  resolver?: CredentialResolverAdapterStubRecord
+): DisabledPrismReadOnlyHttpClientRecord {
+  const ready =
+    adapter?.status === "Interface ready; execution disabled" &&
+    config?.status === "Ready for credential contract" &&
+    resolver?.status === "Stub ready; resolver disabled";
+  const requestShape =
+    adapter?.endpointPaths.map((path) => ({
+      ...path,
+      timeoutSeconds: config?.timeoutSeconds ?? 10,
+      retryAttempts: config?.retry.maxAttempts ?? 2,
+    })) ?? [];
+  return {
+    id: `mock-disabled-prism-http-client-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Client shape ready; execution disabled" : "Blocked",
+    adapterInterfaceId: adapter?.id ?? "adapter-interface-required",
+    configBoundaryId: config?.id ?? "config-required",
+    credentialResolverStubId: resolver?.id ?? "resolver-stub-required",
+    requiredRuntimeFlag: "NDC_PRISM_READONLY_HTTP_ENABLED",
+    authorizationGateRequired: true,
+    requestShape,
+    checks: [
+      { name: "Adapter interface ready", passed: adapter?.status === "Interface ready; execution disabled", detail: adapter?.id ?? "Adapter required." },
+      { name: "Config boundary ready", passed: config?.status === "Ready for credential contract", detail: config?.id ?? "Config required." },
+      { name: "Resolver stub ready", passed: resolver?.status === "Stub ready; resolver disabled", detail: resolver?.id ?? "Resolver required." },
+      { name: "Execution disabled", passed: true, detail: "Browser mock client cannot call Prism Central." },
+    ],
+    blockedReasons: ["HTTP execution remains disabled.", "Credential resolver does not return secrets."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockLabConnectivityPreflight(
+  actor: string,
+  profileReview?: HardenedLabConnectionProfileReview,
+  config?: RealReadOnlyAdapterConfigBoundary,
+  resolver?: CredentialResolverAdapterStubRecord,
+  client?: DisabledPrismReadOnlyHttpClientRecord
+): LabConnectivityPreflightRecord {
+  const ready =
+    profileReview?.status === "Hardened" &&
+    config?.status === "Ready for credential contract" &&
+    resolver?.status === "Stub ready; resolver disabled" &&
+    client?.status === "Client shape ready; execution disabled";
+  return {
+    id: `mock-lab-connectivity-preflight-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Ready for operator pilot gate" : "Blocked",
+    hardenedProfileReviewId: profileReview?.id ?? "profile-hardening-required",
+    configBoundaryId: config?.id ?? "config-required",
+    credentialResolverStubId: resolver?.id ?? "resolver-required",
+    httpClientRecordId: client?.id ?? "http-client-required",
+    validations: [
+      { name: "Hardened profile ready", passed: profileReview?.status === "Hardened", detail: profileReview?.id ?? "Profile hardening required." },
+      { name: "TLS mode safe", passed: config?.tlsValidationMode !== "insecure-disabled", detail: config?.tlsValidationMode ?? "Config required." },
+      { name: "Credential reference ready", passed: resolver?.status === "Stub ready; resolver disabled", detail: resolver?.id ?? "Resolver required." },
+      { name: "HTTP execution disabled", passed: client?.status === "Client shape ready; execution disabled", detail: client?.id ?? "Client required." },
+      { name: "No network call executed", passed: true, detail: "Preflight validates contracts only." },
+    ],
+    allowedEndpointPaths: client?.requestShape.map((item) => ({ operation: item.operation, path: item.path })) ?? [],
+    auditEvidence: ["Browser mock lab connectivity preflight recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAuthorizedReadOnlyLabPilotGate(
+  actor: string,
+  preflight?: LabConnectivityPreflightRecord,
+  dryRun?: AuthorizedLabConnectionDryRunRecord,
+  decision?: ProductionReadinessDecisionGate
+): AuthorizedReadOnlyLabPilotGateRecord {
+  const ready =
+    preflight?.status === "Ready for operator pilot gate" &&
+    dryRun?.status === "Ready for authorized lab connection review" &&
+    decision?.status === "Ready for CAB review";
+  return {
+    id: `mock-authorized-readonly-pilot-gate-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Ready for future live read-only pilot" : "Blocked",
+    preflightId: preflight?.id ?? "preflight-required",
+    dryRunId: dryRun?.id ?? "dry-run-required",
+    productionDecisionGateId: decision?.id ?? "decision-required",
+    requiredApprovers: ["platform.admin", "cloud.operations"],
+    operatorAcknowledgements: ["read-only-only", "no-inventory-import", "emergency-stop-ready"],
+    checks: [
+      { name: "Preflight ready", passed: preflight?.status === "Ready for operator pilot gate", detail: preflight?.id ?? "Preflight required." },
+      { name: "Dry run ready", passed: dryRun?.status === "Ready for authorized lab connection review", detail: dryRun?.id ?? "Dry run required." },
+      { name: "Production decision ready", passed: decision?.status === "Ready for CAB review", detail: decision?.id ?? "Decision required." },
+      { name: "Provisioning disabled", passed: true, detail: "Pilot gate is non-executing." },
+    ],
+    stopConditions: ["Any reference changes.", "Any mutation path appears.", "Any credential value is resolved."],
+    evidence: ["Browser mock authorized read-only lab pilot gate recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockReadOnlyRuntimeEnablementPolicy(
+  actor: string,
+  gate?: AuthorizedReadOnlyLabPilotGateRecord
+): ReadOnlyRuntimeEnablementPolicyRecord {
+  const ready = gate?.status === "Ready for future live read-only pilot";
+  return {
+    id: `mock-readonly-runtime-policy-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Policy ready for pilot session" : "Blocked",
+    pilotGateId: gate?.id ?? "pilot-gate-required",
+    runtimeFlag: "NDC_PRISM_READONLY_HTTP_ENABLED",
+    requiredApprovals: ["platform-owner", "security-reviewer", "operations-owner"],
+    allowedEnvironments: ["readonly-lab"],
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    rollbackMode: "simulated",
+    emergencyStop: {
+      owner: "Cloud Operations",
+      contact: "cloud-operations-oncall",
+      procedureRef: "docs/rollback-pack.md",
+      tested: true,
+    },
+    checks: [
+      { name: "Pilot gate ready", passed: ready, detail: gate?.id ?? "Pilot gate required." },
+      { name: "Approvals named", passed: true, detail: "Platform, security, and operations approvals required." },
+      { name: "Emergency stop tested", passed: true, detail: "Rollback remains simulated." },
+      { name: "Runtime flag disabled", passed: true, detail: "Static prototype cannot enable HTTP." },
+    ],
+    evidence: ["Browser mock runtime policy recorded without enabling live HTTP."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockReadOnlyPilotSession(
+  actor: string,
+  policy?: ReadOnlyRuntimeEnablementPolicyRecord,
+  gate?: AuthorizedReadOnlyLabPilotGateRecord
+): ReadOnlyPilotSessionRecord {
+  const ready = policy?.status === "Policy ready for pilot session" && gate?.status === "Ready for future live read-only pilot";
+  return {
+    id: `mock-readonly-pilot-session-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Session window ready" : "Blocked",
+    operator: "Cloud Operations Pilot Operator",
+    startedAt: new Date().toISOString(),
+    endsAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    approvedGateId: gate?.id ?? "pilot-gate-required",
+    policyId: policy?.id ?? "policy-required",
+    runtimeMode: "authorized-read-only-lab",
+    evidenceLinks: ["pilot-session-approval.md", "operator-roster.md", "readonly-lab-window.md"],
+    checks: [
+      { name: "Policy ready", passed: policy?.status === "Policy ready for pilot session", detail: policy?.id ?? "Policy required." },
+      { name: "Gate ready", passed: gate?.status === "Ready for future live read-only pilot", detail: gate?.id ?? "Gate required." },
+      { name: "Runtime mode read-only", passed: true, detail: "authorized-read-only-lab" },
+      { name: "HTTP disabled", passed: true, detail: "Session is evidence-only." },
+    ],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockLiveReadOnlyCallEnvelope(
+  actor: string,
+  sessionRecord?: ReadOnlyPilotSessionRecord,
+  client?: DisabledPrismReadOnlyHttpClientRecord
+): LiveReadOnlyCallEnvelopeRecord {
+  const operationEnvelopes =
+    client?.requestShape.map((item) => ({
+      operation: item.operation,
+      method: item.method,
+      path: item.path,
+      timeoutSeconds: item.timeoutSeconds,
+      retryAttempts: item.retryAttempts,
+      requestId: `mock-readonly-${item.operation}-${Date.now()}`,
+      redactedFields: ["endpoint", "credential", "authorizationHeader", "token"],
+      expectedResponseShape: `Prism v3 ${item.operation} response with entities and metadata.`,
+      executionEnabled: false as const,
+    })) ?? [];
+  const ready = sessionRecord?.status === "Session window ready" && client?.status === "Client shape ready; execution disabled";
+  return {
+    id: `mock-live-readonly-call-envelope-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Envelope ready; execution disabled" : "Blocked",
+    pilotSessionId: sessionRecord?.id ?? "session-required",
+    httpClientRecordId: client?.id ?? "http-client-required",
+    operationEnvelopes,
+    checks: [
+      { name: "Pilot session ready", passed: sessionRecord?.status === "Session window ready", detail: sessionRecord?.id ?? "Session required." },
+      { name: "HTTP client disabled", passed: client?.status === "Client shape ready; execution disabled", detail: client?.id ?? "Client required." },
+      { name: "Execution disabled", passed: operationEnvelopes.every((item) => item.executionEnabled === false), detail: "All envelopes remain non-executing." },
+    ],
+    evidence: ["Browser mock live call envelopes recorded without HTTP execution."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockPilotEvidenceReview(
+  actor: string,
+  envelope?: LiveReadOnlyCallEnvelopeRecord,
+  sessionRecord?: ReadOnlyPilotSessionRecord
+): PilotEvidenceReviewRecord {
+  const ready = envelope?.status === "Envelope ready; execution disabled" && sessionRecord?.status === "Session window ready";
+  return {
+    id: `mock-pilot-evidence-review-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Approved for rollback drill" : "Blocked",
+    callEnvelopeId: envelope?.id ?? "envelope-required",
+    pilotSessionId: sessionRecord?.id ?? "session-required",
+    reviewer: "Security Reviewer",
+    decision: "Approve",
+    findings: ["No execution occurred.", "All call envelopes remain redacted.", "Runtime flag remains disabled."],
+    checks: [
+      { name: "Call envelope ready", passed: envelope?.status === "Envelope ready; execution disabled", detail: envelope?.id ?? "Envelope required." },
+      { name: "Session ready", passed: sessionRecord?.status === "Session window ready", detail: sessionRecord?.id ?? "Session required." },
+      { name: "Reviewer workflow complete", passed: true, detail: "Evidence accepted for rollback drill." },
+    ],
+    evidence: ["Browser mock pilot evidence review approved for rollback drill."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockEmergencyStopRollbackDrill(
+  actor: string,
+  review?: PilotEvidenceReviewRecord,
+  policy?: ReadOnlyRuntimeEnablementPolicyRecord
+): EmergencyStopRollbackDrillRecord {
+  const ready = review?.status === "Approved for rollback drill" && policy?.status === "Policy ready for pilot session";
+  return {
+    id: `mock-emergency-stop-rollback-drill-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Drill passed" : "Blocked",
+    pilotEvidenceReviewId: review?.id ?? "review-required",
+    policyId: policy?.id ?? "policy-required",
+    simulatedModeRestored: true,
+    evidencePreserved: true,
+    emergencyStopOwner: "Cloud Operations",
+    rollbackMode: "simulated",
+    steps: [
+      { name: "Emergency stop owner acknowledged", status: "Complete", evidence: "Cloud Operations" },
+      { name: "Runtime flag confirmed disabled", status: "Complete", evidence: "NDC_PRISM_READONLY_HTTP_ENABLED inactive" },
+      { name: "Simulated mode restored", status: "Complete", evidence: "Adapter returns to simulated mode." },
+      { name: "Evidence preserved", status: "Complete", evidence: "Pilot control records retained." },
+    ],
+    checks: [
+      { name: "Review approved", passed: review?.status === "Approved for rollback drill", detail: review?.id ?? "Review required." },
+      { name: "Policy ready", passed: policy?.status === "Policy ready for pilot session", detail: policy?.id ?? "Policy required." },
+      { name: "Simulated mode restored", passed: true, detail: "Rollback target remains mock/simulated mode." },
+    ],
+    evidence: ["Browser mock emergency stop and rollback drill passed."],
     provisioningEnabled: false,
     networkCallEnabled: false,
     realPrismCallsEnabled: false,

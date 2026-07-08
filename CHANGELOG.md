@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v3.0.0-production-readiness-decision-gate`.
+This project uses release tags for public milestones. The current release is `v4.5.0-emergency-stop-rollback-drill`.
 
 ## [Unreleased]
 
@@ -12,6 +12,171 @@ This project uses release tags for public milestones. The current release is `v3
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v4.5.0-emergency-stop-rollback-drill] - 2026-07-08
+
+### Added
+
+- Emergency stop rollback drill records at `/api/prism/emergency-stop-rollback-drills`.
+- Admin Providers panel for simulated-mode rollback, evidence preservation, drill steps, and emergency stop ownership.
+
+### Notes
+
+- Rollback drills are evidence-only and keep live HTTP, provisioning, and real Prism calls disabled.
+
+## [v4.4.0-pilot-evidence-review-queue] - 2026-07-08
+
+### Added
+
+- Pilot evidence review records at `/api/prism/pilot-evidence-reviews`.
+- Reviewer workflow for approving or rejecting pilot evidence before any future live read-only HTTP enablement.
+
+### Notes
+
+- Reviews cannot enable Prism Central connectivity.
+
+## [v4.3.0-live-read-only-call-envelope] - 2026-07-08
+
+### Added
+
+- Non-executing live read-only call envelopes at `/api/prism/live-read-only-call-envelopes`.
+- Per-operation request metadata for Prism list paths, timeout, retry, redaction fields, request IDs, and expected response shapes.
+
+### Notes
+
+- Every call envelope records `executionEnabled=false`.
+
+## [v4.2.0-read-only-pilot-session-model] - 2026-07-08
+
+### Added
+
+- Controlled read-only pilot session records at `/api/prism/read-only-pilot-sessions`.
+- Session evidence for operator, approved gate, runtime mode, start/end window, and evidence links.
+
+### Notes
+
+- Pilot sessions document a controlled window but do not enable HTTP execution.
+
+## [v4.1.0-runtime-enablement-policy] - 2026-07-08
+
+### Added
+
+- Runtime enablement policy records at `/api/prism/read-only-runtime-policies`.
+- Policy evidence for the future `NDC_PRISM_READONLY_HTTP_ENABLED` flag, required approvals, allowed environments, expiry, simulated rollback mode, and emergency stop.
+
+### Notes
+
+- The policy documents a future flag boundary and does not enable the flag.
+
+## [v4.0.0-authorized-read-only-lab-pilot-gate] - 2026-07-08
+
+### Added
+
+- Authorized read-only lab pilot gate records at `/api/prism/authorized-read-only-pilot-gates`.
+- Admin Providers panel for required approvers, operator acknowledgements, stop conditions, and final future-pilot readiness checks.
+
+### Notes
+
+- The pilot gate is non-executing and keeps provisioning, network calls, and real Prism calls disabled.
+
+## [v3.9.0-lab-connectivity-preflight] - 2026-07-08
+
+### Added
+
+- Lab connectivity preflight records at `/api/prism/lab-connectivity-preflights`.
+- Dry-run validation for profile hardening, TLS mode, CA reference, timeout/retry policy, credential resolver readiness, and endpoint allowlist.
+
+### Notes
+
+- The preflight does not send live requests or import inventory.
+
+## [v3.8.0-prism-read-only-http-client-disabled-mode] - 2026-07-08
+
+### Added
+
+- Disabled Prism read-only HTTP client records at `/api/prism/read-only-http-clients`.
+- Request-shape evidence for Prism Central inventory list endpoints, timeout, retry, runtime flag, and authorization-gate requirements.
+
+### Notes
+
+- The HTTP client shape remains execution-disabled.
+
+## [v3.7.0-credential-resolver-adapter-stub] - 2026-07-08
+
+### Added
+
+- Credential resolver adapter stub records at `/api/credentials/resolver-stubs`.
+- Disabled Vault, CyberArk, and environment reference schemes with mock contract tests, redaction rules, and fail-closed reasons.
+
+### Notes
+
+- Resolver stubs never resolve or expose credential material.
+
+## [v3.6.0-lab-connection-profile-hardening] - 2026-07-08
+
+### Added
+
+- Lab connection profile hardening records at `/api/prism/read-only-lab-profile-hardening`.
+- Reference-only checks for endpoint, CA bundle, credential profile, owner, approver, expiry, and bounded provider scope.
+
+### Notes
+
+- Profile hardening validates references only and does not contact Prism Central.
+
+## [v3.5.0-authorized-lab-connection-dry-run] - 2026-07-08
+
+### Added
+
+- Authorized lab connection dry-run records at `/api/prism/authorized-lab-dry-runs`.
+- Admin Providers panel for config, credential, adapter, offline replay, production decision, endpoint allowlist, redaction, and audit validation.
+
+### Notes
+
+- Dry runs validate readiness only. They do not open sockets, call Prism Central, resolve secrets, or enable provisioning.
+
+## [v3.4.0-offline-contract-replay-suite] - 2026-07-08
+
+### Added
+
+- Offline contract replay suite records at `/api/prism/offline-contract-replays`.
+- Coverage checks for Prism-shaped cluster, project, image, subnet, category, and VM fixture normalization.
+
+### Notes
+
+- Replay suites compare sanitized fixture evidence only and keep `networkCallEnabled=false`.
+
+## [v3.3.0-real-read-only-adapter-interface] - 2026-07-08
+
+### Added
+
+- Disabled real read-only adapter interface records at `/api/prism/real-read-only/adapter-interfaces`.
+- Formal operation-to-path mapping for Prism Central inventory list calls.
+
+### Notes
+
+- The interface is contract-ready but execution-disabled by design.
+
+## [v3.2.0-credential-provider-contract] - 2026-07-08
+
+### Added
+
+- Credential provider contract records at `/api/credentials/provider-contracts`.
+- Disabled/mock resolver evidence for credential-reference validation and redaction rules.
+
+### Notes
+
+- Credential contracts never store or resolve secrets.
+
+## [v3.1.0-adapter-configuration-boundary] - 2026-07-08
+
+### Added
+
+- Real read-only adapter configuration boundary records at `/api/prism/real-read-only/config-boundaries`.
+- Endpoint reference, credential provider reference, CA validation mode, timeout, retry, operation allowlist, and closed kill-switch checks.
+
+### Notes
+
+- Configuration boundaries store references and guardrails only; they do not call Prism Central.
 
 ## [v3.0.0-production-readiness-decision-gate] - 2026-07-08
 

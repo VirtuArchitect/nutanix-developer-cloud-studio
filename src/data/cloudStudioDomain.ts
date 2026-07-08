@@ -517,6 +517,309 @@ export type ProductionReadinessDecisionGate = {
   createdAt: string;
 };
 
+export type PrismReadOnlyTlsValidationMode = "system-ca" | "private-ca-ref" | "insecure-disabled";
+
+export type RealReadOnlyAdapterConfigBoundary = {
+  id: string;
+  requestedBy: string;
+  status: "Ready for credential contract" | "Blocked";
+  endpointRef: string;
+  credentialProviderRef: string;
+  caCertificateRef?: string;
+  tlsValidationMode: PrismReadOnlyTlsValidationMode;
+  timeoutSeconds: number;
+  retry: {
+    maxAttempts: number;
+    backoffMs: number;
+  };
+  allowedOperations: PrismReadOnlyOperation[];
+  killSwitch: "Closed" | "Open";
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type CredentialProviderContractRecord = {
+  id: string;
+  requestedBy: string;
+  provider: "MockVault" | "DisabledExternalVault";
+  credentialProviderRef: string;
+  resolverStatus: "Validated reference" | "Blocked";
+  resolvedSecretAvailable: false;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  redactionRules: string[];
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type DisabledRealReadOnlyAdapterInterfaceRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Interface ready; execution disabled" | "Blocked";
+  adapter: "PrismCentralReadOnlyAdapter";
+  configBoundaryId: string;
+  credentialContractId: string;
+  supportedOperations: PrismReadOnlyOperation[];
+  endpointPaths: Array<{ operation: PrismReadOnlyOperation; method: "POST"; path: string }>;
+  normalizationTargets: PrismInventoryKind[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  blockedReasons: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type OfflineContractReplaySuiteRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Passed" | "Blocked";
+  adapterInterfaceId: string;
+  fixtureReplayId: string;
+  coverage: Array<{
+    kind: PrismInventoryKind;
+    operation: PrismReadOnlyOperation;
+    expectedCount: number;
+    normalizedCount: number;
+    passed: boolean;
+  }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type AuthorizedLabConnectionDryRunRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Ready for authorized lab connection review" | "Blocked";
+  configBoundaryId: string;
+  credentialContractId: string;
+  adapterInterfaceId: string;
+  offlineReplaySuiteId: string;
+  productionDecisionGateId: string;
+  validations: Array<{ name: string; passed: boolean; detail: string }>;
+  auditEvidence: string[];
+  redactionSummary: string[];
+  allowedEndpointPaths: Array<{ operation: PrismReadOnlyOperation; path: string }>;
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type HardenedLabConnectionProfileReview = {
+  id: string;
+  requestedBy: string;
+  profileId: string;
+  status: "Hardened" | "Blocked";
+  endpointRef: string;
+  caCertificateRef: string;
+  expiresAt: string;
+  owner: string;
+  approver: string;
+  boundedProviderScope: {
+    projects: string[];
+    clusters: string[];
+    networks: string[];
+    categories: string[];
+  };
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type CredentialResolverAdapterStubRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Stub ready; resolver disabled" | "Blocked";
+  provider: "MockVault" | "DisabledVault" | "DisabledCyberArk" | "DisabledEnvironment";
+  credentialProviderRef: string;
+  contractRecordId: string;
+  supportedReferenceSchemes: Array<"vault-ref" | "cyberark-ref" | "env-ref">;
+  mockContractTests: Array<{ name: string; passed: boolean; detail: string }>;
+  redactionRules: string[];
+  failClosedReasons: string[];
+  resolvedSecretAvailable: false;
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type DisabledPrismReadOnlyHttpClientRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Client shape ready; execution disabled" | "Blocked";
+  adapterInterfaceId: string;
+  configBoundaryId: string;
+  credentialResolverStubId: string;
+  requiredRuntimeFlag: "NDC_PRISM_READONLY_HTTP_ENABLED";
+  authorizationGateRequired: true;
+  requestShape: Array<{
+    operation: PrismReadOnlyOperation;
+    method: "POST";
+    path: string;
+    timeoutSeconds: number;
+    retryAttempts: number;
+  }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  blockedReasons: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type LabConnectivityPreflightRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Ready for operator pilot gate" | "Blocked";
+  hardenedProfileReviewId: string;
+  configBoundaryId: string;
+  credentialResolverStubId: string;
+  httpClientRecordId: string;
+  validations: Array<{ name: string; passed: boolean; detail: string }>;
+  allowedEndpointPaths: Array<{ operation: PrismReadOnlyOperation; path: string }>;
+  auditEvidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type AuthorizedReadOnlyLabPilotGateRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Ready for future live read-only pilot" | "Blocked";
+  preflightId: string;
+  dryRunId: string;
+  productionDecisionGateId: string;
+  requiredApprovers: string[];
+  operatorAcknowledgements: string[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  stopConditions: string[];
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type ReadOnlyRuntimeEnablementPolicyRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Policy ready for pilot session" | "Blocked";
+  pilotGateId: string;
+  runtimeFlag: "NDC_PRISM_READONLY_HTTP_ENABLED";
+  requiredApprovals: string[];
+  allowedEnvironments: string[];
+  expiresAt: string;
+  rollbackMode: "simulated";
+  emergencyStop: {
+    owner: string;
+    contact: string;
+    procedureRef: string;
+    tested: boolean;
+  };
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type ReadOnlyPilotSessionRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Session window ready" | "Blocked";
+  operator: string;
+  startedAt: string;
+  endsAt: string;
+  approvedGateId: string;
+  policyId: string;
+  runtimeMode: "authorized-read-only-lab";
+  evidenceLinks: string[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type LiveReadOnlyCallEnvelopeRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Envelope ready; execution disabled" | "Blocked";
+  pilotSessionId: string;
+  httpClientRecordId: string;
+  operationEnvelopes: Array<{
+    operation: PrismReadOnlyOperation;
+    method: "POST";
+    path: string;
+    timeoutSeconds: number;
+    retryAttempts: number;
+    requestId: string;
+    redactedFields: string[];
+    expectedResponseShape: string;
+    executionEnabled: false;
+  }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type PilotEvidenceReviewRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Approved for rollback drill" | "Rejected" | "Blocked";
+  callEnvelopeId: string;
+  pilotSessionId: string;
+  reviewer: string;
+  decision: "Approve" | "Reject";
+  findings: string[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type EmergencyStopRollbackDrillRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Drill passed" | "Blocked";
+  pilotEvidenceReviewId: string;
+  policyId: string;
+  simulatedModeRestored: boolean;
+  evidencePreserved: boolean;
+  emergencyStopOwner: string;
+  rollbackMode: "simulated";
+  steps: Array<{ name: string; status: "Complete" | "Blocked"; evidence: string }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
 export type PrismInventoryRecord = {
   id: string;
   kind: PrismInventoryKind;
