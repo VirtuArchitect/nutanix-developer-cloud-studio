@@ -59,7 +59,11 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/templates`
 - `GET /api/session`
 - `GET /api/session/diagnostics`
+- `GET /api/auth/boundary-diagnostics`
 - `GET /api/system/status`
+- `GET /api/observability/runtime`
+- `GET /api/production/readiness-scorecard`
+- `GET /api/deployment/config-validation`
 - `GET /api/environments`
 - `GET /api/integrations`
 - `GET /api/integration-config`
@@ -82,6 +86,14 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 `GET /api/session/diagnostics` returns trusted-header mode, missing required identity headers, and the role/action matrix surfaced in the Admin Overview.
 
 When `NDC_REQUIRE_TRUSTED_IDENTITY=true`, API routes fail closed with `401 unauthenticated` unless `x-ndc-user`, `x-ndc-roles`, and `x-ndc-issuer` are present. Health endpoints remain public.
+
+`GET /api/auth/boundary-diagnostics` returns current identity-boundary evidence, role claims, trusted header checks, malformed-header rejection state, and audit recording state. When trusted identity mode is required, malformed user, issuer, or role headers are rejected before route handling.
+
+`GET /api/observability/runtime` returns version, request ID, actor, storage mode, static serving state, rate-limit configuration, retained audit events, and runtime guardrails.
+
+`GET /api/production/readiness-scorecard` returns a readiness score, category checks, blockers, `provisioningEnabled=false`, and `realPrismCallsEnabled=false`.
+
+`GET /api/deployment/config-validation` returns metadata-only container and environment validation evidence. It does not contact Nutanix endpoints.
 
 `GET /api/provider-credentials/diagnostics` returns provider credential reference status for NCI, NKP, NDB, NUS, NCM, and NAI. Diagnostics validate that integration configuration stores profile references only and rejects inline access material.
 
@@ -186,6 +198,7 @@ Required role: `Platform Admin`.
 - `GET /api/prism/read-only-adapter/diagnostics`
 - `GET /api/prism/read-only-lab-gates`
 - `POST /api/prism/read-only-lab-gates`
+- `GET /api/prism/live-read-only-design`
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
 - `GET /api/prism/adapter-diagnostics`
@@ -209,6 +222,8 @@ The real Prism preflight endpoints create readiness evidence for endpoint refere
 `GET /api/prism/read-only-adapter/diagnostics` returns the disabled read-only Prism adapter scaffold. It includes fixture-only request plans for clusters, projects, images, subnets, categories, and VMs. The response explicitly reports `networkCallEnabled=false` and `provisioningEnabled=false`.
 
 `POST /api/prism/read-only-lab-gates` records read-only lab gate evidence. A gate is ready only when NCI is reachable, a credential reference is configured, an approved lab scope exists, all Prism list operations are allowed, and mutation operations are explicitly excluded. This gate does not enable real Prism calls.
+
+`GET /api/prism/live-read-only-design` returns the future live read-only Prism Central call contract, including allowed list operations, endpoint paths, timeout/retry policy, redaction rules, error taxonomy, and enablement gates. This is a design-only response; it reports `realPrismCallsEnabled=false` and performs no network calls.
 
 ### Mock Prism Central Simulator
 

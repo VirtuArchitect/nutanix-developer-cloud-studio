@@ -184,6 +184,78 @@ describe("api server", () => {
     expect(session.data).toMatchObject({ user: "ops.admin", authMode: "OIDC" });
   });
 
+  it("rejects malformed trusted identity headers when required", async () => {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+    process.env.NDC_REQUIRE_TRUSTED_IDENTITY = "true";
+    server = createApiServer({ store: new MemoryStore() });
+    await new Promise<void>((resolve) => {
+      server.listen(0, "127.0.0.1", resolve);
+    });
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected TCP server address.");
+    }
+    baseUrl = `http://127.0.0.1:${address.port}`;
+
+    await expectJson(
+      "/api/session",
+      403,
+      {
+        error: {
+          code: "invalid_identity_header",
+          message: "Trusted role header contains unsupported roles: Super User.",
+        },
+      },
+      {
+        headers: {
+          "x-ndc-user": "ops.admin",
+          "x-ndc-roles": "Platform Admin,Super User",
+          "x-ndc-issuer": "https://idp.example",
+        },
+      }
+    );
+  });
+
+  it("reports auth, observability, readiness, config, and live Prism design diagnostics", async () => {
+    const auth = await requestJson("/api/auth/boundary-diagnostics");
+    const runtime = await requestJson("/api/observability/runtime");
+    const scorecard = await requestJson("/api/production/readiness-scorecard");
+    const config = await requestJson("/api/deployment/config-validation");
+    const design = await requestJson("/api/prism/live-read-only-design");
+
+    expect(auth.data).toMatchObject({
+      mode: "Optional",
+      auditEventRecorded: true,
+      roles: expect.arrayContaining(["Platform Admin"]),
+    });
+    expect(runtime.data).toMatchObject({
+      storageMode: "memory",
+      staticServing: false,
+      guardrails: expect.arrayContaining([
+        expect.objectContaining({ name: "Real provisioning disabled", passed: true }),
+        expect.objectContaining({ name: "Real Prism calls disabled", passed: true }),
+      ]),
+    });
+    expect(scorecard.data).toMatchObject({
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+      categories: expect.arrayContaining([expect.objectContaining({ name: "Security boundary" })]),
+    });
+    expect(config.data).toMatchObject({
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+      checks: expect.arrayContaining([expect.objectContaining({ name: "Real Prism adapter disabled", passed: true })]),
+    });
+    expect(design.data).toMatchObject({
+      status: "Design only",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+      allowedEndpoints: expect.arrayContaining([expect.objectContaining({ operation: "listVms" })]),
+    });
+  });
+
   it("applies security headers and rate limits requests", async () => {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));

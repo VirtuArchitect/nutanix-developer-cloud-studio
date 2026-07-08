@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.85.0-operator-runbook-rollback-pack",
+  "version": "2.90.0-live-read-only-prism-call-design",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -16,7 +16,8 @@
     "test:all": "npm run test && npm run build:all && npm run test:e2e",
     "validate:runtime": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-runtime-package.ps1",
     "validate:onprem": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-onprem-config.ps1",
-    "validate:backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-state-backup-restore.ps1"
+    "validate:backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-state-backup-restore.ps1",
+    "validate:container-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-container-config-pack.ps1"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

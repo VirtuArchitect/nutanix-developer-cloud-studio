@@ -331,6 +331,7 @@ import { createDisabledReadOnlyPrismAdapter } from "./readOnlyPrismAdapter";
 import { createReadOnlyPrismLabGate } from "./readOnlyPrismLabGate";
 import {
   AuthorizationError,
+  createAuthBoundaryDiagnostics,
   createRequestContext,
   createSessionDiagnostics,
   logRequest,
@@ -340,6 +341,12 @@ import {
   securityHeaders,
   type RequestContext,
 } from "./security";
+import {
+  createContainerConfigValidationManifest,
+  createLiveReadOnlyPrismCallDesign,
+  createProductionReadinessScorecard,
+  createRuntimeObservabilitySnapshot,
+} from "./runtimeReadiness";
 import type { ApiStore } from "./storage";
 import { createVmSandboxDryRunPlan } from "./vmSandboxDryRun";
 import type {
@@ -1200,7 +1207,7 @@ async function routeRequest(
   }
 
   if (url.pathname.startsWith("/api/")) {
-    await routeApi(request, response, store, url, context);
+    await routeApi(request, response, store, url, context, staticDir);
     return;
   }
 
@@ -1222,7 +1229,8 @@ async function routeApi(
   response: ServerResponse,
   store: ApiStore,
   url: URL,
-  context: RequestContext
+  context: RequestContext,
+  staticDir?: string
 ) {
   const state = await store.load();
   state.session = context.session;
@@ -1242,8 +1250,42 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/auth/boundary-diagnostics") {
+    const diagnostics = createAuthBoundaryDiagnostics(context, request);
+    addAuditEvent(state, "auth.boundary-diagnostics.viewed", context.session.user, context.session.user, {
+      mode: diagnostics.mode,
+      authMode: context.session.authMode,
+      roles: diagnostics.roles,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: diagnostics });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/system/status") {
     sendJson(response, 200, { data: createSystemStatus(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/observability/runtime") {
+    sendJson(response, 200, { data: createRuntimeObservabilitySnapshot(state, context, Boolean(staticDir)) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/production/readiness-scorecard") {
+    sendJson(response, 200, { data: createProductionReadinessScorecard(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/deployment/config-validation") {
+    sendJson(response, 200, { data: createContainerConfigValidationManifest() });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/live-read-only-design") {
+    sendJson(response, 200, { data: createLiveReadOnlyPrismCallDesign() });
     return;
   }
 

@@ -2,6 +2,16 @@
 
 ## 2026-07-08
 
+- Released `v2.90.0-live-read-only-prism-call-design`.
+- Added design-only live read-only Prism Central call contract diagnostics, Admin provider panel, allowed endpoint list, timeout/retry policy, redaction rules, and enablement gates.
+- Released `v2.89.0-container-and-config-validation-pack`.
+- Added container/config validation API manifest, Admin operations panel, and `validate:container-config` command while keeping real adapter guardrails disabled.
+- Released `v2.88.0-production-readiness-scorecard`.
+- Added production readiness scorecard API and Admin Overview score panel for identity, storage, Prism read-only readiness, operations evidence, and security boundary checks.
+- Released `v2.87.0-observability-and-audit-trail`.
+- Added runtime observability API and Admin Overview guardrails for version, storage mode, static serving, rate limits, and audit retention.
+- Released `v2.86.0-api-auth-boundary-hardening`.
+- Added auth boundary diagnostics and fail-closed malformed trusted identity header validation in required trusted-header mode.
 - Released `v2.85.0-operator-runbook-rollback-pack`.
 - Added operator runbook and rollback pack documentation for on-prem install, upgrade, backup, restore, rollback, emergency stop, release validation, and evidence capture.
 - Released `v2.84.0-read-only-inventory-contract-tests`.

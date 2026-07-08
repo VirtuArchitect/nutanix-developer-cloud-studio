@@ -28,6 +28,11 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.90.0-live-read-only-prism-call-design` adds a design-only live read-only Prism Central call contract, Admin provider panel, timeout/retry policy, redaction rules, and enablement gates while keeping real calls disabled.
+- `v2.89.0-container-and-config-validation-pack` adds a container/config validation API manifest, Admin operations panel, and `validate:container-config` command for on-prem guardrails.
+- `v2.88.0-production-readiness-scorecard` adds an API-backed production readiness scorecard and Admin Overview score panel.
+- `v2.87.0-observability-and-audit-trail` adds runtime observability diagnostics for version, storage mode, static serving, rate limits, audit retention, and guardrails.
+- `v2.86.0-api-auth-boundary-hardening` adds auth boundary diagnostics and fail-closed malformed trusted identity header rejection in required trusted-header mode.
 - `v2.85.0-operator-runbook-rollback-pack` adds operator runbook and rollback pack documentation for on-prem install, upgrade, backup, restore, rollback, emergency stop, release validation, and evidence capture.
 - `v2.84.0-read-only-inventory-contract-tests` adds fixture-driven read-only inventory contract tests and read-only lab gate API coverage.
 - `v2.83.0-prism-read-only-lab-gate` adds API-backed read-only Prism lab gate evidence with allowed list operations and excluded mutation checks.

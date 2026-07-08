@@ -36,9 +36,18 @@ On-prem configuration validation:
 ```powershell
 .\scripts\validate-onprem-config.ps1
 .\scripts\validate-runtime-package.ps1
+.\scripts\validate-container-config-pack.ps1
 ```
 
-The configuration validator checks the JSON state path, audit retention minimum, rate-limit range, repository mode, and the disabled real Prism adapter guardrail. The runtime package validator checks Dockerfile, Compose, `.env.example`, static/API serving, healthcheck, and disabled adapter packaging guardrails.
+The configuration validator checks the JSON state path, audit retention minimum, rate-limit range, repository mode, and the disabled real Prism adapter guardrail. The runtime package validator checks Dockerfile, Compose, `.env.example`, static/API serving, healthcheck, and disabled adapter packaging guardrails. The container/config validation pack verifies Docker, Compose, env, runbook, rollback, trusted identity, and disabled real-adapter evidence.
+
+Runtime diagnostics:
+
+- `GET /api/auth/boundary-diagnostics`
+- `GET /api/observability/runtime`
+- `GET /api/production/readiness-scorecard`
+- `GET /api/deployment/config-validation`
+- `GET /api/prism/live-read-only-design`
 
 ## Runtime Configuration
 

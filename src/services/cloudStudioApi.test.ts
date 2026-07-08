@@ -80,6 +80,7 @@ import {
   createVmLifecycleProofViaApi,
   createVmSandboxDryRunViaApi,
   decideControlledProvisioningGateViaApi,
+  fetchAuthBoundaryDiagnosticsFromApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
@@ -97,6 +98,7 @@ import {
   fetchControlledLabDryRunWindowsFromApi,
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlledSwitchConfigurationRequestsFromApi,
+  fetchContainerConfigValidationManifestFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
   fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchSwitchClosureRetentionPackagesFromApi,
@@ -111,6 +113,7 @@ import {
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
+  fetchLiveReadOnlyPrismCallDesignFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
@@ -169,12 +172,14 @@ import {
   fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordsFromApi,
   fetchProductionReadinessReviewsFromApi,
+  fetchProductionReadinessScorecardFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
+  fetchRuntimeObservabilityFromApi,
   fetchSessionFromApi,
   fetchSessionDiagnosticsFromApi,
   fetchSystemStatusFromApi,
@@ -268,6 +273,23 @@ describe("cloudStudioApi", () => {
       trustedHeaderMode: "Required",
       authorizationMatrix: expect.arrayContaining([expect.objectContaining({ action: "Manage providers" })]),
     });
+  });
+
+  it("fetches production-readiness diagnostics endpoints", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: { provisioningEnabled: false, realPrismCallsEnabled: false } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchAuthBoundaryDiagnosticsFromApi();
+    await fetchRuntimeObservabilityFromApi();
+    await fetchProductionReadinessScorecardFromApi();
+    await fetchContainerConfigValidationManifestFromApi();
+    await fetchLiveReadOnlyPrismCallDesignFromApi();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/auth/boundary-diagnostics", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/observability/runtime", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/production/readiness-scorecard", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/deployment/config-validation", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/live-read-only-design", expect.any(Object));
   });
 
   it("saves and checks integration configuration", async () => {

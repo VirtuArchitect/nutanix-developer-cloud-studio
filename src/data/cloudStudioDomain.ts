@@ -67,6 +67,20 @@ export type SessionDiagnostics = {
   authorizationMatrix: AuthorizationMatrixEntry[];
 };
 
+export type AuthBoundaryDiagnostics = {
+  mode: "Optional" | "Required";
+  user: string;
+  issuer: string;
+  roles: PlatformRole[];
+  headerChecks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  rejectedMalformedHeaders: boolean;
+  auditEventRecorded: boolean;
+};
+
 export type ApprovalRequest = {
   id: string;
   environmentName: string;
@@ -435,6 +449,88 @@ export type RealPrismPreflightRun = {
   blockedReasons: PrismAdapterBlockedReason[];
   mutationOperationsBlocked: string[];
   evidence: string[];
+};
+
+export type RuntimeObservabilitySnapshot = {
+  version: string;
+  generatedAt: string;
+  requestId: string;
+  actor: string;
+  storageMode: "json" | "postgres" | "memory";
+  staticServing: boolean;
+  rateLimitPerMinute: number;
+  auditEventsRetained: number;
+  latestAuditEvents: Array<{
+    id: string;
+    action: string;
+    actor: string;
+    target: string;
+    createdAt: string;
+  }>;
+  guardrails: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+};
+
+export type ProductionReadinessScorecard = {
+  version: string;
+  generatedAt: string;
+  score: number;
+  status: "Blocked" | "Needs evidence" | "Ready for controlled read-only pilot";
+  categories: Array<{
+    name: string;
+    passed: number;
+    total: number;
+    checks: Array<{
+      name: string;
+      passed: boolean;
+      detail: string;
+    }>;
+  }>;
+  blockers: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type ContainerConfigValidationManifest = {
+  version: string;
+  generatedAt: string;
+  status: "Passed" | "Blocked";
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type LiveReadOnlyPrismCallDesign = {
+  version: string;
+  generatedAt: string;
+  status: "Design only";
+  allowedEndpoints: Array<{
+    operation: PrismReadOnlyOperation;
+    method: "POST";
+    path: string;
+  }>;
+  timeoutMs: number;
+  retryPolicy: {
+    attempts: number;
+    backoff: "fixed" | "exponential";
+    retryableStatusCodes: number[];
+  };
+  redactionRules: string[];
+  errorTaxonomy: Array<{
+    code: string;
+    meaning: string;
+  }>;
+  enablementGates: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
 };
 
 export type VmSandboxDryRunRequest = {

@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.85.0-operator-runbook-rollback-pack`.
+This project uses release tags for public milestones. The current release is `v2.90.0-live-read-only-prism-call-design`.
 
 ## [Unreleased]
 
@@ -12,6 +12,63 @@ This project uses release tags for public milestones. The current release is `v2
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.90.0-live-read-only-prism-call-design] - 2026-07-08
+
+### Added
+
+- Design-only live read-only Prism Central call contract at `/api/prism/live-read-only-design`.
+- Admin Providers panel for allowed list endpoints, timeout/retry policy, and enablement gates.
+
+### Notes
+
+- The design explicitly keeps `realPrismCallsEnabled=false` and does not execute Prism Central network calls.
+
+## [v2.89.0-container-and-config-validation-pack] - 2026-07-08
+
+### Added
+
+- Container/config validation manifest at `/api/deployment/config-validation`.
+- `npm run validate:container-config` to verify Docker, Compose, env, runbook, rollback, and disabled adapter guardrails.
+- Admin Operations panel for runtime configuration validation evidence.
+
+### Notes
+
+- Validation is metadata-only and does not contact Nutanix endpoints.
+
+## [v2.88.0-production-readiness-scorecard] - 2026-07-08
+
+### Added
+
+- Production readiness scorecard at `/api/production/readiness-scorecard`.
+- Admin Overview scorecard covering identity, storage, Prism read-only readiness, operations evidence, and security boundaries.
+
+### Notes
+
+- The scorecard surfaces readiness blockers while keeping real provisioning disabled.
+
+## [v2.87.0-observability-and-audit-trail] - 2026-07-08
+
+### Added
+
+- Runtime observability snapshot at `/api/observability/runtime`.
+- Admin Overview runtime guardrails for version, storage mode, rate limit, audit retention, and latest guardrail checks.
+
+### Notes
+
+- Observability reports state only; it does not enable real adapters.
+
+## [v2.86.0-api-auth-boundary-hardening] - 2026-07-08
+
+### Added
+
+- Auth boundary diagnostics at `/api/auth/boundary-diagnostics`.
+- Fail-closed malformed trusted identity header validation when `NDC_REQUIRE_TRUSTED_IDENTITY=true`.
+- Admin Overview auth boundary evidence for trusted mode, issuer, roles, and audit recording.
+
+### Notes
+
+- Health and readiness probes remain public; API routes keep trusted-header enforcement.
 
 ## [v2.85.0-operator-runbook-rollback-pack] - 2026-07-08
 
