@@ -1035,7 +1035,19 @@ button {
 }
 
 .checkLine > div {
+  display: grid;
   flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+
+.checkLine > svg {
+  flex: 0 0 auto;
+}
+
+.checkLine strong,
+.checkLine span {
+  overflow-wrap: anywhere;
 }
 
 .pass {
