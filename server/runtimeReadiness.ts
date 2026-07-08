@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "2.90.0-live-read-only-prism-call-design";
+  return process.env.npm_package_version ?? "2.95.0-lab-pilot-runbook-workflow";
 }
 
 export function createRuntimeObservabilitySnapshot(

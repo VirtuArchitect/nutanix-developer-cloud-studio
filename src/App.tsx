@@ -61,6 +61,7 @@ import {
   type JobState,
   type LabAdapterSnapshot,
   type LabAuthorizationScope,
+  type LabPilotRunbookWorkflow,
   type LabScopeDiagnostics,
   type LifecycleOperationKind,
   type LifecycleOperationRecord,
@@ -81,7 +82,9 @@ import {
   type PlatformServicePreflightRun,
   type PlatformServiceRequest,
   type PolicyBundle,
+  type OperatorEvidenceExportPack,
   type PrismAdapterDiagnostics,
+  type PrismFixtureReplayRecord,
   type PrismInventoryImportResult,
   type PrismInventoryRecord,
   type PrismReadOnlyAdapterDiagnostics,
@@ -131,6 +134,8 @@ import {
   type ProviderReleaseReadinessSummary,
   type RealAdapterLabScopeActivation,
   type ReadOnlyPrismLabGate,
+  type ReadOnlyLabConnectionProfile,
+  type ReadOnlyAdapterAuthorizationGate,
   type RealAdapterSwitchStateAuditPackage,
   type RealPrismPreflightRun,
   type ReleaseEvidenceExportRecord,
@@ -238,6 +243,11 @@ import {
   createPlatformServicePreflightRunViaApi,
   createProviderReleaseGateRecordViaApi,
   createProductionReadinessReviewViaApi,
+  createLabPilotRunbookWorkflowViaApi,
+  createOperatorEvidenceExportPackViaApi,
+  createPrismFixtureReplayViaApi,
+  createReadOnlyAdapterAuthorizationGateViaApi,
+  createReadOnlyLabConnectionProfileViaApi,
   createRealAdapterLabScopeActivationViaApi,
   createRealAdapterSwitchStateAuditPackageViaApi,
   createReleaseEvidenceExportViaApi,
@@ -329,6 +339,7 @@ import {
   fetchPrismSimulatorProfilesFromApi,
   fetchLabAdaptersFromApi,
   fetchLifecycleOperationsFromApi,
+  fetchLabPilotRunbookWorkflowsFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServiceAdapterContractReviewsFromApi,
   fetchPlatformServicePreflightRunsFromApi,
@@ -336,9 +347,13 @@ import {
   fetchProviderReleaseGateRecordsFromApi,
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
+  fetchOperatorEvidenceExportPacksFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
+  fetchPrismFixtureReplaysFromApi,
   fetchPrismReadOnlyAdapterDiagnosticsFromApi,
   fetchReadOnlyPrismLabGatesFromApi,
+  fetchReadOnlyLabConnectionProfilesFromApi,
+  fetchReadOnlyAdapterAuthorizationGatesFromApi,
   fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
@@ -362,6 +377,7 @@ import {
   createReadOnlyPrismLabGateViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
+  runLabPilotRunbookWorkflowActionViaApi,
   runIntegrationCheckViaApi,
   runControlPlaneJobActionViaApi,
   runLabDiscoveryViaApi,
@@ -421,6 +437,11 @@ export function App() {
   const [prismInventoryImport, setPrismInventoryImport] = useState<PrismInventoryImportResult | undefined>();
   const [prismReadOnlyAdapterDiagnostics, setPrismReadOnlyAdapterDiagnostics] = useState<PrismReadOnlyAdapterDiagnostics | null>(null);
   const [readOnlyPrismLabGates, setReadOnlyPrismLabGates] = useState<ReadOnlyPrismLabGate[]>([]);
+  const [readOnlyLabConnectionProfiles, setReadOnlyLabConnectionProfiles] = useState<ReadOnlyLabConnectionProfile[]>([]);
+  const [prismFixtureReplayRecords, setPrismFixtureReplayRecords] = useState<PrismFixtureReplayRecord[]>([]);
+  const [readOnlyAdapterAuthorizationGates, setReadOnlyAdapterAuthorizationGates] = useState<ReadOnlyAdapterAuthorizationGate[]>([]);
+  const [operatorEvidenceExportPacks, setOperatorEvidenceExportPacks] = useState<OperatorEvidenceExportPack[]>([]);
+  const [labPilotRunbookWorkflows, setLabPilotRunbookWorkflows] = useState<LabPilotRunbookWorkflow[]>([]);
   const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
   const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
   const [prismAdapterDiagnostics, setPrismAdapterDiagnostics] = useState<PrismAdapterDiagnostics | null>(null);
@@ -652,6 +673,11 @@ export function App() {
             apiPrismInventory,
             apiPrismReadOnlyAdapterDiagnostics,
             apiReadOnlyPrismLabGates,
+            apiReadOnlyLabConnectionProfiles,
+            apiPrismFixtureReplayRecords,
+            apiReadOnlyAdapterAuthorizationGates,
+            apiOperatorEvidenceExportPacks,
+            apiLabPilotRunbookWorkflows,
             apiMockPrismStatus,
             apiMockPrismExecutions,
             apiPrismAdapterDiagnostics,
@@ -762,6 +788,11 @@ export function App() {
             fetchPrismInventoryFromApi(),
             fetchPrismReadOnlyAdapterDiagnosticsFromApi(),
             fetchReadOnlyPrismLabGatesFromApi(),
+            fetchReadOnlyLabConnectionProfilesFromApi(),
+            fetchPrismFixtureReplaysFromApi(),
+            fetchReadOnlyAdapterAuthorizationGatesFromApi(),
+            fetchOperatorEvidenceExportPacksFromApi(),
+            fetchLabPilotRunbookWorkflowsFromApi(),
             fetchMockPrismStatusFromApi(),
             fetchMockPrismExecutionsFromApi(),
             fetchPrismAdapterDiagnosticsFromApi(),
@@ -874,6 +905,11 @@ export function App() {
             setPrismInventoryImport(apiPrismInventory.lastImport);
             setPrismReadOnlyAdapterDiagnostics(apiPrismReadOnlyAdapterDiagnostics);
             setReadOnlyPrismLabGates(apiReadOnlyPrismLabGates);
+            setReadOnlyLabConnectionProfiles(apiReadOnlyLabConnectionProfiles);
+            setPrismFixtureReplayRecords(apiPrismFixtureReplayRecords);
+            setReadOnlyAdapterAuthorizationGates(apiReadOnlyAdapterAuthorizationGates);
+            setOperatorEvidenceExportPacks(apiOperatorEvidenceExportPacks);
+            setLabPilotRunbookWorkflows(apiLabPilotRunbookWorkflows);
             setMockPrismStatus(apiMockPrismStatus);
             setMockPrismExecutions(apiMockPrismExecutions);
             setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -1141,6 +1177,11 @@ export function App() {
       apiPrismInventory,
       apiPrismReadOnlyAdapterDiagnostics,
       apiReadOnlyPrismLabGates,
+      apiReadOnlyLabConnectionProfiles,
+      apiPrismFixtureReplayRecords,
+      apiReadOnlyAdapterAuthorizationGates,
+      apiOperatorEvidenceExportPacks,
+      apiLabPilotRunbookWorkflows,
       apiMockPrismStatus,
       apiMockPrismExecutions,
       apiPrismAdapterDiagnostics,
@@ -1251,6 +1292,11 @@ export function App() {
       fetchPrismInventoryFromApi(),
       fetchPrismReadOnlyAdapterDiagnosticsFromApi(),
       fetchReadOnlyPrismLabGatesFromApi(),
+      fetchReadOnlyLabConnectionProfilesFromApi(),
+      fetchPrismFixtureReplaysFromApi(),
+      fetchReadOnlyAdapterAuthorizationGatesFromApi(),
+      fetchOperatorEvidenceExportPacksFromApi(),
+      fetchLabPilotRunbookWorkflowsFromApi(),
       fetchMockPrismStatusFromApi(),
       fetchMockPrismExecutionsFromApi(),
       fetchPrismAdapterDiagnosticsFromApi(),
@@ -1362,6 +1408,11 @@ export function App() {
     setPrismInventoryImport(apiPrismInventory.lastImport);
     setPrismReadOnlyAdapterDiagnostics(apiPrismReadOnlyAdapterDiagnostics);
     setReadOnlyPrismLabGates(apiReadOnlyPrismLabGates);
+    setReadOnlyLabConnectionProfiles(apiReadOnlyLabConnectionProfiles);
+    setPrismFixtureReplayRecords(apiPrismFixtureReplayRecords);
+    setReadOnlyAdapterAuthorizationGates(apiReadOnlyAdapterAuthorizationGates);
+    setOperatorEvidenceExportPacks(apiOperatorEvidenceExportPacks);
+    setLabPilotRunbookWorkflows(apiLabPilotRunbookWorkflows);
     setMockPrismStatus(apiMockPrismStatus);
     setMockPrismExecutions(apiMockPrismExecutions);
     setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -1679,7 +1730,107 @@ export function App() {
     if (apiHealth.mode === "api") {
       await createReadOnlyPrismLabGateViaApi();
       await refreshApiState();
+      return;
     }
+
+    setReadOnlyPrismLabGates((current) => [createMockReadOnlyPrismLabGate(session.user), ...current]);
+  }
+
+  async function createReadOnlyLabConnectionProfile() {
+    if (apiHealth.mode === "api") {
+      await createReadOnlyLabConnectionProfileViaApi({
+        name: "Prism Central read-only lab profile",
+        prismCentralEndpointRef: "prism-central-ref",
+        credentialProfileRef: platformConfig.credentialReference,
+        owner: "Cloud Operations",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setReadOnlyLabConnectionProfiles((current) => [createMockReadOnlyLabConnectionProfile(session.user), ...current]);
+  }
+
+  async function createPrismFixtureReplay() {
+    if (apiHealth.mode === "api") {
+      await createPrismFixtureReplayViaApi();
+      await refreshApiState();
+      return;
+    }
+
+    setPrismFixtureReplayRecords((current) => [createMockPrismFixtureReplay(session.user), ...current]);
+  }
+
+  async function createReadOnlyAdapterAuthorizationGate() {
+    if (apiHealth.mode === "api") {
+      await createReadOnlyAdapterAuthorizationGateViaApi({
+        profileId: readOnlyLabConnectionProfiles[0]?.id,
+        fixtureReplayId: prismFixtureReplayRecords[0]?.id,
+        labGateId: readOnlyPrismLabGates[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setReadOnlyAdapterAuthorizationGates((current) => [
+      createMockReadOnlyAdapterAuthorizationGate(
+        session.user,
+        readOnlyLabConnectionProfiles[0],
+        prismFixtureReplayRecords[0],
+        readOnlyPrismLabGates[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function createOperatorEvidenceExportPack() {
+    if (apiHealth.mode === "api") {
+      await createOperatorEvidenceExportPackViaApi();
+      await refreshApiState();
+      return;
+    }
+
+    setOperatorEvidenceExportPacks((current) => [
+      createMockOperatorEvidenceExportPack(session.user, productionReadinessScorecard, authBoundaryDiagnostics, containerConfigValidation, liveReadOnlyPrismCallDesign, readOnlyPrismLabGates.length),
+      ...current,
+    ]);
+  }
+
+  async function createLabPilotRunbookWorkflow() {
+    if (apiHealth.mode === "api") {
+      await createLabPilotRunbookWorkflowViaApi({
+        profileId: readOnlyLabConnectionProfiles[0]?.id,
+        authorizationGateId: readOnlyAdapterAuthorizationGates[0]?.id,
+        evidenceExportId: operatorEvidenceExportPacks[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setLabPilotRunbookWorkflows((current) => [
+      createMockLabPilotRunbookWorkflow(
+        session.user,
+        readOnlyLabConnectionProfiles[0],
+        readOnlyAdapterAuthorizationGates[0],
+        operatorEvidenceExportPacks[0]
+      ),
+      ...current,
+    ]);
+  }
+
+  async function runLabPilotRunbookWorkflowAction(
+    workflowId: string,
+    action: "approve" | "execute-dry-run" | "review-evidence" | "close"
+  ) {
+    if (apiHealth.mode === "api") {
+      await runLabPilotRunbookWorkflowActionViaApi(workflowId, action);
+      await refreshApiState();
+      return;
+    }
+
+    setLabPilotRunbookWorkflows((current) =>
+      current.map((workflow) => (workflow.id === workflowId ? advanceMockLabPilotWorkflow(workflow, action, session.user) : workflow))
+    );
   }
 
   async function runControlPlaneJobAction(jobId: string, action: "advance" | "retry" | "fail") {
@@ -3683,6 +3834,11 @@ export function App() {
             prismInventoryImport={prismInventoryImport}
             prismReadOnlyAdapterDiagnostics={prismReadOnlyAdapterDiagnostics}
             readOnlyPrismLabGates={readOnlyPrismLabGates}
+            readOnlyLabConnectionProfiles={readOnlyLabConnectionProfiles}
+            prismFixtureReplayRecords={prismFixtureReplayRecords}
+            readOnlyAdapterAuthorizationGates={readOnlyAdapterAuthorizationGates}
+            operatorEvidenceExportPacks={operatorEvidenceExportPacks}
+            labPilotRunbookWorkflows={labPilotRunbookWorkflows}
             mockPrismStatus={mockPrismStatus}
             mockPrismExecutions={mockPrismExecutions}
             prismAdapterDiagnostics={prismAdapterDiagnostics}
@@ -3801,6 +3957,12 @@ export function App() {
             activatePrismFailureScenario={activatePrismFailureScenario}
             createRealPrismPreflightRun={createRealPrismPreflightRun}
             createReadOnlyPrismLabGate={createReadOnlyPrismLabGate}
+            createReadOnlyLabConnectionProfile={createReadOnlyLabConnectionProfile}
+            createPrismFixtureReplay={createPrismFixtureReplay}
+            createReadOnlyAdapterAuthorizationGate={createReadOnlyAdapterAuthorizationGate}
+            createOperatorEvidenceExportPack={createOperatorEvidenceExportPack}
+            createLabPilotRunbookWorkflow={createLabPilotRunbookWorkflow}
+            runLabPilotRunbookWorkflowAction={runLabPilotRunbookWorkflowAction}
             runControlPlaneJobAction={runControlPlaneJobAction}
             createVmSandboxDryRun={createVmSandboxDryRun}
             recordLabAuthorizationScope={recordLabAuthorizationScope}
@@ -4389,6 +4551,11 @@ function AdminView({
   prismInventoryImport,
   prismReadOnlyAdapterDiagnostics,
   readOnlyPrismLabGates,
+  readOnlyLabConnectionProfiles,
+  prismFixtureReplayRecords,
+  readOnlyAdapterAuthorizationGates,
+  operatorEvidenceExportPacks,
+  labPilotRunbookWorkflows,
   mockPrismStatus,
   mockPrismExecutions,
   prismAdapterDiagnostics,
@@ -4491,6 +4658,12 @@ function AdminView({
   activatePrismFailureScenario,
   createRealPrismPreflightRun,
   createReadOnlyPrismLabGate,
+  createReadOnlyLabConnectionProfile,
+  createPrismFixtureReplay,
+  createReadOnlyAdapterAuthorizationGate,
+  createOperatorEvidenceExportPack,
+  createLabPilotRunbookWorkflow,
+  runLabPilotRunbookWorkflowAction,
   runControlPlaneJobAction,
   createVmSandboxDryRun,
   recordLabAuthorizationScope,
@@ -4594,6 +4767,11 @@ function AdminView({
   prismInventoryImport?: PrismInventoryImportResult;
   prismReadOnlyAdapterDiagnostics: PrismReadOnlyAdapterDiagnostics | null;
   readOnlyPrismLabGates: ReadOnlyPrismLabGate[];
+  readOnlyLabConnectionProfiles: ReadOnlyLabConnectionProfile[];
+  prismFixtureReplayRecords: PrismFixtureReplayRecord[];
+  readOnlyAdapterAuthorizationGates: ReadOnlyAdapterAuthorizationGate[];
+  operatorEvidenceExportPacks: OperatorEvidenceExportPack[];
+  labPilotRunbookWorkflows: LabPilotRunbookWorkflow[];
   mockPrismStatus: MockPrismSimulatorStatus | null;
   mockPrismExecutions: MockPrismExecution[];
   prismAdapterDiagnostics: PrismAdapterDiagnostics | null;
@@ -4699,6 +4877,15 @@ function AdminView({
   activatePrismFailureScenario: (scenarioId: PrismSimulatorFailureScenarioId) => void;
   createRealPrismPreflightRun: () => void;
   createReadOnlyPrismLabGate: () => void;
+  createReadOnlyLabConnectionProfile: () => void;
+  createPrismFixtureReplay: () => void;
+  createReadOnlyAdapterAuthorizationGate: () => void;
+  createOperatorEvidenceExportPack: () => void;
+  createLabPilotRunbookWorkflow: () => void;
+  runLabPilotRunbookWorkflowAction: (
+    workflowId: string,
+    action: "approve" | "execute-dry-run" | "review-evidence" | "close"
+  ) => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   createVmSandboxDryRun: () => void;
   recordLabAuthorizationScope: () => void;
@@ -4898,6 +5085,24 @@ function AdminView({
               createReadOnlyPrismLabGate={createReadOnlyPrismLabGate}
             />
           </Panel>
+          <Panel title="Read-only lab connection profiles" action={`${readOnlyLabConnectionProfiles.length} profiles`}>
+            <ReadOnlyLabConnectionProfilePanel
+              profiles={readOnlyLabConnectionProfiles}
+              createReadOnlyLabConnectionProfile={createReadOnlyLabConnectionProfile}
+            />
+          </Panel>
+          <Panel title="Prism fixture replay harness" action={`${prismFixtureReplayRecords.length} replays`}>
+            <PrismFixtureReplayPanel
+              records={prismFixtureReplayRecords}
+              createPrismFixtureReplay={createPrismFixtureReplay}
+            />
+          </Panel>
+          <Panel title="Read-only adapter authorization gate" action={`${readOnlyAdapterAuthorizationGates.length} gates`}>
+            <ReadOnlyAdapterAuthorizationPanel
+              gates={readOnlyAdapterAuthorizationGates}
+              createReadOnlyAdapterAuthorizationGate={createReadOnlyAdapterAuthorizationGate}
+            />
+          </Panel>
           <Panel title="Mock Prism simulator" action={mockPrismStatus?.status ?? "Checking"}>
             <MockPrismSimulatorPanel status={mockPrismStatus} executions={mockPrismExecutions} />
           </Panel>
@@ -5045,6 +5250,19 @@ function AdminView({
             <ReleaseEvidenceExportPanel
               exports={releaseEvidenceExports}
               prepareReleaseEvidenceExport={prepareReleaseEvidenceExport}
+            />
+          </Panel>
+          <Panel title="Operator evidence export packs" action={`${operatorEvidenceExportPacks.length} packs`}>
+            <OperatorEvidenceExportPackPanel
+              packs={operatorEvidenceExportPacks}
+              createOperatorEvidenceExportPack={createOperatorEvidenceExportPack}
+            />
+          </Panel>
+          <Panel title="Lab pilot runbook workflow" action={`${labPilotRunbookWorkflows.length} workflows`}>
+            <LabPilotRunbookWorkflowPanel
+              workflows={labPilotRunbookWorkflows}
+              createLabPilotRunbookWorkflow={createLabPilotRunbookWorkflow}
+              runLabPilotRunbookWorkflowAction={runLabPilotRunbookWorkflowAction}
             />
           </Panel>
           <Panel title="Controlled lab release runbook" action={`${controlledLabReleaseRunbooks.length} records`}>
@@ -6390,6 +6608,142 @@ function ReadOnlyPrismLabGatePanel({
   );
 }
 
+function ReadOnlyLabConnectionProfilePanel({
+  profiles,
+  createReadOnlyLabConnectionProfile,
+}: {
+  profiles: ReadOnlyLabConnectionProfile[];
+  createReadOnlyLabConnectionProfile: () => void;
+}) {
+  const latest = profiles[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createReadOnlyLabConnectionProfile} type="button">
+          <Play size={15} />
+          Record profile
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No read-only lab connection profile has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.name}</strong>
+              <span>{latest.prismCentralEndpointRef} / {latest.credentialProfileRef}</span>
+            </div>
+            <span className={`status ${latest.approvalState === "Approved" ? "ready" : "failed"}`}>{latest.approvalState}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Network} label="Provider" value={latest.provider} passed />
+            <CheckLine icon={UserRound} label="Owner" value={latest.owner} passed />
+            <CheckLine icon={Archive} label="Projects" value={`${latest.allowedProviderScope.projects.length}`} passed />
+            <CheckLine icon={LockKeyhole} label="Real calls" value="Disabled" passed={!latest.realPrismCallsEnabled} />
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PrismFixtureReplayPanel({
+  records,
+  createPrismFixtureReplay,
+}: {
+  records: PrismFixtureReplayRecord[];
+  createPrismFixtureReplay: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createPrismFixtureReplay} type="button">
+          <Play size={15} />
+          Replay fixture
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No sanitized Prism fixture replay has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.fixtureName}</strong>
+              <span>{latest.source} / {latest.recordCount} records</span>
+            </div>
+            <span className={`status ${latest.status === "Passed" ? "ready" : "failed"}`}>{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Layers3} label="Operations" value={`${latest.contractOperations.length}`} passed />
+            <CheckLine icon={Archive} label="Profiles" value={`${latest.profileCandidateCount} candidates`} passed />
+            <CheckLine icon={LockKeyhole} label="Blocked mutations" value={`${latest.mutationOperationsBlocked.length}`} passed />
+            <CheckLine icon={Network} label="Real calls" value="Disabled" passed={!latest.realPrismCallsEnabled} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReadOnlyAdapterAuthorizationPanel({
+  gates,
+  createReadOnlyAdapterAuthorizationGate,
+}: {
+  gates: ReadOnlyAdapterAuthorizationGate[];
+  createReadOnlyAdapterAuthorizationGate: () => void;
+}) {
+  const latest = gates[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createReadOnlyAdapterAuthorizationGate} type="button">
+          <Play size={15} />
+          Record authorization
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No read-only adapter authorization packet has been recorded.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.id}</strong>
+              <span>{latest.authorizationPacket.approvedOperations.length} approved read-only operations</span>
+            </div>
+            <span className={`status ${latest.status === "Blocked" ? "failed" : "approval"}`}>{latest.status}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ResourceProfileCatalog({
   profiles,
   runResourceProfileAction,
@@ -6591,6 +6945,110 @@ function ReleaseEvidenceExportPanel({
             <strong>Redaction boundary</strong>
             <span>{latest.redactionBoundary}</span>
             <span>{latest.storageBoundary}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OperatorEvidenceExportPackPanel({
+  packs,
+  createOperatorEvidenceExportPack,
+}: {
+  packs: OperatorEvidenceExportPack[];
+  createOperatorEvidenceExportPack: () => void;
+}) {
+  const latest = packs[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createOperatorEvidenceExportPack} type="button">
+          <Archive size={15} />
+          Prepare evidence pack
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No operator evidence export pack has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.id}</strong>
+              <span>{latest.format} / {latest.status}</span>
+            </div>
+            <span className="status ready">{latest.status}</span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Gauge} label="Readiness" value={`${latest.manifest.readinessScore}%`} passed={latest.manifest.readinessScore >= 0} />
+            <CheckLine icon={ShieldCheck} label="Auth boundary" value={latest.manifest.authBoundaryMode} passed />
+            <CheckLine icon={Archive} label="Artifacts" value={`${latest.includedArtifacts.reduce((sum, item) => sum + item.count, 0)}`} passed />
+            <CheckLine icon={Network} label="Real calls" value="Disabled" passed={!latest.realPrismCallsEnabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Included artifacts</strong>
+            {latest.includedArtifacts.map((artifact) => (
+              <span key={artifact.name}>{artifact.name}: {artifact.count}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LabPilotRunbookWorkflowPanel({
+  workflows,
+  createLabPilotRunbookWorkflow,
+  runLabPilotRunbookWorkflowAction,
+}: {
+  workflows: LabPilotRunbookWorkflow[];
+  createLabPilotRunbookWorkflow: () => void;
+  runLabPilotRunbookWorkflowAction: (
+    workflowId: string,
+    action: "approve" | "execute-dry-run" | "review-evidence" | "close"
+  ) => void;
+}) {
+  const latest = workflows[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createLabPilotRunbookWorkflow} type="button">
+          <Play size={15} />
+          Prepare workflow
+        </button>
+        {latest && latest.status !== "Closed" && (
+          <>
+            <button className="smallButton successButton" onClick={() => runLabPilotRunbookWorkflowAction(latest.id, "approve")}>Approve</button>
+            <button className="iconTextButton" onClick={() => runLabPilotRunbookWorkflowAction(latest.id, "execute-dry-run")}><Play size={15} />Dry-run</button>
+            <button className="iconTextButton" onClick={() => runLabPilotRunbookWorkflowAction(latest.id, "review-evidence")}><Archive size={15} />Review</button>
+            <button className="smallButton" onClick={() => runLabPilotRunbookWorkflowAction(latest.id, "close")}>Close</button>
+          </>
+        )}
+      </div>
+      {!latest ? (
+        <p className="emptyState">No lab pilot runbook workflow has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.phase}</strong>
+              <span>{latest.owner} / {latest.id}</span>
+            </div>
+            <span className={`status ${latest.status === "Closed" ? "ready" : latest.status === "Blocked" ? "failed" : "approval"}`}>{latest.status}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.steps.map((step) => (
+              <div className="dryRunValidationRow" key={step.name}>
+                <span className={`status ${step.status === "Complete" ? "ready" : step.status === "Blocked" ? "failed" : "approval"}`}>{step.status}</span>
+                <div>
+                  <strong>{step.name}</strong>
+                  <small>{step.evidence}</small>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -12377,6 +12835,228 @@ function createMockLiveReadOnlyPrismCallDesign(): LiveReadOnlyPrismCallDesign {
     ],
     provisioningEnabled: false,
     realPrismCallsEnabled: false,
+  };
+}
+
+const mockReadOnlyMutationOperationsBlocked = [
+  "create_vm",
+  "clone_vm",
+  "delete_vm",
+  "power_on",
+  "power_off",
+  "update_network",
+  "resize_disk",
+  "attach_category",
+  "create_project",
+  "delete_image",
+];
+
+function createMockReadOnlyPrismLabGate(actor: string): ReadOnlyPrismLabGate {
+  return {
+    id: `mock-readonly-prism-lab-gate-${Date.now()}`,
+    status: "Ready for fixture contract validation",
+    requestedBy: actor,
+    createdAt: new Date().toISOString(),
+    scopeRef: "browser-mock-lab-scope",
+    endpointRef: "prism-central-ref",
+    credentialProfile: "nci-lab-readonly",
+    allowedOperations: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+    excludedOperations: mockReadOnlyMutationOperationsBlocked,
+    checks: [
+      { name: "Active lab scope", passed: true, detail: "Browser mock lab scope is present." },
+      { name: "Mutation operations excluded", passed: true, detail: "All mutation operations remain excluded." },
+      { name: "Network execution boundary", passed: true, detail: "Real Prism network calls remain disabled." },
+    ],
+    evidence: ["Browser mock read-only lab gate recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+  };
+}
+
+function createMockReadOnlyLabConnectionProfile(actor: string): ReadOnlyLabConnectionProfile {
+  return {
+    id: `mock-readonly-lab-profile-${Date.now()}`,
+    name: "Prism Central read-only lab profile",
+    provider: "NCI",
+    prismCentralEndpointRef: "prism-central-ref",
+    credentialProfileRef: "nci-lab-readonly",
+    allowedProviderScope: {
+      projects: ["developer-cloud-lab"],
+      clusters: ["berlin-ahv-lab"],
+      networks: ["dev-segment-placeholder"],
+      categories: ["env:lab", "owner:platform"],
+    },
+    owner: actor,
+    approvedBy: actor,
+    approvalState: "Approved",
+    expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    checks: [
+      { name: "Endpoint reference configured", passed: true, detail: "Endpoint is stored as a reference only." },
+      { name: "Credential profile reference configured", passed: true, detail: "Credential material is not stored." },
+      { name: "Provider scope bounded", passed: true, detail: "Projects, clusters, and networks are bounded." },
+    ],
+    evidence: ["Browser mock lab connection profile recorded."],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockPrismFixtureReplay(actor: string): PrismFixtureReplayRecord {
+  return {
+    id: `mock-prism-fixture-replay-${Date.now()}`,
+    fixtureName: "bundled-sanitized-prism-inventory",
+    source: "Bundled sanitized fixture",
+    requestedBy: actor,
+    recordCount: 5,
+    profileCandidateCount: 1,
+    contractOperations: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+    status: "Passed",
+    checks: [
+      { name: "Fixture records present", passed: true, detail: "Bundled sanitized records are available." },
+      { name: "Fixture is sanitized", passed: true, detail: "No URL, credential, token, or secret-like values are present." },
+      { name: "Mutation operations blocked", passed: true, detail: "Replay excludes mutation operations." },
+    ],
+    replayedRecords: [
+      { kind: "Cluster", name: "berlin-ahv-lab", rawRef: "fixture-cluster-berlin", categories: ["env:lab"] },
+      { kind: "Image", name: "Rocky Linux 9 Hardened", rawRef: "fixture-image-rocky-9", categories: ["os:linux"] },
+    ],
+    mutationOperationsBlocked: mockReadOnlyMutationOperationsBlocked,
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockReadOnlyAdapterAuthorizationGate(
+  actor: string,
+  profile?: ReadOnlyLabConnectionProfile,
+  replay?: PrismFixtureReplayRecord,
+  labGate?: ReadOnlyPrismLabGate
+): ReadOnlyAdapterAuthorizationGate {
+  const ready = profile?.approvalState === "Approved" && replay?.status === "Passed" && labGate?.status === "Ready for fixture contract validation";
+  return {
+    id: `mock-readonly-authorization-${Date.now()}`,
+    requestedBy: actor,
+    profileId: profile?.id ?? "profile-required",
+    fixtureReplayId: replay?.id ?? "fixture-replay-required",
+    labGateId: labGate?.id ?? "lab-gate-required",
+    status: ready ? "Ready for future live read-only review" : "Blocked",
+    checks: [
+      { name: "Approved lab profile", passed: profile?.approvalState === "Approved", detail: profile?.id ?? "Profile required." },
+      { name: "Fixture replay passed", passed: replay?.status === "Passed", detail: replay?.id ?? "Fixture replay required." },
+      { name: "Read-only lab gate ready", passed: labGate?.status === "Ready for fixture contract validation", detail: labGate?.id ?? "Lab gate required." },
+      { name: "Real Prism calls disabled", passed: true, detail: "Authorization gate does not enable live calls." },
+    ],
+    authorizationPacket: {
+      scopeRef: profile?.prismCentralEndpointRef ?? "prism-central-ref",
+      credentialProfileRef: profile?.credentialProfileRef ?? "nci-lab-readonly",
+      approvedOperations: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+      excludedOperations: mockReadOnlyMutationOperationsBlocked,
+      expiresAt: profile?.expiresAt ?? new Date().toISOString(),
+    },
+    evidence: ["Browser mock authorization gate recorded."],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockOperatorEvidenceExportPack(
+  actor: string,
+  readiness: ProductionReadinessScorecard,
+  authBoundary: AuthBoundaryDiagnostics,
+  configValidation: ContainerConfigValidationManifest,
+  liveDesign: LiveReadOnlyPrismCallDesign,
+  labGateCount: number
+): OperatorEvidenceExportPack {
+  return {
+    id: `mock-operator-evidence-export-${Date.now()}`,
+    requestedBy: actor,
+    status: "Prepared",
+    format: "JSON",
+    includedArtifacts: [
+      { name: "Production readiness scorecard", count: 1, redacted: true },
+      { name: "Auth boundary diagnostics", count: 1, redacted: true },
+      { name: "Container/config validation", count: 1, redacted: true },
+      { name: "Read-only lab gates", count: labGateCount, redacted: true },
+      { name: "Live read-only Prism design", count: 1, redacted: true },
+    ],
+    manifest: {
+      generatedAt: new Date().toISOString(),
+      readinessScore: readiness.score,
+      authBoundaryMode: authBoundary.mode,
+      configValidationStatus: configValidation.status,
+      labGateCount,
+      liveDesignStatus: liveDesign.status,
+    },
+    redactionRules: ["Credential values are never exported.", "Endpoint values are references only."],
+    evidence: ["Browser mock operator evidence pack prepared."],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockLabPilotRunbookWorkflow(
+  actor: string,
+  profile?: ReadOnlyLabConnectionProfile,
+  authorization?: ReadOnlyAdapterAuthorizationGate,
+  evidence?: OperatorEvidenceExportPack
+): LabPilotRunbookWorkflow {
+  const ready = Boolean(profile && authorization && evidence);
+  const now = new Date().toISOString();
+  return {
+    id: `mock-lab-pilot-runbook-${Date.now()}`,
+    requestedBy: actor,
+    owner: profile?.owner ?? actor,
+    profileId: profile?.id ?? "profile-required",
+    authorizationGateId: authorization?.id ?? "authorization-required",
+    evidenceExportId: evidence?.id ?? "evidence-export-required",
+    phase: "Prepared",
+    status: ready ? "In review" : "Blocked",
+    steps: [
+      { name: "Prepare", status: ready ? "Complete" : "Blocked", evidence: ready ? "Workflow prepared." : "Profile, authorization, and evidence export required.", completedAt: ready ? now : undefined },
+      { name: "Approve", status: "Pending", evidence: "Awaiting operator approval." },
+      { name: "Execute dry-run", status: "Pending", evidence: "Awaiting dry-run execution." },
+      { name: "Review evidence", status: "Pending", evidence: "Awaiting evidence review." },
+      { name: "Close pilot", status: "Pending", evidence: "Awaiting closure." },
+    ],
+    checks: [
+      { name: "Lab profile approved", passed: profile?.approvalState === "Approved", detail: profile?.id ?? "Profile required." },
+      { name: "Authorization gate ready", passed: authorization?.status === "Ready for future live read-only review", detail: authorization?.id ?? "Authorization required." },
+      { name: "Evidence export prepared", passed: evidence?.status === "Prepared", detail: evidence?.id ?? "Evidence export required." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function advanceMockLabPilotWorkflow(
+  workflow: LabPilotRunbookWorkflow,
+  action: "approve" | "execute-dry-run" | "review-evidence" | "close",
+  actor: string
+): LabPilotRunbookWorkflow {
+  const map = {
+    approve: { phase: "Approved", step: "Approve" },
+    "execute-dry-run": { phase: "Dry-run executed", step: "Execute dry-run" },
+    "review-evidence": { phase: "Evidence reviewed", step: "Review evidence" },
+    close: { phase: "Closed", step: "Close pilot" },
+  } as const;
+  const target = map[action];
+  const now = new Date().toISOString();
+  return {
+    ...workflow,
+    phase: target.phase,
+    status: target.phase === "Closed" ? "Closed" : workflow.status,
+    steps: workflow.steps.map((step) =>
+      step.name === target.step
+        ? { ...step, status: "Complete", evidence: `${target.step} recorded by ${actor}; real calls remain disabled.`, completedAt: now }
+        : step
+    ),
+    updatedAt: now,
   };
 }
 

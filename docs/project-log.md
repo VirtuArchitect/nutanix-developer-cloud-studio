@@ -2,6 +2,16 @@
 
 ## 2026-07-08
 
+- Released `v2.95.0-lab-pilot-runbook-workflow`.
+- Added API-backed lab pilot runbook workflows for prepare, approve, execute dry-run, review evidence, and close pilot.
+- Released `v2.94.0-operator-evidence-export-pack`.
+- Added operator evidence export packs with redacted readiness, auth, config, lab gate, profile, fixture replay, authorization, and live design manifests.
+- Released `v2.93.0-read-only-adapter-authorization-gate`.
+- Added explicit read-only adapter authorization packets linking approved lab profile, fixture replay, and read-only lab gate evidence.
+- Released `v2.92.0-prism-fixture-replay-harness`.
+- Added sanitized Prism inventory fixture replay without live Prism Central calls.
+- Released `v2.91.0-lab-connection-profile-model`.
+- Added formal read-only lab connection profiles with endpoint references, credential profile references, bounded scope, owner, expiry, and approval state.
 - Released `v2.90.0-live-read-only-prism-call-design`.
 - Added design-only live read-only Prism Central call contract diagnostics, Admin provider panel, allowed endpoint list, timeout/retry policy, redaction rules, and enablement gates.
 - Released `v2.89.0-container-and-config-validation-pack`.

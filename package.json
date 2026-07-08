@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.90.0-live-read-only-prism-call-design",
+  "version": "2.95.0-lab-pilot-runbook-workflow",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

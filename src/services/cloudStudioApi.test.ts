@@ -73,6 +73,11 @@ import {
   createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi,
   createProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordViaApi,
   createProductionReadinessReviewViaApi,
+  createLabPilotRunbookWorkflowViaApi,
+  createOperatorEvidenceExportPackViaApi,
+  createPrismFixtureReplayViaApi,
+  createReadOnlyAdapterAuthorizationGateViaApi,
+  createReadOnlyLabConnectionProfileViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
   createRealAdapterSwitchStateAuditPackageViaApi,
@@ -108,6 +113,7 @@ import {
   fetchExecutionBrokerQueueRecordsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabPilotRunbookWorkflowsFromApi,
   fetchLabEvidenceReviewsFromApi,
   fetchLabExecutionProposalEnvelopesFromApi,
   fetchLabExecutionProposalExportsFromApi,
@@ -118,11 +124,15 @@ import {
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
+  fetchPrismFixtureReplaysFromApi,
   fetchPrismReadOnlyAdapterDiagnosticsFromApi,
+  fetchReadOnlyAdapterAuthorizationGatesFromApi,
+  fetchReadOnlyLabConnectionProfilesFromApi,
   fetchReadOnlyPrismLabGatesFromApi,
   fetchPrismFailureScenariosFromApi,
   fetchPrismSimulatorProfilesFromApi,
   fetchPolicyBundlesFromApi,
+  fetchOperatorEvidenceExportPacksFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServiceAdapterContractReviewsFromApi,
@@ -192,6 +202,7 @@ import {
   createReadOnlyPrismLabGateViaApi,
   importPrismInventoryViaApi,
   runResourceProfileActionViaApi,
+  runLabPilotRunbookWorkflowActionViaApi,
   runLabDiscoveryViaApi,
   runControlPlaneJobActionViaApi,
   runIntegrationCheckViaApi,
@@ -391,6 +402,59 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       14,
       "/api/prism/real-preflight-runs",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("fetches and records controlled read-only lab pilot foundation evidence", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchReadOnlyLabConnectionProfilesFromApi();
+    await createReadOnlyLabConnectionProfileViaApi({ name: "Berlin read-only profile" });
+    await fetchPrismFixtureReplaysFromApi();
+    await createPrismFixtureReplayViaApi({ fixtureName: "sanitized-fixture" });
+    await fetchReadOnlyAdapterAuthorizationGatesFromApi();
+    await createReadOnlyAdapterAuthorizationGateViaApi({ profileId: "profile-1" });
+    await fetchOperatorEvidenceExportPacksFromApi();
+    await createOperatorEvidenceExportPackViaApi();
+    await fetchLabPilotRunbookWorkflowsFromApi();
+    await createLabPilotRunbookWorkflowViaApi({ profileId: "profile-1" });
+    await runLabPilotRunbookWorkflowActionViaApi("workflow-1", "approve");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/read-only-lab-profiles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/prism/read-only-lab-profiles",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("Berlin read-only profile") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/prism/fixture-replays", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/prism/fixture-replays",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("sanitized-fixture") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/read-only-authorization-gates", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      6,
+      "/api/prism/read-only-authorization-gates",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("profile-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/operator/evidence-exports", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      8,
+      "/api/operator/evidence-exports",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/lab-pilot/runbook-workflows", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      10,
+      "/api/lab-pilot/runbook-workflows",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("profile-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      11,
+      "/api/lab-pilot/runbook-workflows/workflow-1/approve",
       expect.objectContaining({ method: "POST" })
     );
   });

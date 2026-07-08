@@ -291,6 +291,124 @@ export type ReadOnlyPrismLabGate = {
   networkCallEnabled: false;
 };
 
+export type ReadOnlyLabConnectionProfile = {
+  id: string;
+  name: string;
+  provider: "NCI";
+  prismCentralEndpointRef: string;
+  credentialProfileRef: string;
+  allowedProviderScope: {
+    projects: string[];
+    clusters: string[];
+    networks: string[];
+    categories: string[];
+  };
+  owner: string;
+  approvedBy?: string;
+  approvalState: "Draft" | "Approved" | "Expired";
+  expiresAt: string;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type SanitizedPrismInventoryFixtureRecord = {
+  kind: PrismInventoryKind;
+  name: string;
+  cluster?: string;
+  project?: string;
+  network?: string;
+  categories: string[];
+  rawRef: string;
+};
+
+export type PrismFixtureReplayRecord = {
+  id: string;
+  fixtureName: string;
+  source: "Bundled sanitized fixture" | "Uploaded sanitized fixture";
+  requestedBy: string;
+  recordCount: number;
+  profileCandidateCount: number;
+  contractOperations: PrismReadOnlyOperation[];
+  status: "Passed" | "Blocked";
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  replayedRecords: SanitizedPrismInventoryFixtureRecord[];
+  mutationOperationsBlocked: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type ReadOnlyAdapterAuthorizationGate = {
+  id: string;
+  requestedBy: string;
+  profileId: string;
+  fixtureReplayId: string;
+  labGateId: string;
+  status: "Blocked" | "Ready for future live read-only review";
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  authorizationPacket: {
+    scopeRef: string;
+    credentialProfileRef: string;
+    approvedOperations: PrismReadOnlyOperation[];
+    excludedOperations: string[];
+    expiresAt: string;
+  };
+  evidence: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type OperatorEvidenceExportPack = {
+  id: string;
+  requestedBy: string;
+  status: "Prepared";
+  format: "JSON";
+  includedArtifacts: Array<{
+    name: string;
+    count: number;
+    redacted: boolean;
+  }>;
+  manifest: {
+    generatedAt: string;
+    readinessScore: number;
+    authBoundaryMode: AuthBoundaryDiagnostics["mode"];
+    configValidationStatus: ContainerConfigValidationManifest["status"];
+    labGateCount: number;
+    liveDesignStatus: LiveReadOnlyPrismCallDesign["status"];
+  };
+  redactionRules: string[];
+  evidence: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type LabPilotRunbookWorkflow = {
+  id: string;
+  requestedBy: string;
+  owner: string;
+  profileId: string;
+  authorizationGateId: string;
+  evidenceExportId: string;
+  phase: "Prepared" | "Approved" | "Dry-run executed" | "Evidence reviewed" | "Closed";
+  status: "Blocked" | "In review" | "Closed";
+  steps: Array<{
+    name: "Prepare" | "Approve" | "Execute dry-run" | "Review evidence" | "Close pilot";
+    status: "Pending" | "Complete" | "Blocked";
+    evidence: string;
+    completedAt?: string;
+  }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type PrismInventoryRecord = {
   id: string;
   kind: PrismInventoryKind;

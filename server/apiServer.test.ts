@@ -256,6 +256,161 @@ describe("api server", () => {
     });
   });
 
+  it("records controlled read-only lab pilot foundation evidence", async () => {
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Read-only lab scope",
+        pentestScopeReference: "readonly-lab-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        allowedActions: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+        excludedActions: [
+          "create_vm",
+          "clone_vm",
+          "delete_vm",
+          "power_on",
+          "power_off",
+          "update_network",
+          "resize_disk",
+          "attach_category",
+          "create_project",
+          "delete_image",
+        ],
+        evidenceReferences: ["readonly-lab-scope.md"],
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    const labGate = await requestJson("/api/prism/read-only-lab-gates", { method: "POST" });
+    const profile = await requestJson("/api/prism/read-only-lab-profiles", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Berlin read-only Prism profile",
+        prismCentralEndpointRef: "prism-central-ref",
+        credentialProfileRef: "nci-readonly",
+        owner: "Cloud Operations",
+      }),
+    });
+    const replay = await requestJson("/api/prism/fixture-replays", { method: "POST" });
+    const authorization = await requestJson("/api/prism/read-only-authorization-gates", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        fixtureReplayId: replay.data.id,
+        labGateId: labGate.data.id,
+      }),
+    });
+    const evidence = await requestJson("/api/operator/evidence-exports", { method: "POST" });
+    const workflow = await requestJson("/api/lab-pilot/runbook-workflows", {
+      method: "POST",
+      body: JSON.stringify({
+        profileId: profile.data.id,
+        authorizationGateId: authorization.data.id,
+        evidenceExportId: evidence.data.id,
+      }),
+    });
+    const approved = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/approve`, {
+      method: "POST",
+    });
+    const dryRun = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/execute-dry-run`, {
+      method: "POST",
+    });
+    const reviewed = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/review-evidence`, {
+      method: "POST",
+    });
+    const closed = await requestJson(`/api/lab-pilot/runbook-workflows/${workflow.data.id}/close`, {
+      method: "POST",
+    });
+
+    expect(profile.data).toMatchObject({
+      approvalState: "Approved",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(replay.data).toMatchObject({
+      status: "Passed",
+      source: "Bundled sanitized fixture",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(authorization.data).toMatchObject({
+      status: "Ready for future live read-only review",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(evidence.data).toMatchObject({
+      status: "Prepared",
+      manifest: expect.objectContaining({ liveDesignStatus: "Design only" }),
+      realPrismCallsEnabled: false,
+    });
+    expect(approved.data).toMatchObject({ phase: "Approved" });
+    expect(dryRun.data).toMatchObject({ phase: "Dry-run executed" });
+    expect(reviewed.data).toMatchObject({ phase: "Evidence reviewed" });
+    expect(closed.data).toMatchObject({
+      phase: "Closed",
+      status: "Closed",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+
+    const profiles = await requestJson("/api/prism/read-only-lab-profiles");
+    const replays = await requestJson("/api/prism/fixture-replays");
+    const authorizations = await requestJson("/api/prism/read-only-authorization-gates");
+    const evidenceExports = await requestJson("/api/operator/evidence-exports");
+    const workflows = await requestJson("/api/lab-pilot/runbook-workflows");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(profiles.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: profile.data.id })]));
+    expect(replays.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: replay.data.id })]));
+    expect(authorizations.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: authorization.data.id })]));
+    expect(evidenceExports.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: evidence.data.id })]));
+    expect(workflows.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: workflow.data.id })]));
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "prism.readonly.lab-profile.recorded" }),
+        expect.objectContaining({ action: "prism.fixture.replay.recorded" }),
+        expect.objectContaining({ action: "prism.readonly.authorization-gate.recorded" }),
+        expect.objectContaining({ action: "operator.evidence-export.prepared" }),
+        expect.objectContaining({ action: "lab-pilot.runbook.close" }),
+      ])
+    );
+  });
+
+  it("blocks fixture replay records that contain unsanitized endpoint data", async () => {
+    const replay = await requestJson("/api/prism/fixture-replays", {
+      method: "POST",
+      body: JSON.stringify({
+        fixtureName: "unsafe-upload",
+        source: "Uploaded sanitized fixture",
+        records: [
+          {
+            kind: "Cluster",
+            name: "https://private-prism.example",
+            rawRef: "cluster-secret",
+            categories: ["env:lab"],
+          },
+        ],
+      }),
+    });
+
+    expect(replay.data).toMatchObject({
+      status: "Blocked",
+      realPrismCallsEnabled: false,
+    });
+    expect(replay.data.checks).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Fixture is sanitized", passed: false })])
+    );
+  });
+
   it("applies security headers and rate limits requests", async () => {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
