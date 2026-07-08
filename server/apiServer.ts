@@ -286,6 +286,7 @@ import {
   requestEnvironmentDestroy,
   RequestValidationError,
 } from "./mockPlatform";
+import { routeMockPrismCentral } from "./mockPrismCentral";
 import { createPlatformServiceRequest, PlatformServiceError } from "./platformServices";
 import {
   createDisabledPlatformServiceAdapterContract,
@@ -1183,6 +1184,10 @@ async function routeRequest(
   if (request.method === "GET" && url.pathname === "/readyz") {
     await store.load();
     sendJson(response, 200, { data: { ready: true } });
+    return;
+  }
+
+  if (await routeMockPrismCentral(request, response, url)) {
     return;
   }
 

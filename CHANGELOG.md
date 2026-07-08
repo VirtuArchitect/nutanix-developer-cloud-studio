@@ -6,6 +6,11 @@ This project uses release tags for public milestones. The current release is `v2
 
 ## [Unreleased]
 
+### Added
+
+- Mock Prism Central simulator endpoints under `/mock-prism` for local adapter contract testing without a Nutanix lab.
+- Prism-shaped cluster, project, image, subnet, category, VM, simulated VM-create, and task-poll responses.
+
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.

@@ -174,6 +174,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 - API exposes `/api/system/status` with provisioning explicitly disabled.
 - API exposes `/api/lab-adapters` for read-only adapter pilot state.
 - API exposes `/api/lab-adapters/:name/discover` to simulate read-only discovery.
+- API exposes `/mock-prism` as a local Prism-shaped simulator for adapter contract testing without a Nutanix lab.
 - Admin view includes a Lab Adapter Pilot panel with discovery action and guardrail messaging.
 - JSON-file prototype state backup/restore has unit coverage.
 

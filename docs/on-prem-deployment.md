@@ -148,6 +148,14 @@ For a future real deployment:
 
 `v0.4.0-lab-adapter` is a read-only pilot phase. The app may simulate Prism Central inventory discovery, but it must not create, update, delete, clone, power on, power off, resize, or reconfigure any Nutanix resource.
 
+When no Nutanix test environment is available, use the local Mock Prism Central simulator:
+
+```text
+http://localhost:8080/mock-prism
+```
+
+The simulator exposes Prism-shaped list, VM-create, and task-poll responses for adapter contract testing. It is not a Nutanix emulator and does not persist or mutate real infrastructure.
+
 Before any real API call is added, document:
 
 - Authorized lab systems and endpoints.
