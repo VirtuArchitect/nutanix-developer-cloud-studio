@@ -228,6 +228,55 @@ export type PrismReadOnlyScope = {
   realAdapterEnabled: false;
 };
 
+export type PrismReadOnlyOperation = "listClusters" | "listProjects" | "listImages" | "listSubnets" | "listCategories" | "listVms";
+
+export type PrismReadOnlyRequestPlan = {
+  operation: PrismReadOnlyOperation;
+  method: "POST";
+  path: string;
+  body: Record<string, unknown>;
+  scope: PrismReadOnlyScope;
+  networkCallEnabled: false;
+  mutationOperationsBlocked: string[];
+};
+
+export type PrismReadOnlyAdapterDiagnostics = {
+  adapter: "DisabledReadOnlyPrismAdapter";
+  mode: "Fixture-only request scaffold";
+  endpointConfigured: boolean;
+  credentialReferenceConfigured: boolean;
+  supportedOperations: PrismReadOnlyOperation[];
+  networkCallEnabled: false;
+  provisioningEnabled: false;
+  mutationOperationsBlocked: string[];
+  requestPlans: PrismReadOnlyRequestPlan[];
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+};
+
+export type ReadOnlyPrismLabGate = {
+  id: string;
+  status: "Blocked" | "Ready for fixture contract validation";
+  requestedBy: string;
+  createdAt: string;
+  scopeRef: string;
+  endpointRef: string;
+  credentialProfile: string;
+  allowedOperations: PrismReadOnlyOperation[];
+  excludedOperations: string[];
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+};
+
 export type PrismInventoryRecord = {
   id: string;
   kind: PrismInventoryKind;

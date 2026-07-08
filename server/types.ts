@@ -42,6 +42,7 @@ import type {
   PolicyBundle,
   PrismInventoryImportResult,
   PrismInventoryRecord,
+  ReadOnlyPrismLabGate,
   MockPrismSimulatorStatus,
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
@@ -118,6 +119,7 @@ export type ApiState = {
   templateRegistry: TemplateRegistryEntry[];
   prismInventory: PrismInventoryRecord[];
   prismInventoryImport?: PrismInventoryImportResult;
+  readOnlyPrismLabGates: ReadOnlyPrismLabGate[];
   mockPrismStatus: MockPrismSimulatorStatus;
   mockPrismExecutions: MockPrismExecution[];
   prismSimulatorProfiles: PrismSimulatorProfile[];

@@ -5,6 +5,7 @@ import type {
   PrismInventoryRecord,
   PrismReadOnlyScope,
 } from "../src/data/cloudStudioDomain";
+import { readOnlyMutationOperationsBlocked } from "./prismReadOnlyBoundary";
 
 export type PrismInventoryAdapter = {
   readonly mode: PrismInventoryImportResult["mode"];
@@ -13,16 +14,7 @@ export type PrismInventoryAdapter = {
   discover(scope: PrismReadOnlyScope): Promise<PrismInventoryImportResult & { records: PrismInventoryRecord[] }>;
 };
 
-const blockedMutationOperations = [
-  "create_vm",
-  "clone_vm",
-  "delete_vm",
-  "power_on",
-  "power_off",
-  "update_network",
-  "resize_disk",
-  "attach_category",
-];
+const blockedMutationOperations = readOnlyMutationOperationsBlocked;
 
 export function createPrismReadOnlyScope(
   integrationConfig: IntegrationConfig,

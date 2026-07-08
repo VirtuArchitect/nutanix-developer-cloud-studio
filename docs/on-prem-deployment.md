@@ -127,6 +127,15 @@ docker run --rm -v nutanix-developer-cloud-studio_ndc-studio-data:/data -v ${PWD
 
 Restore by copying the backup back into the same volume before starting the service. This is only a prototype workflow; a production deployment should use a real database, backup schedule, restore test, and retention policy.
 
+## Operator Runbook And Rollback
+
+Use the checked-in runbook pack for upgrade and rollback evidence:
+
+- [Operator runbook](operator-runbook.md)
+- [Rollback pack](rollback-pack.md)
+
+The runbook requires health, readiness, runtime package, on-prem configuration, backup, and hosted starter validation before promotion. Rollback acceptance requires `provisioningEnabled=false` and read-only Prism network calls disabled.
+
 ## Recommended Network Placement
 
 For a future real deployment:

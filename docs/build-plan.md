@@ -28,6 +28,10 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.85.0-operator-runbook-rollback-pack` adds operator runbook and rollback pack documentation for on-prem install, upgrade, backup, restore, rollback, emergency stop, release validation, and evidence capture.
+- `v2.84.0-read-only-inventory-contract-tests` adds fixture-driven read-only inventory contract tests and read-only lab gate API coverage.
+- `v2.83.0-prism-read-only-lab-gate` adds API-backed read-only Prism lab gate evidence with allowed list operations and excluded mutation checks.
+- `v2.82.0-read-only-prism-adapter-scaffold` adds disabled read-only Prism request-plan diagnostics while keeping network calls disabled.
 - `v2.81.0-adapter-contract-test-harness` adds direct Prism adapter contract tests for simulator success, failure, timeout, non-VM behavior, and disabled real-adapter fail-closed behavior.
 - `v2.80.0-state-and-backup-hardening` adds checksum-backed JSON state backup manifests and restore validation.
 - `v2.79.0-on-prem-runtime-packaging` adds runtime package validation for Dockerfile, Compose, environment template, static/API serving, and disabled adapter guardrails.

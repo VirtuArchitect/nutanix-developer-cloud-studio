@@ -2,6 +2,14 @@
 
 ## 2026-07-08
 
+- Released `v2.85.0-operator-runbook-rollback-pack`.
+- Added operator runbook and rollback pack documentation for on-prem install, upgrade, backup, restore, rollback, emergency stop, release validation, and evidence capture.
+- Released `v2.84.0-read-only-inventory-contract-tests`.
+- Added fixture-driven read-only inventory contract tests and read-only lab gate API coverage.
+- Released `v2.83.0-prism-read-only-lab-gate`.
+- Added API-backed read-only Prism lab gate evidence with allowed list operations, excluded mutation checks, and disabled network execution.
+- Released `v2.82.0-read-only-prism-adapter-scaffold`.
+- Added disabled read-only Prism request-plan diagnostics for cluster, project, image, subnet, category, and VM list operations.
 - Released `v2.81.0-adapter-contract-test-harness`.
 - Added direct Prism adapter contract tests for simulator success, failure, timeout, non-VM behavior, and disabled real-adapter fail-closed behavior.
 - Released `v2.80.0-state-and-backup-hardening`.

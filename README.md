@@ -4,7 +4,7 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
-Current release: `v2.81.0-adapter-contract-test-harness`
+Current release: `v2.85.0-operator-runbook-rollback-pack`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -39,6 +39,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated product protot
 - Mock Prism Central simulator for local testing when no Nutanix lab is available.
 - API-backed Prism adapter readiness, simulator profile registry, simulator failure scenarios, and controlled real-Prism preflight evidence.
 - Runtime package validation, checksum-backed JSON state backup/restore, and Prism adapter contract tests for on-prem readiness.
+- Disabled read-only Prism request scaffold, read-only lab gate evidence, fixture inventory contract tests, and operator runbook/rollback pack.
 
 ### Governance And Release Readiness
 
@@ -103,6 +104,11 @@ npm run validate:runtime
 npm run validate:onprem
 npm run validate:backup
 ```
+
+Operator runbooks:
+
+- [Operator runbook](docs/operator-runbook.md)
+- [Rollback pack](docs/rollback-pack.md)
 
 ## Run The Hosted/On-Prem Starter
 

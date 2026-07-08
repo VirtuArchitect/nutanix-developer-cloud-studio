@@ -374,6 +374,88 @@ describe("api server", () => {
     );
   });
 
+  it("exposes a disabled read-only Prism adapter scaffold and lab gate", async () => {
+    const blockedDiagnostics = await requestJson("/api/prism/read-only-adapter/diagnostics");
+    const blockedGate = await requestJson("/api/prism/read-only-lab-gates", { method: "POST" });
+
+    expect(blockedDiagnostics.data).toMatchObject({
+      adapter: "DisabledReadOnlyPrismAdapter",
+      mode: "Fixture-only request scaffold",
+      networkCallEnabled: false,
+      provisioningEnabled: false,
+      supportedOperations: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+    });
+    expect(blockedDiagnostics.data.requestPlans).toEqual(
+      expect.arrayContaining([expect.objectContaining({ operation: "listClusters", networkCallEnabled: false })])
+    );
+    expect(blockedGate.data).toMatchObject({
+      status: "Blocked",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+    });
+
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Prism read-only lab gate",
+        pentestScopeReference: "readonly-prism-lab-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        allowedActions: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+        excludedActions: [
+          "create_vm",
+          "clone_vm",
+          "delete_vm",
+          "power_on",
+          "power_off",
+          "update_network",
+          "resize_disk",
+          "attach_category",
+          "create_project",
+          "delete_image",
+        ],
+        evidenceReferences: ["readonly-prism-lab-scope.md", "operator-runbook.md"],
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+
+    const readyGate = await requestJson("/api/prism/read-only-lab-gates", { method: "POST" });
+    const gates = await requestJson("/api/prism/read-only-lab-gates");
+    const diagnostics = await requestJson("/api/prism/read-only-adapter/diagnostics");
+    const auditEvents = await requestJson("/api/audit-events");
+
+    expect(readyGate.data).toMatchObject({
+      status: "Ready for fixture contract validation",
+      allowedOperations: ["listClusters", "listProjects", "listImages", "listSubnets", "listCategories", "listVms"],
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+    });
+    expect(readyGate.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Read-only operations allowed", passed: true }),
+        expect.objectContaining({ name: "Mutation operations excluded", passed: true }),
+      ])
+    );
+    expect(gates.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: readyGate.data.id })]));
+    expect(diagnostics.data).toMatchObject({
+      endpointConfigured: true,
+      credentialReferenceConfigured: true,
+      networkCallEnabled: false,
+    });
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "prism.readonly.lab-gate.recorded", target: "NCI" })])
+    );
+  });
+
   it("lists provider inventory, platform config, and provisioning adapters", async () => {
     const profiles = await requestJson("/api/resource-profiles");
     const config = await requestJson("/api/platform/config");

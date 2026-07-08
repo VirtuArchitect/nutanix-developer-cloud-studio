@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.81.0-adapter-contract-test-harness",
+  "version": "2.85.0-operator-runbook-rollback-pack",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
