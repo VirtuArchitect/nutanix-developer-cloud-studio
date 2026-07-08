@@ -2,14 +2,9 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record`.
+This project uses release tags for public milestones. The current release is `v2.72.0-mock-prism-adapter-flow`.
 
 ## [Unreleased]
-
-### Added
-
-- Mock Prism Central simulator endpoints under `/mock-prism` for local adapter contract testing without a Nutanix lab.
-- Prism-shaped cluster, project, image, subnet, category, VM, simulated VM-create, and task-poll responses.
 
 ### Planned
 
@@ -17,6 +12,21 @@ This project uses release tags for public milestones. The current release is `v2
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.72.0-mock-prism-adapter-flow] - 2026-07-08
+
+### Added
+
+- Mock Prism Central simulator endpoints under `/mock-prism` for local adapter contract testing without a Nutanix lab.
+- Prism-shaped cluster, project, image, subnet, category, VM, simulated VM-create, and task-poll responses.
+- API-backed mock Prism simulator status and execution evidence endpoints under `/api/mock-prism`.
+- Environment creation now records mock Prism VM task evidence for VM-targeted requests.
+- Environment detail and Admin Providers panels surface mock Prism task UUIDs, selected image, cluster, subnet, and no-mutation boundary.
+
+### Notes
+
+- Mock Prism execution records are simulator evidence only.
+- Real Nutanix provisioning remains disabled.
 
 ## [v2.71.0-production-execution-archive-recovery-final-operations-handoff-record] - 2026-07-08
 

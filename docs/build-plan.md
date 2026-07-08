@@ -28,6 +28,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v2.72.0-mock-prism-adapter-flow` connects VM-targeted environment creation to mock Prism Central task evidence and surfaces simulator readiness in Admin and environment detail views.
 - `v2.71.0-production-execution-archive-recovery-final-operations-handoff-record` adds evidence-only archive recovery final operations handoff records linked to monitoring ownership closure records and an Admin Operations archive recovery final operations handoff panel.
 - `v2.68.0-production-execution-archive-recovery-service-management-handoff-record` adds evidence-only archive recovery service management handoff records linked to operational continuity records and an Admin Operations archive recovery service management handoff panel.
 - `v2.67.0-production-execution-archive-recovery-operational-continuity-record` adds evidence-only archive recovery operational continuity records linked to evidence custody closure records and an Admin Operations archive recovery operational continuity panel.
@@ -175,6 +176,8 @@ The goal is to make the product thesis visible quickly: developers can request g
 - API exposes `/api/lab-adapters` for read-only adapter pilot state.
 - API exposes `/api/lab-adapters/:name/discover` to simulate read-only discovery.
 - API exposes `/mock-prism` as a local Prism-shaped simulator for adapter contract testing without a Nutanix lab.
+- API records mock Prism VM task evidence for VM-targeted environment requests.
+- Admin and environment detail views surface mock Prism simulator status and execution evidence.
 - Admin view includes a Lab Adapter Pilot panel with discovery action and guardrail messaging.
 - JSON-file prototype state backup/restore has unit coverage.
 

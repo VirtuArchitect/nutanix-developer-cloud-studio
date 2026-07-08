@@ -33,6 +33,8 @@ import type {
   LifecycleOperationKind,
   LifecycleOperationRecord,
   ManualRealAdapterSwitchReview,
+  MockPrismExecution,
+  MockPrismSimulatorStatus,
   PlatformConfig,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -126,6 +128,7 @@ export type CreateEnvironmentResult = {
     message: string;
     createdAt: string;
   }>;
+  mockPrismExecution?: MockPrismExecution;
   approval?: ApprovalRequest;
 };
 
@@ -133,6 +136,7 @@ export type EnvironmentDetail = {
   environment: Environment;
   jobs: CreateEnvironmentResult["jobs"];
   controlPlaneJobs?: ControlPlaneJob[];
+  mockPrismExecutions?: MockPrismExecution[];
   approvals: ApprovalRequest[];
   auditEvents: Array<{
     id: string;
@@ -231,6 +235,14 @@ export async function fetchLabAdaptersFromApi() {
 
 export async function fetchPrismInventoryFromApi() {
   return fetchJson<PrismInventoryEnvelope>("/api/prism/inventory");
+}
+
+export async function fetchMockPrismStatusFromApi() {
+  return fetchJson<MockPrismSimulatorStatus>("/api/mock-prism/status");
+}
+
+export async function fetchMockPrismExecutionsFromApi() {
+  return fetchJson<MockPrismExecution[]>("/api/mock-prism/executions");
 }
 
 export async function importPrismInventoryViaApi() {

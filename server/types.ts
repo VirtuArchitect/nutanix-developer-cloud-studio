@@ -30,6 +30,7 @@ import type {
   LifecycleOperationKind,
   LifecycleOperationRecord,
   ManualRealAdapterSwitchReview,
+  MockPrismExecution,
   PlatformConfig,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -39,6 +40,7 @@ import type {
   PolicyBundle,
   PrismInventoryImportResult,
   PrismInventoryRecord,
+  MockPrismSimulatorStatus,
   ProvisioningAdapterReadiness,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
@@ -113,6 +115,8 @@ export type ApiState = {
   templateRegistry: TemplateRegistryEntry[];
   prismInventory: PrismInventoryRecord[];
   prismInventoryImport?: PrismInventoryImportResult;
+  mockPrismStatus: MockPrismSimulatorStatus;
+  mockPrismExecutions: MockPrismExecution[];
   platformConfig: PlatformConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
   adapterEnablementRecords: AdapterEnablementRecord[];

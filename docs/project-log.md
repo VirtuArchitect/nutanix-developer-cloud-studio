@@ -2,6 +2,9 @@
 
 ## 2026-07-08
 
+- Released `v2.72.0-mock-prism-adapter-flow`.
+- Connected VM-targeted environment creation to mock Prism Central execution evidence.
+- Added API-backed mock Prism status and execution records for Admin and environment detail views.
 - Added Mock Prism Central simulator endpoints for local adapter contract testing without a Nutanix lab.
 - Added Prism-shaped health, inventory list, simulated VM create, and task-poll responses under `/mock-prism`.
 - Documented the simulator as a test double that does not contact or mutate real infrastructure.

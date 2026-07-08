@@ -282,6 +282,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - The API also exposes mock session, role, integration configuration, and readiness-check endpoints.
 - The lab adapter pilot and Prism inventory import simulate read-only Prism Central/NCI discovery only; provisioning remains disabled by contract.
 - The Mock Prism Central simulator exposes local Prism-shaped health, inventory list, VM-create, and task-poll endpoints for adapter contract testing when no Nutanix lab is available.
+- VM-targeted environment requests record mock Prism Central execution evidence with selected project, cluster, image, subnet, task UUID, and no-mutation status.
 - Prism imported image records become draft AHV image profile candidates until approved through registry governance.
 - The control plane models job orchestration but does not mutate infrastructure.
 - The destroy lifecycle is simulated and does not delete infrastructure.
@@ -295,6 +296,7 @@ Future adapters may connect to Prism Central, NCM Self-Service, NKP, NDB, NUS, N
 - Approval states are modeled for AI endpoint requests, and hosted/on-prem mode can approve or reject mock requests through API endpoints.
 - Nutanix adapter contracts are mock-only and do not call Prism Central, NKP, NDB, NUS, NCM, or NAI.
 - The Mock Prism Central simulator is an internal test double only; it does not persist or mutate real Nutanix resources.
+- Mock Prism execution evidence is recorded in API state and displayed in Admin and environment detail views, but it is not a live infrastructure operation.
 - The frontend auto-detects the hosted/on-prem API through `/healthz` and falls back to browser mock mode when the API is unavailable.
 - Production-foundation controls are starter guardrails. Trusted identity headers must be backed by real OIDC validation before production use.
 - Strict trusted identity mode can fail API routes closed when required ingress identity headers are missing; health probes remain public.

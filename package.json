@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "2.71.0-production-execution-archive-recovery-final-operations-handoff-record",
+  "version": "2.72.0-mock-prism-adapter-flow",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

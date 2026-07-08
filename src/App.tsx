@@ -63,6 +63,8 @@ import {
   type LifecycleOperationKind,
   type LifecycleOperationRecord,
   type ManualRealAdapterSwitchReview,
+  type MockPrismExecution,
+  type MockPrismSimulatorStatus,
   platformConfig as defaultPlatformConfig,
   policyBundles as defaultPolicyBundles,
   templateRegistry as defaultTemplateRegistry,
@@ -306,6 +308,8 @@ import {
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
+  fetchMockPrismExecutionsFromApi,
+  fetchMockPrismStatusFromApi,
   fetchLabAdaptersFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -373,6 +377,8 @@ export function App() {
   );
   const [prismInventory, setPrismInventory] = useState<PrismInventoryRecord[]>([]);
   const [prismInventoryImport, setPrismInventoryImport] = useState<PrismInventoryImportResult | undefined>();
+  const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
+  const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
   const [resourceProfiles, setResourceProfiles] = useState<ResourceProfile[]>(defaultResourceProfiles);
   const [policyBundles, setPolicyBundles] = useState<PolicyBundle[]>(defaultPolicyBundles);
   const [templateRegistry, setTemplateRegistry] = useState<TemplateRegistryEntry[]>(defaultTemplateRegistry);
@@ -591,6 +597,8 @@ export function App() {
             apiLabAuthorizationScopes,
             apiLabScopeDiagnostics,
             apiPrismInventory,
+            apiMockPrismStatus,
+            apiMockPrismExecutions,
             apiControlPlaneJobs,
             apiResourceProfiles,
             apiPolicyBundles,
@@ -688,6 +696,8 @@ export function App() {
             fetchLabAuthorizationScopesFromApi(),
             fetchLabScopeDiagnosticsFromApi(),
             fetchPrismInventoryFromApi(),
+            fetchMockPrismStatusFromApi(),
+            fetchMockPrismExecutionsFromApi(),
             fetchControlPlaneJobsFromApi(),
             fetchResourceProfilesFromApi(),
             fetchPolicyBundlesFromApi(),
@@ -787,6 +797,8 @@ export function App() {
             setLabScopeDiagnostics(apiLabScopeDiagnostics);
             setPrismInventory(apiPrismInventory.records);
             setPrismInventoryImport(apiPrismInventory.lastImport);
+            setMockPrismStatus(apiMockPrismStatus);
+            setMockPrismExecutions(apiMockPrismExecutions);
             setControlPlaneJobs(apiControlPlaneJobs);
             setResourceProfiles(apiResourceProfiles);
             setPolicyBundles(apiPolicyBundles);
@@ -982,6 +994,8 @@ export function App() {
         ]);
         setSelectedEnvironmentName(result.environment.name);
         setControlPlaneJobs(await fetchControlPlaneJobsFromApi());
+        setMockPrismStatus(await fetchMockPrismStatusFromApi());
+        setMockPrismExecutions(await fetchMockPrismExecutionsFromApi());
         if (result.approval) {
           setApprovals((current) => [result.approval as ApprovalRequest, ...current]);
         }
@@ -1038,6 +1052,8 @@ export function App() {
       apiLabAuthorizationScopes,
       apiLabScopeDiagnostics,
       apiPrismInventory,
+      apiMockPrismStatus,
+      apiMockPrismExecutions,
       apiControlPlaneJobs,
       apiResourceProfiles,
       apiPolicyBundles,
@@ -1135,6 +1151,8 @@ export function App() {
       fetchLabAuthorizationScopesFromApi(),
       fetchLabScopeDiagnosticsFromApi(),
       fetchPrismInventoryFromApi(),
+      fetchMockPrismStatusFromApi(),
+      fetchMockPrismExecutionsFromApi(),
       fetchControlPlaneJobsFromApi(),
       fetchResourceProfilesFromApi(),
       fetchPolicyBundlesFromApi(),
@@ -1233,6 +1251,8 @@ export function App() {
     setLabScopeDiagnostics(apiLabScopeDiagnostics);
     setPrismInventory(apiPrismInventory.records);
     setPrismInventoryImport(apiPrismInventory.lastImport);
+    setMockPrismStatus(apiMockPrismStatus);
+    setMockPrismExecutions(apiMockPrismExecutions);
     setControlPlaneJobs(apiControlPlaneJobs);
     setResourceProfiles(apiResourceProfiles);
     setPolicyBundles(apiPolicyBundles);
@@ -3490,6 +3510,8 @@ export function App() {
             labScopeDiagnostics={labScopeDiagnostics}
             prismInventory={prismInventory}
             prismInventoryImport={prismInventoryImport}
+            mockPrismStatus={mockPrismStatus}
+            mockPrismExecutions={mockPrismExecutions}
             resourceProfiles={resourceProfiles}
             policyBundles={policyBundles}
             templateRegistry={templateRegistry}
@@ -4179,6 +4201,8 @@ function AdminView({
   labScopeDiagnostics,
   prismInventory,
   prismInventoryImport,
+  mockPrismStatus,
+  mockPrismExecutions,
   resourceProfiles,
   policyBundles,
   templateRegistry,
@@ -4367,6 +4391,8 @@ function AdminView({
   labScopeDiagnostics: LabScopeDiagnostics;
   prismInventory: PrismInventoryRecord[];
   prismInventoryImport?: PrismInventoryImportResult;
+  mockPrismStatus: MockPrismSimulatorStatus | null;
+  mockPrismExecutions: MockPrismExecution[];
   resourceProfiles: ResourceProfile[];
   policyBundles: PolicyBundle[];
   templateRegistry: TemplateRegistryEntry[];
@@ -4648,6 +4674,9 @@ function AdminView({
               lastImport={prismInventoryImport}
               importPrismInventory={importPrismInventory}
             />
+          </Panel>
+          <Panel title="Mock Prism simulator" action={mockPrismStatus?.status ?? "Checking"}>
+            <MockPrismSimulatorPanel status={mockPrismStatus} executions={mockPrismExecutions} />
           </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
             <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
@@ -10976,6 +11005,49 @@ function ProviderReleaseGatePanel({
   );
 }
 
+function MockPrismSimulatorPanel({
+  status,
+  executions,
+}: {
+  status: MockPrismSimulatorStatus | null;
+  executions: MockPrismExecution[];
+}) {
+  const latest = executions[0];
+
+  if (!status) {
+    return <p className="emptyState">Mock Prism simulator status has not been loaded from the API yet.</p>;
+  }
+
+  return (
+    <div className="prismInventoryPanel">
+      <div className="guardrailBanner">
+        <TerminalSquare size={18} />
+        <div>
+          <strong>{status.service}</strong>
+          <span>{status.endpoint}</span>
+        </div>
+      </div>
+      <div className="controlGrid">
+        <CheckLine icon={Cloud} label="Mode" value={status.mode} passed />
+        <CheckLine icon={ShieldCheck} label="Boundary" value="No real Nutanix calls" passed />
+        <CheckLine icon={Layers3} label="Inventory" value={`${status.availableInventory.images} images, ${status.availableInventory.subnets} subnet`} passed />
+        <CheckLine icon={Activity} label="Executions" value={`${executions.length} simulated VM task${executions.length === 1 ? "" : "s"}`} passed />
+      </div>
+      {latest ? (
+        <div className="inventoryEvidence">
+          <strong>{latest.environmentName}</strong>
+          <span>
+            {latest.request.cluster} / {latest.request.image} / {latest.request.subnet}
+          </span>
+          <small>{latest.task.uuid} / {latest.task.state} / provisioning disabled</small>
+        </div>
+      ) : (
+        <p className="emptyState">Create a VM environment to record the first simulated Prism task.</p>
+      )}
+    </div>
+  );
+}
+
 function ProvisioningAdapterPanel({
   adapters,
   platformConfig,
@@ -11213,6 +11285,10 @@ function EnvironmentDetailView({ detail, openCreate }: { detail: EnvironmentDeta
         <ControlPlaneQueue jobs={detail.controlPlaneJobs ?? []} />
       </Panel>
 
+      <Panel title="Mock Prism execution" action={`${detail.mockPrismExecutions?.length ?? 0} tasks`}>
+        <MockPrismExecutionPanel executions={detail.mockPrismExecutions ?? []} />
+      </Panel>
+
       <Panel title="Audit trail" action={`${detail.auditEvents.length} events`}>
         <div className="eventList">
           {detail.auditEvents.map((event) => (
@@ -11225,6 +11301,28 @@ function EnvironmentDetailView({ detail, openCreate }: { detail: EnvironmentDeta
         </div>
       </Panel>
     </section>
+  );
+}
+
+function MockPrismExecutionPanel({ executions }: { executions: MockPrismExecution[] }) {
+  if (executions.length === 0) {
+    return <p className="emptyState">No mock Prism VM execution evidence has been recorded for this environment.</p>;
+  }
+
+  return (
+    <div className="eventList">
+      {executions.map((execution) => (
+        <div className="eventRow" key={execution.id}>
+          <strong>{execution.task.state}</strong>
+          <span>
+            {execution.request.cluster} / {execution.request.image} / {execution.request.subnet}
+          </span>
+          <small>
+            {execution.task.uuid} / {execution.adapterMode} / provisioning disabled
+          </small>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -18956,6 +19054,7 @@ function createMockEnvironmentDetail(
       message: event.detail,
       createdAt: new Date(Date.now() - (provisioningEvents.length - index) * 60000).toISOString(),
     })),
+    mockPrismExecutions: [],
     approvals: approvals.filter((approval) => approval.environmentName === environment.name),
     auditEvents: [
       {

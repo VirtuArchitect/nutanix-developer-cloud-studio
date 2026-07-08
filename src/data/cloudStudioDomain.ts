@@ -256,6 +256,47 @@ export type PrismInventoryImportResult = {
   mutationOperationsBlocked: string[];
 };
 
+export type MockPrismSimulatorStatus = {
+  service: "Mock Prism Central";
+  status: "Healthy";
+  mode: "Simulated";
+  endpoint: string;
+  mutationBoundary: string;
+  availableInventory: {
+    clusters: number;
+    projects: number;
+    images: number;
+    subnets: number;
+    categories: number;
+    vms: number;
+  };
+};
+
+export type MockPrismExecution = {
+  id: string;
+  environmentName: string;
+  provider: "NCI";
+  adapterMode: "Mock Prism Central";
+  endpoint: string;
+  request: {
+    project: string;
+    cluster: string;
+    image: string;
+    subnet: string;
+    categories: string[];
+    targets: Target[];
+  };
+  task: {
+    uuid: string;
+    state: "SUCCEEDED";
+    percentageComplete: 100;
+    message: string;
+  };
+  evidence: string[];
+  provisioningEnabled: false;
+  createdAt: string;
+};
+
 export type VmSandboxDryRunRequest = {
   environmentName: string;
   owner: string;
