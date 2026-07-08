@@ -79,6 +79,7 @@ import type {
   ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord,
   ProductionExecutionArchiveRecoveryOperationalContinuityRecord,
   ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
+  ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord,
   ProductionReadinessReview,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
@@ -618,6 +619,12 @@ export async function fetchProductionExecutionArchiveRecoveryOperationalContinui
 export async function fetchProductionExecutionArchiveRecoveryServiceManagementHandoffRecordsFromApi() {
   return fetchJson<ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[]>(
     "/api/real-adapter/production-execution-archive-recovery-service-management-handoff-records"
+  );
+}
+
+export async function fetchProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordsFromApi() {
+  return fetchJson<ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord[]>(
+    "/api/real-adapter/production-execution-archive-recovery-support-ownership-acceptance-records"
   );
 }
 
@@ -1391,6 +1398,19 @@ export async function createProductionExecutionArchiveRecoveryServiceManagementH
 }) {
   return fetchJson<ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord>(
     "/api/real-adapter/production-execution-archive-recovery-service-management-handoff-records",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function createProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordViaApi(payload: {
+  serviceManagementHandoffRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+}) {
+  return fetchJson<ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord>(
+    "/api/real-adapter/production-execution-archive-recovery-support-ownership-acceptance-records",
     {
       method: "POST",
       body: JSON.stringify(payload),

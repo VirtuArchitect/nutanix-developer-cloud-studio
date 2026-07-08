@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.68.0-production-execution-archive-recovery-service-management-handoff-record`.
+This project uses release tags for public milestones. The current release is `v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery support ownership acceptance records after service management handoff records are complete.
+- Add production execution archive recovery monitoring ownership closure records after support ownership acceptance records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record] - 2026-07-08
+
+### Added
+
+- Production execution archive recovery support ownership acceptance records linked to production execution archive recovery service management handoff records.
+- API endpoints for listing and recording production execution archive recovery support ownership acceptance records.
+- Admin Operations production archive recovery support ownership acceptance panel.
+- Support owner, service desk acceptance, escalation test proof, monitoring ownership proof, and support ownership sign-off checks.
+- Tests proving missing service management handoff records or incomplete support ownership acceptance evidence block readiness.
+
+### Notes
+
+- Production execution archive recovery support ownership acceptance records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.68.0-production-execution-archive-recovery-service-management-handoff-record] - 2026-07-08
 

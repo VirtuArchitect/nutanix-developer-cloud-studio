@@ -1531,6 +1531,23 @@ Promotion criteria:
 - Archive recovery support ownership acceptance records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record
+
+Goal: record monitoring ownership closure evidence after support ownership acceptance without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery monitoring ownership closure records linked to support ownership acceptance records.
+- Require monitoring owner, alert ownership transfer, dashboard acceptance, escalation monitoring validation, and monitoring ownership closure sign-off.
+- Add Admin Operations archive recovery monitoring ownership closure panel with blockers and evidence references.
+- Add tests proving missing ready support ownership acceptance records, monitoring owners, alert ownership transfer, dashboard acceptance, escalation monitoring validation, or monitoring ownership closure sign-offs block closure readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery monitoring ownership closure APIs and UI are tested.
+- Archive recovery monitoring ownership closure records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

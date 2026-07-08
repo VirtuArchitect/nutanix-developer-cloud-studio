@@ -86,6 +86,7 @@ import type {
   ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord,
   ProductionExecutionArchiveRecoveryOperationalContinuityRecord,
   ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
+  ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -187,6 +188,7 @@ export type ApiState = {
   productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords: ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord[];
   productionExecutionArchiveRecoveryOperationalContinuityRecords: ProductionExecutionArchiveRecoveryOperationalContinuityRecord[];
   productionExecutionArchiveRecoveryServiceManagementHandoffRecords: ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[];
+  productionExecutionArchiveRecoverySupportOwnershipAcceptanceRecords: ProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -864,6 +866,16 @@ export type CreateProductionExecutionArchiveRecoveryServiceManagementHandoffReco
   knowledgeArticleReference?: string;
   escalationMatrixReference?: string;
   serviceManagementHandoffSignOffReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRecoverySupportOwnershipAcceptanceRecordRequest = {
+  serviceManagementHandoffRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  supportOwner?: string;
+  serviceDeskAcceptanceReference?: string;
+  escalationTestProofReference?: string;
+  monitoringOwnershipProofReference?: string;
+  supportOwnershipSignOffReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

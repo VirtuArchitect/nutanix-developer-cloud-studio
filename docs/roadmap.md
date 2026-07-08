@@ -671,10 +671,17 @@
 
 ## Phase 91 - Production Execution Archive Recovery Support Ownership Acceptance Record (`v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record`)
 
-- Add production execution archive recovery support ownership acceptance records linked to service management handoff records - planned
-- Require support owner, service desk acceptance, escalation test proof, monitoring ownership proof, and support ownership sign-off - planned
-- Add Admin Operations archive recovery support ownership acceptance panel - planned
-- Keep archive recovery support ownership acceptance records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery support ownership acceptance records linked to service management handoff records - done
+- Require support owner, service desk acceptance, escalation test proof, monitoring ownership proof, and support ownership sign-off - done
+- Add Admin Operations archive recovery support ownership acceptance panel - done
+- Keep archive recovery support ownership acceptance records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 92 - Production Execution Archive Recovery Monitoring Ownership Closure Record (`v2.70.0-production-execution-archive-recovery-monitoring-ownership-closure-record`)
+
+- Add production execution archive recovery monitoring ownership closure records linked to support ownership acceptance records - planned
+- Require monitoring owner, alert ownership transfer, dashboard acceptance, escalation monitoring validation, and monitoring ownership closure sign-off - planned
+- Add Admin Operations archive recovery monitoring ownership closure panel - planned
+- Keep archive recovery monitoring ownership closure records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

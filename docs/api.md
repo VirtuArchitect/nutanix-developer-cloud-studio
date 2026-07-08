@@ -740,6 +740,15 @@ Production execution archive recovery service management handoff records capture
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Support Ownership Acceptance Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-support-ownership-acceptance-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-support-ownership-acceptance-records`
+
+Production execution archive recovery support ownership acceptance records capture support team ownership evidence after service management handoff and before any future monitoring ownership closure phase. Records require a ready service management handoff record, support owner, service desk acceptance, escalation test proof, monitoring ownership proof, support ownership sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`
