@@ -731,6 +731,15 @@ Production execution archive recovery operational continuity records capture con
 
 Required role: `Platform Admin`.
 
+### Production Execution Archive Recovery Service Management Handoff Records
+
+- `GET /api/real-adapter/production-execution-archive-recovery-service-management-handoff-records`
+- `POST /api/real-adapter/production-execution-archive-recovery-service-management-handoff-records`
+
+Production execution archive recovery service management handoff records capture support ownership evidence after operational continuity and before any future support ownership acceptance phase. Records require a ready operational continuity record, service owner, support queue mapping, knowledge article, escalation matrix, service management handoff sign-off, disabled kill switch, and `provisioningEnabled=false`.
+
+Required role: `Platform Admin`.
+
 ### Production Readiness Reviews
 
 - `GET /api/production-readiness/reviews`

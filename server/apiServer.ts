@@ -245,6 +245,10 @@ import {
   ProductionExecutionArchiveRecoveryOperationalContinuityRecordError,
 } from "./productionExecutionArchiveRecoveryOperationalContinuityRecord";
 import {
+  createProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
+  ProductionExecutionArchiveRecoveryServiceManagementHandoffRecordError,
+} from "./productionExecutionArchiveRecoveryServiceManagementHandoffRecord";
+import {
   ControlledLabDryRunWindowError,
   createControlledLabDryRunWindowRecord,
 } from "./controlledLabDryRunWindow";
@@ -387,6 +391,7 @@ import type {
   CreateProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordRequest,
   CreateProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordRequest,
   CreateProductionExecutionArchiveRecoveryOperationalContinuityRecordRequest,
+  CreateProductionExecutionArchiveRecoveryServiceManagementHandoffRecordRequest,
   CreateControlledLabReleaseRunbookRequest,
   CreateControlledLabDryRunWindowRequest,
   CreateLabWindowEvidenceExportRequest,
@@ -1032,6 +1037,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionExecutionArchiveRecoveryOperationalContinuityRecordError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionExecutionArchiveRecoveryServiceManagementHandoffRecordError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1737,6 +1752,15 @@ async function routeApi(
   ) {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryOperationalContinuityRecords });
+    return;
+  }
+
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-service-management-handoff-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.productionExecutionArchiveRecoveryServiceManagementHandoffRecords });
     return;
   }
 
@@ -3632,6 +3656,40 @@ async function routeApi(
       record.provider,
       {
         evidenceCustodyClosureRecordId: record.evidenceCustodyClosureRecordId,
+        idempotencyKey: record.idempotencyKey,
+        status: record.status,
+        provisioningEnabled: false,
+      }
+    );
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/real-adapter/production-execution-archive-recovery-service-management-handoff-records"
+  ) {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateProductionExecutionArchiveRecoveryServiceManagementHandoffRecordRequest>(
+      request
+    );
+    const record = createProductionExecutionArchiveRecoveryServiceManagementHandoffRecord(
+      state,
+      body,
+      context.session.user
+    );
+    state.productionExecutionArchiveRecoveryServiceManagementHandoffRecords = [
+      record,
+      ...state.productionExecutionArchiveRecoveryServiceManagementHandoffRecords,
+    ];
+    addAuditEvent(
+      state,
+      "real-adapter.production-execution-archive-recovery-service-management-handoff.recorded",
+      context.session.user,
+      record.provider,
+      {
+        operationalContinuityRecordId: record.operationalContinuityRecordId,
         idempotencyKey: record.idempotencyKey,
         status: record.status,
         provisioningEnabled: false,

@@ -85,6 +85,7 @@ import type {
   ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord,
   ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord,
   ProductionExecutionArchiveRecoveryOperationalContinuityRecord,
+  ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
   RegistryStatus,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -185,6 +186,7 @@ export type ApiState = {
   productionExecutionArchiveRecoveryFinalComplianceArchiveRecords: ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord[];
   productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords: ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord[];
   productionExecutionArchiveRecoveryOperationalContinuityRecords: ProductionExecutionArchiveRecoveryOperationalContinuityRecord[];
+  productionExecutionArchiveRecoveryServiceManagementHandoffRecords: ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[];
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -852,6 +854,16 @@ export type CreateProductionExecutionArchiveRecoveryOperationalContinuityRecordR
   kpiBaselineReference?: string;
   supportHandoffReference?: string;
   continuitySignOffReference?: string;
+};
+
+export type CreateProductionExecutionArchiveRecoveryServiceManagementHandoffRecordRequest = {
+  operationalContinuityRecordId?: string;
+  provider?: ProviderReleaseGateRecord["provider"];
+  serviceOwner?: string;
+  supportQueueMappingReference?: string;
+  knowledgeArticleReference?: string;
+  escalationMatrixReference?: string;
+  serviceManagementHandoffSignOffReference?: string;
 };
 
 export type CreateAdapterEnablementRecordRequest = {

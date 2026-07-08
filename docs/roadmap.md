@@ -664,10 +664,17 @@
 
 ## Phase 90 - Production Execution Archive Recovery Service Management Handoff Record (`v2.68.0-production-execution-archive-recovery-service-management-handoff-record`)
 
-- Add production execution archive recovery service management handoff records linked to operational continuity records - planned
-- Require service owner, support queue mapping, knowledge article reference, escalation matrix, and service management handoff sign-off - planned
-- Add Admin Operations archive recovery service management handoff panel - planned
-- Keep archive recovery service management handoff records evidence-only and require external operator execution controls before adapter promotion - planned
+- Add production execution archive recovery service management handoff records linked to operational continuity records - done
+- Require service owner, support queue mapping, knowledge article reference, escalation matrix, and service management handoff sign-off - done
+- Add Admin Operations archive recovery service management handoff panel - done
+- Keep archive recovery service management handoff records evidence-only and require external operator execution controls before adapter promotion - done
+
+## Phase 91 - Production Execution Archive Recovery Support Ownership Acceptance Record (`v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record`)
+
+- Add production execution archive recovery support ownership acceptance records linked to service management handoff records - planned
+- Require support owner, service desk acceptance, escalation test proof, monitoring ownership proof, and support ownership sign-off - planned
+- Add Admin Operations archive recovery support ownership acceptance panel - planned
+- Keep archive recovery support ownership acceptance records evidence-only and require external operator execution controls before adapter promotion - planned
 
 ## Gated Promotion
 

@@ -430,6 +430,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("Production execution archive recovery operational continuity record")).toBeVisible();
   await expect(page.getByText("Execution archive recovery operational continuity evidence")).toBeVisible();
   await expect(page.getByText("Evidence custody closure ready")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Production archive recovery service management handoff" })).toBeVisible();
+  await page.getByRole("button", { name: "Record service handoff" }).click();
+  await expect(page.getByText("Production execution archive recovery service management handoff record")).toBeVisible();
+  await expect(page.getByText("Execution archive recovery service management handoff evidence")).toBeVisible();
+  await expect(page.getByText("Operational continuity ready")).toBeVisible();
   await page.getByRole("tab", { name: "Governance Queues and controls" }).click();
   await page.getByRole("button", { name: "Destroy" }).first().click();
   await expect(page.getByText("Destroying").first()).toBeVisible();

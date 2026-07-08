@@ -1514,6 +1514,23 @@ Promotion criteria:
 - Archive recovery service management handoff records are evidence-only.
 - No adapter is promoted or executed by the prototype.
 
+### v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record
+
+Goal: record support ownership acceptance evidence after service management handoff without executing or promoting adapters from the prototype.
+
+Recommended upgrade steps:
+
+- Add production execution archive recovery support ownership acceptance records linked to service management handoff records.
+- Require support owner, service desk acceptance, escalation test proof, monitoring ownership proof, and support ownership sign-off.
+- Add Admin Operations archive recovery support ownership acceptance panel with blockers and evidence references.
+- Add tests proving missing ready service management handoff records, support owners, service desk acceptance, escalation test proof, monitoring ownership proof, or support ownership sign-offs block acceptance readiness.
+
+Promotion criteria:
+
+- Production execution archive recovery support ownership acceptance APIs and UI are tested.
+- Archive recovery support ownership acceptance records are evidence-only.
+- No adapter is promoted or executed by the prototype.
+
 ## Automatic Implementation Rule
 
 After each phase is implemented, run the phase gate. If it passes:

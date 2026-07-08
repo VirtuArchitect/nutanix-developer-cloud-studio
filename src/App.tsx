@@ -111,6 +111,7 @@ import {
   type ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord,
   type ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord,
   type ProductionExecutionArchiveRecoveryOperationalContinuityRecord,
+  type ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord,
   type ProductionReadinessReview,
   type ProviderReleaseGateRecord,
   type ProviderReleaseReadinessSummary,
@@ -184,6 +185,7 @@ import {
   createProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordViaApi,
   createProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordViaApi,
   createProductionExecutionArchiveRecoveryOperationalContinuityRecordViaApi,
+  createProductionExecutionArchiveRecoveryServiceManagementHandoffRecordViaApi,
   createAdapterEnablementRecordViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
@@ -262,6 +264,7 @@ import {
   fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi,
   fetchProductionExecutionArchiveRecoveryOperationalContinuityRecordsFromApi,
+  fetchProductionExecutionArchiveRecoveryServiceManagementHandoffRecordsFromApi,
   fetchAdapterEnablementRecordsFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
@@ -497,6 +500,10 @@ export function App() {
     productionExecutionArchiveRecoveryOperationalContinuityRecords,
     setProductionExecutionArchiveRecoveryOperationalContinuityRecords,
   ] = useState<ProductionExecutionArchiveRecoveryOperationalContinuityRecord[]>([]);
+  const [
+    productionExecutionArchiveRecoveryServiceManagementHandoffRecords,
+    setProductionExecutionArchiveRecoveryServiceManagementHandoffRecords,
+  ] = useState<ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[]>([]);
   const [vmLifecycleProofs, setVmLifecycleProofs] = useState<VmLifecycleProof[]>([]);
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
@@ -635,6 +642,7 @@ export function App() {
             apiProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
             apiProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
             apiProductionExecutionArchiveRecoveryOperationalContinuityRecords,
+            apiProductionExecutionArchiveRecoveryServiceManagementHandoffRecords,
             apiVmLifecycleProofs,
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
@@ -728,6 +736,7 @@ export function App() {
             fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi(),
             fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi(),
             fetchProductionExecutionArchiveRecoveryOperationalContinuityRecordsFromApi(),
+            fetchProductionExecutionArchiveRecoveryServiceManagementHandoffRecordsFromApi(),
             fetchVmLifecycleProofsFromApi(),
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -846,6 +855,9 @@ export function App() {
             );
             setProductionExecutionArchiveRecoveryOperationalContinuityRecords(
               apiProductionExecutionArchiveRecoveryOperationalContinuityRecords
+            );
+            setProductionExecutionArchiveRecoveryServiceManagementHandoffRecords(
+              apiProductionExecutionArchiveRecoveryServiceManagementHandoffRecords
             );
             setVmLifecycleProofs(apiVmLifecycleProofs);
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -1062,6 +1074,7 @@ export function App() {
       apiProductionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
       apiProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
       apiProductionExecutionArchiveRecoveryOperationalContinuityRecords,
+      apiProductionExecutionArchiveRecoveryServiceManagementHandoffRecords,
       apiVmLifecycleProofs,
       apiRollbackDestroyProofs,
       apiAhvCreateAdapterContractReviews,
@@ -1155,6 +1168,7 @@ export function App() {
       fetchProductionExecutionArchiveRecoveryFinalComplianceArchiveRecordsFromApi(),
       fetchProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecordsFromApi(),
       fetchProductionExecutionArchiveRecoveryOperationalContinuityRecordsFromApi(),
+      fetchProductionExecutionArchiveRecoveryServiceManagementHandoffRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
       fetchRollbackDestroyProofsFromApi(),
       fetchAhvCreateAdapterContractReviewsFromApi(),
@@ -1256,6 +1270,9 @@ export function App() {
     );
     setProductionExecutionArchiveRecoveryOperationalContinuityRecords(
       apiProductionExecutionArchiveRecoveryOperationalContinuityRecords
+    );
+    setProductionExecutionArchiveRecoveryServiceManagementHandoffRecords(
+      apiProductionExecutionArchiveRecoveryServiceManagementHandoffRecords
     );
     setVmLifecycleProofs(apiVmLifecycleProofs);
     setRollbackDestroyProofs(apiRollbackDestroyProofs);
@@ -3121,6 +3138,30 @@ export function App() {
     ]);
   }
 
+  async function recordProductionExecutionArchiveRecoveryServiceManagementHandoff() {
+    const operationalContinuityRecord = productionExecutionArchiveRecoveryOperationalContinuityRecords[0];
+    if (!operationalContinuityRecord) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      const record = await createProductionExecutionArchiveRecoveryServiceManagementHandoffRecordViaApi({
+        operationalContinuityRecordId: operationalContinuityRecord.id,
+      });
+      await refreshApiState();
+      setProductionExecutionArchiveRecoveryServiceManagementHandoffRecords((current) => [
+        record,
+        ...current.filter((item) => item.id !== record.id),
+      ]);
+      return;
+    }
+
+    setProductionExecutionArchiveRecoveryServiceManagementHandoffRecords((current) => [
+      createMockProductionExecutionArchiveRecoveryServiceManagementHandoffRecord(operationalContinuityRecord, session.user),
+      ...current,
+    ]);
+  }
+
   async function reviewAdapterEnablement() {
     const payload = {
       provider: "NCI" as const,
@@ -3407,6 +3448,9 @@ export function App() {
             productionExecutionArchiveRecoveryOperationalContinuityRecords={
               productionExecutionArchiveRecoveryOperationalContinuityRecords
             }
+            productionExecutionArchiveRecoveryServiceManagementHandoffRecords={
+              productionExecutionArchiveRecoveryServiceManagementHandoffRecords
+            }
             auditRetentionDiagnostics={auditRetentionDiagnostics}
             approvals={approvals}
             templateGovernance={templateGovernance}
@@ -3497,6 +3541,9 @@ export function App() {
             }
             recordProductionExecutionArchiveRecoveryOperationalContinuity={
               recordProductionExecutionArchiveRecoveryOperationalContinuity
+            }
+            recordProductionExecutionArchiveRecoveryServiceManagementHandoff={
+              recordProductionExecutionArchiveRecoveryServiceManagementHandoff
             }
             reviewAdapterEnablement={reviewAdapterEnablement}
             requestEnvironmentDestroy={requestEnvironmentDestroy}
@@ -4064,6 +4111,7 @@ function AdminView({
   productionExecutionArchiveRecoveryFinalComplianceArchiveRecords,
   productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords,
   productionExecutionArchiveRecoveryOperationalContinuityRecords,
+  productionExecutionArchiveRecoveryServiceManagementHandoffRecords,
   auditRetentionDiagnostics,
   approvals,
   templateGovernance,
@@ -4147,6 +4195,7 @@ function AdminView({
   recordProductionExecutionArchiveRecoveryFinalComplianceArchive,
   recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure,
   recordProductionExecutionArchiveRecoveryOperationalContinuity,
+  recordProductionExecutionArchiveRecoveryServiceManagementHandoff,
   reviewAdapterEnablement,
   requestEnvironmentDestroy,
   runTemplateRegistryAction,
@@ -4244,6 +4293,7 @@ function AdminView({
   productionExecutionArchiveRecoveryFinalComplianceArchiveRecords: ProductionExecutionArchiveRecoveryFinalComplianceArchiveRecord[];
   productionExecutionArchiveRecoveryEvidenceCustodyClosureRecords: ProductionExecutionArchiveRecoveryEvidenceCustodyClosureRecord[];
   productionExecutionArchiveRecoveryOperationalContinuityRecords: ProductionExecutionArchiveRecoveryOperationalContinuityRecord[];
+  productionExecutionArchiveRecoveryServiceManagementHandoffRecords: ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[];
   auditRetentionDiagnostics: AuditRetentionDiagnostics;
   approvals: ApprovalRequest[];
   templateGovernance: TemplateGovernance;
@@ -4330,6 +4380,7 @@ function AdminView({
   recordProductionExecutionArchiveRecoveryFinalComplianceArchive: () => void;
   recordProductionExecutionArchiveRecoveryEvidenceCustodyClosure: () => void;
   recordProductionExecutionArchiveRecoveryOperationalContinuity: () => void;
+  recordProductionExecutionArchiveRecoveryServiceManagementHandoff: () => void;
   reviewAdapterEnablement: () => void;
   requestEnvironmentDestroy: (name: string) => void;
   runTemplateRegistryAction: (
@@ -4971,6 +5022,17 @@ function AdminView({
               records={productionExecutionArchiveRecoveryOperationalContinuityRecords}
               recordProductionExecutionArchiveRecoveryOperationalContinuity={
                 recordProductionExecutionArchiveRecoveryOperationalContinuity
+              }
+            />
+          </Panel>
+          <Panel
+            title="Production archive recovery service management handoff"
+            action={`${productionExecutionArchiveRecoveryServiceManagementHandoffRecords.length} records`}
+          >
+            <ProductionExecutionArchiveRecoveryServiceManagementHandoffRecordPanel
+              records={productionExecutionArchiveRecoveryServiceManagementHandoffRecords}
+              recordProductionExecutionArchiveRecoveryServiceManagementHandoff={
+                recordProductionExecutionArchiveRecoveryServiceManagementHandoff
               }
             />
           </Panel>
@@ -9643,6 +9705,79 @@ function ProductionExecutionArchiveRecoveryOperationalContinuityRecordPanel({
             <span>Support handoff: {latest.supportHandoffReference || "missing"}</span>
             <span>Continuity sign-off: {latest.continuitySignOffReference || "missing"}</span>
             <span>Evidence custody closure: {latest.evidenceCustodyClosureRecordId}</span>
+            <span>Idempotency key: {latest.idempotencyKey}</span>
+          </div>
+          <div className="dryRunValidationList">
+            {latest.checks.map((check) => (
+              <div className="dryRunValidationRow" key={check.name}>
+                <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+                <div>
+                  <strong>{check.name}</strong>
+                  <small>{check.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductionExecutionArchiveRecoveryServiceManagementHandoffRecordPanel({
+  records,
+  recordProductionExecutionArchiveRecoveryServiceManagementHandoff,
+}: {
+  records: ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord[];
+  recordProductionExecutionArchiveRecoveryServiceManagementHandoff: () => void;
+}) {
+  const latest = records[0];
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Production execution archive recovery service management handoff record</strong>
+          <span>Captures service owner, support queue mapping, knowledge article, escalation matrix, and handoff sign-off evidence.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={recordProductionExecutionArchiveRecoveryServiceManagementHandoff}>
+          <Archive size={15} />
+          Record service handoff
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No production execution archive recovery service management handoff record has been prepared.</p>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{latest.provider}</strong>
+              <span>{latest.operationalContinuityRecordId}</span>
+            </div>
+            <span
+              className={`status ${
+                latest.status === "Ready for production execution archive recovery service management handoff review"
+                  ? "ready"
+                  : "approval"
+              }`}
+            >
+              {latest.status}
+            </span>
+          </div>
+          <div className="platformConfigGrid">
+            <CheckLine icon={UserRound} label="Service owner" value={latest.serviceOwner || "missing"} passed={Boolean(latest.serviceOwner)} />
+            <CheckLine icon={Network} label="Support queue" value={latest.supportQueueMappingReference || "missing"} passed={Boolean(latest.supportQueueMappingReference)} />
+            <CheckLine icon={ScrollText} label="Knowledge article" value={latest.knowledgeArticleReference || "missing"} passed={Boolean(latest.knowledgeArticleReference)} />
+            <CheckLine icon={ShieldCheck} label="Service handoff" value="Evidence only" passed={!latest.provisioningEnabled && !latest.killSwitch.enabled} />
+          </div>
+          <div className="inventoryEvidence">
+            <strong>Execution archive recovery service management handoff evidence</strong>
+            <span>Escalation matrix: {latest.escalationMatrixReference || "missing"}</span>
+            <span>Handoff sign-off: {latest.serviceManagementHandoffSignOffReference || "missing"}</span>
+            <span>Operational continuity: {latest.operationalContinuityRecordId}</span>
             <span>Idempotency key: {latest.idempotencyKey}</span>
           </div>
           <div className="dryRunValidationList">
@@ -17438,6 +17573,134 @@ function createMockProductionExecutionArchiveRecoveryOperationalContinuityRecord
       }.`,
     ],
     killSwitch: evidenceCustodyClosureRecord.killSwitch,
+    provisioningEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockProductionExecutionArchiveRecoveryServiceManagementHandoffRecord(
+  operationalContinuityRecord: ProductionExecutionArchiveRecoveryOperationalContinuityRecord,
+  actor: string
+): ProductionExecutionArchiveRecoveryServiceManagementHandoffRecord {
+  const providerSlug = operationalContinuityRecord.provider.toLowerCase();
+  const serviceOwner = "Production Archive Recovery Service Owner";
+  const supportQueueMappingReference = `production-archive-recovery-service-management-support-queue-${providerSlug}.json`;
+  const knowledgeArticleReference = `production-archive-recovery-service-management-knowledge-article-${providerSlug}.md`;
+  const escalationMatrixReference = `production-archive-recovery-service-management-escalation-matrix-${providerSlug}.md`;
+  const serviceManagementHandoffSignOffReference = `production-archive-recovery-service-management-handoff-signoff-${providerSlug}.md`;
+  const checks = [
+    {
+      name: "Operational continuity ready",
+      passed:
+        operationalContinuityRecord.status ===
+        "Ready for production execution archive recovery operational continuity review",
+      detail: `${operationalContinuityRecord.id} is ${operationalContinuityRecord.status}.`,
+    },
+    {
+      name: "Service owner assigned",
+      passed: Boolean(serviceOwner),
+      detail: serviceOwner,
+    },
+    {
+      name: "Support queue mapping linked",
+      passed: Boolean(supportQueueMappingReference),
+      detail: supportQueueMappingReference,
+    },
+    {
+      name: "Knowledge article linked",
+      passed: Boolean(knowledgeArticleReference),
+      detail: knowledgeArticleReference,
+    },
+    {
+      name: "Escalation matrix linked",
+      passed: Boolean(escalationMatrixReference),
+      detail: escalationMatrixReference,
+    },
+    {
+      name: "Service management handoff sign-off linked",
+      passed: Boolean(serviceManagementHandoffSignOffReference),
+      detail: serviceManagementHandoffSignOffReference,
+    },
+    {
+      name: "Prototype does not execute adapter",
+      passed:
+        operationalContinuityRecord.provisioningEnabled === false &&
+        operationalContinuityRecord.killSwitch.enabled === false,
+      detail: `${operationalContinuityRecord.killSwitch.name} remains disabled.`,
+    },
+  ];
+
+  return {
+    id: `production-execution-archive-recovery-service-management-handoff-record-${providerSlug}-${Date.now()}`,
+    provider: operationalContinuityRecord.provider,
+    operationalContinuityRecordId: operationalContinuityRecord.id,
+    evidenceCustodyClosureRecordId: operationalContinuityRecord.evidenceCustodyClosureRecordId,
+    finalComplianceArchiveRecordId: operationalContinuityRecord.finalComplianceArchiveRecordId,
+    archiveRecoveryAuditCertificationRecordId:
+      operationalContinuityRecord.archiveRecoveryAuditCertificationRecordId,
+    archiveRecoveryClosureRecordId: operationalContinuityRecord.archiveRecoveryClosureRecordId,
+    archiveRecoveryAcceptanceRecordId: operationalContinuityRecord.archiveRecoveryAcceptanceRecordId,
+    archiveRecoveryDrillRecordId: operationalContinuityRecord.archiveRecoveryDrillRecordId,
+    archiveRetrievalValidationRecordId: operationalContinuityRecord.archiveRetrievalValidationRecordId,
+    readinessArchiveHandoffRecordId: operationalContinuityRecord.readinessArchiveHandoffRecordId,
+    finalAcceptanceArchiveRecordId: operationalContinuityRecord.finalAcceptanceArchiveRecordId,
+    improvementClosureRecordId: operationalContinuityRecord.improvementClosureRecordId,
+    postImplementationReviewRecordId: operationalContinuityRecord.postImplementationReviewRecordId,
+    operationalClosureRecordId: operationalContinuityRecord.operationalClosureRecordId,
+    finalTurnoverRecordId: operationalContinuityRecord.finalTurnoverRecordId,
+    serviceAcceptanceRecordId: operationalContinuityRecord.serviceAcceptanceRecordId,
+    supportReadinessRecordId: operationalContinuityRecord.supportReadinessRecordId,
+    operationsHandoverRecordId: operationalContinuityRecord.operationsHandoverRecordId,
+    completionDossierRecordId: operationalContinuityRecord.completionDossierRecordId,
+    finalArchiveCertificationRecordId: operationalContinuityRecord.finalArchiveCertificationRecordId,
+    retentionAttestationRecordId: operationalContinuityRecord.retentionAttestationRecordId,
+    archivalHandoffRecordId: operationalContinuityRecord.archivalHandoffRecordId,
+    closurePacketRecordId: operationalContinuityRecord.closurePacketRecordId,
+    closureAuthorizationRecordId: operationalContinuityRecord.closureAuthorizationRecordId,
+    outcomeAuthorizationRecordId: operationalContinuityRecord.outcomeAuthorizationRecordId,
+    executionHoldPointRecordId: operationalContinuityRecord.executionHoldPointRecordId,
+    finalExecutionPacketRecordId: operationalContinuityRecord.finalExecutionPacketRecordId,
+    changeTicketLockRecordId: operationalContinuityRecord.changeTicketLockRecordId,
+    executionAuthorizationRecordId: operationalContinuityRecord.executionAuthorizationRecordId,
+    executionReadinessRecordId: operationalContinuityRecord.executionReadinessRecordId,
+    operatorAssignmentRecordId: operationalContinuityRecord.operatorAssignmentRecordId,
+    implementationHoldRecordId: operationalContinuityRecord.implementationHoldRecordId,
+    cabDecisionRecordId: operationalContinuityRecord.cabDecisionRecordId,
+    cabHandoffPacketId: operationalContinuityRecord.cabHandoffPacketId,
+    freezeRecordId: operationalContinuityRecord.freezeRecordId,
+    authorizationPacketId: operationalContinuityRecord.authorizationPacketId,
+    promotionDossierId: operationalContinuityRecord.promotionDossierId,
+    closurePackageId: operationalContinuityRecord.closurePackageId,
+    outcomeRecordId: operationalContinuityRecord.outcomeRecordId,
+    handoffPackageId: operationalContinuityRecord.handoffPackageId,
+    controlledSwitchRequestId: operationalContinuityRecord.controlledSwitchRequestId,
+    auditPackageId: operationalContinuityRecord.auditPackageId,
+    switchReviewId: operationalContinuityRecord.switchReviewId,
+    activationId: operationalContinuityRecord.activationId,
+    idempotencyKey: operationalContinuityRecord.idempotencyKey,
+    status: checks.every((check) => check.passed)
+      ? "Ready for production execution archive recovery service management handoff review"
+      : "Blocked",
+    requestedBy: actor,
+    serviceOwner,
+    supportQueueMappingReference,
+    knowledgeArticleReference,
+    escalationMatrixReference,
+    serviceManagementHandoffSignOffReference,
+    checks,
+    evidence: [
+      `Operational continuity record: ${operationalContinuityRecord.id}.`,
+      `Evidence custody closure record: ${operationalContinuityRecord.evidenceCustodyClosureRecordId}.`,
+      `Service owner: ${serviceOwner}.`,
+      `Support queue mapping: ${supportQueueMappingReference}.`,
+      `Knowledge article: ${knowledgeArticleReference}.`,
+      `Escalation matrix: ${escalationMatrixReference}.`,
+      `Service management handoff sign-off: ${serviceManagementHandoffSignOffReference}.`,
+      `Kill switch: ${operationalContinuityRecord.killSwitch.name}=${
+        operationalContinuityRecord.killSwitch.enabled ? "enabled" : "disabled"
+      }.`,
+    ],
+    killSwitch: operationalContinuityRecord.killSwitch,
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
   };

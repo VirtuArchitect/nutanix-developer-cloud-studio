@@ -2,16 +2,31 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v2.67.0-production-execution-archive-recovery-operational-continuity-record`.
+This project uses release tags for public milestones. The current release is `v2.68.0-production-execution-archive-recovery-service-management-handoff-record`.
 
 ## [Unreleased]
 
 ### Planned
 
 - Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
-- Add production execution archive recovery service management handoff records after operational continuity records are complete.
+- Add production execution archive recovery support ownership acceptance records after service management handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v2.68.0-production-execution-archive-recovery-service-management-handoff-record] - 2026-07-08
+
+### Added
+
+- Production execution archive recovery service management handoff records linked to production execution archive recovery operational continuity records.
+- API endpoints for listing and recording production execution archive recovery service management handoff records.
+- Admin Operations production archive recovery service management handoff panel.
+- Service owner, support queue mapping, knowledge article, escalation matrix, and service management handoff sign-off checks.
+- Tests proving missing operational continuity records or incomplete service management handoff evidence block readiness.
+
+### Notes
+
+- Production execution archive recovery service management handoff records are evidence-only.
+- The prototype does not promote, enable, or execute real adapters.
 
 ## [v2.67.0-production-execution-archive-recovery-operational-continuity-record] - 2026-07-07
 

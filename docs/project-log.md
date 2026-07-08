@@ -1,5 +1,14 @@
 # Nutanix Developer Cloud Studio - Project Log
 
+## 2026-07-08
+
+- Released `v2.68.0-production-execution-archive-recovery-service-management-handoff-record`.
+- Added production execution archive recovery service management handoff records linked to production execution archive recovery operational continuity records.
+- Added API endpoints for production execution archive recovery service management handoff records.
+- Added Admin Operations production archive recovery service management handoff panel.
+- Added tests proving missing operational continuity records or incomplete service management handoff evidence block readiness.
+- Planned `v2.69.0-production-execution-archive-recovery-support-ownership-acceptance-record` for evidence-only archive recovery support ownership acceptance records.
+
 ## 2026-07-07
 
 - Released `v2.67.0-production-execution-archive-recovery-operational-continuity-record`.
