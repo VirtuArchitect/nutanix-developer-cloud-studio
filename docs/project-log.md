@@ -2,6 +2,36 @@
 
 ## 2026-07-08
 
+- Released `v4.5.0-emergency-stop-rollback-drill`.
+- Added emergency stop rollback drill records proving simulated-mode rollback and evidence preservation.
+- Released `v4.4.0-pilot-evidence-review-queue`.
+- Added pilot evidence review records for reviewer approval or rejection before any future live read-only HTTP enablement.
+- Released `v4.3.0-live-read-only-call-envelope`.
+- Added non-executing call envelopes for Prism read-only list operations with redaction and expected response-shape evidence.
+- Released `v4.2.0-read-only-pilot-session-model`.
+- Added controlled read-only pilot session records for operator, window, runtime mode, approved gate, and evidence links.
+- Released `v4.1.0-runtime-enablement-policy`.
+- Added runtime enablement policy records for the future read-only HTTP flag, required approvals, allowed environments, expiry, rollback, and emergency stop.
+- Released `v4.0.0-authorized-read-only-lab-pilot-gate`.
+- Added the final non-executing authorized read-only lab pilot gate with approvers, acknowledgements, stop conditions, and disabled execution flags.
+- Released `v3.9.0-lab-connectivity-preflight`.
+- Added lab connectivity preflight records for TLS, CA reference, timeout/retry policy, credential resolver readiness, endpoint allowlist, and no-network validation.
+- Released `v3.8.0-prism-read-only-http-client-disabled-mode`.
+- Added disabled Prism read-only HTTP client shape records for inventory list requests without enabling HTTP execution.
+- Released `v3.7.0-credential-resolver-adapter-stub`.
+- Added disabled credential resolver adapter stubs for Vault, CyberArk, and environment reference schemes with redaction and fail-closed tests.
+- Released `v3.6.0-lab-connection-profile-hardening`.
+- Added lab connection profile hardening records for endpoint, CA bundle, owner, approver, expiry, and bounded provider scope validation.
+- Released `v3.5.0-authorized-lab-connection-dry-run`.
+- Added authorized lab connection dry-run evidence for config, credential references, TLS settings, endpoint allowlists, redaction, audit logging, and production decision readiness without live Prism calls.
+- Released `v3.4.0-offline-contract-replay-suite`.
+- Added offline replay suite coverage for sanitized Prism-shaped cluster, project, image, subnet, category, and VM fixture normalization.
+- Released `v3.3.0-real-read-only-adapter-interface`.
+- Added disabled real read-only adapter interface records and Prism Central inventory list endpoint mapping.
+- Released `v3.2.0-credential-provider-contract`.
+- Added credential-provider contract records with disabled/mock resolver evidence and redaction rules.
+- Released `v3.1.0-adapter-configuration-boundary`.
+- Added real read-only adapter configuration boundary records for endpoint reference, credential provider reference, TLS mode, timeout, retry, operation allowlist, and closed kill switch.
 - Released `v3.0.0-production-readiness-decision-gate`.
 - Added production readiness decision gate records for go/no-go, approvers, rollback owner, support contact, retention policy, checklist blockers, and CAB-ready evidence.
 - Released `v2.99.0-lab-pilot-operator-console`.

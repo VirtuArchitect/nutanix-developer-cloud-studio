@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "3.0.0-production-readiness-decision-gate",
+  "version": "4.5.0-emergency-stop-rollback-drill",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

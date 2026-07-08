@@ -1,6 +1,8 @@
 import type {
   ApprovalRequest,
   AdapterEnablementRecord,
+  AuthorizedReadOnlyLabPilotGateRecord,
+  AuthorizedLabConnectionDryRunRecord,
   AhvControlledProvisioningRun,
   AhvCreateAdapterContractReview,
   ControlledProvisioningDecision,
@@ -15,13 +17,19 @@ import type {
   ControlledCreateAuthorizationEnvelope,
   ControlledProvisioningGate,
   ControlPlaneJob,
+  CredentialResolverAdapterStubRecord,
+  CredentialProviderContractRecord,
+  DisabledPrismReadOnlyHttpClientRecord,
+  DisabledRealReadOnlyAdapterInterfaceRecord,
   ExecutionBrokerDispatchApproval,
   ExecutionBrokerQueueRecord,
   Environment,
   Integration,
   IntegrationConfig,
   AuditExportRecord,
+  HardenedLabConnectionProfileReview,
   LabWindowEvidenceExportRecord,
+  LabConnectivityPreflightRecord,
   LabEvidenceReviewRecord,
   LabExecutionProposalEnvelope,
   LabExecutionProposalExportRecord,
@@ -31,8 +39,11 @@ import type {
   LifecycleOperationKind,
   LifecycleOperationRecord,
   LiveReadOnlyInventoryPilotRecord,
+  LiveReadOnlyCallEnvelopeRecord,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
+  OfflineContractReplaySuiteRecord,
+  PilotEvidenceReviewRecord,
   PrismSimulatorFailureScenario,
   PrismSimulatorProfile,
   PlatformConfig,
@@ -50,6 +61,8 @@ import type {
   ReadOnlyAdapterRuntimeModeRecord,
   ReadOnlyPrismLabGate,
   ReadOnlyLabConnectionProfile,
+  ReadOnlyPilotSessionRecord,
+  ReadOnlyRuntimeEnablementPolicyRecord,
   ReadOnlyAdapterAuthorizationGate,
   OperatorEvidenceExportPack,
   LabPilotRunbookWorkflow,
@@ -60,9 +73,11 @@ import type {
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   ProductionReadinessDecisionGate,
+  RealReadOnlyAdapterConfigBoundary,
   RealAdapterLabScopeActivation,
   RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
+  EmergencyStopRollbackDrillRecord,
   ReleaseEvidenceExportRecord,
   SwitchExecutionHandoffPackage,
   SwitchExecutionOutcomeRecord,
@@ -141,6 +156,21 @@ export type ApiState = {
   liveReadOnlyInventoryPilots: LiveReadOnlyInventoryPilotRecord[];
   readOnlyAdapterObservabilityRecords: ReadOnlyAdapterObservabilityRecord[];
   productionReadinessDecisionGates: ProductionReadinessDecisionGate[];
+  realReadOnlyAdapterConfigBoundaries: RealReadOnlyAdapterConfigBoundary[];
+  credentialProviderContractRecords: CredentialProviderContractRecord[];
+  disabledRealReadOnlyAdapterInterfaceRecords: DisabledRealReadOnlyAdapterInterfaceRecord[];
+  offlineContractReplaySuiteRecords: OfflineContractReplaySuiteRecord[];
+  authorizedLabConnectionDryRunRecords: AuthorizedLabConnectionDryRunRecord[];
+  hardenedLabConnectionProfileReviews: HardenedLabConnectionProfileReview[];
+  credentialResolverAdapterStubRecords: CredentialResolverAdapterStubRecord[];
+  disabledPrismReadOnlyHttpClientRecords: DisabledPrismReadOnlyHttpClientRecord[];
+  labConnectivityPreflightRecords: LabConnectivityPreflightRecord[];
+  authorizedReadOnlyLabPilotGateRecords: AuthorizedReadOnlyLabPilotGateRecord[];
+  readOnlyRuntimeEnablementPolicies: ReadOnlyRuntimeEnablementPolicyRecord[];
+  readOnlyPilotSessions: ReadOnlyPilotSessionRecord[];
+  liveReadOnlyCallEnvelopes: LiveReadOnlyCallEnvelopeRecord[];
+  pilotEvidenceReviewRecords: PilotEvidenceReviewRecord[];
+  emergencyStopRollbackDrillRecords: EmergencyStopRollbackDrillRecord[];
   mockPrismStatus: MockPrismSimulatorStatus;
   mockPrismExecutions: MockPrismExecution[];
   prismSimulatorProfiles: PrismSimulatorProfile[];
@@ -355,6 +385,113 @@ export type CreateProductionReadinessDecisionGateRequest = {
   rollbackOwner?: string;
   supportContact?: string;
   retentionPolicy?: string;
+};
+
+export type CreateRealReadOnlyAdapterConfigBoundaryRequest = {
+  endpointRef?: string;
+  credentialProviderRef?: string;
+  caCertificateRef?: string;
+  tlsValidationMode?: RealReadOnlyAdapterConfigBoundary["tlsValidationMode"];
+  timeoutSeconds?: number;
+  retry?: Partial<RealReadOnlyAdapterConfigBoundary["retry"]>;
+  allowedOperations?: RealReadOnlyAdapterConfigBoundary["allowedOperations"];
+  killSwitch?: RealReadOnlyAdapterConfigBoundary["killSwitch"];
+};
+
+export type CreateCredentialProviderContractRequest = {
+  credentialProviderRef?: string;
+  provider?: CredentialProviderContractRecord["provider"];
+};
+
+export type CreateDisabledRealReadOnlyAdapterInterfaceRequest = {
+  configBoundaryId?: string;
+  credentialContractId?: string;
+};
+
+export type CreateOfflineContractReplaySuiteRequest = {
+  adapterInterfaceId?: string;
+  fixtureReplayId?: string;
+};
+
+export type CreateAuthorizedLabConnectionDryRunRequest = {
+  configBoundaryId?: string;
+  credentialContractId?: string;
+  adapterInterfaceId?: string;
+  offlineReplaySuiteId?: string;
+  productionDecisionGateId?: string;
+};
+
+export type CreateHardenedLabConnectionProfileReviewRequest = {
+  profileId?: string;
+  caCertificateRef?: string;
+};
+
+export type CreateCredentialResolverAdapterStubRequest = {
+  credentialContractId?: string;
+  provider?: CredentialResolverAdapterStubRecord["provider"];
+};
+
+export type CreateDisabledPrismReadOnlyHttpClientRequest = {
+  adapterInterfaceId?: string;
+  configBoundaryId?: string;
+  credentialResolverStubId?: string;
+};
+
+export type CreateLabConnectivityPreflightRequest = {
+  hardenedProfileReviewId?: string;
+  configBoundaryId?: string;
+  credentialResolverStubId?: string;
+  httpClientRecordId?: string;
+};
+
+export type CreateAuthorizedReadOnlyLabPilotGateRequest = {
+  preflightId?: string;
+  dryRunId?: string;
+  productionDecisionGateId?: string;
+  requiredApprovers?: string[];
+  operatorAcknowledgements?: string[];
+};
+
+export type CreateReadOnlyRuntimeEnablementPolicyRequest = {
+  pilotGateId?: string;
+  requiredApprovals?: string[];
+  allowedEnvironments?: string[];
+  expiresAt?: string;
+  emergencyStopOwner?: string;
+  emergencyStopContact?: string;
+  emergencyStopProcedureRef?: string;
+  emergencyStopTested?: boolean;
+};
+
+export type CreateReadOnlyPilotSessionRequest = {
+  policyId?: string;
+  approvedGateId?: string;
+  operator?: string;
+  startedAt?: string;
+  endsAt?: string;
+  runtimeMode?: ReadOnlyPilotSessionRecord["runtimeMode"];
+  evidenceLinks?: string[];
+};
+
+export type CreateLiveReadOnlyCallEnvelopeRequest = {
+  pilotSessionId?: string;
+  httpClientRecordId?: string;
+};
+
+export type CreatePilotEvidenceReviewRequest = {
+  callEnvelopeId?: string;
+  pilotSessionId?: string;
+  reviewer?: string;
+  decision?: PilotEvidenceReviewRecord["decision"];
+  findings?: string[];
+};
+
+export type CreateEmergencyStopRollbackDrillRequest = {
+  pilotEvidenceReviewId?: string;
+  policyId?: string;
+  simulatedModeRestored?: boolean;
+  evidencePreserved?: boolean;
+  emergencyStopOwner?: string;
 };
 
 export type CreateVmLifecycleProofRequest = {

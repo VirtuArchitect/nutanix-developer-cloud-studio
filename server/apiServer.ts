@@ -41,6 +41,14 @@ import {
   createControlledCreateAuthorizationEnvelope,
 } from "./controlledCreateAuthorization";
 import {
+  ControlledReadOnlyLabEnablementError,
+  createAuthorizedReadOnlyLabPilotGateRecord,
+  createCredentialResolverAdapterStubRecord,
+  createDisabledPrismReadOnlyHttpClientRecord,
+  createHardenedLabConnectionProfileReview,
+  createLabConnectivityPreflightRecord,
+} from "./controlledReadOnlyLabEnablement";
+import {
   ControlledLabReleaseRunbookError,
   createControlledLabReleaseRunbookRecord,
 } from "./controlledLabReleaseRunbook";
@@ -347,6 +355,22 @@ import {
   setReadOnlyAdapterRuntimeMode,
 } from "./readOnlyAdapterPilot";
 import {
+  createAuthorizedLabConnectionDryRunRecord,
+  createCredentialProviderContractRecord,
+  createDisabledRealReadOnlyAdapterInterfaceRecord,
+  createOfflineContractReplaySuiteRecord,
+  createRealReadOnlyAdapterConfigBoundary,
+  RealReadOnlyAdapterPreparationError,
+} from "./realReadOnlyAdapterPreparation";
+import {
+  createEmergencyStopRollbackDrillRecord,
+  createLiveReadOnlyCallEnvelopeRecord,
+  createPilotEvidenceReviewRecord,
+  createReadOnlyPilotSessionRecord,
+  createReadOnlyRuntimeEnablementPolicyRecord,
+  ProductionReadOnlyPilotControlsError,
+} from "./productionReadOnlyPilotControls";
+import {
   AuthorizationError,
   createAuthBoundaryDiagnostics,
   createRequestContext,
@@ -458,7 +482,22 @@ import type {
   CreateOperatorEvidenceExportPackRequest,
   CreateLiveReadOnlyInventoryPilotRequest,
   CreateProductionReadinessDecisionGateRequest,
+  CreateEmergencyStopRollbackDrillRequest,
+  CreateLiveReadOnlyCallEnvelopeRequest,
+  CreatePilotEvidenceReviewRequest,
+  CreateReadOnlyPilotSessionRequest,
+  CreateReadOnlyRuntimeEnablementPolicyRequest,
+  CreateAuthorizedLabConnectionDryRunRequest,
+  CreateAuthorizedReadOnlyLabPilotGateRequest,
+  CreateCredentialResolverAdapterStubRequest,
+  CreateCredentialProviderContractRequest,
+  CreateDisabledPrismReadOnlyHttpClientRequest,
+  CreateDisabledRealReadOnlyAdapterInterfaceRequest,
+  CreateHardenedLabConnectionProfileReviewRequest,
+  CreateLabConnectivityPreflightRequest,
+  CreateOfflineContractReplaySuiteRequest,
   CreatePrismFixtureReplayRequest,
+  CreateRealReadOnlyAdapterConfigBoundaryRequest,
   CreateReadOnlyAdapterObservabilityRequest,
   CreateReadOnlyAdapterAuthorizationGateRequest,
   CreateReadOnlyLabConnectionProfileRequest,
@@ -605,6 +644,35 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ReadOnlyAdapterPilotError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof RealReadOnlyAdapterPreparationError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+      if (error instanceof ControlledReadOnlyLabEnablementError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ProductionReadOnlyPilotControlsError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1442,6 +1510,96 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/production/readiness-decision-gates") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.productionReadinessDecisionGates });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/real-read-only/config-boundaries") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.realReadOnlyAdapterConfigBoundaries });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/credentials/provider-contracts") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.credentialProviderContractRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/real-read-only/adapter-interfaces") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.disabledRealReadOnlyAdapterInterfaceRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/offline-contract-replays") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.offlineContractReplaySuiteRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/authorized-lab-dry-runs") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.authorizedLabConnectionDryRunRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-lab-profile-hardening") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.hardenedLabConnectionProfileReviews });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/credentials/resolver-stubs") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.credentialResolverAdapterStubRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-http-clients") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.disabledPrismReadOnlyHttpClientRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/lab-connectivity-preflights") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labConnectivityPreflightRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/authorized-read-only-pilot-gates") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.authorizedReadOnlyLabPilotGateRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-runtime-policies") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.readOnlyRuntimeEnablementPolicies });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/read-only-pilot-sessions") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.readOnlyPilotSessions });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/live-read-only-call-envelopes") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.liveReadOnlyCallEnvelopes });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/pilot-evidence-reviews") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.pilotEvidenceReviewRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/prism/emergency-stop-rollback-drills") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.emergencyStopRollbackDrillRecords });
     return;
   }
 
@@ -2606,6 +2764,261 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 201, { data: gate });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/real-read-only/config-boundaries") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateRealReadOnlyAdapterConfigBoundaryRequest>(request);
+    const record = createRealReadOnlyAdapterConfigBoundary(state, body, context.session.user);
+    state.realReadOnlyAdapterConfigBoundaries = [record, ...state.realReadOnlyAdapterConfigBoundaries];
+    addAuditEvent(state, "prism.real-readonly.config-boundary.recorded", context.session.user, record.id, {
+      status: record.status,
+      tlsValidationMode: record.tlsValidationMode,
+      killSwitch: record.killSwitch,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/credentials/provider-contracts") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateCredentialProviderContractRequest>(request);
+    const record = createCredentialProviderContractRecord(state, body, context.session.user);
+    state.credentialProviderContractRecords = [record, ...state.credentialProviderContractRecords];
+    addAuditEvent(state, "credential.provider-contract.recorded", context.session.user, record.id, {
+      resolverStatus: record.resolverStatus,
+      resolvedSecretAvailable: record.resolvedSecretAvailable,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/real-read-only/adapter-interfaces") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateDisabledRealReadOnlyAdapterInterfaceRequest>(request);
+    const record = createDisabledRealReadOnlyAdapterInterfaceRecord(state, body, context.session.user);
+    state.disabledRealReadOnlyAdapterInterfaceRecords = [record, ...state.disabledRealReadOnlyAdapterInterfaceRecords];
+    addAuditEvent(state, "prism.real-readonly.adapter-interface.recorded", context.session.user, record.id, {
+      status: record.status,
+      supportedOperations: record.supportedOperations.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/offline-contract-replays") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateOfflineContractReplaySuiteRequest>(request);
+    const record = createOfflineContractReplaySuiteRecord(state, body, context.session.user);
+    state.offlineContractReplaySuiteRecords = [record, ...state.offlineContractReplaySuiteRecords];
+    addAuditEvent(state, "prism.offline-contract-replay.recorded", context.session.user, record.id, {
+      status: record.status,
+      coverage: record.coverage.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/authorized-lab-dry-runs") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateAuthorizedLabConnectionDryRunRequest>(request);
+    const record = createAuthorizedLabConnectionDryRunRecord(state, body, context.session.user);
+    state.authorizedLabConnectionDryRunRecords = [record, ...state.authorizedLabConnectionDryRunRecords];
+    addAuditEvent(state, "prism.authorized-lab-dry-run.recorded", context.session.user, record.id, {
+      status: record.status,
+      validationCount: record.validations.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-lab-profile-hardening") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateHardenedLabConnectionProfileReviewRequest>(request);
+    const record = createHardenedLabConnectionProfileReview(state, body, context.session.user);
+    state.hardenedLabConnectionProfileReviews = [record, ...state.hardenedLabConnectionProfileReviews];
+    addAuditEvent(state, "prism.readonly.lab-profile-hardening.recorded", context.session.user, record.id, {
+      status: record.status,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/credentials/resolver-stubs") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateCredentialResolverAdapterStubRequest>(request);
+    const record = createCredentialResolverAdapterStubRecord(state, body, context.session.user);
+    state.credentialResolverAdapterStubRecords = [record, ...state.credentialResolverAdapterStubRecords];
+    addAuditEvent(state, "credential.resolver-stub.recorded", context.session.user, record.id, {
+      status: record.status,
+      resolvedSecretAvailable: record.resolvedSecretAvailable,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-http-clients") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateDisabledPrismReadOnlyHttpClientRequest>(request);
+    const record = createDisabledPrismReadOnlyHttpClientRecord(state, body, context.session.user);
+    state.disabledPrismReadOnlyHttpClientRecords = [record, ...state.disabledPrismReadOnlyHttpClientRecords];
+    addAuditEvent(state, "prism.readonly.http-client.recorded", context.session.user, record.id, {
+      status: record.status,
+      requestShape: record.requestShape.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/lab-connectivity-preflights") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabConnectivityPreflightRequest>(request);
+    const record = createLabConnectivityPreflightRecord(state, body, context.session.user);
+    state.labConnectivityPreflightRecords = [record, ...state.labConnectivityPreflightRecords];
+    addAuditEvent(state, "prism.lab-connectivity-preflight.recorded", context.session.user, record.id, {
+      status: record.status,
+      validationCount: record.validations.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/authorized-read-only-pilot-gates") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateAuthorizedReadOnlyLabPilotGateRequest>(request);
+    const record = createAuthorizedReadOnlyLabPilotGateRecord(state, body, context.session.user);
+    state.authorizedReadOnlyLabPilotGateRecords = [record, ...state.authorizedReadOnlyLabPilotGateRecords];
+    addAuditEvent(state, "prism.authorized-readonly-pilot-gate.recorded", context.session.user, record.id, {
+      status: record.status,
+      checkCount: record.checks.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-runtime-policies") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateReadOnlyRuntimeEnablementPolicyRequest>(request);
+    const record = createReadOnlyRuntimeEnablementPolicyRecord(state, body, context.session.user);
+    state.readOnlyRuntimeEnablementPolicies = [record, ...state.readOnlyRuntimeEnablementPolicies];
+    addAuditEvent(state, "prism.readonly.runtime-policy.recorded", context.session.user, record.id, {
+      status: record.status,
+      runtimeFlag: record.runtimeFlag,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/read-only-pilot-sessions") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateReadOnlyPilotSessionRequest>(request);
+    const record = createReadOnlyPilotSessionRecord(state, body, context.session.user);
+    state.readOnlyPilotSessions = [record, ...state.readOnlyPilotSessions];
+    addAuditEvent(state, "prism.readonly.pilot-session.recorded", context.session.user, record.id, {
+      status: record.status,
+      runtimeMode: record.runtimeMode,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/live-read-only-call-envelopes") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLiveReadOnlyCallEnvelopeRequest>(request);
+    const record = createLiveReadOnlyCallEnvelopeRecord(state, body, context.session.user);
+    state.liveReadOnlyCallEnvelopes = [record, ...state.liveReadOnlyCallEnvelopes];
+    addAuditEvent(state, "prism.readonly.call-envelope.recorded", context.session.user, record.id, {
+      status: record.status,
+      operationCount: record.operationEnvelopes.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/pilot-evidence-reviews") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreatePilotEvidenceReviewRequest>(request);
+    const record = createPilotEvidenceReviewRecord(state, body, context.session.user);
+    state.pilotEvidenceReviewRecords = [record, ...state.pilotEvidenceReviewRecords];
+    addAuditEvent(state, "prism.readonly.evidence-review.recorded", context.session.user, record.id, {
+      status: record.status,
+      decision: record.decision,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/prism/emergency-stop-rollback-drills") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateEmergencyStopRollbackDrillRequest>(request);
+    const record = createEmergencyStopRollbackDrillRecord(state, body, context.session.user);
+    state.emergencyStopRollbackDrillRecords = [record, ...state.emergencyStopRollbackDrillRecords];
+    addAuditEvent(state, "prism.readonly.rollback-drill.recorded", context.session.user, record.id, {
+      status: record.status,
+      rollbackMode: record.rollbackMode,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
     return;
   }
 

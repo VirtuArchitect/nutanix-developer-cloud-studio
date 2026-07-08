@@ -1,6 +1,7 @@
 import type {
   ApprovalRequest,
   AuthBoundaryDiagnostics,
+  AuthorizedLabConnectionDryRunRecord,
   AdapterPromotionReadinessDossier,
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
@@ -16,16 +17,22 @@ import type {
   ControlledLabReleaseRunbookRecord,
   ControlledSwitchConfigurationRequest,
   ContainerConfigValidationManifest,
+  CredentialResolverAdapterStubRecord,
   CredentialReferenceDiagnostic,
+  CredentialProviderContractRecord,
   ControlledProvisioningGate,
   ControlPlaneJob,
   ControlledCreateAuthorizationEnvelope,
   ExecutionBrokerDispatchApproval,
   ExecutionBrokerQueueRecord,
   Environment,
+  DisabledPrismReadOnlyHttpClientRecord,
+  DisabledRealReadOnlyAdapterInterfaceRecord,
+  HardenedLabConnectionProfileReview,
   Integration,
   IntegrationConfig,
   LabEvidenceReviewRecord,
+  LabConnectivityPreflightRecord,
   LabExecutionProposalEnvelope,
   LabExecutionProposalExportRecord,
   LabWindowEvidenceExportRecord,
@@ -36,11 +43,14 @@ import type {
   LabScopeDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
+  LiveReadOnlyCallEnvelopeRecord,
   LiveReadOnlyInventoryPilotRecord,
   LiveReadOnlyPrismCallDesign,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
   MockPrismSimulatorStatus,
+  OfflineContractReplaySuiteRecord,
+  PilotEvidenceReviewRecord,
   PrismAdapterDiagnostics,
   PrismSimulatorFailureScenario,
   PrismSimulatorFailureScenarioId,
@@ -103,14 +113,19 @@ import type {
   ProductionReadinessReview,
   ProductionReadinessDecisionGate,
   ProductionReadinessScorecard,
+  AuthorizedReadOnlyLabPilotGateRecord,
   ProviderReleaseGateRecord,
   ProviderReleaseReadinessSummary,
   RealAdapterLabScopeActivation,
+  RealReadOnlyAdapterConfigBoundary,
   ReadOnlyPrismLabGate,
   ReadOnlyLabConnectionProfile,
+  ReadOnlyPilotSessionRecord,
+  ReadOnlyRuntimeEnablementPolicyRecord,
   ReadOnlyAdapterAuthorizationGate,
   RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
+  EmergencyStopRollbackDrillRecord,
   ReleaseEvidenceExportRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
@@ -421,6 +436,236 @@ export async function fetchProductionReadinessDecisionGatesFromApi() {
 
 export async function createProductionReadinessDecisionGateViaApi(payload: Partial<ProductionReadinessDecisionGate> = {}) {
   return fetchJson<ProductionReadinessDecisionGate>("/api/production/readiness-decision-gates", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchRealReadOnlyAdapterConfigBoundariesFromApi() {
+  return fetchJson<RealReadOnlyAdapterConfigBoundary[]>("/api/prism/real-read-only/config-boundaries");
+}
+
+export async function createRealReadOnlyAdapterConfigBoundaryViaApi(payload: Partial<RealReadOnlyAdapterConfigBoundary> = {}) {
+  return fetchJson<RealReadOnlyAdapterConfigBoundary>("/api/prism/real-read-only/config-boundaries", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchCredentialProviderContractsFromApi() {
+  return fetchJson<CredentialProviderContractRecord[]>("/api/credentials/provider-contracts");
+}
+
+export async function createCredentialProviderContractViaApi(payload: Partial<CredentialProviderContractRecord> = {}) {
+  return fetchJson<CredentialProviderContractRecord>("/api/credentials/provider-contracts", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchDisabledRealReadOnlyAdapterInterfacesFromApi() {
+  return fetchJson<DisabledRealReadOnlyAdapterInterfaceRecord[]>("/api/prism/real-read-only/adapter-interfaces");
+}
+
+export async function createDisabledRealReadOnlyAdapterInterfaceViaApi(payload: {
+  configBoundaryId?: string;
+  credentialContractId?: string;
+} = {}) {
+  return fetchJson<DisabledRealReadOnlyAdapterInterfaceRecord>("/api/prism/real-read-only/adapter-interfaces", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchOfflineContractReplaySuitesFromApi() {
+  return fetchJson<OfflineContractReplaySuiteRecord[]>("/api/prism/offline-contract-replays");
+}
+
+export async function createOfflineContractReplaySuiteViaApi(payload: {
+  adapterInterfaceId?: string;
+  fixtureReplayId?: string;
+} = {}) {
+  return fetchJson<OfflineContractReplaySuiteRecord>("/api/prism/offline-contract-replays", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchAuthorizedLabConnectionDryRunsFromApi() {
+  return fetchJson<AuthorizedLabConnectionDryRunRecord[]>("/api/prism/authorized-lab-dry-runs");
+}
+
+export async function createAuthorizedLabConnectionDryRunViaApi(payload: {
+  configBoundaryId?: string;
+  credentialContractId?: string;
+  adapterInterfaceId?: string;
+  offlineReplaySuiteId?: string;
+  productionDecisionGateId?: string;
+} = {}) {
+  return fetchJson<AuthorizedLabConnectionDryRunRecord>("/api/prism/authorized-lab-dry-runs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchHardenedLabConnectionProfileReviewsFromApi() {
+  return fetchJson<HardenedLabConnectionProfileReview[]>("/api/prism/read-only-lab-profile-hardening");
+}
+
+export async function createHardenedLabConnectionProfileReviewViaApi(payload: {
+  profileId?: string;
+  caCertificateRef?: string;
+} = {}) {
+  return fetchJson<HardenedLabConnectionProfileReview>("/api/prism/read-only-lab-profile-hardening", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchCredentialResolverAdapterStubsFromApi() {
+  return fetchJson<CredentialResolverAdapterStubRecord[]>("/api/credentials/resolver-stubs");
+}
+
+export async function createCredentialResolverAdapterStubViaApi(payload: {
+  credentialContractId?: string;
+  provider?: CredentialResolverAdapterStubRecord["provider"];
+} = {}) {
+  return fetchJson<CredentialResolverAdapterStubRecord>("/api/credentials/resolver-stubs", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchDisabledPrismReadOnlyHttpClientsFromApi() {
+  return fetchJson<DisabledPrismReadOnlyHttpClientRecord[]>("/api/prism/read-only-http-clients");
+}
+
+export async function createDisabledPrismReadOnlyHttpClientViaApi(payload: {
+  adapterInterfaceId?: string;
+  configBoundaryId?: string;
+  credentialResolverStubId?: string;
+} = {}) {
+  return fetchJson<DisabledPrismReadOnlyHttpClientRecord>("/api/prism/read-only-http-clients", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchLabConnectivityPreflightsFromApi() {
+  return fetchJson<LabConnectivityPreflightRecord[]>("/api/prism/lab-connectivity-preflights");
+}
+
+export async function createLabConnectivityPreflightViaApi(payload: {
+  hardenedProfileReviewId?: string;
+  configBoundaryId?: string;
+  credentialResolverStubId?: string;
+  httpClientRecordId?: string;
+} = {}) {
+  return fetchJson<LabConnectivityPreflightRecord>("/api/prism/lab-connectivity-preflights", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchAuthorizedReadOnlyLabPilotGatesFromApi() {
+  return fetchJson<AuthorizedReadOnlyLabPilotGateRecord[]>("/api/prism/authorized-read-only-pilot-gates");
+}
+
+export async function createAuthorizedReadOnlyLabPilotGateViaApi(payload: {
+  preflightId?: string;
+  dryRunId?: string;
+  productionDecisionGateId?: string;
+  requiredApprovers?: string[];
+  operatorAcknowledgements?: string[];
+} = {}) {
+  return fetchJson<AuthorizedReadOnlyLabPilotGateRecord>("/api/prism/authorized-read-only-pilot-gates", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchReadOnlyRuntimeEnablementPoliciesFromApi() {
+  return fetchJson<ReadOnlyRuntimeEnablementPolicyRecord[]>("/api/prism/read-only-runtime-policies");
+}
+
+export async function createReadOnlyRuntimeEnablementPolicyViaApi(payload: {
+  pilotGateId?: string;
+  requiredApprovals?: string[];
+  allowedEnvironments?: string[];
+  expiresAt?: string;
+  emergencyStopOwner?: string;
+  emergencyStopContact?: string;
+  emergencyStopProcedureRef?: string;
+  emergencyStopTested?: boolean;
+} = {}) {
+  return fetchJson<ReadOnlyRuntimeEnablementPolicyRecord>("/api/prism/read-only-runtime-policies", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchReadOnlyPilotSessionsFromApi() {
+  return fetchJson<ReadOnlyPilotSessionRecord[]>("/api/prism/read-only-pilot-sessions");
+}
+
+export async function createReadOnlyPilotSessionViaApi(payload: {
+  policyId?: string;
+  approvedGateId?: string;
+  operator?: string;
+  startedAt?: string;
+  endsAt?: string;
+  runtimeMode?: ReadOnlyPilotSessionRecord["runtimeMode"];
+  evidenceLinks?: string[];
+} = {}) {
+  return fetchJson<ReadOnlyPilotSessionRecord>("/api/prism/read-only-pilot-sessions", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchLiveReadOnlyCallEnvelopesFromApi() {
+  return fetchJson<LiveReadOnlyCallEnvelopeRecord[]>("/api/prism/live-read-only-call-envelopes");
+}
+
+export async function createLiveReadOnlyCallEnvelopeViaApi(payload: {
+  pilotSessionId?: string;
+  httpClientRecordId?: string;
+} = {}) {
+  return fetchJson<LiveReadOnlyCallEnvelopeRecord>("/api/prism/live-read-only-call-envelopes", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchPilotEvidenceReviewsFromApi() {
+  return fetchJson<PilotEvidenceReviewRecord[]>("/api/prism/pilot-evidence-reviews");
+}
+
+export async function createPilotEvidenceReviewViaApi(payload: {
+  callEnvelopeId?: string;
+  pilotSessionId?: string;
+  reviewer?: string;
+  decision?: PilotEvidenceReviewRecord["decision"];
+  findings?: string[];
+} = {}) {
+  return fetchJson<PilotEvidenceReviewRecord>("/api/prism/pilot-evidence-reviews", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchEmergencyStopRollbackDrillsFromApi() {
+  return fetchJson<EmergencyStopRollbackDrillRecord[]>("/api/prism/emergency-stop-rollback-drills");
+}
+
+export async function createEmergencyStopRollbackDrillViaApi(payload: {
+  pilotEvidenceReviewId?: string;
+  policyId?: string;
+  simulatedModeRestored?: boolean;
+  evidencePreserved?: boolean;
+  emergencyStopOwner?: string;
+} = {}) {
+  return fetchJson<EmergencyStopRollbackDrillRecord>("/api/prism/emergency-stop-rollback-drills", {
     method: "POST",
     body: JSON.stringify(payload),
   });

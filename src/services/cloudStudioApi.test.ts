@@ -3,6 +3,9 @@ import {
   checkApiHealth,
   createAdapterEnablementRecordViaApi,
   createAdapterPromotionReadinessDossierViaApi,
+  createAuthorizedLabConnectionDryRunViaApi,
+  createAuthorizedReadOnlyLabPilotGateViaApi,
+  createEmergencyStopRollbackDrillViaApi,
   createAhvControlledProvisioningRunViaApi,
   createAhvCreateAdapterContractReviewViaApi,
   createAuditExportViaApi,
@@ -14,6 +17,9 @@ import {
   createControlledLabDryRunWindowViaApi,
   createControlledLabReleaseRunbookViaApi,
   createControlledSwitchConfigurationRequestViaApi,
+  createCredentialResolverAdapterStubViaApi,
+  createCredentialProviderContractViaApi,
+  createDisabledPrismReadOnlyHttpClientViaApi,
   createSwitchExecutionHandoffPackageViaApi,
   createSwitchExecutionOutcomeRecordViaApi,
   createSwitchClosureRetentionPackageViaApi,
@@ -23,11 +29,13 @@ import {
   createLabExecutionProposalEnvelopeViaApi,
   createLabExecutionProposalExportViaApi,
   createLabWindowEvidenceExportViaApi,
+  createLiveReadOnlyCallEnvelopeViaApi,
   createManualRealAdapterSwitchReviewViaApi,
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
   createLabAuthorizationScopeViaApi,
+  createLabConnectivityPreflightViaApi,
   createLifecycleOperationViaApi,
   createPlatformServiceRequestViaApi,
   createPlatformServiceAdapterContractReviewViaApi,
@@ -73,14 +81,21 @@ import {
   createProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordViaApi,
   createProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordViaApi,
   createProductionReadinessReviewViaApi,
+  createHardenedLabConnectionProfileReviewViaApi,
   createLabPilotRunbookWorkflowViaApi,
   createLiveReadOnlyInventoryPilotViaApi,
+  createDisabledRealReadOnlyAdapterInterfaceViaApi,
+  createOfflineContractReplaySuiteViaApi,
   createOperatorEvidenceExportPackViaApi,
   createProductionReadinessDecisionGateViaApi,
   createPrismFixtureReplayViaApi,
+  createRealReadOnlyAdapterConfigBoundaryViaApi,
   createReadOnlyAdapterObservabilityViaApi,
   createReadOnlyAdapterAuthorizationGateViaApi,
   createReadOnlyLabConnectionProfileViaApi,
+  createReadOnlyPilotSessionViaApi,
+  createReadOnlyRuntimeEnablementPolicyViaApi,
+  createPilotEvidenceReviewViaApi,
   createReleaseEvidenceExportViaApi,
   createRealAdapterLabScopeActivationViaApi,
   createRealAdapterSwitchStateAuditPackageViaApi,
@@ -93,9 +108,13 @@ import {
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
   fetchAdapterEnablementRecordsFromApi,
+  fetchAuthorizedLabConnectionDryRunsFromApi,
+  fetchAuthorizedReadOnlyLabPilotGatesFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
+  fetchCredentialResolverAdapterStubsFromApi,
+  fetchCredentialProviderContractsFromApi,
   fetchControlledLabExecutionApprovalsFromApi,
   fetchControlledLabDryRunExecutionChecklistsFromApi,
   fetchControlledLabExecutionEvidenceLedgersFromApi,
@@ -114,8 +133,12 @@ import {
   fetchEnvironmentsFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
   fetchExecutionBrokerQueueRecordsFromApi,
+  fetchDisabledPrismReadOnlyHttpClientsFromApi,
+  fetchDisabledRealReadOnlyAdapterInterfacesFromApi,
+  fetchEmergencyStopRollbackDrillsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabConnectivityPreflightsFromApi,
   fetchLabPilotOperatorConsoleFromApi,
   fetchLabPilotRunbookWorkflowsFromApi,
   fetchLabEvidenceReviewsFromApi,
@@ -123,23 +146,29 @@ import {
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
+  fetchLiveReadOnlyCallEnvelopesFromApi,
   fetchLiveReadOnlyPrismCallDesignFromApi,
   fetchLiveReadOnlyInventoryPilotsFromApi,
+  fetchHardenedLabConnectionProfileReviewsFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismStatusFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
   fetchPrismFixtureReplaysFromApi,
+  fetchPilotEvidenceReviewsFromApi,
   fetchPrismReadOnlyAdapterDiagnosticsFromApi,
   fetchReadOnlyAdapterObservabilityFromApi,
   fetchReadOnlyAdapterAuthorizationGatesFromApi,
   fetchReadOnlyAdapterRuntimeModesFromApi,
   fetchReadOnlyLabConnectionProfilesFromApi,
+  fetchReadOnlyPilotSessionsFromApi,
+  fetchReadOnlyRuntimeEnablementPoliciesFromApi,
   fetchReadOnlyPrismLabGatesFromApi,
   fetchPrismFailureScenariosFromApi,
   fetchPrismSimulatorProfilesFromApi,
   fetchPolicyBundlesFromApi,
   fetchOperatorEvidenceExportPacksFromApi,
+  fetchOfflineContractReplaySuitesFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
   fetchPlatformServiceAdapterContractReviewsFromApi,
@@ -191,6 +220,7 @@ import {
   fetchProductionReadinessReviewsFromApi,
   fetchProductionReadinessDecisionGatesFromApi,
   fetchProductionReadinessScorecardFromApi,
+  fetchRealReadOnlyAdapterConfigBoundariesFromApi,
   fetchReleaseEvidenceExportsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealPrismPreflightRunsFromApi,
@@ -506,6 +536,140 @@ describe("cloudStudioApi", () => {
       9,
       "/api/production/readiness-decision-gates",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("Go") })
+    );
+  });
+
+  it("fetches and records real read-only adapter preparation evidence", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchRealReadOnlyAdapterConfigBoundariesFromApi();
+    await createRealReadOnlyAdapterConfigBoundaryViaApi({ endpointRef: "prism-central-ref" });
+    await fetchCredentialProviderContractsFromApi();
+    await createCredentialProviderContractViaApi({ credentialProviderRef: "vault-ref-nci-readonly" });
+    await fetchDisabledRealReadOnlyAdapterInterfacesFromApi();
+    await createDisabledRealReadOnlyAdapterInterfaceViaApi({ configBoundaryId: "config-1" });
+    await fetchOfflineContractReplaySuitesFromApi();
+    await createOfflineContractReplaySuiteViaApi({ adapterInterfaceId: "adapter-1" });
+    await fetchAuthorizedLabConnectionDryRunsFromApi();
+    await createAuthorizedLabConnectionDryRunViaApi({ offlineReplaySuiteId: "replay-1" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/real-read-only/config-boundaries", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/prism/real-read-only/config-boundaries",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("prism-central-ref") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/credentials/provider-contracts", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/credentials/provider-contracts",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("vault-ref-nci-readonly") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/real-read-only/adapter-interfaces", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      6,
+      "/api/prism/real-read-only/adapter-interfaces",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("config-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/prism/offline-contract-replays", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      8,
+      "/api/prism/offline-contract-replays",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("adapter-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/prism/authorized-lab-dry-runs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      10,
+      "/api/prism/authorized-lab-dry-runs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("replay-1") })
+    );
+  });
+
+  it("fetches and records controlled read-only lab enablement gates and production pilot controls", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchHardenedLabConnectionProfileReviewsFromApi();
+    await createHardenedLabConnectionProfileReviewViaApi({ profileId: "profile-1" });
+    await fetchCredentialResolverAdapterStubsFromApi();
+    await createCredentialResolverAdapterStubViaApi({ credentialContractId: "credential-1" });
+    await fetchDisabledPrismReadOnlyHttpClientsFromApi();
+    await createDisabledPrismReadOnlyHttpClientViaApi({ adapterInterfaceId: "adapter-1" });
+    await fetchLabConnectivityPreflightsFromApi();
+    await createLabConnectivityPreflightViaApi({ httpClientRecordId: "client-1" });
+    await fetchAuthorizedReadOnlyLabPilotGatesFromApi();
+    await createAuthorizedReadOnlyLabPilotGateViaApi({ preflightId: "preflight-1" });
+    await fetchReadOnlyRuntimeEnablementPoliciesFromApi();
+    await createReadOnlyRuntimeEnablementPolicyViaApi({ pilotGateId: "pilot-gate-1" });
+    await fetchReadOnlyPilotSessionsFromApi();
+    await createReadOnlyPilotSessionViaApi({ policyId: "policy-1" });
+    await fetchLiveReadOnlyCallEnvelopesFromApi();
+    await createLiveReadOnlyCallEnvelopeViaApi({ pilotSessionId: "session-1" });
+    await fetchPilotEvidenceReviewsFromApi();
+    await createPilotEvidenceReviewViaApi({ callEnvelopeId: "envelope-1", decision: "Approve" });
+    await fetchEmergencyStopRollbackDrillsFromApi();
+    await createEmergencyStopRollbackDrillViaApi({ pilotEvidenceReviewId: "review-1" });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/read-only-lab-profile-hardening", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/prism/read-only-lab-profile-hardening",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("profile-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/credentials/resolver-stubs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/credentials/resolver-stubs",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("credential-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/read-only-http-clients", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      6,
+      "/api/prism/read-only-http-clients",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("adapter-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/prism/lab-connectivity-preflights", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      8,
+      "/api/prism/lab-connectivity-preflights",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("client-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/prism/authorized-read-only-pilot-gates", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      10,
+      "/api/prism/authorized-read-only-pilot-gates",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("preflight-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(11, "/api/prism/read-only-runtime-policies", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      12,
+      "/api/prism/read-only-runtime-policies",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("pilot-gate-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(13, "/api/prism/read-only-pilot-sessions", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      14,
+      "/api/prism/read-only-pilot-sessions",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("policy-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(15, "/api/prism/live-read-only-call-envelopes", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      16,
+      "/api/prism/live-read-only-call-envelopes",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("session-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(17, "/api/prism/pilot-evidence-reviews", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      18,
+      "/api/prism/pilot-evidence-reviews",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("envelope-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(19, "/api/prism/emergency-stop-rollback-drills", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      20,
+      "/api/prism/emergency-stop-rollback-drills",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("review-1") })
     );
   });
 
