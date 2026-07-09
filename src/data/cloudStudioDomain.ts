@@ -186,6 +186,48 @@ export type PlatformSettingsSummary = {
     exportRecords: number;
     redactionBoundary: string;
   };
+  configurable: PlatformSettingsConfig;
+};
+
+export type IdentityProviderMode = "Mock OIDC" | "Trusted headers" | "OIDC" | "Active Directory" | "Local users";
+
+export type PlatformSettingsConfig = {
+  iam: {
+    primaryMode: IdentityProviderMode;
+    requireTrustedIdentity: boolean;
+    oidcIssuerUrl: string;
+    oidcClientId: string;
+    roleClaim: string;
+    groupClaim: string;
+    defaultRole: PlatformRole;
+    breakGlassAdminEnabled: boolean;
+  };
+  localUsers: {
+    enabled: boolean;
+    allowPasswordLogin: boolean;
+    requireMfa: boolean;
+    passwordPolicy: "Prototype only" | "Strong" | "External IdP only";
+    sessionTimeoutMinutes: number;
+    users: Array<{
+      username: string;
+      displayName: string;
+      roles: PlatformRole[];
+      status: "Active" | "Disabled";
+    }>;
+  };
+  activeDirectory: {
+    enabled: boolean;
+    domain: string;
+    ldapUrl: string;
+    baseDn: string;
+    bindCredentialRef: string;
+    userSearchFilter: string;
+    groupSearchBaseDn: string;
+    tlsMode: "Required" | "StartTLS" | "Disabled for lab only";
+    syncEnabled: boolean;
+    lastSyncAt?: string;
+    status: "Not configured" | "Configured" | "Ready for test" | "Failed";
+  };
 };
 
 export type CredentialReferenceStatus = "Missing" | "Invalid" | "Approved reference";

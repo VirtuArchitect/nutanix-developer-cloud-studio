@@ -161,6 +161,24 @@ describe("api server", () => {
     };
 
     const settings = await requestJson("/api/admin/settings", { headers: adminHeaders });
+    const updated = await requestJson("/api/admin/settings", {
+      method: "PUT",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        iam: {
+          primaryMode: "Active Directory",
+          requireTrustedIdentity: true,
+          roleClaim: "memberOf",
+        },
+        activeDirectory: {
+          enabled: true,
+          domain: "corp.example.com",
+          ldapUrl: "ldaps://dc01.corp.example.com:636",
+          baseDn: "DC=corp,DC=example,DC=com",
+          bindCredentialRef: "vault-ref-ad-bind",
+        },
+      }),
+    });
     const events = await requestJson("/api/audit/events", { headers: adminHeaders });
 
     expect(settings.data).toMatchObject({
@@ -184,10 +202,44 @@ describe("api server", () => {
     expect(settings.data.featureFlags).toEqual(
       expect.arrayContaining([expect.objectContaining({ name: "Real AHV Prism adapter", enabled: false })])
     );
+    expect(updated.data.configurable).toMatchObject({
+      iam: {
+        primaryMode: "Active Directory",
+        requireTrustedIdentity: true,
+        roleClaim: "memberOf",
+      },
+      activeDirectory: {
+        enabled: true,
+        domain: "corp.example.com",
+        ldapUrl: "ldaps://dc01.corp.example.com:636",
+        baseDn: "DC=corp,DC=example,DC=com",
+        bindCredentialRef: "vault-ref-ad-bind",
+        status: "Ready for test",
+      },
+    });
     expect(events.data).toEqual(
-      expect.arrayContaining([expect.objectContaining({ action: "admin.settings.viewed", actor: "ops.admin" })])
+      expect.arrayContaining([
+        expect.objectContaining({ action: "admin.settings.viewed", actor: "ops.admin" }),
+        expect.objectContaining({ action: "admin.settings.updated", actor: "ops.admin" }),
+      ])
     );
     expect(JSON.stringify(events.data)).not.toMatch(/password|Authorization|token/i);
+
+    await expectJson(
+      "/api/admin/settings",
+      400,
+      {
+        error: {
+          code: "inline_secret_not_allowed",
+          message: "Settings may store credential references only; inline secret field activeDirectory.bindPassword is not accepted.",
+        },
+      },
+      {
+        method: "PUT",
+        headers: adminHeaders,
+        body: JSON.stringify({ activeDirectory: { bindPassword: "Nope" } }),
+      }
+    );
 
     await expectJson(
       "/api/admin/settings",

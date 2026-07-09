@@ -61,6 +61,7 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/session`
 - `GET /api/session/diagnostics`
 - `GET /api/admin/settings`
+- `PUT /api/admin/settings`
 - `GET /api/auth/boundary-diagnostics`
 - `GET /api/system/status`
 - `GET /api/observability/runtime`
@@ -101,7 +102,9 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 
 `GET /api/session/diagnostics` returns trusted-header mode, missing required identity headers, and the role/action matrix surfaced in the Admin Overview.
 
-`GET /api/admin/settings` returns a Platform Admin-only configuration summary for the Admin Settings tab. It reports identity/RBAC mode, account sources, provider endpoint and credential-reference readiness, AHV lab feature-flag state, quota boundaries, audit retention, and redaction posture. It does not return Prism passwords, Authorization headers, tokens, or credential values.
+`GET /api/admin/settings` returns a Platform Admin-only configuration summary for the Admin Settings tab. It reports identity/RBAC mode, configurable IAM mode, local-user policy, Active Directory connection references, account sources, provider endpoint and credential-reference readiness, AHV lab feature-flag state, quota boundaries, audit retention, and redaction posture. It does not return Prism passwords, Authorization headers, tokens, AD bind passwords, or credential values.
+
+`PUT /api/admin/settings` updates configurable IAM, local-user, and Active Directory settings. The endpoint accepts credential references such as `bindCredentialRef`; it rejects inline secret-shaped fields such as passwords, tokens, Authorization values, and private keys.
 
 When `NDC_REQUIRE_TRUSTED_IDENTITY=true`, API routes fail closed with `401 unauthenticated` unless `x-ndc-user`, `x-ndc-roles`, and `x-ndc-issuer` are present. Health endpoints remain public.
 

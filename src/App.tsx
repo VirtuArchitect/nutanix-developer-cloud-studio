@@ -106,11 +106,13 @@ import {
   templateRegistry as defaultTemplateRegistry,
   type PlatformSession,
   type PlatformConfig,
+  type PlatformSettingsConfig,
   type PlatformSettingsSummary,
   type PlatformServiceAdapterContractReview,
   type PlatformServiceKind,
   type PlatformServicePreflightRun,
   type PlatformServiceRequest,
+  type PlatformRole,
   type PolicyBundle,
   type OperatorEvidenceExportPack,
   type PrismAdapterDiagnostics,
@@ -491,6 +493,7 @@ import {
   runLabDiscoveryViaApi,
   runTemplateRegistryActionViaApi,
   saveIntegrationConfigViaApi,
+  savePlatformSettingsViaApi,
   selectPrismSimulatorProfileViaApi,
   type ApiHealth,
   type EnvironmentDetail,
@@ -2009,6 +2012,40 @@ export function App() {
         message: "Configuration saved in browser mock mode.",
       })
     );
+  }
+
+  async function savePlatformSettings(payload: Partial<PlatformSettingsConfig>) {
+    if (apiHealth.mode === "api") {
+      const updated = await savePlatformSettingsViaApi(payload);
+      setPlatformSettings(updated);
+      await refreshApiState();
+      return;
+    }
+
+    setPlatformSettings((current) => ({
+      ...current,
+      generatedAt: new Date().toISOString(),
+      configurable: {
+        ...current.configurable,
+        iam: {
+          ...current.configurable.iam,
+          ...payload.iam,
+        },
+        localUsers: {
+          ...current.configurable.localUsers,
+          ...payload.localUsers,
+          users: payload.localUsers?.users ?? current.configurable.localUsers.users,
+        },
+        activeDirectory: {
+          ...current.configurable.activeDirectory,
+          ...payload.activeDirectory,
+          status: deriveMockAdStatus({
+            ...current.configurable.activeDirectory,
+            ...payload.activeDirectory,
+          }),
+        },
+      },
+    }));
   }
 
   async function runIntegrationCheck(integrationName: string) {
@@ -4914,6 +4951,7 @@ export function App() {
             updateTemplateGovernance={updateTemplateGovernance}
             decideApproval={decideApproval}
             saveIntegrationConfig={saveIntegrationConfig}
+            savePlatformSettings={savePlatformSettings}
             runIntegrationCheck={runIntegrationCheck}
             runLabDiscovery={runLabDiscovery}
             importPrismInventory={importPrismInventory}
@@ -5680,6 +5718,7 @@ function AdminView({
   updateTemplateGovernance,
   decideApproval,
   saveIntegrationConfig,
+  savePlatformSettings,
   runIntegrationCheck,
   runLabDiscovery,
   importPrismInventory,
@@ -5964,6 +6003,7 @@ function AdminView({
     integrationName: string,
     payload: Pick<IntegrationConfig, "endpoint" | "credentialProfile">
   ) => void;
+  savePlatformSettings: (payload: Partial<PlatformSettingsConfig>) => void;
   runIntegrationCheck: (integrationName: string) => void;
   runLabDiscovery: (adapterName: string) => void;
   importPrismInventory: () => void;
@@ -6172,13 +6212,16 @@ function AdminView({
       {activeTab === "settings" && (
         <div className="adminTabPanel">
           <Panel title="Identity and accounts" action={platformSettings.identity.mode}>
-            <SettingsIdentityPanel settings={platformSettings} />
+            <SettingsIdentityPanel settings={platformSettings} savePlatformSettings={savePlatformSettings} />
           </Panel>
           <Panel title="Feature flags" action={`${platformSettings.featureFlags.filter((flag) => flag.enabled).length} enabled`}>
             <FeatureFlagSettingsPanel settings={platformSettings} />
           </Panel>
           <Panel title="AHV lab runtime" action={platformSettings.ahvLab.labMode ? "Lab" : "Disabled"}>
             <AhvLabSettingsPanel settings={platformSettings} />
+          </Panel>
+          <Panel title="Active Directory connectivity" action={platformSettings.configurable.activeDirectory.status}>
+            <ActiveDirectorySettingsPanel settings={platformSettings} savePlatformSettings={savePlatformSettings} />
           </Panel>
           <Panel title="Provider configuration" action={`${platformSettings.providerConfiguration.filter((config) => config.endpointConfigured).length}/${platformSettings.providerConfiguration.length} endpoints`}>
             <ProviderSettingsPanel settings={platformSettings} />
@@ -7360,42 +7403,209 @@ function ProductionReadinessPanel({
   );
 }
 
-function SettingsIdentityPanel({ settings }: { settings: PlatformSettingsSummary }) {
+function SettingsIdentityPanel({
+  settings,
+  savePlatformSettings,
+}: {
+  settings: PlatformSettingsSummary;
+  savePlatformSettings: (payload: Partial<PlatformSettingsConfig>) => void;
+}) {
+  const [draft, setDraft] = useState(settings.configurable);
+  useEffect(() => setDraft(settings.configurable), [settings.configurable]);
+  const localUser = draft.localUsers.users[0] ?? {
+    username: "platform.admin",
+    displayName: "Platform Admin",
+    roles: ["Platform Admin"] as PlatformSettingsConfig["localUsers"]["users"][number]["roles"],
+    status: "Active" as const,
+  };
+
   return (
     <div className="dryRunPanel">
-      <div className="platformConfigGrid">
-        <CheckLine icon={UserRound} label="Issuer" value={settings.identity.issuer} passed />
-        <CheckLine
-          icon={LockKeyhole}
-          label="Trusted identity"
-          value={settings.identity.trustedIdentityRequired ? "Required" : "Optional"}
-          passed={settings.identity.trustedIdentityRequired || settings.identity.mode === "Mock OIDC"}
-        />
-        <CheckLine icon={ShieldCheck} label="Roles" value={settings.identity.defaultRoles.join(", ")} passed />
-        <CheckLine icon={Settings} label="Environment" value={settings.environment} passed={settings.environment !== "production"} />
+      <div className="settingsFormGrid">
+        <label>
+          <span>Primary IAM mode</span>
+          <select
+            value={draft.iam.primaryMode}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                iam: { ...current.iam, primaryMode: event.target.value as PlatformSettingsConfig["iam"]["primaryMode"] },
+              }))
+            }
+          >
+            <option>Trusted headers</option>
+            <option>OIDC</option>
+            <option>Active Directory</option>
+            <option>Local users</option>
+            <option>Mock OIDC</option>
+          </select>
+        </label>
+        <label>
+          <span>OIDC issuer URL</span>
+          <input
+            value={draft.iam.oidcIssuerUrl}
+            placeholder="https://idp.example.com"
+            onChange={(event) => setDraft((current) => ({ ...current, iam: { ...current.iam, oidcIssuerUrl: event.target.value } }))}
+          />
+        </label>
+        <label>
+          <span>OIDC client ID</span>
+          <input
+            value={draft.iam.oidcClientId}
+            placeholder="ndc-studio"
+            onChange={(event) => setDraft((current) => ({ ...current, iam: { ...current.iam, oidcClientId: event.target.value } }))}
+          />
+        </label>
+        <label>
+          <span>Default role</span>
+          <select
+            value={draft.iam.defaultRole}
+            onChange={(event) => setDraft((current) => ({ ...current, iam: { ...current.iam, defaultRole: event.target.value as PlatformRole } }))}
+          >
+            <option>Developer</option>
+            <option>Approver</option>
+            <option>Platform Admin</option>
+          </select>
+        </label>
+        <label>
+          <span>Role claim</span>
+          <input
+            value={draft.iam.roleClaim}
+            onChange={(event) => setDraft((current) => ({ ...current, iam: { ...current.iam, roleClaim: event.target.value } }))}
+          />
+        </label>
+        <label>
+          <span>Group claim</span>
+          <input
+            value={draft.iam.groupClaim}
+            onChange={(event) => setDraft((current) => ({ ...current, iam: { ...current.iam, groupClaim: event.target.value } }))}
+          />
+        </label>
       </div>
-      <div className="settingsList">
-        {settings.accounts.map((account) => (
-          <div className="settingsRow" key={account.id}>
-            <div>
-              <strong>{account.displayName}</strong>
-              <span>{account.id}</span>
-              <small>{account.source}</small>
-            </div>
-            <div className="settingsPills">
-              {account.roles.map((role) => (
-                <span className="pill" key={role}>{role}</span>
-              ))}
-              <span className={`status ${account.status === "Active" ? "ready" : "approval"}`}>{account.status}</span>
-            </div>
-          </div>
-        ))}
+      <div className="toggleGrid">
+        <label>
+          <input
+            type="checkbox"
+            checked={draft.iam.requireTrustedIdentity}
+            onChange={(event) => setDraft((current) => ({ ...current, iam: { ...current.iam, requireTrustedIdentity: event.target.checked } }))}
+          />
+          Require trusted identity headers
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={draft.iam.breakGlassAdminEnabled}
+            onChange={(event) => setDraft((current) => ({ ...current, iam: { ...current.iam, breakGlassAdminEnabled: event.target.checked } }))}
+          />
+          Enable break-glass admin
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={draft.localUsers.enabled}
+            onChange={(event) => setDraft((current) => ({ ...current, localUsers: { ...current.localUsers, enabled: event.target.checked } }))}
+          />
+          Enable local users
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={draft.localUsers.requireMfa}
+            onChange={(event) => setDraft((current) => ({ ...current, localUsers: { ...current.localUsers, requireMfa: event.target.checked } }))}
+          />
+          Require MFA for local users
+        </label>
       </div>
-      <div className="inventoryEvidence">
-        <strong>Trusted headers</strong>
-        {settings.identity.trustedHeaders.map((header) => (
-          <span key={header}>{header}</span>
-        ))}
+      <div className="settingsRow">
+        <div>
+          <strong>{localUser.displayName}</strong>
+          <span>{localUser.username}</span>
+          <small>Local user bootstrap account. Password storage is not implemented in this prototype.</small>
+        </div>
+        <div className="settingsPills">
+          {localUser.roles.map((role) => <span className="pill" key={role}>{role}</span>)}
+          <span className={`status ${draft.localUsers.enabled ? "ready" : "failed"}`}>{draft.localUsers.enabled ? "Enabled" : "Disabled"}</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={() => savePlatformSettings(draft)}>
+          <Settings size={15} />
+          Save IAM settings
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ActiveDirectorySettingsPanel({
+  settings,
+  savePlatformSettings,
+}: {
+  settings: PlatformSettingsSummary;
+  savePlatformSettings: (payload: Partial<PlatformSettingsConfig>) => void;
+}) {
+  const [draft, setDraft] = useState(settings.configurable.activeDirectory);
+  useEffect(() => setDraft(settings.configurable.activeDirectory), [settings.configurable.activeDirectory]);
+
+  return (
+    <div className="dryRunPanel">
+      <div className="settingsFormGrid">
+        <label>
+          <span>AD domain</span>
+          <input value={draft.domain} placeholder="corp.example.com" onChange={(event) => setDraft((current) => ({ ...current, domain: event.target.value }))} />
+        </label>
+        <label>
+          <span>LDAP URL</span>
+          <input value={draft.ldapUrl} placeholder="ldaps://dc01.corp.example.com:636" onChange={(event) => setDraft((current) => ({ ...current, ldapUrl: event.target.value }))} />
+        </label>
+        <label>
+          <span>Base DN</span>
+          <input value={draft.baseDn} placeholder="DC=corp,DC=example,DC=com" onChange={(event) => setDraft((current) => ({ ...current, baseDn: event.target.value }))} />
+        </label>
+        <label>
+          <span>Bind credential reference</span>
+          <input value={draft.bindCredentialRef} placeholder="vault-ref-ad-bind" onChange={(event) => setDraft((current) => ({ ...current, bindCredentialRef: event.target.value }))} />
+        </label>
+        <label>
+          <span>User search filter</span>
+          <input value={draft.userSearchFilter} onChange={(event) => setDraft((current) => ({ ...current, userSearchFilter: event.target.value }))} />
+        </label>
+        <label>
+          <span>Group search base DN</span>
+          <input value={draft.groupSearchBaseDn} placeholder="OU=Groups,DC=corp,DC=example,DC=com" onChange={(event) => setDraft((current) => ({ ...current, groupSearchBaseDn: event.target.value }))} />
+        </label>
+        <label>
+          <span>TLS mode</span>
+          <select value={draft.tlsMode} onChange={(event) => setDraft((current) => ({ ...current, tlsMode: event.target.value as PlatformSettingsConfig["activeDirectory"]["tlsMode"] }))}>
+            <option>Required</option>
+            <option>StartTLS</option>
+            <option>Disabled for lab only</option>
+          </select>
+        </label>
+      </div>
+      <div className="toggleGrid">
+        <label>
+          <input type="checkbox" checked={draft.enabled} onChange={(event) => setDraft((current) => ({ ...current, enabled: event.target.checked }))} />
+          Enable Active Directory connector
+        </label>
+        <label>
+          <input type="checkbox" checked={draft.syncEnabled} onChange={(event) => setDraft((current) => ({ ...current, syncEnabled: event.target.checked }))} />
+          Enable scheduled group sync
+        </label>
+      </div>
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Credential reference only</strong>
+          <span>Store the AD bind password in an external vault or deployment secret and reference it here by name.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={() => savePlatformSettings({ activeDirectory: draft })}>
+          <Settings size={15} />
+          Save AD settings
+        </button>
+        <span className={`status ${draft.status === "Ready for test" ? "ready" : "approval"}`}>{draft.status}</span>
       </div>
     </div>
   );
@@ -14848,7 +15058,59 @@ function createMockPlatformSettingsSummary(
       exportRecords: auditExportCount,
       redactionBoundary: "Browser fallback has no credential-bearing audit stream.",
     },
+    configurable: {
+      iam: {
+        primaryMode: "Mock OIDC",
+        requireTrustedIdentity: false,
+        oidcIssuerUrl: "",
+        oidcClientId: "",
+        roleClaim: "roles",
+        groupClaim: "groups",
+        defaultRole: "Developer",
+        breakGlassAdminEnabled: true,
+      },
+      localUsers: {
+        enabled: true,
+        allowPasswordLogin: false,
+        requireMfa: true,
+        passwordPolicy: "Prototype only",
+        sessionTimeoutMinutes: 60,
+        users: [
+          {
+            username: session.user,
+            displayName: session.displayName,
+            roles: session.roles,
+            status: "Active",
+          },
+        ],
+      },
+      activeDirectory: {
+        enabled: false,
+        domain: "",
+        ldapUrl: "",
+        baseDn: "",
+        bindCredentialRef: "",
+        userSearchFilter: "(sAMAccountName={username})",
+        groupSearchBaseDn: "",
+        tlsMode: "Required",
+        syncEnabled: false,
+        status: "Not configured",
+      },
+    },
   };
+}
+
+function deriveMockAdStatus(config: PlatformSettingsConfig["activeDirectory"]) {
+  if (!config.enabled) {
+    return "Not configured" as const;
+  }
+  if (config.domain && config.ldapUrl && config.baseDn && config.bindCredentialRef) {
+    return "Ready for test" as const;
+  }
+  if (config.domain || config.ldapUrl || config.baseDn || config.bindCredentialRef) {
+    return "Configured" as const;
+  }
+  return "Not configured" as const;
 }
 
 function createMockRuntimeObservability(session: PlatformSession): RuntimeObservabilitySnapshot {

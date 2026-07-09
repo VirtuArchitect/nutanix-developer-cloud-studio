@@ -425,6 +425,7 @@ import type {
   IntegrationConfig,
   LabAdapterSnapshot,
   PlatformSettingsSummary,
+  PlatformSettingsConfig,
   ProvisioningAdapterName,
   PrismInventoryImportResult,
   PrismInventoryRecord,
@@ -543,6 +544,7 @@ import type {
   SetReadOnlyAdapterRuntimeModeRequest,
   LabPilotRunbookWorkflowAction,
   RegistryAction,
+  UpdatePlatformSettingsRequest,
   UpdateIntegrationConfigRequest,
 } from "./types";
 
@@ -1427,6 +1429,20 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/admin/settings") {
     requireRole(context, ["Platform Admin"]);
     addAuditEvent(state, "admin.settings.viewed", context.session.user, "platform-settings", {
+      provisioningEnabled: state.platformConfig.provisioningEnabled,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: createPlatformSettingsSummary(state, context) });
+    return;
+  }
+
+  if (request.method === "PUT" && url.pathname === "/api/admin/settings") {
+    requireRole(context, ["Platform Admin"]);
+    const payload = await readJson<UpdatePlatformSettingsRequest>(request);
+    state.platformSettings = mergePlatformSettings(state.platformSettings, payload);
+    addAuditEvent(state, "admin.settings.updated", context.session.user, "platform-settings", {
+      sections: Object.keys(payload),
       provisioningEnabled: state.platformConfig.provisioningEnabled,
       realPrismCallsEnabled: false,
     });
@@ -5376,7 +5392,139 @@ function createPlatformSettingsSummary(state: ApiState, context: RequestContext)
       exportRecords: state.auditExports.length,
       redactionBoundary: "Credential values, Authorization headers, tokens, passwords, and endpoint query strings are redacted before display or export.",
     },
+    configurable: state.platformSettings,
   };
+}
+
+function mergePlatformSettings(
+  current: PlatformSettingsConfig,
+  patch: UpdatePlatformSettingsRequest
+): PlatformSettingsConfig {
+  assertNoInlineSecrets(patch);
+  const merged: PlatformSettingsConfig = {
+    ...current,
+    iam: {
+      ...current.iam,
+      ...patch.iam,
+    },
+    localUsers: {
+      ...current.localUsers,
+      ...patch.localUsers,
+      users: patch.localUsers?.users ?? current.localUsers.users,
+    },
+    activeDirectory: {
+      ...current.activeDirectory,
+      ...patch.activeDirectory,
+    },
+  };
+
+  return {
+    ...merged,
+    iam: {
+      ...merged.iam,
+      oidcIssuerUrl: safeUrlOrEmpty(merged.iam.oidcIssuerUrl),
+      roleClaim: safeConfigText(merged.iam.roleClaim, "roles"),
+      groupClaim: safeConfigText(merged.iam.groupClaim, "groups"),
+    },
+    localUsers: {
+      ...merged.localUsers,
+      sessionTimeoutMinutes: Math.min(Math.max(positiveNumber(String(merged.localUsers.sessionTimeoutMinutes), 60), 15), 1440),
+      users: merged.localUsers.users.map((user) => ({
+        username: safeConfigText(user.username, "user"),
+        displayName: safeConfigText(user.displayName, user.username),
+        roles: user.roles.filter((role) => role === "Developer" || role === "Approver" || role === "Platform Admin"),
+        status: user.status === "Disabled" ? "Disabled" : "Active",
+      })),
+    },
+    activeDirectory: {
+      ...merged.activeDirectory,
+      ldapUrl: safeLdapUrlOrEmpty(merged.activeDirectory.ldapUrl),
+      domain: safeConfigText(merged.activeDirectory.domain, ""),
+      baseDn: safeConfigText(merged.activeDirectory.baseDn, ""),
+      bindCredentialRef: safeConfigText(merged.activeDirectory.bindCredentialRef, ""),
+      userSearchFilter: safeConfigText(merged.activeDirectory.userSearchFilter, "(sAMAccountName={username})"),
+      groupSearchBaseDn: safeConfigText(merged.activeDirectory.groupSearchBaseDn, ""),
+      status: deriveActiveDirectoryStatus(merged.activeDirectory),
+    },
+  };
+}
+
+function assertNoInlineSecrets(value: unknown) {
+  const disallowed = findSecretLikeKey(value);
+  if (disallowed) {
+    throw new RequestValidationError(
+      "inline_secret_not_allowed",
+      `Settings may store credential references only; inline secret field ${disallowed} is not accepted.`
+    );
+  }
+}
+
+function findSecretLikeKey(value: unknown, parentKey = ""): string | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    const normalized = key.toLowerCase();
+    if (
+      normalized !== "passwordpolicy" &&
+      normalized !== "allowpasswordlogin" &&
+      /(password|secret|token|authorization|privatekey|bindpassword)/i.test(key)
+    ) {
+      return parentKey ? `${parentKey}.${key}` : key;
+    }
+    const nested = findSecretLikeKey(child, parentKey ? `${parentKey}.${key}` : key);
+    if (nested) {
+      return nested;
+    }
+  }
+  return undefined;
+}
+
+function safeConfigText(value: string | undefined, fallback: string) {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  return trimmed.replace(/[<>]/g, "").slice(0, 240);
+}
+
+function safeUrlOrEmpty(value: string | undefined) {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) {
+    return "";
+  }
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "https:" ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function safeLdapUrlOrEmpty(value: string | undefined) {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) {
+    return "";
+  }
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "ldaps:" || parsed.protocol === "ldap:" ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function deriveActiveDirectoryStatus(config: PlatformSettingsConfig["activeDirectory"]) {
+  if (!config.enabled) {
+    return "Not configured";
+  }
+  if (config.domain && config.ldapUrl && config.baseDn && config.bindCredentialRef) {
+    return "Ready for test";
+  }
+  if (config.domain || config.ldapUrl || config.baseDn || config.bindCredentialRef) {
+    return "Configured";
+  }
+  return "Not configured";
 }
 
 function redactAuditEvent(event: ApiState["auditEvents"][number]): ApiState["auditEvents"][number] {

@@ -54,6 +54,7 @@ import type {
   PrismSimulatorFailureScenario,
   PrismSimulatorProfile,
   PlatformConfig,
+  PlatformSettingsConfig,
   PlatformSettingsSummary,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -192,6 +193,7 @@ export type ApiState = {
   prismFailureScenarios: PrismSimulatorFailureScenario[];
   realPrismPreflightRuns: RealPrismPreflightRun[];
   platformConfig: PlatformConfig;
+  platformSettings: PlatformSettingsConfig;
   provisioningAdapters: ProvisioningAdapterReadiness[];
   adapterEnablementRecords: AdapterEnablementRecord[];
   session: PlatformSession;
@@ -279,6 +281,8 @@ export type ApiState = {
 };
 
 export type { AuditEvent, PlatformSettingsSummary };
+
+export type UpdatePlatformSettingsRequest = Partial<PlatformSettingsConfig>;
 
 export type CreateEnvironmentRequest = {
   name: string;

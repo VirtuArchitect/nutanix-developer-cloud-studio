@@ -71,6 +71,7 @@ import type {
   PrismSimulatorFailureScenarioId,
   PrismSimulatorProfile,
   PlatformConfig,
+  PlatformSettingsConfig,
   PlatformSettingsSummary,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -257,6 +258,13 @@ export async function fetchSessionDiagnosticsFromApi() {
 
 export async function fetchPlatformSettingsFromApi() {
   return fetchJson<PlatformSettingsSummary>("/api/admin/settings");
+}
+
+export async function savePlatformSettingsViaApi(payload: Partial<PlatformSettingsConfig>) {
+  return fetchJson<PlatformSettingsSummary>("/api/admin/settings", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function fetchAuthBoundaryDiagnosticsFromApi() {

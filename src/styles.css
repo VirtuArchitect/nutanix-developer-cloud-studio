@@ -488,9 +488,51 @@ button {
 }
 
 .settingsList,
-.auditLogList {
+.auditLogList,
+.settingsFormGrid,
+.toggleGrid {
   display: grid;
   gap: 10px;
+}
+
+.settingsFormGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settingsFormGrid label,
+.toggleGrid label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #304750;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.settingsFormGrid input,
+.settingsFormGrid select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  color: #0f1b22;
+  background: #fff;
+  border: 1px solid #d9e1e4;
+  border-radius: 7px;
+}
+
+.toggleGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.toggleGrid label {
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  min-height: 38px;
+  padding: 10px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
 }
 
 .templateRow,

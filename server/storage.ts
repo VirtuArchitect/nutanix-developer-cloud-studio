@@ -11,6 +11,7 @@ import {
   type ApprovalRequest,
   type IntegrationConfig,
   type LabAdapterSnapshot,
+  type PlatformSettingsConfig,
   type ProvisioningAdapterReadiness,
   type PlatformSession,
   type TemplateGovernance,
@@ -111,6 +112,48 @@ function defaultProvisioningAdapters(): ProvisioningAdapterReadiness[] {
   }));
 }
 
+function defaultPlatformSettings(): PlatformSettingsConfig {
+  return {
+    iam: {
+      primaryMode: "Trusted headers",
+      requireTrustedIdentity: process.env.NDC_REQUIRE_TRUSTED_IDENTITY === "true",
+      oidcIssuerUrl: process.env.OIDC_ISSUER_URL ?? "",
+      oidcClientId: process.env.OIDC_CLIENT_ID ?? "",
+      roleClaim: "roles",
+      groupClaim: "groups",
+      defaultRole: "Developer",
+      breakGlassAdminEnabled: process.env.APP_ENV !== "production",
+    },
+    localUsers: {
+      enabled: process.env.APP_ENV !== "production",
+      allowPasswordLogin: false,
+      requireMfa: true,
+      passwordPolicy: "Prototype only",
+      sessionTimeoutMinutes: 60,
+      users: [
+        {
+          username: "platform.admin",
+          displayName: "Platform Admin",
+          roles: ["Developer", "Approver", "Platform Admin"],
+          status: "Active",
+        },
+      ],
+    },
+    activeDirectory: {
+      enabled: false,
+      domain: "",
+      ldapUrl: "",
+      baseDn: "",
+      bindCredentialRef: "",
+      userSearchFilter: "(sAMAccountName={username})",
+      groupSearchBaseDn: "",
+      tlsMode: "Required",
+      syncEnabled: false,
+      status: "Not configured",
+    },
+  };
+}
+
 export function createDefaultState(): ApiState {
   return {
     templates,
@@ -160,6 +203,7 @@ export function createDefaultState(): ApiState {
     prismFailureScenarios: createDefaultPrismFailureScenarios(),
     realPrismPreflightRuns: [],
     platformConfig,
+    platformSettings: defaultPlatformSettings(),
     provisioningAdapters: defaultProvisioningAdapters(),
     adapterEnablementRecords: [],
     session: defaultSession(),
