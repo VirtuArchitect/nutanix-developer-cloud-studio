@@ -72,6 +72,8 @@ import type {
   PrismSimulatorProfile,
   PlatformConfig,
   PlatformSettingsConfig,
+  PlatformSettingsConnectionTest,
+  PlatformSettingsExport,
   PlatformSettingsSummary,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -265,6 +267,17 @@ export async function savePlatformSettingsViaApi(payload: Partial<PlatformSettin
     method: "PUT",
     body: JSON.stringify(payload),
   });
+}
+
+export async function testPlatformSettingsConnectionViaApi(target: PlatformSettingsConnectionTest["target"]) {
+  return fetchJson<PlatformSettingsConnectionTest>("/api/admin/settings/test", {
+    method: "POST",
+    body: JSON.stringify({ target }),
+  });
+}
+
+export async function exportPlatformSettingsViaApi() {
+  return fetchJson<PlatformSettingsExport>("/api/admin/settings/export");
 }
 
 export async function fetchAuthBoundaryDiagnosticsFromApi() {

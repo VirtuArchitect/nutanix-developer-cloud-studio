@@ -35,6 +35,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 
 - API-backed prototype flows for environments, approvals, simulated provisioning, control-plane jobs, lifecycle destroy simulation, system status, request logging, rate limits, and security headers.
 - API-backed Admin Settings surface for identity/RBAC posture, IAM mode selection, local-user policy, Active Directory connectivity references, provider configuration readiness, AHV lab feature flags, and redacted audit-event review.
+- Operator console functions for settings validation, connection testing, role mappings, provider drill-down, audit filtering, admin activity review, redacted settings export, operations queue triage, and controlled environment lifecycle actions.
 - OIDC-shaped role context, RBAC guardrails, trusted-header diagnostics, and provider credential reference checks.
 - State backup/restore tooling and containerized on-prem starter deployment.
 - Mock Prism Central simulator for local testing when no Nutanix lab is available.

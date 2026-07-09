@@ -107,6 +107,8 @@ import {
   type PlatformSession,
   type PlatformConfig,
   type PlatformSettingsConfig,
+  type PlatformSettingsConnectionTest,
+  type PlatformSettingsExport,
   type PlatformSettingsSummary,
   type PlatformServiceAdapterContractReview,
   type PlatformServiceKind,
@@ -495,6 +497,8 @@ import {
   saveIntegrationConfigViaApi,
   savePlatformSettingsViaApi,
   selectPrismSimulatorProfileViaApi,
+  testPlatformSettingsConnectionViaApi,
+  exportPlatformSettingsViaApi,
   type ApiHealth,
   type EnvironmentDetail,
 } from "./services/cloudStudioApi";
@@ -527,6 +531,12 @@ export function App() {
   const [platformSettings, setPlatformSettings] = useState<PlatformSettingsSummary>(() =>
     createMockPlatformSettingsSummary(mockSession, deriveMockIntegrationConfigs(integrations), 0, 0)
   );
+  const [settingsSaveState, setSettingsSaveState] = useState<{ status: "Idle" | "Saved" | "Error"; message: string }>({
+    status: "Idle",
+    message: "No settings changes saved in this session.",
+  });
+  const [settingsConnectionTests, setSettingsConnectionTests] = useState<PlatformSettingsConnectionTest[]>([]);
+  const [settingsExport, setSettingsExport] = useState<PlatformSettingsExport | null>(null);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>(() =>
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
   );
@@ -2015,37 +2025,75 @@ export function App() {
   }
 
   async function savePlatformSettings(payload: Partial<PlatformSettingsConfig>) {
+    try {
+      if (apiHealth.mode === "api") {
+        const updated = await savePlatformSettingsViaApi(payload);
+        setPlatformSettings(updated);
+        setSettingsSaveState({ status: "Saved", message: `Saved by ${updated.lastSaved?.actor ?? session.user} at ${formatDateTime(updated.lastSaved?.at ?? new Date().toISOString())}.` });
+        await refreshApiState();
+        return;
+      }
+
+      setPlatformSettings((current) => ({
+        ...current,
+        generatedAt: new Date().toISOString(),
+        lastSaved: { actor: session.user, at: new Date().toISOString(), sections: Object.keys(payload) },
+        configurable: {
+          ...current.configurable,
+          iam: {
+            ...current.configurable.iam,
+            ...payload.iam,
+          },
+          localUsers: {
+            ...current.configurable.localUsers,
+            ...payload.localUsers,
+            users: payload.localUsers?.users ?? current.configurable.localUsers.users,
+          },
+          activeDirectory: {
+            ...current.configurable.activeDirectory,
+            ...payload.activeDirectory,
+            status: deriveMockAdStatus({
+              ...current.configurable.activeDirectory,
+              ...payload.activeDirectory,
+            }),
+          },
+        },
+      }));
+      setSettingsSaveState({ status: "Saved", message: `Saved in browser mock mode at ${formatDateTime(new Date().toISOString())}.` });
+    } catch (error) {
+      setSettingsSaveState({
+        status: "Error",
+        message: error instanceof Error ? error.message : "Settings save failed.",
+      });
+    }
+  }
+
+  async function testPlatformSettingsConnection(target: PlatformSettingsConnectionTest["target"]) {
     if (apiHealth.mode === "api") {
-      const updated = await savePlatformSettingsViaApi(payload);
-      setPlatformSettings(updated);
+      const test = await testPlatformSettingsConnectionViaApi(target);
+      setSettingsConnectionTests((current) => [test, ...current].slice(0, 12));
       await refreshApiState();
       return;
     }
+    const test = createMockSettingsConnectionTest(platformSettings, integrationConfigs, target, session.user);
+    setSettingsConnectionTests((current) => [test, ...current].slice(0, 12));
+  }
 
-    setPlatformSettings((current) => ({
-      ...current,
-      generatedAt: new Date().toISOString(),
-      configurable: {
-        ...current.configurable,
-        iam: {
-          ...current.configurable.iam,
-          ...payload.iam,
-        },
-        localUsers: {
-          ...current.configurable.localUsers,
-          ...payload.localUsers,
-          users: payload.localUsers?.users ?? current.configurable.localUsers.users,
-        },
-        activeDirectory: {
-          ...current.configurable.activeDirectory,
-          ...payload.activeDirectory,
-          status: deriveMockAdStatus({
-            ...current.configurable.activeDirectory,
-            ...payload.activeDirectory,
-          }),
-        },
-      },
-    }));
+  async function exportPlatformSettings() {
+    if (apiHealth.mode === "api") {
+      const exported = await exportPlatformSettingsViaApi();
+      setSettingsExport(exported);
+      await refreshApiState();
+      return;
+    }
+    setSettingsExport({
+      exportedAt: new Date().toISOString(),
+      exportedBy: session.user,
+      format: "redacted-json",
+      settings: platformSettings.configurable,
+      redactionBoundary: "Browser export includes configuration and credential references only.",
+      secretFieldsIncluded: false,
+    });
   }
 
   async function runIntegrationCheck(integrationName: string) {
@@ -4772,6 +4820,8 @@ export function App() {
           <EnvironmentDetailView
             detail={environmentDetail ?? createMockEnvironmentDetail(environments, approvals, selectedEnvironmentName)}
             openCreate={() => setView("create")}
+            requestEnvironmentDestroy={requestEnvironmentDestroy}
+            runControlPlaneJobAction={runControlPlaneJobAction}
           />
         )}
         {view === "admin" && (
@@ -4784,6 +4834,9 @@ export function App() {
             sessionDiagnostics={sessionDiagnostics}
             authBoundaryDiagnostics={authBoundaryDiagnostics}
             platformSettings={platformSettings}
+            settingsSaveState={settingsSaveState}
+            settingsConnectionTests={settingsConnectionTests}
+            settingsExport={settingsExport}
             systemStatus={systemStatus}
             runtimeObservability={runtimeObservability}
             apiContractBaseline={apiContractBaseline}
@@ -4952,6 +5005,8 @@ export function App() {
             decideApproval={decideApproval}
             saveIntegrationConfig={saveIntegrationConfig}
             savePlatformSettings={savePlatformSettings}
+            testPlatformSettingsConnection={testPlatformSettingsConnection}
+            exportPlatformSettings={exportPlatformSettings}
             runIntegrationCheck={runIntegrationCheck}
             runLabDiscovery={runLabDiscovery}
             importPrismInventory={importPrismInventory}
@@ -5567,6 +5622,9 @@ function AdminView({
   sessionDiagnostics,
   authBoundaryDiagnostics,
   platformSettings,
+  settingsSaveState,
+  settingsConnectionTests,
+  settingsExport,
   systemStatus,
   runtimeObservability,
   apiContractBaseline,
@@ -5719,6 +5777,8 @@ function AdminView({
   decideApproval,
   saveIntegrationConfig,
   savePlatformSettings,
+  testPlatformSettingsConnection,
+  exportPlatformSettings,
   runIntegrationCheck,
   runLabDiscovery,
   importPrismInventory,
@@ -5849,6 +5909,9 @@ function AdminView({
   sessionDiagnostics: SessionDiagnostics;
   authBoundaryDiagnostics: AuthBoundaryDiagnostics;
   platformSettings: PlatformSettingsSummary;
+  settingsSaveState: { status: "Idle" | "Saved" | "Error"; message: string };
+  settingsConnectionTests: PlatformSettingsConnectionTest[];
+  settingsExport: PlatformSettingsExport | null;
   systemStatus: SystemStatus;
   runtimeObservability: RuntimeObservabilitySnapshot;
   apiContractBaseline: ApiContractBaseline;
@@ -6004,6 +6067,8 @@ function AdminView({
     payload: Pick<IntegrationConfig, "endpoint" | "credentialProfile">
   ) => void;
   savePlatformSettings: (payload: Partial<PlatformSettingsConfig>) => void;
+  testPlatformSettingsConnection: (target: PlatformSettingsConnectionTest["target"]) => void;
+  exportPlatformSettings: () => void;
   runIntegrationCheck: (integrationName: string) => void;
   runLabDiscovery: (adapterName: string) => void;
   importPrismInventory: () => void;
@@ -6211,8 +6276,17 @@ function AdminView({
 
       {activeTab === "settings" && (
         <div className="adminTabPanel">
+          <Panel title="Settings save status" action={settingsSaveState.status}>
+            <SettingsSaveStatusPanel state={settingsSaveState} settings={platformSettings} />
+          </Panel>
+          <Panel title="Configuration validation" action={`${platformSettings.validation.filter((item) => item.passed).length}/${platformSettings.validation.length} pass`}>
+            <SettingsValidationPanel settings={platformSettings} />
+          </Panel>
           <Panel title="Identity and accounts" action={platformSettings.identity.mode}>
             <SettingsIdentityPanel settings={platformSettings} savePlatformSettings={savePlatformSettings} />
+          </Panel>
+          <Panel title="Role mappings" action={`${platformSettings.roleMappings.length} mappings`}>
+            <RoleMappingPanel settings={platformSettings} />
           </Panel>
           <Panel title="Feature flags" action={`${platformSettings.featureFlags.filter((flag) => flag.enabled).length} enabled`}>
             <FeatureFlagSettingsPanel settings={platformSettings} />
@@ -6226,11 +6300,31 @@ function AdminView({
           <Panel title="Provider configuration" action={`${platformSettings.providerConfiguration.filter((config) => config.endpointConfigured).length}/${platformSettings.providerConfiguration.length} endpoints`}>
             <ProviderSettingsPanel settings={platformSettings} />
           </Panel>
+          <Panel title="Connection tests" action={`${settingsConnectionTests.length} recent`}>
+            <ConnectionTestPanel
+              tests={settingsConnectionTests}
+              testPlatformSettingsConnection={testPlatformSettingsConnection}
+            />
+          </Panel>
           <Panel title="Audit and logs" action={`${auditEvents.length} recent`}>
             <AuditLogPanel
               events={auditEvents}
               retention={auditRetentionDiagnostics}
               settings={platformSettings}
+            />
+          </Panel>
+          <Panel title="Admin activity timeline" action={`${auditEvents.length} events`}>
+            <AdminActivityTimeline events={auditEvents} />
+          </Panel>
+          <Panel title="Config export / import" action={settingsExport ? "Exported" : "Ready"}>
+            <ConfigExportImportPanel exportRecord={settingsExport} exportPlatformSettings={exportPlatformSettings} />
+          </Panel>
+          <Panel title="Operations queue" action={`${pendingApprovals + controlPlaneJobs.length} items`}>
+            <OperationsQueuePanel
+              approvals={approvals}
+              controlPlaneJobs={controlPlaneJobs}
+              lifecycleOperations={lifecycleOperations}
+              executionBrokerQueueRecords={executionBrokerQueueRecords}
             />
           </Panel>
           <Panel title="Configuration boundaries" action="Private">
@@ -7403,6 +7497,197 @@ function ProductionReadinessPanel({
   );
 }
 
+function SettingsSaveStatusPanel({
+  state,
+  settings,
+}: {
+  state: { status: "Idle" | "Saved" | "Error"; message: string };
+  settings: PlatformSettingsSummary;
+}) {
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <CheckCircle2 size={18} />
+        <div>
+          <strong>{state.status}</strong>
+          <span>{state.message}</span>
+        </div>
+      </div>
+      <div className="platformConfigGrid">
+        <CheckLine icon={UserRound} label="Last saved by" value={settings.lastSaved?.actor ?? "Not saved"} passed={Boolean(settings.lastSaved)} />
+        <CheckLine icon={Activity} label="Last saved at" value={settings.lastSaved?.at ? formatDateTime(settings.lastSaved.at) : "Pending"} passed={Boolean(settings.lastSaved)} />
+      </div>
+    </div>
+  );
+}
+
+function SettingsValidationPanel({ settings }: { settings: PlatformSettingsSummary }) {
+  return (
+    <div className="dryRunValidationList">
+      {settings.validation.map((item) => (
+        <div className="dryRunValidationRow" key={`${item.section}-${item.name}`}>
+          <span className={`status ${item.passed ? "ready" : "failed"}`}>{item.passed ? "Pass" : "Fix"}</span>
+          <div>
+            <strong>{item.section}: {item.name}</strong>
+            <small>{item.detail}</small>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RoleMappingPanel({ settings }: { settings: PlatformSettingsSummary }) {
+  return (
+    <div className="settingsList">
+      {settings.roleMappings.map((mapping) => (
+        <div className="settingsRow" key={`${mapping.source}-${mapping.match}-${mapping.role}`}>
+          <div>
+            <strong>{mapping.source}</strong>
+            <span>{mapping.match}</span>
+          </div>
+          <div className="settingsPills">
+            <span className="pill">{mapping.role}</span>
+            <span className={`status ${mapping.status === "Active" ? "ready" : "approval"}`}>{mapping.status}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ConnectionTestPanel({
+  tests,
+  testPlatformSettingsConnection,
+}: {
+  tests: PlatformSettingsConnectionTest[];
+  testPlatformSettingsConnection: (target: PlatformSettingsConnectionTest["target"]) => void;
+}) {
+  const targets: PlatformSettingsConnectionTest["target"][] = ["OIDC", "Active Directory", "Prism Central", "Audit export", "NCI", "NKP", "NDB", "NUS", "NCM", "NAI"];
+  return (
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        {targets.map((target) => (
+          <button className="iconTextButton" key={target} onClick={() => testPlatformSettingsConnection(target)}>
+            <RefreshCw size={15} />
+            {target}
+          </button>
+        ))}
+      </div>
+      {tests.length === 0 ? (
+        <p className="emptyState">No connection tests have been run in this session.</p>
+      ) : (
+        <div className="settingsList">
+          {tests.map((test) => (
+            <div className="settingsRow" key={test.id}>
+              <div>
+                <strong>{test.target}</strong>
+                <span>{test.redactionBoundary}</span>
+                <small>{formatDateTime(test.createdAt)}</small>
+              </div>
+              <span className={`status ${test.status === "Passed" ? "ready" : "failed"}`}>{test.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ConfigExportImportPanel({
+  exportRecord,
+  exportPlatformSettings,
+}: {
+  exportRecord: PlatformSettingsExport | null;
+  exportPlatformSettings: () => void;
+}) {
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Redacted configuration bundle</strong>
+          <span>Export/import handles settings and credential references only. Secret values stay in vaults or private deployment variables.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={exportPlatformSettings}>
+          <Archive size={15} />
+          Export config
+        </button>
+        <button className="iconTextButton" disabled>
+          <Settings size={15} />
+          Import preview
+        </button>
+      </div>
+      {exportRecord && (
+        <div className="platformConfigGrid">
+          <CheckLine icon={UserRound} label="Exported by" value={exportRecord.exportedBy} passed />
+          <CheckLine icon={Activity} label="Exported at" value={formatDateTime(exportRecord.exportedAt)} passed />
+          <CheckLine icon={LockKeyhole} label="Secrets included" value={exportRecord.secretFieldsIncluded ? "Yes" : "No"} passed={!exportRecord.secretFieldsIncluded} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminActivityTimeline({ events }: { events: AuditEvent[] }) {
+  const adminEvents = events.filter((event) => event.action.includes("admin") || event.action.includes("settings") || event.action.includes("approval")).slice(0, 10);
+  if (adminEvents.length === 0) {
+    return <p className="emptyState">No admin activity has been recorded yet.</p>;
+  }
+  return (
+    <div className="auditLogList">
+      {adminEvents.map((event) => (
+        <div className="auditLogRow" key={event.id}>
+          <div>
+            <strong>{event.action}</strong>
+            <span>{event.actor} / {event.target}</span>
+          </div>
+          <small>{formatDateTime(event.createdAt)}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OperationsQueuePanel({
+  approvals,
+  controlPlaneJobs,
+  lifecycleOperations,
+  executionBrokerQueueRecords,
+}: {
+  approvals: ApprovalRequest[];
+  controlPlaneJobs: ControlPlaneJob[];
+  lifecycleOperations: LifecycleOperationRecord[];
+  executionBrokerQueueRecords: ExecutionBrokerQueueRecord[];
+}) {
+  const items = [
+    ...approvals.filter((item) => item.status === "Pending").map((item) => ({ id: item.id, title: item.environmentName, kind: "Approval", status: item.status, detail: item.reason })),
+    ...controlPlaneJobs.map((item) => ({ id: item.id, title: item.environmentName, kind: "Control plane", status: item.state, detail: item.operation })),
+    ...lifecycleOperations.map((item) => ({ id: item.id, title: item.environmentName, kind: "Lifecycle", status: item.status, detail: item.operation })),
+    ...executionBrokerQueueRecords.map((item) => ({ id: item.id, title: item.provider, kind: "Execution broker", status: item.status, detail: item.requestedBy })),
+  ].slice(0, 12);
+
+  if (items.length === 0) {
+    return <p className="emptyState">No operations queue items are pending.</p>;
+  }
+
+  return (
+    <div className="settingsList">
+      {items.map((item) => (
+        <div className="settingsRow" key={`${item.kind}-${item.id}`}>
+          <div>
+            <strong>{item.title}</strong>
+            <span>{item.kind} / {item.detail}</span>
+          </div>
+          <span className="status approval">{item.status}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SettingsIdentityPanel({
   settings,
   savePlatformSettings,
@@ -7654,28 +7939,36 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
 }
 
 function ProviderSettingsPanel({ settings }: { settings: PlatformSettingsSummary }) {
+  const [selectedProvider, setSelectedProvider] = useState<ProvisioningAdapterName>(settings.providerConfiguration[0]?.provider ?? "NCI");
+  const selected = settings.providerConfiguration.find((config) => config.provider === selectedProvider) ?? settings.providerConfiguration[0];
   return (
-    <div className="settingsList">
-      {settings.providerConfiguration.map((config) => (
-        <div className="settingsRow" key={config.provider}>
-          <div className="identityPanel">
-            <div className="integrationLogo">{config.provider}</div>
+    <div className="dryRunPanel">
+      <div className="inlineActions">
+        {settings.providerConfiguration.map((config) => (
+          <button className="iconTextButton" key={config.provider} onClick={() => setSelectedProvider(config.provider)}>
+            <Network size={15} />
+            {config.provider}
+          </button>
+        ))}
+      </div>
+      {selected && (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div className="integrationLogo">{selected.provider}</div>
             <div>
-              <strong>{config.provider}</strong>
-              <span>{config.message}</span>
+              <strong>{selected.provider} provider detail</strong>
+              <span>{selected.message}</span>
             </div>
+            <span className={`status ${integrationConfigClass(selected.status)}`}>{selected.status}</span>
           </div>
-          <div className="settingsPills">
-            <span className={`status ${config.endpointConfigured ? "ready" : "failed"}`}>
-              {config.endpointConfigured ? "Endpoint" : "No endpoint"}
-            </span>
-            <span className={`status ${config.credentialReferenceConfigured ? "ready" : "failed"}`}>
-              {config.credentialReferenceConfigured ? "Credential ref" : "No credential ref"}
-            </span>
-            <span className="pill">{config.status}</span>
+          <div className="platformConfigGrid">
+            <CheckLine icon={Network} label="Endpoint" value={selected.endpointConfigured ? "Configured" : "Missing"} passed={selected.endpointConfigured} />
+            <CheckLine icon={LockKeyhole} label="Credential ref" value={selected.credentialReferenceConfigured ? "Configured" : "Missing"} passed={selected.credentialReferenceConfigured} />
+            <CheckLine icon={ShieldCheck} label="Allowed ops" value="validate, plan, poll, destroy" passed />
+            <CheckLine icon={Gauge} label="Blocked ops" value="Unscoped mutation" passed={false} />
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -7689,8 +7982,34 @@ function AuditLogPanel({
   retention: AuditRetentionDiagnostics;
   settings: PlatformSettingsSummary;
 }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const filteredEvents = events.filter((event) => {
+    const haystack = `${event.action} ${event.actor} ${event.target}`.toLowerCase();
+    const matchesQuery = !query || haystack.includes(query.toLowerCase());
+    const matchesCategory = category === "all" || event.action.includes(category);
+    return matchesQuery && matchesCategory;
+  });
   return (
     <div className="dryRunPanel">
+      <div className="settingsFormGrid">
+        <label>
+          <span>Search audit</span>
+          <input value={query} placeholder="actor, action, target" onChange={(event) => setQuery(event.target.value)} />
+        </label>
+        <label>
+          <span>Category</span>
+          <select value={category} onChange={(event) => setCategory(event.target.value)}>
+            <option value="all">All</option>
+            <option value="auth">Auth</option>
+            <option value="settings">Settings</option>
+            <option value="approval">Approval</option>
+            <option value="provision">Provisioning</option>
+            <option value="adapter">Adapter</option>
+            <option value="audit">Audit</option>
+          </select>
+        </label>
+      </div>
       <div className="platformConfigGrid">
         <CheckLine icon={Activity} label="Retained events" value={`${settings.audit.retainedEvents}/${settings.audit.retentionLimit}`} passed />
         <CheckLine icon={Archive} label="Export records" value={`${settings.audit.exportRecords}`} passed={settings.audit.exportRecords >= 0} />
@@ -7704,11 +8023,11 @@ function AuditLogPanel({
           <span>{settings.audit.redactionBoundary}</span>
         </div>
       </div>
-      {events.length === 0 ? (
+      {filteredEvents.length === 0 ? (
         <p className="emptyState">No API audit events have been recorded yet.</p>
       ) : (
         <div className="auditLogList">
-          {events.slice(0, 12).map((event) => (
+          {filteredEvents.slice(0, 12).map((event) => (
             <div className="auditLogRow" key={event.id}>
               <div>
                 <strong>{event.action}</strong>
@@ -14654,7 +14973,17 @@ function IntegrationConfigRow({
   );
 }
 
-function EnvironmentDetailView({ detail, openCreate }: { detail: EnvironmentDetail | null; openCreate: () => void }) {
+function EnvironmentDetailView({
+  detail,
+  openCreate,
+  requestEnvironmentDestroy,
+  runControlPlaneJobAction,
+}: {
+  detail: EnvironmentDetail | null;
+  openCreate: () => void;
+  requestEnvironmentDestroy: (name: string) => void;
+  runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
+}) {
   if (!detail) {
     return (
       <section className="screen">
@@ -14695,6 +15024,32 @@ function EnvironmentDetailView({ detail, openCreate }: { detail: EnvironmentDeta
         </div>
       </div>
 
+      <Panel title="Lifecycle actions" action="Controlled">
+        <div className="inlineActions">
+          <button className="iconTextButton" onClick={() => requestEnvironmentDestroy(environment.name)}>
+            <Archive size={15} />
+            Request destroy
+          </button>
+          {(detail.controlPlaneJobs ?? []).slice(0, 3).map((job) => (
+            <button className="iconTextButton" key={job.id} onClick={() => runControlPlaneJobAction(job.id, "retry")}>
+              <RefreshCw size={15} />
+              Retry {job.operation}
+            </button>
+          ))}
+          <button className="iconTextButton" disabled>
+            <PlayCircle size={15} />
+            AHV power action
+          </button>
+        </div>
+        <div className="guardrailBanner">
+          <LockKeyhole size={18} />
+          <div>
+            <strong>Controlled lifecycle only</strong>
+            <span>Destroy/retry requests queue control-plane records. AHV power actions require lab lifecycle mode and Platform Admin gates.</span>
+          </div>
+        </div>
+      </Panel>
+
       <div className="twoColumn">
         <Panel title="Provisioning jobs" action={`${detail.jobs.length} recorded`}>
           <div className="eventList">
@@ -14713,7 +15068,7 @@ function EnvironmentDetailView({ detail, openCreate }: { detail: EnvironmentDeta
       </div>
 
       <Panel title="Control-plane lifecycle" action={`${detail.controlPlaneJobs?.length ?? 0} jobs`}>
-        <ControlPlaneQueue jobs={detail.controlPlaneJobs ?? []} />
+        <ControlPlaneQueue jobs={detail.controlPlaneJobs ?? []} runControlPlaneJobAction={runControlPlaneJobAction} />
       </Panel>
 
       <Panel title="Mock Prism execution" action={`${detail.mockPrismExecutions?.length ?? 0} tasks`}>
@@ -15097,6 +15452,59 @@ function createMockPlatformSettingsSummary(
         status: "Not configured",
       },
     },
+    validation: createMockSettingsValidation(),
+    roleMappings: [
+      { source: "OIDC claim", match: "roles:Developer", role: "Developer", status: "Active" },
+      { source: "OIDC claim", match: "roles:Approver", role: "Approver", status: "Active" },
+      { source: "AD group", match: "CN=NDC-Platform-Admins,OU=Groups", role: "Platform Admin", status: "Needs review" },
+      { source: "Local user", match: session.user, role: "Platform Admin", status: "Active" },
+    ],
+  };
+}
+
+function createMockSettingsValidation(): PlatformSettingsSummary["validation"] {
+  return [
+    { name: "Trusted identity boundary", section: "IAM", passed: true, detail: "Browser mock mode uses local identity fallback." },
+    { name: "Local user safety", section: "Local users", passed: true, detail: "MFA policy is modeled for local users." },
+    { name: "AD LDAPS", section: "Active Directory", passed: false, detail: "AD connector is not configured in browser mock mode." },
+    { name: "Provider readiness", section: "Providers", passed: false, detail: "Provider endpoints are browser-local placeholders." },
+    { name: "AHV lab lifecycle", section: "AHV lab", passed: true, detail: "Real AHV lifecycle remains disabled in browser mode." },
+    { name: "Audit retention", section: "Audit", passed: true, detail: "Browser audit stream is metadata only." },
+  ];
+}
+
+function createMockSettingsConnectionTest(
+  settings: PlatformSettingsSummary,
+  configs: IntegrationConfig[],
+  target: PlatformSettingsConnectionTest["target"],
+  actor: string
+): PlatformSettingsConnectionTest {
+  const provider = configs.find((config) => config.name === target);
+  const checks =
+    target === "Active Directory"
+      ? [
+          { name: "AD enabled", passed: settings.configurable.activeDirectory.enabled, detail: String(settings.configurable.activeDirectory.enabled) },
+          { name: "Bind credential reference", passed: Boolean(settings.configurable.activeDirectory.bindCredentialRef), detail: settings.configurable.activeDirectory.bindCredentialRef || "missing" },
+        ]
+      : target === "OIDC"
+        ? [
+            { name: "Issuer configured", passed: Boolean(settings.configurable.iam.oidcIssuerUrl), detail: settings.configurable.iam.oidcIssuerUrl || "missing" },
+            { name: "Client ID configured", passed: Boolean(settings.configurable.iam.oidcClientId), detail: settings.configurable.iam.oidcClientId || "missing" },
+          ]
+        : [
+            { name: "Endpoint configured", passed: Boolean(provider?.endpoint), detail: provider?.endpoint || "missing" },
+            { name: "Credential reference", passed: Boolean(provider?.credentialProfile), detail: provider?.credentialProfile || "missing" },
+            { name: "Real call disabled", passed: true, detail: "Browser mock mode does not call external systems." },
+          ];
+
+  return {
+    id: `mock-settings-test-${String(target).toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
+    target,
+    status: checks.every((check) => check.passed) ? "Passed" : "Blocked",
+    requestedBy: actor,
+    checks,
+    redactionBoundary: "Mock connection test returns configuration readiness only.",
+    createdAt: new Date().toISOString(),
   };
 }
 

@@ -11,6 +11,7 @@ This project uses release tags for public milestones. The current release is `v8
 - Admin Settings tab for identity/account context, provider configuration status, AHV lab runtime flags, configuration boundaries, and recent audit/log review.
 - API-backed settings summary at `/api/admin/settings` and redacted audit event listing at `/api/audit/events`.
 - Configurable IAM, local-user policy, and Active Directory connectivity sections with credential-reference-only AD bind configuration.
+- Console operations hardening with settings validation, connection tests, role mappings, audit filters, admin activity timeline, redacted config export, provider drill-down, operations queue, and environment lifecycle actions.
 
 ### Planned
 

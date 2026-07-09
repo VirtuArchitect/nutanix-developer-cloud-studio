@@ -187,6 +187,46 @@ export type PlatformSettingsSummary = {
     redactionBoundary: string;
   };
   configurable: PlatformSettingsConfig;
+  validation: Array<{
+    name: string;
+    section: "IAM" | "Local users" | "Active Directory" | "Providers" | "AHV lab" | "Audit";
+    passed: boolean;
+    detail: string;
+  }>;
+  roleMappings: Array<{
+    source: "OIDC claim" | "AD group" | "Local user";
+    match: string;
+    role: PlatformRole;
+    status: "Active" | "Needs review";
+  }>;
+  lastSaved?: {
+    actor: string;
+    at: string;
+    sections: string[];
+  };
+};
+
+export type PlatformSettingsConnectionTest = {
+  id: string;
+  target: "OIDC" | "Active Directory" | "Prism Central" | "Audit export" | ProvisioningAdapterName;
+  status: "Passed" | "Blocked" | "Failed";
+  requestedBy: string;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  redactionBoundary: string;
+  createdAt: string;
+};
+
+export type PlatformSettingsExport = {
+  exportedAt: string;
+  exportedBy: string;
+  format: "redacted-json";
+  settings: PlatformSettingsConfig;
+  redactionBoundary: string;
+  secretFieldsIncluded: false;
 };
 
 export type IdentityProviderMode = "Mock OIDC" | "Trusted headers" | "OIDC" | "Active Directory" | "Local users";

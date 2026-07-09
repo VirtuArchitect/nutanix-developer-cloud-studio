@@ -179,6 +179,12 @@ describe("api server", () => {
         },
       }),
     });
+    const connectionTest = await requestJson("/api/admin/settings/test", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({ target: "Active Directory" }),
+    });
+    const exported = await requestJson("/api/admin/settings/export", { headers: adminHeaders });
     const events = await requestJson("/api/audit/events", { headers: adminHeaders });
 
     expect(settings.data).toMatchObject({
@@ -217,10 +223,26 @@ describe("api server", () => {
         status: "Ready for test",
       },
     });
+    expect(updated.data.validation).toEqual(expect.arrayContaining([expect.objectContaining({ section: "Active Directory" })]));
+    expect(updated.data.roleMappings).toEqual(expect.arrayContaining([expect.objectContaining({ source: "AD group" })]));
+    expect(connectionTest.data).toMatchObject({
+      target: "Active Directory",
+      status: "Passed",
+      redactionBoundary: expect.stringContaining("no bind password"),
+    });
+    expect(exported.data).toMatchObject({
+      format: "redacted-json",
+      secretFieldsIncluded: false,
+      settings: expect.objectContaining({
+        activeDirectory: expect.objectContaining({ bindCredentialRef: "vault-ref-ad-bind" }),
+      }),
+    });
     expect(events.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "admin.settings.viewed", actor: "ops.admin" }),
         expect.objectContaining({ action: "admin.settings.updated", actor: "ops.admin" }),
+        expect.objectContaining({ action: "admin.settings.connection-test.run", actor: "ops.admin" }),
+        expect.objectContaining({ action: "admin.settings.exported", actor: "ops.admin" }),
       ])
     );
     expect(JSON.stringify(events.data)).not.toMatch(/password|Authorization|token/i);

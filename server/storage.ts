@@ -288,6 +288,7 @@ export function createDefaultState(): ApiState {
     lifecycleOperations: [],
     auditExports: [],
     auditEvents: [],
+    platformSettingsConnectionTests: [],
   };
 }
 

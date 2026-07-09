@@ -55,6 +55,8 @@ import type {
   PrismSimulatorProfile,
   PlatformConfig,
   PlatformSettingsConfig,
+  PlatformSettingsConnectionTest,
+  PlatformSettingsExport,
   PlatformSettingsSummary,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
@@ -278,11 +280,16 @@ export type ApiState = {
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
   auditEvents: AuditEvent[];
+  platformSettingsConnectionTests: PlatformSettingsConnectionTest[];
 };
 
-export type { AuditEvent, PlatformSettingsSummary };
+export type { AuditEvent, PlatformSettingsConnectionTest, PlatformSettingsExport, PlatformSettingsSummary };
 
 export type UpdatePlatformSettingsRequest = Partial<PlatformSettingsConfig>;
+
+export type CreatePlatformSettingsConnectionTestRequest = {
+  target?: PlatformSettingsConnectionTest["target"];
+};
 
 export type CreateEnvironmentRequest = {
   name: string;

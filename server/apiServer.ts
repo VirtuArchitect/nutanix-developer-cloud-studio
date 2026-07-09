@@ -426,6 +426,8 @@ import type {
   LabAdapterSnapshot,
   PlatformSettingsSummary,
   PlatformSettingsConfig,
+  PlatformSettingsConnectionTest,
+  PlatformSettingsExport,
   ProvisioningAdapterName,
   PrismInventoryImportResult,
   PrismInventoryRecord,
@@ -443,6 +445,7 @@ import type {
   CreateLabAuthorizationScopeRequest,
   CreateLifecycleOperationRequest,
   CreateEnvironmentRequest,
+  CreatePlatformSettingsConnectionTestRequest,
   CreateControlledProvisioningGateRequest,
   CreateControlledLabExecutionApprovalGateRequest,
   CreateControlledLabDryRunExecutionChecklistRequest,
@@ -1448,6 +1451,40 @@ async function routeApi(
     });
     await store.save(state);
     sendJson(response, 200, { data: createPlatformSettingsSummary(state, context) });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/admin/settings/test") {
+    requireRole(context, ["Platform Admin"]);
+    const payload = await readJson<CreatePlatformSettingsConnectionTestRequest>(request);
+    const test = createPlatformSettingsConnectionTest(state, payload.target ?? "OIDC", context.session.user);
+    state.platformSettingsConnectionTests = [test, ...(state.platformSettingsConnectionTests ?? [])].slice(0, 50);
+    addAuditEvent(state, "admin.settings.connection-test.run", context.session.user, String(test.target), {
+      status: test.status,
+      failedChecks: test.checks.filter((check) => !check.passed).map((check) => check.name),
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: test });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/admin/settings/export") {
+    requireRole(context, ["Platform Admin"]);
+    const exportRecord: PlatformSettingsExport = {
+      exportedAt: new Date().toISOString(),
+      exportedBy: context.session.user,
+      format: "redacted-json",
+      settings: state.platformSettings,
+      redactionBoundary: "Export includes configuration and credential references only; inline secrets are never included.",
+      secretFieldsIncluded: false,
+    };
+    addAuditEvent(state, "admin.settings.exported", context.session.user, "platform-settings", {
+      format: exportRecord.format,
+      secretFieldsIncluded: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: exportRecord });
     return;
   }
 
@@ -5393,7 +5430,160 @@ function createPlatformSettingsSummary(state: ApiState, context: RequestContext)
       redactionBoundary: "Credential values, Authorization headers, tokens, passwords, and endpoint query strings are redacted before display or export.",
     },
     configurable: state.platformSettings,
+    validation: createPlatformSettingsValidation(state),
+    roleMappings: createPlatformRoleMappings(state.platformSettings),
+    lastSaved: latestSettingsSave(state),
   };
+}
+
+function createPlatformSettingsValidation(state: ApiState): PlatformSettingsSummary["validation"] {
+  const settings = state.platformSettings;
+  const ad = settings.activeDirectory;
+  const iam = settings.iam;
+  const labConfig = createAhvLabRuntimeConfig();
+  const providerConfigured = state.integrationConfigs.filter((config) => config.endpoint && config.credentialProfile).length;
+
+  return [
+    {
+      name: "Trusted identity boundary",
+      section: "IAM",
+      passed: iam.primaryMode === "Mock OIDC" || iam.requireTrustedIdentity,
+      detail: iam.requireTrustedIdentity ? "Trusted identity is required." : "Hosted/on-prem deployments should require trusted identity headers.",
+    },
+    {
+      name: "OIDC issuer",
+      section: "IAM",
+      passed: iam.primaryMode !== "OIDC" || Boolean(iam.oidcIssuerUrl),
+      detail: iam.oidcIssuerUrl || "OIDC mode requires an issuer URL.",
+    },
+    {
+      name: "Local user safety",
+      section: "Local users",
+      passed: !settings.localUsers.enabled || settings.localUsers.requireMfa,
+      detail: settings.localUsers.requireMfa ? "MFA required for local users." : "Local users should require MFA.",
+    },
+    {
+      name: "AD LDAPS",
+      section: "Active Directory",
+      passed: !ad.enabled || ad.ldapUrl.startsWith("ldaps://") || ad.tlsMode === "StartTLS",
+      detail: ad.enabled ? ad.ldapUrl || "LDAP URL missing." : "AD connector disabled.",
+    },
+    {
+      name: "AD bind reference",
+      section: "Active Directory",
+      passed: !ad.enabled || Boolean(ad.bindCredentialRef),
+      detail: ad.bindCredentialRef || "AD bind credential reference is required.",
+    },
+    {
+      name: "Provider readiness",
+      section: "Providers",
+      passed: providerConfigured > 0,
+      detail: `${providerConfigured}/${state.integrationConfigs.length} providers have endpoint and credential references.`,
+    },
+    {
+      name: "AHV lab lifecycle",
+      section: "AHV lab",
+      passed: !labConfig.switches.labLifecycle || labConfig.provisioningEnabled,
+      detail: labConfig.provisioningEnabled ? "AHV lab lifecycle switches and UUID scope are complete." : "AHV lab lifecycle is disabled or missing required scope.",
+    },
+    {
+      name: "Audit retention",
+      section: "Audit",
+      passed: Number(process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500) >= 500,
+      detail: `${process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500} retained events configured.`,
+    },
+  ];
+}
+
+function createPlatformRoleMappings(settings: PlatformSettingsConfig): PlatformSettingsSummary["roleMappings"] {
+  return [
+    { source: "OIDC claim", match: `${settings.iam.roleClaim}:Developer`, role: "Developer", status: "Active" },
+    { source: "OIDC claim", match: `${settings.iam.roleClaim}:Approver`, role: "Approver", status: "Active" },
+    { source: "OIDC claim", match: `${settings.iam.roleClaim}:Platform Admin`, role: "Platform Admin", status: "Active" },
+    {
+      source: "AD group",
+      match: settings.activeDirectory.groupSearchBaseDn || "CN=NDC-Platform-Admins,OU=Groups",
+      role: "Platform Admin",
+      status: settings.activeDirectory.enabled ? "Active" : "Needs review",
+    },
+    ...settings.localUsers.users.map((user) => ({
+      source: "Local user" as const,
+      match: user.username,
+      role: user.roles[0] ?? settings.iam.defaultRole,
+      status: user.status === "Active" ? "Active" as const : "Needs review" as const,
+    })),
+  ];
+}
+
+function latestSettingsSave(state: ApiState): PlatformSettingsSummary["lastSaved"] {
+  const event = state.auditEvents.find((item) => item.action === "admin.settings.updated");
+  if (!event) {
+    return undefined;
+  }
+  return {
+    actor: event.actor,
+    at: event.createdAt,
+    sections: Array.isArray(event.metadata?.sections) ? event.metadata.sections.map(String) : [],
+  };
+}
+
+function createPlatformSettingsConnectionTest(
+  state: ApiState,
+  target: PlatformSettingsConnectionTest["target"],
+  actor: string
+): PlatformSettingsConnectionTest {
+  const settings = state.platformSettings;
+  const checks = connectionChecks(state, target);
+  return {
+    id: `settings-test-${String(target).toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
+    target,
+    status: checks.every((check) => check.passed) ? "Passed" : "Blocked",
+    requestedBy: actor,
+    checks,
+    redactionBoundary: "Connectivity tests validate configuration shape and readiness only; no bind password, token, or API secret is returned.",
+    createdAt: new Date().toISOString(),
+  };
+
+  function connectionChecks(currentState: ApiState, currentTarget: PlatformSettingsConnectionTest["target"]) {
+    if (currentTarget === "OIDC") {
+      return [
+        check("Issuer configured", Boolean(settings.iam.oidcIssuerUrl), settings.iam.oidcIssuerUrl || "OIDC issuer missing."),
+        check("Client ID configured", Boolean(settings.iam.oidcClientId), settings.iam.oidcClientId || "OIDC client ID missing."),
+      ];
+    }
+    if (currentTarget === "Active Directory") {
+      return [
+        check("AD enabled", settings.activeDirectory.enabled, String(settings.activeDirectory.enabled)),
+        check("LDAPS or StartTLS", settings.activeDirectory.ldapUrl.startsWith("ldaps://") || settings.activeDirectory.tlsMode === "StartTLS", settings.activeDirectory.tlsMode),
+        check("Bind credential reference", Boolean(settings.activeDirectory.bindCredentialRef), settings.activeDirectory.bindCredentialRef || "missing"),
+        check("Base DN configured", Boolean(settings.activeDirectory.baseDn), settings.activeDirectory.baseDn || "missing"),
+      ];
+    }
+    if (currentTarget === "Prism Central") {
+      const nci = currentState.integrationConfigs.find((config) => config.name === "NCI");
+      return [
+        check("NCI endpoint configured", Boolean(nci?.endpoint), nci?.endpoint ? "Configured." : "Missing."),
+        check("NCI credential reference", Boolean(nci?.credentialProfile), nci?.credentialProfile || "missing"),
+        check("Real call disabled", true, "No real Prism request is sent by this console test."),
+      ];
+    }
+    if (currentTarget === "Audit export") {
+      return [
+        check("Retention configured", Number(process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500) >= 500, `${process.env.NDC_AUDIT_RETENTION_EVENTS ?? 500} events.`),
+        check("Export destination", Boolean(process.env.NDC_AUDIT_EXPORT_DESTINATION_REF), process.env.NDC_AUDIT_EXPORT_DESTINATION_REF || "Optional destination reference missing."),
+      ];
+    }
+    const provider = currentState.integrationConfigs.find((config) => config.name === currentTarget);
+    return [
+      check("Endpoint configured", Boolean(provider?.endpoint), provider?.endpoint ? "Configured." : "Missing."),
+      check("Credential reference configured", Boolean(provider?.credentialProfile), provider?.credentialProfile || "missing"),
+      check("Provider mutation disabled", true, "Provider test does not mutate infrastructure."),
+    ];
+  }
+}
+
+function check(name: string, passed: boolean, detail: string) {
+  return { name, passed, detail };
 }
 
 function mergePlatformSettings(
