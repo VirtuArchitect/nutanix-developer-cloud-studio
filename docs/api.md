@@ -40,7 +40,7 @@ The React frontend now checks `/healthz` on load:
 - System status and lab adapter pilot state are API-backed so hosted/on-prem demos can show provisioning guardrails.
 - Control-plane job state is API-backed so the hosted starter can model queue, worker, retry, and failure behavior.
 - Provider readiness, platform configuration references, and image/profile inventory are API-backed for adapter planning.
-- Simulated provisioning is enabled for mock adapter workflows. Real Nutanix adapter execution, Prism Central calls, credential resolution, and infrastructure mutation remain disabled.
+- Simulated provisioning is enabled for mock adapter workflows. Real AHV lab lifecycle is opt-in for authorized test infrastructure only; other real Nutanix adapter execution, Prism Central calls, credential resolution, and infrastructure mutation remain disabled by default.
 - Environment destroy requests queue simulated teardown lifecycle jobs; no real infrastructure is deleted.
 - Template registry, resource profile governance, and policy bundles are API-backed so platform teams can model publication controls before real provisioning is enabled.
 - Prism Central read-only inventory import is API-backed and remains mock-only until lab authorization enables live discovery.
@@ -90,6 +90,8 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/provisioning/adapters`
 - `GET /api/provisioning-jobs`
 - `GET /api/control-plane/jobs`
+- `GET /api/ahv/lab-runtime/config`
+- `GET /api/ahv/lab-runtime/preflights`
 - `GET /api/vm-sandbox/dry-runs`
 - `GET /api/approvals`
 - `GET /api/audit-events`
@@ -125,6 +127,20 @@ These endpoints expose the v6 hardening foundation:
 - Operations runbook console with readiness score, blocked gates, runbook steps, and evidence counters.
 
 All v6 hardening endpoints are read-only snapshots. They do not provision, mutate, contact Prism Central, resolve credentials, or enable real adapters.
+
+### AHV Lab Lifecycle Runtime
+
+Required role: `Platform Admin`.
+
+- `GET /api/ahv/lab-runtime/config`
+- `POST /api/ahv/lab-runtime/preflight`
+- `GET /api/ahv/lab-runtime/preflights`
+- `POST /api/ahv/controlled-provisioning/runs`
+- `POST /api/ahv/controlled-provisioning/runs/:id/poll`
+- `POST /api/ahv/controlled-provisioning/runs/:id/power`
+- `POST /api/ahv/controlled-provisioning/runs/:id/destroy`
+
+The lab runtime remains disabled unless `APP_ENV=lab`, `NDC_AHV_REAL_ADAPTER_ENABLED=true`, `NDC_CONTROLLED_PROVISIONING_ENABLED=true`, and `NDC_AHV_LAB_LIFECYCLE_ENABLED=true` are all set. It uses private environment variables for Prism Central credentials, enforces allowed cluster/project/subnet/image UUIDs, requires the `ndc-lab-` VM prefix, records audit evidence, and redacts secret-shaped fields.
 
 ### Durable On-Prem Operations Foundation
 

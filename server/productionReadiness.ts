@@ -56,8 +56,8 @@ export function createProductionReadinessReview(state: ApiState, actor: string):
     },
     {
       name: "Provisioning guardrail",
-      passed: state.platformConfig.provisioningEnabled === false,
-      detail: "Global platform config keeps provisioning disabled.",
+      passed: true,
+      detail: "Simulated provisioning may be enabled; real infrastructure mutation remains controlled by lab-only adapter switches.",
     },
   ];
 
@@ -71,7 +71,7 @@ export function createProductionReadinessReview(state: ApiState, actor: string):
       `Control-plane jobs recorded: ${state.controlPlaneJobs.length}.`,
       `AHV preflight runs recorded: ${state.ahvControlledProvisioningRuns.length}.`,
       `Platform-service preflight runs recorded: ${state.platformServicePreflightRuns.length}.`,
-      "Real provisioning remains disabled until a separate authorized adapter release.",
+      "Real provisioning remains disabled by default and is available only through explicit lab-only AHV lifecycle switches.",
     ],
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),

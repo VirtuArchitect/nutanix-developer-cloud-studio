@@ -11,7 +11,7 @@ describe("api server", () => {
   let baseUrl: string;
 
   beforeEach(async () => {
-    delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
+    resetAhvLabEnv();
     process.env.NDC_RATE_LIMIT_PER_MINUTE = "1000";
     server = createApiServer({ store: new MemoryStore() });
     await new Promise<void>((resolve) => {
@@ -25,8 +25,7 @@ describe("api server", () => {
   });
 
   afterEach(async () => {
-    delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
-    delete process.env.NDC_RATE_LIMIT_PER_MINUTE;
+    resetAhvLabEnv();
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
     });
@@ -387,7 +386,7 @@ describe("api server", () => {
       storageMode: "memory",
       staticServing: false,
       guardrails: expect.arrayContaining([
-        expect.objectContaining({ name: "Real provisioning disabled", passed: true }),
+        expect.objectContaining({ name: "Simulated provisioning enabled", passed: true }),
         expect.objectContaining({ name: "Real Prism calls disabled", passed: true }),
       ]),
     });
@@ -2107,7 +2106,7 @@ describe("api server", () => {
     expect(envelope.data.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "Active pentest scope", passed: false }),
-        expect.objectContaining({ name: "Real mutation remains disabled", passed: true }),
+        expect.objectContaining({ name: "Real mutation boundary authorized", passed: true }),
       ])
     );
     expect(envelopes.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: envelope.data.id })]));
@@ -2166,6 +2165,136 @@ describe("api server", () => {
     expect(runs.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: run.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ action: "ahv.controlled.preflight.recorded", target: "ahv-preflight-plan" })])
+    );
+  });
+
+  it("reports AHV lab runtime config as disabled by default and protects lab routes", async () => {
+    const developerHeaders = {
+      "x-ndc-user": "demo.dev",
+      "x-ndc-roles": "Developer",
+    };
+    const config = await requestJson("/api/ahv/lab-runtime/config", {
+      headers: { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" },
+    });
+
+    expect(config.data).toMatchObject({
+      mode: "Disabled",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+      passwordConfigured: false,
+    });
+    await expectJson(
+      "/api/ahv/lab-runtime/config",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      { headers: developerHeaders }
+    );
+  });
+
+  it("executes lab AHV create, poll, power, and destroy against the mock Prism endpoint", async () => {
+    configureAhvLabEnv(`${baseUrl}/mock-prism`);
+
+    const adminHeaders = { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" };
+    const preflight = await requestJson("/api/ahv/lab-runtime/preflight", { method: "POST", headers: adminHeaders });
+    const plan = await requestJson("/api/vm-sandbox/dry-runs", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({ environmentName: "ndc-lab-api-01" }),
+    });
+    await requestJson("/api/lab-authorization/scopes", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        pentestScopeReference: "authorized-ahv-lab-scope.md",
+        pentestScopeStructurallyValid: true,
+        providerCoverage: ["NCI"],
+        targetEndpoints: ["prism-central-ref"],
+        evidenceReferences: ["authorized-ahv-lab-scope.md"],
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    await requestJson("/api/audit-exports", { method: "POST", headers: adminHeaders });
+    await requestJson("/api/vm-sandbox/rollback-destroy-proofs", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        dryRunPlanId: plan.data.id,
+        backupEvidenceReference: "backup-export-ref",
+        ownerNotificationReference: "owner-notice-ref",
+        inventoryReconciliationReference: "inventory-reconciliation-ref",
+        rollbackOwner: "Cloud Operations",
+      }),
+    });
+    const gate = await requestJson("/api/vm-sandbox/controlled-provisioning", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({ dryRunPlanId: plan.data.id }),
+    });
+    const approved = await requestJson(`/api/vm-sandbox/controlled-provisioning/${gate.data.id}/approve`, {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({ evidence: "Authorized lab operator approved controlled create." }),
+    });
+    await requestJson("/api/vm-lifecycle/proofs", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({ gateId: gate.data.id, rollbackVerified: true, destroyVerified: true }),
+    });
+    const envelope = await requestJson("/api/vm-sandbox/controlled-create-authorization", {
+      method: "POST",
+      headers: adminHeaders,
+    });
+    const created = await requestJson("/api/ahv/controlled-provisioning/runs", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({ gateId: gate.data.id, action: "Create VM" }),
+    });
+    const polled = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/poll`, {
+      method: "POST",
+      headers: adminHeaders,
+    });
+    const powered = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/power`, {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({ powerState: "OFF" }),
+    });
+    const destroyed = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/destroy`, {
+      method: "POST",
+      headers: adminHeaders,
+    });
+    const auditEvents = await requestJson("/api/audit-events", { headers: adminHeaders });
+
+    expect(preflight.data).toMatchObject({ status: "Ready", realPrismCallsEnabled: true });
+    expect(preflight.data.readOnlyChecks).toHaveLength(4);
+    expect(approved.data).toMatchObject({ status: "Approved for controlled create" });
+    expect(envelope.data).toMatchObject({ status: "Ready for authorization review" });
+    expect(created.data).toMatchObject({
+      adapterMode: "Lab AHV Prism adapter",
+      status: "Submitted",
+      provisioningEnabled: true,
+      createStatus: "Submitted",
+      prismTaskUuid: expect.any(String),
+    });
+    expect(polled.data).toMatchObject({ status: "Succeeded", createStatus: "Succeeded", vmUuid: expect.stringContaining("mock-vm") });
+    expect(powered.data).toMatchObject({ action: "Power VM", powerStatus: "Submitted" });
+    expect(destroyed.data).toMatchObject({
+      action: "Destroy VM",
+      status: "Destroyed",
+      destroyStatus: "Submitted",
+      inventoryReconciliation: expect.objectContaining({ status: "Reconciled", vmPresent: false }),
+    });
+    expect(JSON.stringify(auditEvents.data)).not.toContain("placeholder-not-a-secret");
+    expect(JSON.stringify(auditEvents.data)).not.toContain("Authorization");
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "ahv.controlled.create.submitted", target: "ndc-lab-api-01" }),
+        expect.objectContaining({ action: "ahv.controlled.destroy", target: "ndc-lab-api-01" }),
+      ])
     );
   });
 
@@ -4065,7 +4194,7 @@ describe("api server", () => {
         expect.objectContaining({ name: "Provisioning guardrail", passed: true }),
       ])
     );
-    expect(review.data.evidence).toEqual(expect.arrayContaining([expect.stringContaining("Real provisioning remains disabled")]));
+    expect(review.data.evidence).toEqual(expect.arrayContaining([expect.stringContaining("Real provisioning remains disabled by default")]));
     expect(reviews.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: review.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ action: "production-readiness.review.recorded", target: review.data.id })])
@@ -4280,6 +4409,43 @@ describe("api server", () => {
     const response = await nodeRequest(path, init);
     expect(response.status).toBe(status);
     expect(JSON.parse(response.body)).toEqual(body);
+  }
+
+  function configureAhvLabEnv(prismUrl: string) {
+    process.env.APP_ENV = "lab";
+    process.env.NDC_AHV_REAL_ADAPTER_ENABLED = "true";
+    process.env.NDC_CONTROLLED_PROVISIONING_ENABLED = "true";
+    process.env.NDC_AHV_LAB_LIFECYCLE_ENABLED = "true";
+    process.env.NUTANIX_PRISM_CENTRAL_URL = prismUrl;
+    process.env.NUTANIX_PRISM_USERNAME = "lab-user";
+    process.env.NUTANIX_PRISM_PASSWORD = "placeholder-not-a-secret";
+    process.env.NDC_AHV_ALLOWED_CLUSTER_UUID = "mock-cluster-berlin-01";
+    process.env.NDC_AHV_ALLOWED_PROJECT_UUID = "mock-project-devcloud";
+    process.env.NDC_AHV_ALLOWED_SUBNET_UUID = "mock-subnet-dev-segment";
+    process.env.NDC_AHV_ALLOWED_IMAGE_UUID = "mock-image-rocky-9-hardened";
+    process.env.NDC_AHV_VM_NAME_PREFIX = "ndc-lab-";
+    process.env.NDC_AUTHORIZED_PENTEST_SCOPE_REF = "authorized-ahv-lab-scope.md";
+    process.env.NDC_AUTHORIZED_PENTEST_SCOPE_ACTIVE = "true";
+  }
+
+  function resetAhvLabEnv() {
+    delete process.env.APP_ENV;
+    delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
+    delete process.env.NDC_RATE_LIMIT_PER_MINUTE;
+    delete process.env.NDC_AHV_REAL_ADAPTER_ENABLED;
+    delete process.env.NDC_CONTROLLED_PROVISIONING_ENABLED;
+    delete process.env.NDC_AHV_LAB_LIFECYCLE_ENABLED;
+    delete process.env.NUTANIX_PRISM_CENTRAL_URL;
+    delete process.env.NUTANIX_PRISM_USERNAME;
+    delete process.env.NUTANIX_PRISM_PASSWORD;
+    delete process.env.NDC_AHV_ALLOWED_CLUSTER_UUID;
+    delete process.env.NDC_AHV_ALLOWED_PROJECT_UUID;
+    delete process.env.NDC_AHV_ALLOWED_SUBNET_UUID;
+    delete process.env.NDC_AHV_ALLOWED_IMAGE_UUID;
+    delete process.env.NDC_AHV_VM_NAME_PREFIX;
+    delete process.env.NDC_AUTHORIZED_PENTEST_SCOPE_REF;
+    delete process.env.NDC_AUTHORIZED_PENTEST_SCOPE_ACTIVE;
+    delete process.env.NDC_PRISM_TLS_INSECURE;
   }
 
   async function nodeRequest(path: string, init?: RequestInit): Promise<{ status: number; body: string; headers: Record<string, string> }> {

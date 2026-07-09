@@ -2,16 +2,28 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v7.5.0-on-prem-install-profile-pack`.
+This project uses release tags for public milestones. The current release is `v8.5.0-ahv-lab-lifecycle`.
 
 ## [Unreleased]
 
 ### Planned
 
-- Add a real AHV create adapter only after authorized lab scope, completed gate review, rollback/destroy validation, and pentest gate.
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v8.5.0-ahv-lab-lifecycle] - 2026-07-09
+
+### Added
+
+- Lab-only AHV Prism Central v3 runtime configuration and read-only preflight endpoints.
+- Opt-in AHV VM create, poll, power, and destroy lifecycle route for authorized test infrastructure.
+- Docker Compose lab overlay, `.env.lab.example`, AHV lab config validation, read-only smoke, and lifecycle smoke scripts.
+
+### Notes
+
+- Real AHV lifecycle remains disabled by default and requires `APP_ENV=lab` plus all AHV lifecycle switches.
+- Prism credentials are supplied through private environment variables and are not returned in API responses or audit metadata.
 
 ## [v7.5.0-on-prem-install-profile-pack] - 2026-07-09
 

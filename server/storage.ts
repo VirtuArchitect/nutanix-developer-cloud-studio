@@ -175,6 +175,7 @@ export function createDefaultState(): ApiState {
     controlledCreateAuthorizationEnvelopes: [],
     ahvCreateAdapterContractReviews: [],
     ahvControlledProvisioningRuns: [],
+    ahvLabRuntimePreflights: [],
     platformServicePreflightRuns: [],
     platformServiceAdapterContractReviews: [],
     providerReleaseGateRecords: [],

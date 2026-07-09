@@ -4,7 +4,7 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v7.5.0-on-prem-install-profile-pack`
+Current release: `v8.5.0-ahv-lab-lifecycle`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -49,6 +49,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - Controlled mock-to-lab transition with lab readiness workspace, expanded mock Prism endpoint contract, adapter contract harness records, lab dry-run console, evidence export pack v2, and real lab authorization packet evidence.
 - Production hardening foundation with API contract baseline, RBAC enforcement matrix, persistence boundary diagnostics, audit integrity manifest, deployment profile validation, and an operations runbook console.
 - Durable on-prem operations foundation with Postgres repository contract readiness, migration baseline manifests, JWT/OIDC verification boundary diagnostics, signed audit export manifests, admin upgrade health, and on-prem install profile pack validation.
+- Lab-only AHV test infrastructure enablement with Prism Central v3 configuration validation, read-only preflight, opt-in VM create/poll/power/destroy lifecycle, Docker Compose lab deployment, and redacted audit evidence.
 
 ### Governance And Release Readiness
 
@@ -59,7 +60,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 
 ### Current Boundary
 
-Simulated provisioning is enabled for the prototype control plane. Real Nutanix adapters, Prism Central calls, credential resolution, and infrastructure mutation remain disabled. The application records evidence and exercises adapter-shaped workflows without creating, changing, or deleting real infrastructure.
+Simulated provisioning is enabled for the prototype control plane. Real AHV lifecycle is available only in an explicitly configured `APP_ENV=lab` deployment with all AHV lab switches enabled, authorized test infrastructure, private credentials, and Platform Admin approval gates. All other real Nutanix adapters, Prism calls, credential resolution, and infrastructure mutation remain disabled by default.
 
 <img width="1720" height="1260" alt="image" src="https://github.com/user-attachments/assets/355abe1b-c5d0-40b5-814f-89d051332836" />
 
@@ -178,6 +179,7 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/hosting.md` for prototype and on-premises hosting direction
 - `docs/api.md` for the backend API starter
 - `docs/on-prem-deployment.md` for the containerized deployment starter
+- `docs/ahv-lab-lifecycle.md` for authorized AHV test infrastructure deployment
 - `docs/release-notes/` for GitHub Release copy
 - `docs/upgrade-path.md` for gated phase sequencing and promotion rules
 

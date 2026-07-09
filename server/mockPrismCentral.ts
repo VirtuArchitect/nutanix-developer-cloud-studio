@@ -24,6 +24,11 @@ type PrismTask = {
     percentage_complete: 100;
     message: string;
     created_time: string;
+    entity_reference: {
+      kind: string;
+      uuid: string;
+      name: string;
+    };
   };
 };
 
@@ -115,7 +120,7 @@ export async function routeMockPrismCentral(
     }
 
     const name = extractVmName(body);
-    const task = createMockPrismTask(`Mock VM create accepted for ${name}. No real VM was created.`);
+    const task = createMockPrismTask(`Mock VM create accepted for ${name}. No real VM was created.`, `mock-vm-${name}`);
     sendMockPrismJson(response, 202, {
       metadata: { kind: "vm_create_response" },
       status: {
@@ -124,6 +129,30 @@ export async function routeMockPrismCentral(
         message: task.status.message,
       },
       task_reference: reference("task", task.metadata.uuid, `create-${name}`),
+    });
+    return true;
+  }
+
+  const powerMatch = url.pathname.match(/^\/mock-prism\/api\/nutanix\/v3\/vms\/([^/]+)\/set_power_state$/);
+  if (request.method === "POST" && powerMatch) {
+    const vmUuid = decodeURIComponent(powerMatch[1]);
+    const task = createMockPrismTask(`Mock VM power transition accepted for ${vmUuid}.`, vmUuid);
+    sendMockPrismJson(response, 202, {
+      metadata: { kind: "vm_power_response" },
+      status: { execution_context: "mock-prism", state: "ACCEPTED", message: task.status.message },
+      task_reference: reference("task", task.metadata.uuid, `power-${vmUuid}`),
+    });
+    return true;
+  }
+
+  const deleteMatch = url.pathname.match(/^\/mock-prism\/api\/nutanix\/v3\/vms\/([^/]+)$/);
+  if (request.method === "DELETE" && deleteMatch) {
+    const vmUuid = decodeURIComponent(deleteMatch[1]);
+    const task = createMockPrismTask(`Mock VM destroy accepted for ${vmUuid}.`, vmUuid);
+    sendMockPrismJson(response, 202, {
+      metadata: { kind: "vm_delete_response" },
+      status: { execution_context: "mock-prism", state: "ACCEPTED", message: task.status.message },
+      task_reference: reference("task", task.metadata.uuid, `delete-${vmUuid}`),
     });
     return true;
   }
@@ -201,7 +230,7 @@ function reference(kind: string, uuid: string, name: string) {
   return { kind, uuid, name };
 }
 
-export function createMockPrismTask(message: string): PrismTask {
+export function createMockPrismTask(message: string, vmUuid = "mock-vm-task-target"): PrismTask {
   return {
     metadata: {
       kind: "task",
@@ -212,6 +241,7 @@ export function createMockPrismTask(message: string): PrismTask {
       percentage_complete: 100,
       message,
       created_time: new Date().toISOString(),
+      entity_reference: reference("vm", vmUuid, vmUuid),
     },
   };
 }

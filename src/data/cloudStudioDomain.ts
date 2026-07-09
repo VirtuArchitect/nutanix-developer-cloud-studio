@@ -1640,9 +1640,16 @@ export type AhvControlledProvisioningRun = {
   gateId: string;
   dryRunPlanId: string;
   environmentName: string;
-  action: "Create VM" | "Destroy VM";
-  adapterMode: "Disabled real adapter";
-  status: "Preflight blocked" | "Ready but disabled";
+  action: "Create VM" | "Power VM" | "Destroy VM";
+  adapterMode: "Disabled real adapter" | "Lab AHV Prism adapter";
+  status:
+    | "Preflight blocked"
+    | "Ready but disabled"
+    | "Submitted"
+    | "Polling"
+    | "Succeeded"
+    | "Failed"
+    | "Destroyed";
   checks: Array<{
     name: string;
     passed: boolean;
@@ -1651,8 +1658,74 @@ export type AhvControlledProvisioningRun = {
   requestedBy: string;
   labScopeId?: string;
   lifecycleProofId?: string;
+  prismTaskUuid?: string;
+  prismTaskUuids?: string[];
+  vmUuid?: string;
+  createStatus?: "Not submitted" | "Submitted" | "Succeeded" | "Failed";
+  powerStatus?: "Not requested" | "Submitted" | "Succeeded" | "Failed";
+  destroyStatus?: "Not requested" | "Submitted" | "Succeeded" | "Failed";
+  lastPollAt?: string;
+  failureReason?: string;
+  rollbackDestroyEvidence?: string[];
+  inventoryReconciliation?: {
+    checkedAt: string;
+    vmPresent: boolean;
+    status: "Pending" | "Reconciled" | "Still present";
+    detail: string;
+  };
   mutationOperationsBlocked: string[];
-  provisioningEnabled: false;
+  provisioningEnabled: boolean;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export type AhvLabRuntimeConfig = {
+  mode: "Disabled" | "Lab ready";
+  appEnv: string;
+  prismCentralUrlConfigured: boolean;
+  prismCentralUrlHost?: string;
+  usernameConfigured: boolean;
+  passwordConfigured: boolean;
+  allowedClusterUuidConfigured: boolean;
+  allowedProjectUuidConfigured: boolean;
+  allowedSubnetUuidConfigured: boolean;
+  allowedImageUuidConfigured: boolean;
+  vmNamePrefix: string;
+  quotas: {
+    maxCpu: number;
+    maxMemoryGb: number;
+    maxDiskGb: number;
+    defaultExpiryHours: number;
+  };
+  switches: {
+    realAdapter: boolean;
+    controlledProvisioning: boolean;
+    labLifecycle: boolean;
+    trustedIdentityRequired: boolean;
+    tlsInsecure: boolean;
+  };
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  provisioningEnabled: boolean;
+  realPrismCallsEnabled: boolean;
+};
+
+export type AhvLabRuntimePreflight = {
+  id: string;
+  status: "Blocked" | "Ready";
+  requestedBy: string;
+  config: AhvLabRuntimeConfig;
+  readOnlyChecks: Array<{
+    operation: "listClusters" | "listProjects" | "listImages" | "listSubnets";
+    passed: boolean;
+    detail: string;
+  }>;
+  redactionApplied: boolean;
+  provisioningEnabled: boolean;
+  realPrismCallsEnabled: boolean;
   createdAt: string;
 };
 

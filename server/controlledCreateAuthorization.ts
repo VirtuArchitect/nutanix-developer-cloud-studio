@@ -38,6 +38,11 @@ export function createControlledCreateAuthorizationEnvelope(
   const pentestScopeActive = Boolean(pentestScopeRef && process.env.NDC_AUTHORIZED_PENTEST_SCOPE_ACTIVE === "true");
   const mutationSwitchEnabled = process.env.NDC_CONTROLLED_PROVISIONING_ENABLED === "true";
   const realAdapterEnabled = process.env.NDC_AHV_REAL_ADAPTER_ENABLED === "true";
+  const labLifecycleEnabled =
+    process.env.APP_ENV === "lab" &&
+    mutationSwitchEnabled &&
+    realAdapterEnabled &&
+    process.env.NDC_AHV_LAB_LIFECYCLE_ENABLED === "true";
   const checks = [
     {
       name: "Lab scope active",
@@ -61,8 +66,12 @@ export function createControlledCreateAuthorizationEnvelope(
     },
     {
       name: "Adapter enablement ready",
-      passed: Boolean(adapterEnablement),
-      detail: adapterEnablement ? adapterEnablement.id : "NCI adapter enablement review must be ready.",
+      passed: Boolean(adapterEnablement) || labLifecycleEnabled,
+      detail: adapterEnablement
+        ? adapterEnablement.id
+        : labLifecycleEnabled
+          ? "Lab AHV lifecycle switch set is enabled for authorized test infrastructure."
+          : "NCI adapter enablement review must be ready.",
     },
     {
       name: "Audit export ready",
@@ -77,12 +86,14 @@ export function createControlledCreateAuthorizationEnvelope(
         : "Active authorized pentest scope is required before live adapter authorization.",
     },
     {
-      name: "Real mutation remains disabled",
-      passed: !mutationSwitchEnabled && !realAdapterEnabled,
+      name: "Real mutation boundary authorized",
+      passed: (!mutationSwitchEnabled && !realAdapterEnabled) || labLifecycleEnabled,
       detail:
-        !mutationSwitchEnabled && !realAdapterEnabled
+        labLifecycleEnabled
+          ? "Lab-only AHV lifecycle switches are enabled."
+          : !mutationSwitchEnabled && !realAdapterEnabled
           ? "Controlled create switch and AHV real adapter are disabled."
-          : "This phase must not enable live mutation switches.",
+          : "Real mutation switches require APP_ENV=lab and NDC_AHV_LAB_LIFECYCLE_ENABLED=true.",
     },
   ];
 

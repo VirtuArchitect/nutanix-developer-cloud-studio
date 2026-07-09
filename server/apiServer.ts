@@ -11,6 +11,12 @@ import {
   createDisabledAhvControlledProvisioningAdapter,
 } from "./ahvControlledProvisioning";
 import {
+  AhvLabRuntimeError,
+  createAhvLabRuntimeConfig,
+  LabAhvPrismAdapter,
+  redactSensitive,
+} from "./ahvLabRuntime";
+import {
   AhvCreateAdapterContractError,
   createDisabledAhvCreateAdapterContract,
 } from "./ahvCreateAdapterContract";
@@ -625,6 +631,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof AhvCreateAdapterContractError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof AhvLabRuntimeError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1898,6 +1914,18 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/ahv/controlled-provisioning/runs") {
     sendJson(response, 200, { data: state.ahvControlledProvisioningRuns });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/ahv/lab-runtime/config") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createAhvLabRuntimeConfig() });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/ahv/lab-runtime/preflights") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.ahvLabRuntimePreflights });
     return;
   }
 
@@ -3472,18 +3500,39 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "POST" && url.pathname === "/api/ahv/lab-runtime/preflight") {
+    requireRole(context, ["Platform Admin"]);
+    const adapter = new LabAhvPrismAdapter();
+    const preflight = await adapter.preflight(context.session.user);
+    state.ahvLabRuntimePreflights = [preflight, ...state.ahvLabRuntimePreflights];
+    addAuditEvent(state, "ahv.lab-runtime.preflight", context.session.user, preflight.id, {
+      status: preflight.status,
+      checksPassed: preflight.config.checks.every((check) => check.passed),
+      readOnlyChecksPassed: preflight.readOnlyChecks.every((check) => check.passed),
+      provisioningEnabled: preflight.provisioningEnabled,
+      realPrismCallsEnabled: preflight.realPrismCallsEnabled,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: preflight });
+    return;
+  }
+
   if (request.method === "POST" && url.pathname === "/api/ahv/controlled-provisioning/runs") {
     requireRole(context, ["Platform Admin"]);
     try {
       const body = await readJson<CreateAhvControlledProvisioningRunRequest>(request);
-      const adapter = createDisabledAhvControlledProvisioningAdapter();
-      const run = adapter.preflight(state, body, context.session.user);
+      const runtimeConfig = createAhvLabRuntimeConfig();
+      const run = runtimeConfig.provisioningEnabled
+        ? await new LabAhvPrismAdapter().create(state, body.gateId, context.session.user)
+        : createDisabledAhvControlledProvisioningAdapter().preflight(state, body, context.session.user);
       state.ahvControlledProvisioningRuns = [run, ...state.ahvControlledProvisioningRuns];
-      addAuditEvent(state, "ahv.controlled.preflight.recorded", context.session.user, run.environmentName, {
+      addAuditEvent(state, run.provisioningEnabled ? "ahv.controlled.create.submitted" : "ahv.controlled.preflight.recorded", context.session.user, run.environmentName, {
         gateId: run.gateId,
         status: run.status,
         adapterMode: run.adapterMode,
-        provisioningEnabled: false,
+        prismTaskUuid: run.prismTaskUuid,
+        vmUuid: run.vmUuid,
+        provisioningEnabled: run.provisioningEnabled,
       });
       await store.save(state);
       sendJson(response, 201, { data: run });
@@ -3499,6 +3548,57 @@ async function routeApi(
       }
       throw error;
     }
+    return;
+  }
+
+  const ahvRunActionMatch = url.pathname.match(/^\/api\/ahv\/controlled-provisioning\/runs\/([^/]+)\/(poll|power|destroy)$/);
+  if (request.method === "POST" && ahvRunActionMatch) {
+    requireRole(context, ["Platform Admin"]);
+    const runId = decodeURIComponent(ahvRunActionMatch[1]);
+    const action = ahvRunActionMatch[2] as "poll" | "power" | "destroy";
+    const existing = state.ahvControlledProvisioningRuns.find((item) => item.id === runId);
+    if (!existing) {
+      sendJson(response, 404, {
+        error: {
+          code: "ahv_run_not_found",
+          message: "AHV controlled provisioning run was not found.",
+        },
+      });
+      return;
+    }
+    if (existing.adapterMode !== "Lab AHV Prism adapter") {
+      sendJson(response, 409, {
+        error: {
+          code: "ahv_run_not_lab_adapter",
+          message: "AHV lifecycle actions require a Lab AHV Prism adapter run.",
+        },
+      });
+      return;
+    }
+
+    const adapter = new LabAhvPrismAdapter();
+    const body = await readJson<{ powerState?: "ON" | "OFF" }>(request);
+    const updated =
+      action === "poll"
+        ? await adapter.poll(existing)
+        : action === "power"
+          ? await adapter.power(existing, body.powerState === "OFF" ? "OFF" : "ON")
+          : await adapter.destroy(existing);
+    state.ahvControlledProvisioningRuns = state.ahvControlledProvisioningRuns.map((item) =>
+      item.id === updated.id ? updated : item
+    );
+    addAuditEvent(state, `ahv.controlled.${action}`, context.session.user, updated.environmentName, {
+      runId: updated.id,
+      adapterMode: updated.adapterMode,
+      status: updated.status,
+      prismTaskUuid: updated.prismTaskUuid,
+      prismTaskUuids: updated.prismTaskUuids,
+      vmUuid: updated.vmUuid,
+      inventoryReconciliation: redactSensitive(updated.inventoryReconciliation),
+      provisioningEnabled: updated.provisioningEnabled,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
     return;
   }
 

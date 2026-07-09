@@ -5,6 +5,7 @@ import type {
   AuthorizedLabConnectionDryRunRecord,
   AhvControlledProvisioningRun,
   AhvCreateAdapterContractReview,
+  AhvLabRuntimePreflight,
   ControlledProvisioningDecision,
   ControlledLabReleaseRunbookRecord,
   ControlledSwitchConfigurationRequest,
@@ -204,6 +205,7 @@ export type ApiState = {
   controlledCreateAuthorizationEnvelopes: ControlledCreateAuthorizationEnvelope[];
   ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
+  ahvLabRuntimePreflights: AhvLabRuntimePreflight[];
   platformServicePreflightRuns: PlatformServicePreflightRun[];
   platformServiceAdapterContractReviews: PlatformServiceAdapterContractReview[];
   providerReleaseGateRecords: ProviderReleaseGateRecord[];

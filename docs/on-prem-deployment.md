@@ -181,6 +181,21 @@ VM-targeted environment requests use the simulator to record task evidence in th
 
 `v2.73.0-adapter-contract-split` adds a typed Prism adapter boundary. `MockPrismAdapter` is the active implementation, while `DisabledRealPrismAdapter` reports blocked reasons for live Prism use. This keeps on-prem testing realistic without allowing accidental infrastructure mutation.
 
+## AHV Lab Lifecycle Deployment
+
+`v8.5.0-ahv-lab-lifecycle` adds a lab-only AHV VM lifecycle path for authorized test infrastructure. Use `docker-compose.lab.yml` with a private `.env.lab` copied from `.env.lab.example`.
+
+The lab adapter remains disabled unless all switches are explicitly enabled:
+
+```text
+APP_ENV=lab
+NDC_AHV_REAL_ADAPTER_ENABLED=true
+NDC_CONTROLLED_PROVISIONING_ENABLED=true
+NDC_AHV_LAB_LIFECYCLE_ENABLED=true
+```
+
+Run `npm run validate:ahv-lab-config` before starting a lifecycle test. Run `npm run smoke:ahv-lab-readonly` before enabling create/destroy operations. The opt-in lifecycle smoke is `npm run smoke:ahv-lab-lifecycle`.
+
 Before any real API call is added, document:
 
 - Authorized lab systems and endpoints.

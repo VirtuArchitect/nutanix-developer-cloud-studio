@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "7.5.0-on-prem-install-profile-pack",
+  "version": "8.5.0-ahv-lab-lifecycle",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -19,7 +19,10 @@
     "validate:postgres": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-postgres-repository.ps1",
     "validate:backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-state-backup-restore.ps1",
     "validate:container-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-container-config-pack.ps1",
-    "validate:onprem-profile-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-onprem-profile-pack.ps1"
+    "validate:onprem-profile-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-onprem-profile-pack.ps1",
+    "validate:ahv-lab-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-lab-config.ps1",
+    "smoke:ahv-lab-readonly": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-lab-readonly.ps1",
+    "smoke:ahv-lab-lifecycle": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-lab-lifecycle.ps1"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
