@@ -60,6 +60,7 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/templates`
 - `GET /api/session`
 - `GET /api/session/diagnostics`
+- `GET /api/admin/settings`
 - `GET /api/auth/boundary-diagnostics`
 - `GET /api/system/status`
 - `GET /api/observability/runtime`
@@ -67,6 +68,7 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/security/rbac-matrix`
 - `GET /api/storage/persistence-boundary`
 - `GET /api/audit/integrity-manifest`
+- `GET /api/audit/events`
 - `GET /api/deployment/profiles`
 - `GET /api/operations/runbook-console`
 - `GET /api/onprem/durable-persistence`
@@ -94,17 +96,20 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/ahv/lab-runtime/preflights`
 - `GET /api/vm-sandbox/dry-runs`
 - `GET /api/approvals`
-- `GET /api/audit-events`
 - `GET /api/audit/retention`
 - `GET /api/environments/:name`
 
 `GET /api/session/diagnostics` returns trusted-header mode, missing required identity headers, and the role/action matrix surfaced in the Admin Overview.
+
+`GET /api/admin/settings` returns a Platform Admin-only configuration summary for the Admin Settings tab. It reports identity/RBAC mode, account sources, provider endpoint and credential-reference readiness, AHV lab feature-flag state, quota boundaries, audit retention, and redaction posture. It does not return Prism passwords, Authorization headers, tokens, or credential values.
 
 When `NDC_REQUIRE_TRUSTED_IDENTITY=true`, API routes fail closed with `401 unauthenticated` unless `x-ndc-user`, `x-ndc-roles`, and `x-ndc-issuer` are present. Health endpoints remain public.
 
 `GET /api/auth/boundary-diagnostics` returns current identity-boundary evidence, role claims, trusted header checks, malformed-header rejection state, and audit recording state. When trusted identity mode is required, malformed user, issuer, or role headers are rejected before route handling.
 
 `GET /api/observability/runtime` returns version, request ID, actor, storage mode, static serving state, rate-limit configuration, retained audit events, and runtime guardrails.
+
+`GET /api/audit/events` returns recent retained audit events for Platform Admin review. Metadata is redacted before display and the endpoint is capped by the requested `limit` parameter.
 
 ### Production Hardening Foundation
 

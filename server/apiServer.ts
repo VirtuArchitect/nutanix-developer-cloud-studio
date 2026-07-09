@@ -424,6 +424,8 @@ import { createVmSandboxDryRunPlan } from "./vmSandboxDryRun";
 import type {
   IntegrationConfig,
   LabAdapterSnapshot,
+  PlatformSettingsSummary,
+  ProvisioningAdapterName,
   PrismInventoryImportResult,
   PrismInventoryRecord,
   RegistryStatus,
@@ -1422,6 +1424,17 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/admin/settings") {
+    requireRole(context, ["Platform Admin"]);
+    addAuditEvent(state, "admin.settings.viewed", context.session.user, "platform-settings", {
+      provisioningEnabled: state.platformConfig.provisioningEnabled,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: createPlatformSettingsSummary(state, context) });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/auth/boundary-diagnostics") {
     const diagnostics = createAuthBoundaryDiagnostics(context, request);
     addAuditEvent(state, "auth.boundary-diagnostics.viewed", context.session.user, context.session.user, {
@@ -1467,6 +1480,13 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/audit/integrity-manifest") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: createAuditIntegrityManifest(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/audit/events") {
+    requireRole(context, ["Platform Admin"]);
+    const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 50), 1), 200);
+    sendJson(response, 200, { data: state.auditEvents.slice(0, limit).map(redactAuditEvent) });
     return;
   }
 
@@ -5263,6 +5283,112 @@ function createSystemStatus(state: Awaited<ReturnType<ApiStore["load"]>>): Syste
     },
     provisioningEnabled: state.platformConfig.provisioningEnabled,
   };
+}
+
+function createPlatformSettingsSummary(state: ApiState, context: RequestContext): PlatformSettingsSummary {
+  const retentionLimit = positiveNumber(process.env.NDC_AUDIT_RETENTION_EVENTS, 500);
+  const labConfig = createAhvLabRuntimeConfig();
+
+  return {
+    generatedAt: new Date().toISOString(),
+    environment: process.env.APP_ENV ?? "development",
+    identity: {
+      mode: context.session.authMode,
+      issuer: context.session.identityProvider,
+      trustedIdentityRequired: process.env.NDC_REQUIRE_TRUSTED_IDENTITY === "true",
+      trustedHeaders: ["x-ndc-user", "x-ndc-roles", "x-ndc-issuer"],
+      defaultRoles: ["Developer", "Approver", "Platform Admin"],
+    },
+    accounts: [
+      {
+        id: context.session.user,
+        displayName: context.session.displayName,
+        source: context.session.authMode === "Mock OIDC" ? "Current session" : "Trusted identity header",
+        roles: context.session.roles,
+        status: "Active",
+      },
+      {
+        id: "external-directory",
+        displayName: "External IdP / directory groups",
+        source: "Future directory",
+        roles: ["Developer", "Approver", "Platform Admin"],
+        status: "Planned",
+      },
+    ],
+    providerConfiguration: state.integrationConfigs.map((config) => ({
+      provider: config.name as ProvisioningAdapterName,
+      endpointConfigured: Boolean(config.endpoint.trim()),
+      credentialReferenceConfigured: Boolean(config.credentialProfile.trim()),
+      status: config.status,
+      message: config.message,
+    })),
+    ahvLab: {
+      realAdapterEnabled: labConfig.switches.realAdapter,
+      controlledProvisioningEnabled: labConfig.switches.controlledProvisioning,
+      lifecycleEnabled: labConfig.switches.labLifecycle,
+      labMode: labConfig.appEnv === "lab",
+      prismCentralConfigured: labConfig.prismCentralUrlConfigured,
+      usernameConfigured: labConfig.usernameConfigured,
+      passwordConfigured: labConfig.passwordConfigured,
+      allowedClusterConfigured: labConfig.allowedClusterUuidConfigured,
+      allowedProjectConfigured: labConfig.allowedProjectUuidConfigured,
+      allowedSubnetConfigured: labConfig.allowedSubnetUuidConfigured,
+      allowedImageConfigured: labConfig.allowedImageUuidConfigured,
+      vmNamePrefix: labConfig.vmNamePrefix,
+      quotas: labConfig.quotas,
+    },
+    featureFlags: [
+      {
+        name: "Simulated provisioning",
+        enabled: state.platformConfig.provisioningEnabled,
+        source: "Platform config",
+        safety: "Mock only",
+      },
+      {
+        name: "Controlled provisioning gates",
+        enabled: labConfig.switches.controlledProvisioning,
+        source: "Environment",
+        safety: "Default off",
+      },
+      {
+        name: "Real AHV Prism adapter",
+        enabled: labConfig.switches.realAdapter,
+        source: "Environment",
+        safety: "Lab only",
+      },
+      {
+        name: "AHV lab lifecycle",
+        enabled: labConfig.switches.labLifecycle,
+        source: "Environment",
+        safety: "Lab only",
+      },
+      {
+        name: "Insecure Prism TLS",
+        enabled: process.env.NDC_PRISM_TLS_INSECURE === "true" && process.env.APP_ENV === "lab",
+        source: "Environment",
+        safety: "Lab only",
+      },
+    ],
+    audit: {
+      retainedEvents: state.auditEvents.length,
+      retentionLimit,
+      latestEventAt: state.auditEvents[0]?.createdAt,
+      exportRecords: state.auditExports.length,
+      redactionBoundary: "Credential values, Authorization headers, tokens, passwords, and endpoint query strings are redacted before display or export.",
+    },
+  };
+}
+
+function redactAuditEvent(event: ApiState["auditEvents"][number]): ApiState["auditEvents"][number] {
+  return {
+    ...event,
+    metadata: event.metadata ? (redactSensitive(event.metadata) as Record<string, unknown>) : undefined,
+  };
+}
+
+function positiveNumber(value: string | undefined, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function nextRegistryStatus(action: RegistryAction): RegistryStatus {

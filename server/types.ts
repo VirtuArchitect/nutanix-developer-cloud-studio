@@ -28,6 +28,7 @@ import type {
   Integration,
   IntegrationConfig,
   AuditExportRecord,
+  AuditEvent,
   HardenedLabConnectionProfileReview,
   LabWindowEvidenceExportRecord,
   LabConnectivityPreflightRecord,
@@ -53,6 +54,7 @@ import type {
   PrismSimulatorFailureScenario,
   PrismSimulatorProfile,
   PlatformConfig,
+  PlatformSettingsSummary,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
   PlatformServicePreflightRun,
@@ -276,14 +278,7 @@ export type ApiState = {
   auditEvents: AuditEvent[];
 };
 
-export type AuditEvent = {
-  id: string;
-  action: string;
-  actor: string;
-  target: string;
-  createdAt: string;
-  metadata?: Record<string, unknown>;
-};
+export type { AuditEvent, PlatformSettingsSummary };
 
 export type CreateEnvironmentRequest = {
   name: string;

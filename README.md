@@ -26,7 +26,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 
 ### Platform Team Experience
 
-- Admin console for identity context, provider readiness, governance, control-plane jobs, operations evidence, and template management.
+- Admin console for identity context, settings, provider readiness, governance, control-plane jobs, audit/log review, operations evidence, and template management.
 - Mock integrations for NCI, NKP, NDB, NUS, NCM, and NAI.
 - Template registry, image/profile catalog, policy bundles, and provider configuration views.
 - Approval queues, lifecycle operations, audit export manifests, and retention diagnostics.
@@ -34,6 +34,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 ### Hosted / On-Prem Starter API
 
 - API-backed prototype flows for environments, approvals, simulated provisioning, control-plane jobs, lifecycle destroy simulation, system status, request logging, rate limits, and security headers.
+- API-backed Admin Settings surface for identity/RBAC posture, provider configuration readiness, AHV lab feature flags, and redacted audit-event review.
 - OIDC-shaped role context, RBAC guardrails, trusted-header diagnostics, and provider credential reference checks.
 - State backup/restore tooling and containerized on-prem starter deployment.
 - Mock Prism Central simulator for local testing when no Nutanix lab is available.

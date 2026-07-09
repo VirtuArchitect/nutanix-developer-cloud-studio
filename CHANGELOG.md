@@ -6,6 +6,11 @@ This project uses release tags for public milestones. The current release is `v8
 
 ## [Unreleased]
 
+### Added
+
+- Admin Settings tab for identity/account context, provider configuration status, AHV lab runtime flags, configuration boundaries, and recent audit/log review.
+- API-backed settings summary at `/api/admin/settings` and redacted audit event listing at `/api/audit/events`.
+
 ### Planned
 
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.

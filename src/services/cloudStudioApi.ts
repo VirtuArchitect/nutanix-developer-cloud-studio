@@ -9,6 +9,7 @@ import type {
   AhvCreateAdapterContractReview,
   AdminUpgradeHealthConsole,
   ApiContractBaseline,
+  AuditEvent,
   AuditExportRecord,
   AuditIntegrityManifest,
   AuditRetentionDiagnostics,
@@ -70,6 +71,7 @@ import type {
   PrismSimulatorFailureScenarioId,
   PrismSimulatorProfile,
   PlatformConfig,
+  PlatformSettingsSummary,
   PlatformServiceAdapterContractReview,
   PlatformServiceKind,
   PlatformServicePreflightRun,
@@ -253,6 +255,10 @@ export async function fetchSessionDiagnosticsFromApi() {
   return fetchJson<SessionDiagnostics>("/api/session/diagnostics");
 }
 
+export async function fetchPlatformSettingsFromApi() {
+  return fetchJson<PlatformSettingsSummary>("/api/admin/settings");
+}
+
 export async function fetchAuthBoundaryDiagnosticsFromApi() {
   return fetchJson<AuthBoundaryDiagnostics>("/api/auth/boundary-diagnostics");
 }
@@ -279,6 +285,10 @@ export async function fetchPersistenceBoundaryStatusFromApi() {
 
 export async function fetchAuditIntegrityManifestFromApi() {
   return fetchJson<AuditIntegrityManifest>("/api/audit/integrity-manifest");
+}
+
+export async function fetchAuditEventsFromApi(limit = 50) {
+  return fetchJson<AuditEvent[]>(`/api/audit/events?limit=${encodeURIComponent(String(limit))}`);
 }
 
 export async function fetchDeploymentProfileValidationFromApi() {

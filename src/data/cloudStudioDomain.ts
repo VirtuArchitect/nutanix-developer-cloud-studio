@@ -120,6 +120,74 @@ export type IntegrationConfig = {
   message: string;
 };
 
+export type AuditEvent = {
+  id: string;
+  action: string;
+  actor: string;
+  target: string;
+  createdAt: string;
+  metadata?: Record<string, unknown>;
+};
+
+export type PlatformSettingsSummary = {
+  generatedAt: string;
+  environment: string;
+  identity: {
+    mode: PlatformSession["authMode"];
+    issuer: string;
+    trustedIdentityRequired: boolean;
+    trustedHeaders: string[];
+    defaultRoles: PlatformRole[];
+  };
+  accounts: Array<{
+    id: string;
+    displayName: string;
+    source: "Current session" | "Trusted identity header" | "Future directory";
+    roles: PlatformRole[];
+    status: "Active" | "External" | "Planned";
+  }>;
+  providerConfiguration: Array<{
+    provider: ProvisioningAdapterName;
+    endpointConfigured: boolean;
+    credentialReferenceConfigured: boolean;
+    status: IntegrationConfigStatus;
+    message: string;
+  }>;
+  ahvLab: {
+    realAdapterEnabled: boolean;
+    controlledProvisioningEnabled: boolean;
+    lifecycleEnabled: boolean;
+    labMode: boolean;
+    prismCentralConfigured: boolean;
+    usernameConfigured: boolean;
+    passwordConfigured: boolean;
+    allowedClusterConfigured: boolean;
+    allowedProjectConfigured: boolean;
+    allowedSubnetConfigured: boolean;
+    allowedImageConfigured: boolean;
+    vmNamePrefix: string;
+    quotas: {
+      maxCpu: number;
+      maxMemoryGb: number;
+      maxDiskGb: number;
+      defaultExpiryHours: number;
+    };
+  };
+  featureFlags: Array<{
+    name: string;
+    enabled: boolean;
+    source: "Environment" | "Platform config";
+    safety: "Default off" | "Mock only" | "Lab only";
+  }>;
+  audit: {
+    retainedEvents: number;
+    retentionLimit: number;
+    latestEventAt?: string;
+    exportRecords: number;
+    redactionBoundary: string;
+  };
+};
+
 export type CredentialReferenceStatus = "Missing" | "Invalid" | "Approved reference";
 
 export type CredentialReferenceDiagnostic = {

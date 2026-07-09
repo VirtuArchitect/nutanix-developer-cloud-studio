@@ -146,6 +146,73 @@ describe("api server", () => {
     );
   });
 
+  it("reports admin settings and redacted audit events for Platform Admin only", async () => {
+    const adminHeaders = {
+      "x-ndc-user": "ops.admin",
+      "x-ndc-display-name": "Ops Admin",
+      "x-ndc-roles": "Platform Admin",
+      "x-ndc-issuer": "https://idp.example",
+    };
+    const developerHeaders = {
+      "x-ndc-user": "dev.user",
+      "x-ndc-display-name": "Dev User",
+      "x-ndc-roles": "Developer",
+      "x-ndc-issuer": "https://idp.example",
+    };
+
+    const settings = await requestJson("/api/admin/settings", { headers: adminHeaders });
+    const events = await requestJson("/api/audit/events", { headers: adminHeaders });
+
+    expect(settings.data).toMatchObject({
+      identity: {
+        mode: "OIDC",
+        trustedHeaders: ["x-ndc-user", "x-ndc-roles", "x-ndc-issuer"],
+      },
+      ahvLab: {
+        realAdapterEnabled: false,
+        lifecycleEnabled: false,
+        prismCentralConfigured: false,
+      },
+      audit: {
+        retentionLimit: 500,
+        exportRecords: 0,
+      },
+    });
+    expect(settings.data.accounts).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "ops.admin", roles: ["Platform Admin"] })])
+    );
+    expect(settings.data.featureFlags).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Real AHV Prism adapter", enabled: false })])
+    );
+    expect(events.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "admin.settings.viewed", actor: "ops.admin" })])
+    );
+    expect(JSON.stringify(events.data)).not.toMatch(/password|Authorization|token/i);
+
+    await expectJson(
+      "/api/admin/settings",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      { headers: developerHeaders }
+    );
+    await expectJson(
+      "/api/audit/events",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      { headers: developerHeaders }
+    );
+  });
+
   it("reports production hardening foundation snapshots and denies non-admin roles", async () => {
     const adminHeaders = {
       "x-ndc-user": "ops.admin",

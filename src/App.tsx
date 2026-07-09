@@ -38,6 +38,7 @@ import {
   type AhvCreateAdapterContractReview,
   type AdminUpgradeHealthConsole,
   type ApiContractBaseline,
+  type AuditEvent,
   type AuthBoundaryDiagnostics,
   type AuditExportRecord,
   type AuditIntegrityManifest,
@@ -105,6 +106,7 @@ import {
   templateRegistry as defaultTemplateRegistry,
   type PlatformSession,
   type PlatformConfig,
+  type PlatformSettingsSummary,
   type PlatformServiceAdapterContractReview,
   type PlatformServiceKind,
   type PlatformServicePreflightRun,
@@ -120,6 +122,7 @@ import {
   type ReadOnlyAdapterObservabilityRecord,
   type ReadOnlyAdapterRuntimeModeRecord,
   type ProvisioningAdapterReadiness,
+  type ProvisioningAdapterName,
   type ProductionAdapterAuthorizationPacket,
   type ProductionChangeFreezeRecord,
   type ProductionCabHandoffPacket,
@@ -327,6 +330,7 @@ import {
   fetchAdapterPromotionReadinessDossiersFromApi,
   fetchApiContractBaselineFromApi,
   fetchAuthBoundaryDiagnosticsFromApi,
+  fetchAuditEventsFromApi,
   fetchAuditIntegrityManifestFromApi,
   fetchProductionAdapterAuthorizationPacketsFromApi,
   fetchProductionChangeFreezeRecordsFromApi,
@@ -412,6 +416,7 @@ import {
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
+  fetchPlatformSettingsFromApi,
   fetchJwtVerificationBoundaryFromApi,
   fetchLiveReadOnlyPrismCallDesignFromApi,
   fetchHardenedLabConnectionProfileReviewsFromApi,
@@ -491,7 +496,7 @@ import {
   type EnvironmentDetail,
 } from "./services/cloudStudioApi";
 
-type AdminTab = "overview" | "providers" | "control" | "operations" | "governance" | "templates";
+type AdminTab = "overview" | "settings" | "providers" | "control" | "operations" | "governance" | "templates";
 
 export function App() {
   const [view, setView] = useState<View>("dashboard");
@@ -515,6 +520,9 @@ export function App() {
   );
   const [authBoundaryDiagnostics, setAuthBoundaryDiagnostics] = useState<AuthBoundaryDiagnostics>(() =>
     createMockAuthBoundaryDiagnostics(mockSession)
+  );
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettingsSummary>(() =>
+    createMockPlatformSettingsSummary(mockSession, deriveMockIntegrationConfigs(integrations), 0, 0)
   );
   const [systemStatus, setSystemStatus] = useState<SystemStatus>(() =>
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
@@ -774,6 +782,7 @@ export function App() {
   const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
   const [lifecycleOperations, setLifecycleOperations] = useState<LifecycleOperationRecord[]>([]);
   const [auditExports, setAuditExports] = useState<AuditExportRecord[]>([]);
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [auditRetentionDiagnostics, setAuditRetentionDiagnostics] = useState<AuditRetentionDiagnostics>(() =>
     createMockAuditRetentionDiagnostics()
   );
@@ -804,8 +813,9 @@ export function App() {
     if (apiHealth.mode === "mock") {
       setSystemStatus(createMockSystemStatus(session, integrationConfigs, labAdapters));
       setCredentialDiagnostics(createMockCredentialDiagnostics(integrationConfigs));
+      setPlatformSettings(createMockPlatformSettingsSummary(session, integrationConfigs, auditEvents.length, auditExports.length));
     }
-  }, [apiHealth.mode, integrationConfigs, labAdapters, session]);
+  }, [apiHealth.mode, auditEvents.length, auditExports.length, integrationConfigs, labAdapters, session]);
 
   useEffect(() => {
     let active = true;
@@ -829,6 +839,7 @@ export function App() {
             apiSession,
             apiSessionDiagnostics,
             apiAuthBoundaryDiagnostics,
+            apiPlatformSettings,
             apiSystemStatus,
             apiRuntimeObservability,
             apiApiContractBaseline,
@@ -972,6 +983,7 @@ export function App() {
             apiProductionReadinessReviews,
             apiLifecycleOperations,
             apiAuditExports,
+            apiAuditEvents,
             apiAuditRetentionDiagnostics,
           ] = await Promise.all([
             fetchEnvironmentsFromApi(),
@@ -982,6 +994,7 @@ export function App() {
             fetchSessionFromApi(),
             fetchSessionDiagnosticsFromApi(),
             fetchAuthBoundaryDiagnosticsFromApi(),
+            fetchPlatformSettingsFromApi(),
             fetchSystemStatusFromApi(),
             fetchRuntimeObservabilityFromApi(),
             fetchApiContractBaselineFromApi(),
@@ -1125,6 +1138,7 @@ export function App() {
             fetchProductionReadinessReviewsFromApi(),
             fetchLifecycleOperationsFromApi(),
             fetchAuditExportsFromApi(),
+            fetchAuditEventsFromApi(),
             fetchAuditRetentionDiagnosticsFromApi(),
           ]);
           if (active) {
@@ -1136,6 +1150,7 @@ export function App() {
             setSession(apiSession);
             setSessionDiagnostics(apiSessionDiagnostics);
             setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
+            setPlatformSettings(apiPlatformSettings);
             setSystemStatus(apiSystemStatus);
             setRuntimeObservability(apiRuntimeObservability);
             setApiContractBaseline(apiApiContractBaseline);
@@ -1312,6 +1327,7 @@ export function App() {
             setProductionReadinessReviews(apiProductionReadinessReviews);
             setLifecycleOperations(apiLifecycleOperations);
             setAuditExports(apiAuditExports);
+            setAuditEvents(apiAuditEvents);
             setAuditRetentionDiagnostics(apiAuditRetentionDiagnostics);
             setSelectedEnvironmentName(apiEnvironments[0]?.name ?? "");
           }
@@ -1447,6 +1463,7 @@ export function App() {
       apiSession,
       apiSessionDiagnostics,
       apiAuthBoundaryDiagnostics,
+      apiPlatformSettings,
       apiSystemStatus,
       apiRuntimeObservability,
       apiApiContractBaseline,
@@ -1590,6 +1607,7 @@ export function App() {
       apiProductionReadinessReviews,
       apiLifecycleOperations,
       apiAuditExports,
+      apiAuditEvents,
       apiAuditRetentionDiagnostics,
     ] = await Promise.all([
       fetchEnvironmentsFromApi(),
@@ -1600,6 +1618,7 @@ export function App() {
       fetchSessionFromApi(),
       fetchSessionDiagnosticsFromApi(),
       fetchAuthBoundaryDiagnosticsFromApi(),
+      fetchPlatformSettingsFromApi(),
       fetchSystemStatusFromApi(),
       fetchRuntimeObservabilityFromApi(),
       fetchApiContractBaselineFromApi(),
@@ -1743,6 +1762,7 @@ export function App() {
       fetchProductionReadinessReviewsFromApi(),
       fetchLifecycleOperationsFromApi(),
       fetchAuditExportsFromApi(),
+      fetchAuditEventsFromApi(),
       fetchAuditRetentionDiagnosticsFromApi(),
     ]);
     setEnvironments(apiEnvironments);
@@ -1753,6 +1773,7 @@ export function App() {
     setSession(apiSession);
     setSessionDiagnostics(apiSessionDiagnostics);
     setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
+    setPlatformSettings(apiPlatformSettings);
     setSystemStatus(apiSystemStatus);
     setRuntimeObservability(apiRuntimeObservability);
     setApiContractBaseline(apiApiContractBaseline);
@@ -1913,6 +1934,7 @@ export function App() {
     setProductionReadinessReviews(apiProductionReadinessReviews);
     setLifecycleOperations(apiLifecycleOperations);
     setAuditExports(apiAuditExports);
+    setAuditEvents(apiAuditEvents);
     setAuditRetentionDiagnostics(apiAuditRetentionDiagnostics);
 
     if (environmentNameToRefresh) {
@@ -4724,6 +4746,7 @@ export function App() {
             session={session}
             sessionDiagnostics={sessionDiagnostics}
             authBoundaryDiagnostics={authBoundaryDiagnostics}
+            platformSettings={platformSettings}
             systemStatus={systemStatus}
             runtimeObservability={runtimeObservability}
             apiContractBaseline={apiContractBaseline}
@@ -4807,6 +4830,7 @@ export function App() {
             productionReadinessReviews={productionReadinessReviews}
             lifecycleOperations={lifecycleOperations}
             auditExports={auditExports}
+            auditEvents={auditEvents}
             releaseEvidenceExports={releaseEvidenceExports}
             controlledLabReleaseRunbooks={controlledLabReleaseRunbooks}
             controlledLabDryRunWindows={controlledLabDryRunWindows}
@@ -5504,6 +5528,7 @@ function AdminView({
   session,
   sessionDiagnostics,
   authBoundaryDiagnostics,
+  platformSettings,
   systemStatus,
   runtimeObservability,
   apiContractBaseline,
@@ -5587,6 +5612,7 @@ function AdminView({
   productionReadinessReviews,
   lifecycleOperations,
   auditExports,
+  auditEvents,
   releaseEvidenceExports,
   controlledLabReleaseRunbooks,
   controlledLabDryRunWindows,
@@ -5783,6 +5809,7 @@ function AdminView({
   session: PlatformSession;
   sessionDiagnostics: SessionDiagnostics;
   authBoundaryDiagnostics: AuthBoundaryDiagnostics;
+  platformSettings: PlatformSettingsSummary;
   systemStatus: SystemStatus;
   runtimeObservability: RuntimeObservabilitySnapshot;
   apiContractBaseline: ApiContractBaseline;
@@ -5866,6 +5893,7 @@ function AdminView({
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
+  auditEvents: AuditEvent[];
   releaseEvidenceExports: ReleaseEvidenceExportRecord[];
   controlledLabReleaseRunbooks: ControlledLabReleaseRunbookRecord[];
   controlledLabDryRunWindows: ControlledLabDryRunWindowRecord[];
@@ -6071,6 +6099,7 @@ function AdminView({
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const adminTabs: Array<{ id: AdminTab; label: string; detail: string }> = [
     { id: "overview", label: "Overview", detail: "Access and readiness" },
+    { id: "settings", label: "Settings", detail: "Config and audit" },
     { id: "providers", label: "Providers", detail: "Config and adapters" },
     { id: "control", label: "Control plane", detail: "Jobs and approvals" },
     { id: "operations", label: "Operations", detail: "Lifecycle and audit" },
@@ -6136,6 +6165,46 @@ function AdminView({
               reviews={productionReadinessReviews}
               createProductionReadinessReview={createProductionReadinessReview}
             />
+          </Panel>
+        </div>
+      )}
+
+      {activeTab === "settings" && (
+        <div className="adminTabPanel">
+          <Panel title="Identity and accounts" action={platformSettings.identity.mode}>
+            <SettingsIdentityPanel settings={platformSettings} />
+          </Panel>
+          <Panel title="Feature flags" action={`${platformSettings.featureFlags.filter((flag) => flag.enabled).length} enabled`}>
+            <FeatureFlagSettingsPanel settings={platformSettings} />
+          </Panel>
+          <Panel title="AHV lab runtime" action={platformSettings.ahvLab.labMode ? "Lab" : "Disabled"}>
+            <AhvLabSettingsPanel settings={platformSettings} />
+          </Panel>
+          <Panel title="Provider configuration" action={`${platformSettings.providerConfiguration.filter((config) => config.endpointConfigured).length}/${platformSettings.providerConfiguration.length} endpoints`}>
+            <ProviderSettingsPanel settings={platformSettings} />
+          </Panel>
+          <Panel title="Audit and logs" action={`${auditEvents.length} recent`}>
+            <AuditLogPanel
+              events={auditEvents}
+              retention={auditRetentionDiagnostics}
+              settings={platformSettings}
+            />
+          </Panel>
+          <Panel title="Configuration boundaries" action="Private">
+            <div className="dryRunPanel">
+              <div className="guardrailBanner">
+                <LockKeyhole size={18} />
+                <div>
+                  <strong>Secrets stay outside the browser</strong>
+                  <span>Prism credentials, tokens, and passwords are supplied through private deployment environment variables or future secret-manager references.</span>
+                </div>
+              </div>
+              <div className="controlGrid">
+                <CheckLine icon={ShieldCheck} label="Credential display" value="References only" passed />
+                <CheckLine icon={Archive} label="Audit redaction" value="Enabled boundary" passed />
+                <CheckLine icon={Network} label="Real mutation" value="Lab gated" passed={platformSettings.ahvLab.labMode} />
+              </div>
+            </div>
           </Panel>
         </div>
       )}
@@ -7285,6 +7354,159 @@ function ProductionReadinessPanel({
               <span key={item}>{item}</span>
             ))}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SettingsIdentityPanel({ settings }: { settings: PlatformSettingsSummary }) {
+  return (
+    <div className="dryRunPanel">
+      <div className="platformConfigGrid">
+        <CheckLine icon={UserRound} label="Issuer" value={settings.identity.issuer} passed />
+        <CheckLine
+          icon={LockKeyhole}
+          label="Trusted identity"
+          value={settings.identity.trustedIdentityRequired ? "Required" : "Optional"}
+          passed={settings.identity.trustedIdentityRequired || settings.identity.mode === "Mock OIDC"}
+        />
+        <CheckLine icon={ShieldCheck} label="Roles" value={settings.identity.defaultRoles.join(", ")} passed />
+        <CheckLine icon={Settings} label="Environment" value={settings.environment} passed={settings.environment !== "production"} />
+      </div>
+      <div className="settingsList">
+        {settings.accounts.map((account) => (
+          <div className="settingsRow" key={account.id}>
+            <div>
+              <strong>{account.displayName}</strong>
+              <span>{account.id}</span>
+              <small>{account.source}</small>
+            </div>
+            <div className="settingsPills">
+              {account.roles.map((role) => (
+                <span className="pill" key={role}>{role}</span>
+              ))}
+              <span className={`status ${account.status === "Active" ? "ready" : "approval"}`}>{account.status}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Trusted headers</strong>
+        {settings.identity.trustedHeaders.map((header) => (
+          <span key={header}>{header}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FeatureFlagSettingsPanel({ settings }: { settings: PlatformSettingsSummary }) {
+  return (
+    <div className="settingsList">
+      {settings.featureFlags.map((flag) => (
+        <div className="settingsRow" key={flag.name}>
+          <div>
+            <strong>{flag.name}</strong>
+            <span>{flag.source} / {flag.safety}</span>
+          </div>
+          <span className={`status ${flag.enabled ? "ready" : "failed"}`}>{flag.enabled ? "Enabled" : "Disabled"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }) {
+  const lab = settings.ahvLab;
+
+  return (
+    <div className="dryRunPanel">
+      <div className="platformConfigGrid">
+        <CheckLine icon={Network} label="Prism Central URL" value={lab.prismCentralConfigured ? "Configured" : "Missing"} passed={lab.prismCentralConfigured} />
+        <CheckLine icon={UserRound} label="Prism username" value={lab.usernameConfigured ? "Configured" : "Missing"} passed={lab.usernameConfigured} />
+        <CheckLine icon={LockKeyhole} label="Prism password" value={lab.passwordConfigured ? "Configured" : "Missing"} passed={lab.passwordConfigured} />
+        <CheckLine icon={PlayCircle} label="Lifecycle" value={lab.lifecycleEnabled ? "Enabled" : "Disabled"} passed={lab.lifecycleEnabled && lab.labMode} />
+        <CheckLine icon={Layers3} label="Cluster" value={lab.allowedClusterConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedClusterConfigured} />
+        <CheckLine icon={Archive} label="Project" value={lab.allowedProjectConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedProjectConfigured} />
+        <CheckLine icon={Cloud} label="Subnet" value={lab.allowedSubnetConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedSubnetConfigured} />
+        <CheckLine icon={Gauge} label="Image" value={lab.allowedImageConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedImageConfigured} />
+      </div>
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>{lab.vmNamePrefix} VM boundary</strong>
+          <span>{lab.quotas.maxCpu} vCPU / {lab.quotas.maxMemoryGb} GB memory / {lab.quotas.maxDiskGb} GB disk / {lab.quotas.defaultExpiryHours}h default expiry</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProviderSettingsPanel({ settings }: { settings: PlatformSettingsSummary }) {
+  return (
+    <div className="settingsList">
+      {settings.providerConfiguration.map((config) => (
+        <div className="settingsRow" key={config.provider}>
+          <div className="identityPanel">
+            <div className="integrationLogo">{config.provider}</div>
+            <div>
+              <strong>{config.provider}</strong>
+              <span>{config.message}</span>
+            </div>
+          </div>
+          <div className="settingsPills">
+            <span className={`status ${config.endpointConfigured ? "ready" : "failed"}`}>
+              {config.endpointConfigured ? "Endpoint" : "No endpoint"}
+            </span>
+            <span className={`status ${config.credentialReferenceConfigured ? "ready" : "failed"}`}>
+              {config.credentialReferenceConfigured ? "Credential ref" : "No credential ref"}
+            </span>
+            <span className="pill">{config.status}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AuditLogPanel({
+  events,
+  retention,
+  settings,
+}: {
+  events: AuditEvent[];
+  retention: AuditRetentionDiagnostics;
+  settings: PlatformSettingsSummary;
+}) {
+  return (
+    <div className="dryRunPanel">
+      <div className="platformConfigGrid">
+        <CheckLine icon={Activity} label="Retained events" value={`${settings.audit.retainedEvents}/${settings.audit.retentionLimit}`} passed />
+        <CheckLine icon={Archive} label="Export records" value={`${settings.audit.exportRecords}`} passed={settings.audit.exportRecords >= 0} />
+        <CheckLine icon={ShieldCheck} label="Destination" value={retention.exportDestination.valid ? "Valid" : "Blocked"} passed={retention.exportDestination.valid} />
+        <CheckLine icon={ScrollText} label="Latest event" value={settings.audit.latestEventAt ? formatDateTime(settings.audit.latestEventAt) : "None"} passed={Boolean(settings.audit.latestEventAt)} />
+      </div>
+      <div className="guardrailBanner">
+        <LockKeyhole size={18} />
+        <div>
+          <strong>Redacted audit display</strong>
+          <span>{settings.audit.redactionBoundary}</span>
+        </div>
+      </div>
+      {events.length === 0 ? (
+        <p className="emptyState">No API audit events have been recorded yet.</p>
+      ) : (
+        <div className="auditLogList">
+          {events.slice(0, 12).map((event) => (
+            <div className="auditLogRow" key={event.id}>
+              <div>
+                <strong>{event.action}</strong>
+                <span>{event.actor} / {event.target}</span>
+              </div>
+              <small>{formatDateTime(event.createdAt)}</small>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -14551,6 +14773,81 @@ function createMockAuthBoundaryDiagnostics(session: PlatformSession): AuthBounda
     ],
     rejectedMalformedHeaders: false,
     auditEventRecorded: false,
+  };
+}
+
+function createMockPlatformSettingsSummary(
+  session: PlatformSession,
+  configs: IntegrationConfig[],
+  auditEventCount: number,
+  auditExportCount: number
+): PlatformSettingsSummary {
+  return {
+    generatedAt: new Date().toISOString(),
+    environment: "browser-mock",
+    identity: {
+      mode: session.authMode,
+      issuer: session.identityProvider,
+      trustedIdentityRequired: false,
+      trustedHeaders: ["x-ndc-user", "x-ndc-roles", "x-ndc-issuer"],
+      defaultRoles: ["Developer", "Approver", "Platform Admin"],
+    },
+    accounts: [
+      {
+        id: session.user,
+        displayName: session.displayName,
+        source: "Current session",
+        roles: session.roles,
+        status: "Active",
+      },
+      {
+        id: "external-directory",
+        displayName: "External IdP / directory groups",
+        source: "Future directory",
+        roles: ["Developer", "Approver", "Platform Admin"],
+        status: "Planned",
+      },
+    ],
+    providerConfiguration: configs.map((config) => ({
+      provider: config.name as ProvisioningAdapterName,
+      endpointConfigured: Boolean(config.endpoint),
+      credentialReferenceConfigured: Boolean(config.credentialProfile),
+      status: config.status,
+      message: config.message,
+    })),
+    ahvLab: {
+      realAdapterEnabled: false,
+      controlledProvisioningEnabled: false,
+      lifecycleEnabled: false,
+      labMode: false,
+      prismCentralConfigured: false,
+      usernameConfigured: false,
+      passwordConfigured: false,
+      allowedClusterConfigured: false,
+      allowedProjectConfigured: false,
+      allowedSubnetConfigured: false,
+      allowedImageConfigured: false,
+      vmNamePrefix: "ndc-lab-",
+      quotas: {
+        maxCpu: 4,
+        maxMemoryGb: 16,
+        maxDiskGb: 160,
+        defaultExpiryHours: 24,
+      },
+    },
+    featureFlags: [
+      { name: "Simulated provisioning", enabled: true, source: "Platform config", safety: "Mock only" },
+      { name: "Controlled provisioning gates", enabled: false, source: "Environment", safety: "Default off" },
+      { name: "Real AHV Prism adapter", enabled: false, source: "Environment", safety: "Lab only" },
+      { name: "AHV lab lifecycle", enabled: false, source: "Environment", safety: "Lab only" },
+      { name: "Insecure Prism TLS", enabled: false, source: "Environment", safety: "Lab only" },
+    ],
+    audit: {
+      retainedEvents: auditEventCount,
+      retentionLimit: 500,
+      exportRecords: auditExportCount,
+      redactionBoundary: "Browser fallback has no credential-bearing audit stream.",
+    },
   };
 }
 

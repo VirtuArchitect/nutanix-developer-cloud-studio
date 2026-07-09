@@ -388,7 +388,7 @@ button {
 
 .adminTabs {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
   gap: 10px;
   padding: 8px;
   background: #fff;
@@ -487,6 +487,12 @@ button {
   gap: 10px;
 }
 
+.settingsList,
+.auditLogList {
+  display: grid;
+  gap: 10px;
+}
+
 .templateRow,
 .envRow,
 .resourceRow,
@@ -513,6 +519,48 @@ button {
   background: #f8fafb;
   border: 1px solid #e1e8ea;
   border-radius: 8px;
+}
+
+.settingsRow,
+.auditLogRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 58px;
+  padding: 12px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.settingsRow > div,
+.auditLogRow > div {
+  min-width: 0;
+}
+
+.settingsRow strong,
+.settingsRow span,
+.settingsRow small,
+.auditLogRow strong,
+.auditLogRow span,
+.auditLogRow small {
+  display: block;
+}
+
+.settingsRow span,
+.settingsRow small,
+.auditLogRow span,
+.auditLogRow small {
+  color: #60747c;
+}
+
+.settingsPills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 180px;
 }
 
 .templateRow {
