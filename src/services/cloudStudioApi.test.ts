@@ -112,6 +112,7 @@ import {
   fetchAuthBoundaryDiagnosticsFromApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
+  fetchAdminUpgradeHealthConsoleFromApi,
   fetchAdapterContractTestHarnessesFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
   fetchAdapterEnablementRecordsFromApi,
@@ -136,6 +137,7 @@ import {
   fetchControlledSwitchConfigurationRequestsFromApi,
   fetchContainerConfigValidationManifestFromApi,
   fetchDeploymentProfileValidationFromApi,
+  fetchDurablePersistenceStatusFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
   fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchSwitchClosureRetentionPackagesFromApi,
@@ -159,6 +161,7 @@ import {
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
+  fetchJwtVerificationBoundaryFromApi,
   fetchLiveReadOnlyCallEnvelopesFromApi,
   fetchLiveReadOnlyPrismCallDesignFromApi,
   fetchLiveReadOnlyInventoryPilotsFromApi,
@@ -167,6 +170,7 @@ import {
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismEndpointExpansionsFromApi,
   fetchMockPrismStatusFromApi,
+  fetchMigrationBaselineManifestFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
   fetchPrismFixtureReplaysFromApi,
   fetchPilotEvidenceReviewsFromApi,
@@ -184,6 +188,7 @@ import {
   fetchPrismSimulatorProfilesFromApi,
   fetchPolicyBundlesFromApi,
   fetchOperatorEvidenceExportPacksFromApi,
+  fetchOnPremInstallProfilePackFromApi,
   fetchOperationsRunbookConsoleFromApi,
   fetchOfflineContractReplaySuitesFromApi,
   fetchLifecycleOperationsFromApi,
@@ -248,6 +253,7 @@ import {
   fetchRuntimeObservabilityFromApi,
   fetchSessionFromApi,
   fetchSessionDiagnosticsFromApi,
+  fetchSignedAuditExportManifestFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   fetchVmSandboxDryRunsFromApi,
@@ -355,6 +361,12 @@ describe("cloudStudioApi", () => {
     await fetchAuditIntegrityManifestFromApi();
     await fetchDeploymentProfileValidationFromApi();
     await fetchOperationsRunbookConsoleFromApi();
+    await fetchDurablePersistenceStatusFromApi();
+    await fetchMigrationBaselineManifestFromApi();
+    await fetchJwtVerificationBoundaryFromApi();
+    await fetchSignedAuditExportManifestFromApi();
+    await fetchAdminUpgradeHealthConsoleFromApi();
+    await fetchOnPremInstallProfilePackFromApi();
     await fetchProductionReadinessScorecardFromApi();
     await fetchContainerConfigValidationManifestFromApi();
     await fetchLiveReadOnlyPrismCallDesignFromApi();
@@ -367,9 +379,15 @@ describe("cloudStudioApi", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/audit/integrity-manifest", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/deployment/profiles", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(8, "/api/operations/runbook-console", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/production/readiness-scorecard", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(10, "/api/deployment/config-validation", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(11, "/api/prism/live-read-only-design", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/onprem/durable-persistence", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(10, "/api/onprem/migration-baseline", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(11, "/api/auth/jwt-boundary", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(12, "/api/audit/signed-export-manifest", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(13, "/api/admin/upgrade-health", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(14, "/api/onprem/install-profile-pack", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(15, "/api/production/readiness-scorecard", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(16, "/api/deployment/config-validation", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(17, "/api/prism/live-read-only-design", expect.any(Object));
   });
 
   it("saves and checks integration configuration", async () => {

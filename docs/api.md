@@ -68,6 +68,12 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/audit/integrity-manifest`
 - `GET /api/deployment/profiles`
 - `GET /api/operations/runbook-console`
+- `GET /api/onprem/durable-persistence`
+- `GET /api/onprem/migration-baseline`
+- `GET /api/auth/jwt-boundary`
+- `GET /api/audit/signed-export-manifest`
+- `GET /api/admin/upgrade-health`
+- `GET /api/onprem/install-profile-pack`
 - `GET /api/production/readiness-scorecard`
 - `GET /api/deployment/config-validation`
 - `GET /api/environments`
@@ -118,6 +124,28 @@ These endpoints expose the v6 hardening foundation:
 - Operations runbook console with readiness score, blocked gates, runbook steps, and evidence counters.
 
 All v6 hardening endpoints are read-only snapshots. They do not provision, mutate, contact Prism Central, resolve credentials, or enable real adapters.
+
+### Durable On-Prem Operations Foundation
+
+- `GET /api/onprem/durable-persistence`
+- `GET /api/onprem/migration-baseline`
+- `GET /api/auth/jwt-boundary`
+- `GET /api/audit/signed-export-manifest`
+- `GET /api/admin/upgrade-health`
+- `GET /api/onprem/install-profile-pack`
+
+Required role: `Platform Admin`.
+
+These endpoints expose the v7 durable on-prem operations foundation:
+
+- Durable persistence status for memory, JSON-file, and Postgres repository modes.
+- Migration baseline manifest with schema version, migration checksums, and destructive-change detection.
+- JWT/OIDC verification boundary diagnostics for issuer, audience, JWKS, and trusted-header fallback.
+- Signed audit export manifest with digest, signature metadata, signing key reference, and redaction boundary.
+- Admin upgrade health console for repository mode, schema version, auth posture, audit signing, config drift, and blockers.
+- On-prem install profile pack covering local JSON, on-prem JSON, on-prem Postgres, and lab-prep profiles.
+
+Postgres mode is structurally validated but remains fail-closed because no approved PostgreSQL runtime driver is installed. All v7 endpoints are read-only snapshots and do not call Nutanix infrastructure, resolve credentials, apply migrations, or enable real adapters.
 
 `GET /api/production/readiness-scorecard` returns a readiness score, category checks, blockers, `provisioningEnabled=false`, and `realPrismCallsEnabled=false`.
 

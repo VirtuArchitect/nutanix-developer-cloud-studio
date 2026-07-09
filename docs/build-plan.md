@@ -28,6 +28,12 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v7.5.0-on-prem-install-profile-pack` adds on-prem profile templates, validation command, backup/restore runbook entries, and disabled-adapter install guardrails.
+- `v7.4.0-admin-upgrade-health-console` adds Admin Operations upgrade health for repository, schema, auth, audit signing, config drift, and blockers.
+- `v7.3.0-signed-audit-export-manifests` adds signed audit manifest evidence with external signing key references.
+- `v7.2.0-jwt-oidc-verification-boundary` adds JWT/OIDC verification boundary diagnostics while preserving trusted-header fallback.
+- `v7.1.0-migration-schema-baseline` adds additive schema-version migrations and non-destructive migration baseline manifests.
+- `v7.0.0-durable-postgres-repository-foundation` adds durable persistence status and Postgres repository contract readiness while keeping postgres runtime fail-closed.
 - `v6.5.0-operations-runbook-console` adds the Admin Operations hardening console with readiness score, blocked gates, evidence counters, and fail-closed controls.
 - `v6.4.0-deployment-profile-validation` adds profile validation for local, hosted-demo, on-prem-starter, and lab-prep modes.
 - `v6.3.0-audit-integrity-manifest` adds SHA-256 audit event and manifest digest evidence.

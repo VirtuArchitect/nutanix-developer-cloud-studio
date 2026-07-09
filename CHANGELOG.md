@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v6.5.0-operations-runbook-console`.
+This project uses release tags for public milestones. The current release is `v7.5.0-on-prem-install-profile-pack`.
 
 ## [Unreleased]
 
@@ -12,6 +12,75 @@ This project uses release tags for public milestones. The current release is `v6
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v7.5.0-on-prem-install-profile-pack] - 2026-07-09
+
+### Added
+
+- On-prem install profile pack at `/api/onprem/install-profile-pack`.
+- Profile templates for on-prem JSON, on-prem Postgres, and lab-prep deployments.
+- `validate:onprem-profile-pack` script for profile-pack guardrails.
+
+### Notes
+
+- Install profiles keep real Prism HTTP and real adapter mutation disabled.
+
+## [v7.4.0-admin-upgrade-health-console] - 2026-07-09
+
+### Added
+
+- Admin upgrade health snapshot at `/api/admin/upgrade-health`.
+- Admin Operations panel for repository mode, schema version, auth posture, audit signing, config drift, and upgrade blockers.
+
+### Notes
+
+- The console is evidence-only and does not apply migrations or mutate infrastructure.
+
+## [v7.3.0-signed-audit-export-manifests] - 2026-07-09
+
+### Added
+
+- Signed audit export manifest at `/api/audit/signed-export-manifest`.
+- Manifest digest, signing key reference, signature metadata, and verification checks.
+
+### Notes
+
+- Production signing requires an external key reference; no signing secrets are stored.
+
+## [v7.2.0-jwt-oidc-verification-boundary] - 2026-07-09
+
+### Added
+
+- JWT/OIDC verification boundary diagnostics at `/api/auth/jwt-boundary`.
+- Issuer, audience, JWKS, and trusted-header fallback checks.
+
+### Notes
+
+- Trusted-header mode remains available for reverse-proxy deployments.
+
+## [v7.1.0-migration-schema-baseline] - 2026-07-09
+
+### Added
+
+- Migration baseline manifest at `/api/onprem/migration-baseline`.
+- Additive schema version and signed audit manifest migration file.
+- Non-destructive migration validation.
+
+### Notes
+
+- Baseline migration validation rejects destructive migration patterns.
+
+## [v7.0.0-durable-postgres-repository-foundation] - 2026-07-09
+
+### Added
+
+- Durable persistence status at `/api/onprem/durable-persistence`.
+- Postgres repository contract readiness and fail-closed runtime diagnostics.
+- Repository contract evidence for memory, JSON-file, and Postgres modes.
+
+### Notes
+
+- No PostgreSQL runtime driver has been added; Postgres remains structurally validated and fail-closed until dependency approval.
 
 ## [v6.5.0-operations-runbook-console] - 2026-07-09
 

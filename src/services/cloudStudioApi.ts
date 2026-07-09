@@ -7,6 +7,7 @@ import type {
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   AhvCreateAdapterContractReview,
+  AdminUpgradeHealthConsole,
   ApiContractBaseline,
   AuditExportRecord,
   AuditIntegrityManifest,
@@ -30,6 +31,7 @@ import type {
   ExecutionBrokerQueueRecord,
   Environment,
   DeploymentProfileValidation,
+  DurablePersistenceStatus,
   DisabledPrismReadOnlyHttpClientRecord,
   DisabledRealReadOnlyAdapterInterfaceRecord,
   HardenedLabConnectionProfileReview,
@@ -59,8 +61,10 @@ import type {
   OfflineContractReplaySuiteRecord,
   EvidenceExportPackV2Record,
   OperationsRunbookConsole,
+  OnPremInstallProfilePack,
   PilotEvidenceReviewRecord,
   PersistenceBoundaryStatus,
+  JwtVerificationBoundary,
   PrismAdapterDiagnostics,
   PrismSimulatorFailureScenario,
   PrismSimulatorFailureScenarioId,
@@ -142,7 +146,9 @@ import type {
   RollbackDestroyProofRecord,
   RbacEnforcementMatrix,
   RuntimeObservabilitySnapshot,
+  MigrationBaselineManifest,
   SessionDiagnostics,
+  SignedAuditExportManifest,
   TemplateRegistryEntry,
   SystemStatus,
   SwitchClosureRetentionPackage,
@@ -281,6 +287,30 @@ export async function fetchDeploymentProfileValidationFromApi() {
 
 export async function fetchOperationsRunbookConsoleFromApi() {
   return fetchJson<OperationsRunbookConsole>("/api/operations/runbook-console");
+}
+
+export async function fetchDurablePersistenceStatusFromApi() {
+  return fetchJson<DurablePersistenceStatus>("/api/onprem/durable-persistence");
+}
+
+export async function fetchMigrationBaselineManifestFromApi() {
+  return fetchJson<MigrationBaselineManifest>("/api/onprem/migration-baseline");
+}
+
+export async function fetchJwtVerificationBoundaryFromApi() {
+  return fetchJson<JwtVerificationBoundary>("/api/auth/jwt-boundary");
+}
+
+export async function fetchSignedAuditExportManifestFromApi() {
+  return fetchJson<SignedAuditExportManifest>("/api/audit/signed-export-manifest");
+}
+
+export async function fetchAdminUpgradeHealthConsoleFromApi() {
+  return fetchJson<AdminUpgradeHealthConsole>("/api/admin/upgrade-health");
+}
+
+export async function fetchOnPremInstallProfilePackFromApi() {
+  return fetchJson<OnPremInstallProfilePack>("/api/onprem/install-profile-pack");
 }
 
 export async function fetchProductionReadinessScorecardFromApi() {

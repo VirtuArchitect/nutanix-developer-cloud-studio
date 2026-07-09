@@ -35,6 +35,7 @@ import {
   type AuthorizedReadOnlyLabPilotGateRecord,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
+  type AdminUpgradeHealthConsole,
   type ApiContractBaseline,
   type AuthBoundaryDiagnostics,
   type AuditExportRecord,
@@ -55,6 +56,7 @@ import {
   type DisabledRealReadOnlyAdapterInterfaceRecord,
   type DisabledPrismReadOnlyHttpClientRecord,
   type DeploymentProfileValidation,
+  type DurablePersistenceStatus,
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
@@ -72,6 +74,7 @@ import {
   type LabWindowEvidenceExportRecord,
   type LabConnectivityPreflightRecord,
   type JobState,
+  type JwtVerificationBoundary,
   type LabAdapterSnapshot,
   type LabAuthorizationScope,
   type LabPilotOperatorConsole,
@@ -89,6 +92,7 @@ import {
   type MockPrismSimulatorStatus,
   type OfflineContractReplaySuiteRecord,
   type EvidenceExportPackV2Record,
+  type OnPremInstallProfilePack,
   type OperationsRunbookConsole,
   type PilotEvidenceReviewRecord,
   type PersistenceBoundaryStatus,
@@ -177,7 +181,9 @@ import {
   type ResourceProfile,
   type RollbackDestroyProofRecord,
   type RuntimeObservabilitySnapshot,
+  type MigrationBaselineManifest,
   type SessionDiagnostics,
+  type SignedAuditExportManifest,
   type SystemStatus,
   type SwitchClosureRetentionPackage,
   type SwitchExecutionHandoffPackage,
@@ -315,6 +321,7 @@ import {
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
+  fetchAdminUpgradeHealthConsoleFromApi,
   fetchAdapterContractTestHarnessesFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
   fetchApiContractBaselineFromApi,
@@ -380,6 +387,7 @@ import {
   fetchControlledSwitchConfigurationRequestsFromApi,
   fetchContainerConfigValidationManifestFromApi,
   fetchDeploymentProfileValidationFromApi,
+  fetchDurablePersistenceStatusFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
   fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchSwitchClosureRetentionPackagesFromApi,
@@ -403,12 +411,14 @@ import {
   fetchLabExecutionProposalExportsFromApi,
   fetchLabWindowEvidenceExportsFromApi,
   fetchLabScopeDiagnosticsFromApi,
+  fetchJwtVerificationBoundaryFromApi,
   fetchLiveReadOnlyPrismCallDesignFromApi,
   fetchHardenedLabConnectionProfileReviewsFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismEndpointExpansionsFromApi,
   fetchMockPrismStatusFromApi,
+  fetchMigrationBaselineManifestFromApi,
   fetchPrismFailureScenariosFromApi,
   fetchPrismSimulatorProfilesFromApi,
   fetchLabAdaptersFromApi,
@@ -424,6 +434,7 @@ import {
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
   fetchOperatorEvidenceExportPacksFromApi,
+  fetchOnPremInstallProfilePackFromApi,
   fetchOperationsRunbookConsoleFromApi,
   fetchOfflineContractReplaySuitesFromApi,
   fetchLiveReadOnlyInventoryPilotsFromApi,
@@ -456,6 +467,7 @@ import {
   fetchRuntimeObservabilityFromApi,
   fetchSessionFromApi,
   fetchSessionDiagnosticsFromApi,
+  fetchSignedAuditExportManifestFromApi,
   fetchSystemStatusFromApi,
   fetchTemplateRegistryFromApi,
   fetchVmSandboxDryRunsFromApi,
@@ -526,6 +538,24 @@ export function App() {
   );
   const [operationsRunbookConsole, setOperationsRunbookConsole] = useState<OperationsRunbookConsole>(() =>
     createMockOperationsRunbookConsole()
+  );
+  const [durablePersistenceStatus, setDurablePersistenceStatus] = useState<DurablePersistenceStatus>(() =>
+    createMockDurablePersistenceStatus()
+  );
+  const [migrationBaselineManifest, setMigrationBaselineManifest] = useState<MigrationBaselineManifest>(() =>
+    createMockMigrationBaselineManifest()
+  );
+  const [jwtVerificationBoundary, setJwtVerificationBoundary] = useState<JwtVerificationBoundary>(() =>
+    createMockJwtVerificationBoundary()
+  );
+  const [signedAuditExportManifest, setSignedAuditExportManifest] = useState<SignedAuditExportManifest>(() =>
+    createMockSignedAuditExportManifest()
+  );
+  const [adminUpgradeHealthConsole, setAdminUpgradeHealthConsole] = useState<AdminUpgradeHealthConsole>(() =>
+    createMockAdminUpgradeHealthConsole()
+  );
+  const [onPremInstallProfilePack, setOnPremInstallProfilePack] = useState<OnPremInstallProfilePack>(() =>
+    createMockOnPremInstallProfilePack()
   );
   const [productionReadinessScorecard, setProductionReadinessScorecard] = useState<ProductionReadinessScorecard>(() =>
     createMockProductionReadinessScorecard()
@@ -806,6 +836,12 @@ export function App() {
             apiAuditIntegrityManifest,
             apiDeploymentProfileValidation,
             apiOperationsRunbookConsole,
+            apiDurablePersistenceStatus,
+            apiMigrationBaselineManifest,
+            apiJwtVerificationBoundary,
+            apiSignedAuditExportManifest,
+            apiAdminUpgradeHealthConsole,
+            apiOnPremInstallProfilePack,
             apiProductionReadinessScorecard,
             apiContainerConfigValidation,
             apiLiveReadOnlyPrismCallDesign,
@@ -953,6 +989,12 @@ export function App() {
             fetchAuditIntegrityManifestFromApi(),
             fetchDeploymentProfileValidationFromApi(),
             fetchOperationsRunbookConsoleFromApi(),
+            fetchDurablePersistenceStatusFromApi(),
+            fetchMigrationBaselineManifestFromApi(),
+            fetchJwtVerificationBoundaryFromApi(),
+            fetchSignedAuditExportManifestFromApi(),
+            fetchAdminUpgradeHealthConsoleFromApi(),
+            fetchOnPremInstallProfilePackFromApi(),
             fetchProductionReadinessScorecardFromApi(),
             fetchContainerConfigValidationManifestFromApi(),
             fetchLiveReadOnlyPrismCallDesignFromApi(),
@@ -1101,6 +1143,12 @@ export function App() {
             setAuditIntegrityManifest(apiAuditIntegrityManifest);
             setDeploymentProfileValidation(apiDeploymentProfileValidation);
             setOperationsRunbookConsole(apiOperationsRunbookConsole);
+            setDurablePersistenceStatus(apiDurablePersistenceStatus);
+            setMigrationBaselineManifest(apiMigrationBaselineManifest);
+            setJwtVerificationBoundary(apiJwtVerificationBoundary);
+            setSignedAuditExportManifest(apiSignedAuditExportManifest);
+            setAdminUpgradeHealthConsole(apiAdminUpgradeHealthConsole);
+            setOnPremInstallProfilePack(apiOnPremInstallProfilePack);
             setProductionReadinessScorecard(apiProductionReadinessScorecard);
             setContainerConfigValidation(apiContainerConfigValidation);
             setLiveReadOnlyPrismCallDesign(apiLiveReadOnlyPrismCallDesign);
@@ -1406,6 +1454,12 @@ export function App() {
       apiAuditIntegrityManifest,
       apiDeploymentProfileValidation,
       apiOperationsRunbookConsole,
+      apiDurablePersistenceStatus,
+      apiMigrationBaselineManifest,
+      apiJwtVerificationBoundary,
+      apiSignedAuditExportManifest,
+      apiAdminUpgradeHealthConsole,
+      apiOnPremInstallProfilePack,
       apiProductionReadinessScorecard,
       apiContainerConfigValidation,
       apiLiveReadOnlyPrismCallDesign,
@@ -1553,6 +1607,12 @@ export function App() {
       fetchAuditIntegrityManifestFromApi(),
       fetchDeploymentProfileValidationFromApi(),
       fetchOperationsRunbookConsoleFromApi(),
+      fetchDurablePersistenceStatusFromApi(),
+      fetchMigrationBaselineManifestFromApi(),
+      fetchJwtVerificationBoundaryFromApi(),
+      fetchSignedAuditExportManifestFromApi(),
+      fetchAdminUpgradeHealthConsoleFromApi(),
+      fetchOnPremInstallProfilePackFromApi(),
       fetchProductionReadinessScorecardFromApi(),
       fetchContainerConfigValidationManifestFromApi(),
       fetchLiveReadOnlyPrismCallDesignFromApi(),
@@ -1700,6 +1760,12 @@ export function App() {
     setAuditIntegrityManifest(apiAuditIntegrityManifest);
     setDeploymentProfileValidation(apiDeploymentProfileValidation);
     setOperationsRunbookConsole(apiOperationsRunbookConsole);
+    setDurablePersistenceStatus(apiDurablePersistenceStatus);
+    setMigrationBaselineManifest(apiMigrationBaselineManifest);
+    setJwtVerificationBoundary(apiJwtVerificationBoundary);
+    setSignedAuditExportManifest(apiSignedAuditExportManifest);
+    setAdminUpgradeHealthConsole(apiAdminUpgradeHealthConsole);
+    setOnPremInstallProfilePack(apiOnPremInstallProfilePack);
     setProductionReadinessScorecard(apiProductionReadinessScorecard);
     setContainerConfigValidation(apiContainerConfigValidation);
     setLiveReadOnlyPrismCallDesign(apiLiveReadOnlyPrismCallDesign);
@@ -4665,6 +4731,12 @@ export function App() {
             auditIntegrityManifest={auditIntegrityManifest}
             deploymentProfileValidation={deploymentProfileValidation}
             operationsRunbookConsole={operationsRunbookConsole}
+            durablePersistenceStatus={durablePersistenceStatus}
+            migrationBaselineManifest={migrationBaselineManifest}
+            jwtVerificationBoundary={jwtVerificationBoundary}
+            signedAuditExportManifest={signedAuditExportManifest}
+            adminUpgradeHealthConsole={adminUpgradeHealthConsole}
+            onPremInstallProfilePack={onPremInstallProfilePack}
             productionReadinessScorecard={productionReadinessScorecard}
             containerConfigValidation={containerConfigValidation}
             liveReadOnlyPrismCallDesign={liveReadOnlyPrismCallDesign}
@@ -5439,6 +5511,12 @@ function AdminView({
   auditIntegrityManifest,
   deploymentProfileValidation,
   operationsRunbookConsole,
+  durablePersistenceStatus,
+  migrationBaselineManifest,
+  jwtVerificationBoundary,
+  signedAuditExportManifest,
+  adminUpgradeHealthConsole,
+  onPremInstallProfilePack,
   productionReadinessScorecard,
   containerConfigValidation,
   liveReadOnlyPrismCallDesign,
@@ -5712,6 +5790,12 @@ function AdminView({
   auditIntegrityManifest: AuditIntegrityManifest;
   deploymentProfileValidation: DeploymentProfileValidation;
   operationsRunbookConsole: OperationsRunbookConsole;
+  durablePersistenceStatus: DurablePersistenceStatus;
+  migrationBaselineManifest: MigrationBaselineManifest;
+  jwtVerificationBoundary: JwtVerificationBoundary;
+  signedAuditExportManifest: SignedAuditExportManifest;
+  adminUpgradeHealthConsole: AdminUpgradeHealthConsole;
+  onPremInstallProfilePack: OnPremInstallProfilePack;
   productionReadinessScorecard: ProductionReadinessScorecard;
   containerConfigValidation: ContainerConfigValidationManifest;
   liveReadOnlyPrismCallDesign: LiveReadOnlyPrismCallDesign;
@@ -6486,6 +6570,16 @@ function AdminView({
               auditIntegrityManifest={auditIntegrityManifest}
               deploymentProfileValidation={deploymentProfileValidation}
               operationsRunbookConsole={operationsRunbookConsole}
+            />
+          </Panel>
+          <Panel title="Durable on-prem operations" action={adminUpgradeHealthConsole.status}>
+            <DurableOnPremOperationsPanel
+              durablePersistenceStatus={durablePersistenceStatus}
+              migrationBaselineManifest={migrationBaselineManifest}
+              jwtVerificationBoundary={jwtVerificationBoundary}
+              signedAuditExportManifest={signedAuditExportManifest}
+              adminUpgradeHealthConsole={adminUpgradeHealthConsole}
+              onPremInstallProfilePack={onPremInstallProfilePack}
             />
           </Panel>
           <Panel title="Container and config validation" action={containerConfigValidation.status}>
@@ -7404,6 +7498,86 @@ function ProductionHardeningFoundationPanel({
         <strong>Fail-closed controls</strong>
         {deploymentProfileValidation.failClosedControls.map((item) => (
           <span key={item}>{item}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DurableOnPremOperationsPanel({
+  durablePersistenceStatus,
+  migrationBaselineManifest,
+  jwtVerificationBoundary,
+  signedAuditExportManifest,
+  adminUpgradeHealthConsole,
+  onPremInstallProfilePack,
+}: {
+  durablePersistenceStatus: DurablePersistenceStatus;
+  migrationBaselineManifest: MigrationBaselineManifest;
+  jwtVerificationBoundary: JwtVerificationBoundary;
+  signedAuditExportManifest: SignedAuditExportManifest;
+  adminUpgradeHealthConsole: AdminUpgradeHealthConsole;
+  onPremInstallProfilePack: OnPremInstallProfilePack;
+}) {
+  return (
+    <div className="dryRunSummary">
+      <div className="platformConfigGrid">
+        <CheckLine
+          icon={Archive}
+          label="Repository"
+          value={durablePersistenceStatus.activeRepository}
+          passed={durablePersistenceStatus.status !== "Blocked"}
+        />
+        <CheckLine
+          icon={Code2}
+          label="Schema"
+          value={migrationBaselineManifest.schemaVersion}
+          passed={migrationBaselineManifest.status === "Migration baseline ready"}
+        />
+        <CheckLine
+          icon={ShieldCheck}
+          label="JWT/OIDC"
+          value={jwtVerificationBoundary.status}
+          passed={jwtVerificationBoundary.status === "JWT boundary ready"}
+        />
+        <CheckLine
+          icon={ScrollText}
+          label="Audit signing"
+          value={signedAuditExportManifest.status}
+          passed={signedAuditExportManifest.status === "Signed"}
+        />
+        <CheckLine
+          icon={Gauge}
+          label="Upgrade blockers"
+          value={`${adminUpgradeHealthConsole.upgradeBlockers.length}`}
+          passed={adminUpgradeHealthConsole.upgradeBlockers.length === 0}
+        />
+        <CheckLine
+          icon={Settings}
+          label="Install profiles"
+          value={`${onPremInstallProfilePack.profiles.length}`}
+          passed={onPremInstallProfilePack.profiles.length >= 4}
+        />
+      </div>
+      <div className="readinessList">
+        {adminUpgradeHealthConsole.configDrift.map((check) => (
+          <div className="readinessRow" key={check.name}>
+            <strong>{check.name}</strong>
+            <span>{check.passed ? "Ready" : "Action needed"}</span>
+            <small>{check.detail}</small>
+          </div>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Migration baseline</strong>
+        {migrationBaselineManifest.migrations.map((migration) => (
+          <span key={migration.name}>{migration.name}: {migration.checksum.slice(0, 12)}</span>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Install profile pack</strong>
+        {onPremInstallProfilePack.profiles.map((profile) => (
+          <span key={profile.name}>{profile.name}: {profile.envFile}</span>
         ))}
       </div>
     </div>
@@ -14574,6 +14748,130 @@ function createMockOperationsRunbookConsole(): OperationsRunbookConsole {
     checks: [
       { name: "Runbook visible", passed: true, detail: "Operations console is available in Admin." },
       { name: "Real execution blocked", passed: true, detail: "No real Nutanix calls are enabled." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockDurablePersistenceStatus(): DurablePersistenceStatus {
+  return {
+    id: "durable-persistence-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Blocked",
+    activeRepository: "memory",
+    postgres: {
+      configured: false,
+      driverInstalled: false,
+      schema: "ndc_studio",
+      migrationDirectory: "server/migrations",
+      contractImplemented: true,
+      runtimeEnabled: false,
+      message: "Browser mode has no durable repository.",
+    },
+    repositoryContract: ["load(): Promise<ApiState>", "save(state: ApiState): Promise<void>"],
+    checks: [
+      { name: "Repository boundary", passed: true, detail: "ApiStore boundary exists." },
+      { name: "Durable runtime", passed: false, detail: "Browser fallback is non-durable." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockMigrationBaselineManifest(): MigrationBaselineManifest {
+  return {
+    id: "migration-baseline-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Migration baseline ready",
+    schemaVersion: "7.5.0-on-prem-install-profile-pack",
+    latestMigration: "002_schema_version.sql",
+    migrations: [
+      { version: "001", name: "001_initial_state.sql", checksum: "browser-mock-001", destructive: false },
+      { version: "002", name: "002_schema_version.sql", checksum: "browser-mock-002", destructive: false },
+    ],
+    validation: [
+      { name: "No destructive statements", passed: true, detail: "Baseline migrations are additive." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockJwtVerificationBoundary(): JwtVerificationBoundary {
+  return {
+    id: "jwt-boundary-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Trusted-header mode only",
+    authMode: "trusted-header",
+    issuerConfigured: false,
+    audienceConfigured: false,
+    jwksConfigured: false,
+    verificationChecks: [
+      { name: "Issuer configured", passed: false, detail: "Configure OIDC_ISSUER_URL in API mode." },
+      { name: "Trusted-header fallback", passed: true, detail: "Proxy deployments can keep trusted-header mode." },
+    ],
+    trustedHeaderFallback: true,
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockSignedAuditExportManifest(): SignedAuditExportManifest {
+  return {
+    id: "signed-audit-export-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Signature pending external signer",
+    manifestDigest: "browser-mock-audit-manifest-digest",
+    signingKeyRef: "ndc-local-development-key-ref",
+    signatureAlgorithm: "sha256-development-signature",
+    signature: "dev-signature:browser",
+    verification: [
+      { name: "External signer configured", passed: false, detail: "Set NDC_AUDIT_SIGNING_KEY_REF in API mode." },
+    ],
+    redactionBoundary: "Browser fallback stores no credential-bearing audit stream.",
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockAdminUpgradeHealthConsole(): AdminUpgradeHealthConsole {
+  return {
+    id: "admin-upgrade-health-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Blocked",
+    repositoryMode: "memory",
+    schemaVersion: "7.5.0-on-prem-install-profile-pack",
+    authPosture: "Trusted-header mode only",
+    auditSigningStatus: "Signature pending external signer",
+    configDrift: [
+      { name: "Durable repository selected", passed: false, detail: "Browser fallback uses memory mode." },
+      { name: "Real Prism calls disabled", passed: true, detail: "Real calls are disabled." },
+    ],
+    upgradeBlockers: ["Durable repository selected", "Audit signing configured"],
+    checks: [
+      { name: "Upgrade console visible", passed: true, detail: "Admin Operations shows v7 posture." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockOnPremInstallProfilePack(): OnPremInstallProfilePack {
+  return {
+    id: "onprem-install-profile-pack-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Install profile pack ready",
+    profiles: [
+      { name: "local-json", envFile: ".env.example", composeFile: "docker-compose.yml", purpose: "Local JSON-file validation", requiredSettings: ["NDC_REPOSITORY=json"] },
+      { name: "on-prem-json", envFile: "docs/on-prem-profiles/on-prem-json.env.example", composeFile: "docker-compose.yml", purpose: "Private JSON pilot", requiredSettings: ["NDC_REQUIRE_TRUSTED_IDENTITY=true"] },
+      { name: "on-prem-postgres", envFile: "docs/on-prem-profiles/on-prem-postgres.env.example", composeFile: "docker-compose.yml", purpose: "Future Postgres deployment", requiredSettings: ["DATABASE_URL"] },
+      { name: "lab-prep", envFile: "docs/on-prem-profiles/lab-prep.env.example", composeFile: "docker-compose.yml", purpose: "Authorized lab prep", requiredSettings: ["NDC_DEPLOYMENT_PROFILE=lab-prep"] },
+    ],
+    validationCommands: ["npm.cmd run validate:onprem", "npm.cmd run validate:postgres", "npm.cmd run validate:onprem-profile-pack"],
+    backupRestoreRunbook: ["Back up state", "Validate checksum", "Restore into clean runtime", "Verify audit signature"],
+    checks: [
+      { name: "Profiles available", passed: true, detail: "Four profile templates are represented." },
     ],
     provisioningEnabled: false,
     realPrismCallsEnabled: false,

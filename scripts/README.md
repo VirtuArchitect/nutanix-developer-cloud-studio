@@ -11,6 +11,7 @@ testing, linting, security scanning, or smoke testing.
 - `validate-onprem-config.ps1`: validates on-prem starter settings for state path, audit retention, rate limits, repository mode, and disabled real adapter guardrails.
 - `validate-runtime-package.ps1`: validates Dockerfile, Compose, `.env.example`, static/API serving, healthcheck, and disabled adapter guardrails.
 - `validate-postgres-repository.ps1`: validates migration files, schema naming, and fail-closed Postgres repository configuration without opening a database connection.
+- `validate-onprem-profile-pack.ps1`: validates on-prem profile templates for disabled real-adapter guardrails and missing secret material.
 - `validate-audit-export-config.ps1`: validates audit retention and export destination references without connecting to external storage.
 - `validate-provider-credential-references.ps1`: validates provider credential profile references and rejects inline access material.
 - `backup-state.ps1`: copies a JSON state file into a timestamped backup location and writes a SHA-256 manifest.

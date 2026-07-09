@@ -405,6 +405,14 @@ import {
   createPersistenceBoundaryStatus,
   createRbacEnforcementMatrix,
 } from "./productionHardeningFoundation";
+import {
+  createAdminUpgradeHealthConsole,
+  createDurablePersistenceStatus,
+  createJwtVerificationBoundary,
+  createMigrationBaselineManifest,
+  createOnPremInstallProfilePack,
+  createSignedAuditExportManifest,
+} from "./durableOnPremOperations";
 import type { ApiStore } from "./storage";
 import { createVmSandboxDryRunPlan } from "./vmSandboxDryRun";
 import type {
@@ -1455,6 +1463,42 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/operations/runbook-console") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: createOperationsRunbookConsole(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/onprem/durable-persistence") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createDurablePersistenceStatus(store.constructor.name) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/onprem/migration-baseline") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createMigrationBaselineManifest() });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/auth/jwt-boundary") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createJwtVerificationBoundary() });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/audit/signed-export-manifest") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createSignedAuditExportManifest(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/admin/upgrade-health") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createAdminUpgradeHealthConsole(state, store.constructor.name) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/onprem/install-profile-pack") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createOnPremInstallProfilePack() });
     return;
   }
 

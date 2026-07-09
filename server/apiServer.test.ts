@@ -228,6 +228,78 @@ describe("api server", () => {
     );
   });
 
+  it("reports durable on-prem operations foundation snapshots and keeps mutation disabled", async () => {
+    const adminHeaders = {
+      "x-ndc-user": "ops.admin",
+      "x-ndc-display-name": "Ops Admin",
+      "x-ndc-roles": "Platform Admin",
+      "x-ndc-issuer": "https://idp.example",
+    };
+    const developerHeaders = {
+      "x-ndc-user": "dev.user",
+      "x-ndc-display-name": "Dev User",
+      "x-ndc-roles": "Developer",
+      "x-ndc-issuer": "https://idp.example",
+    };
+
+    const persistence = await requestJson("/api/onprem/durable-persistence", { headers: adminHeaders });
+    const migrations = await requestJson("/api/onprem/migration-baseline", { headers: adminHeaders });
+    const jwt = await requestJson("/api/auth/jwt-boundary", { headers: adminHeaders });
+    const signed = await requestJson("/api/audit/signed-export-manifest", { headers: adminHeaders });
+    const upgrade = await requestJson("/api/admin/upgrade-health", { headers: adminHeaders });
+    const profiles = await requestJson("/api/onprem/install-profile-pack", { headers: adminHeaders });
+
+    expect(persistence.data).toMatchObject({
+      activeRepository: "memory",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(persistence.data.postgres).toMatchObject({
+      contractImplemented: true,
+      runtimeEnabled: false,
+      driverInstalled: false,
+    });
+    expect(migrations.data).toMatchObject({
+      status: "Migration baseline ready",
+      schemaVersion: "7.5.0-on-prem-install-profile-pack",
+      provisioningEnabled: false,
+    });
+    expect(migrations.data.migrations).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "002_schema_version.sql", destructive: false })])
+    );
+    expect(jwt.data).toMatchObject({
+      trustedHeaderFallback: true,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(signed.data).toMatchObject({
+      signingKeyRef: "ndc-local-development-key-ref",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(signed.data.manifestDigest).toHaveLength(64);
+    expect(upgrade.data).toMatchObject({
+      repositoryMode: "memory",
+      schemaVersion: "7.5.0-on-prem-install-profile-pack",
+      provisioningEnabled: false,
+    });
+    expect(profiles.data.profiles).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "on-prem-postgres" })])
+    );
+
+    await expectJson(
+      "/api/admin/upgrade-health",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      { headers: developerHeaders }
+    );
+  });
+
   it("fails closed for API routes when trusted identity headers are required", async () => {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));

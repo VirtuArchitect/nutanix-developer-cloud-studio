@@ -4,7 +4,7 @@ A clickable MVP prototype for a Nutanix-powered internal developer platform.
 
 Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
 
-Current release: `v6.5.0-operations-runbook-console`
+Current release: `v7.5.0-on-prem-install-profile-pack`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -48,6 +48,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated product protot
 - Production read-only pilot controls with runtime enablement policy, controlled pilot sessions, non-executing call envelopes, pilot evidence review queue, and emergency stop rollback drill records.
 - Controlled mock-to-lab transition with lab readiness workspace, expanded mock Prism endpoint contract, adapter contract harness records, lab dry-run console, evidence export pack v2, and real lab authorization packet evidence.
 - Production hardening foundation with API contract baseline, RBAC enforcement matrix, persistence boundary diagnostics, audit integrity manifest, deployment profile validation, and an operations runbook console.
+- Durable on-prem operations foundation with Postgres repository contract readiness, migration baseline manifests, JWT/OIDC verification boundary diagnostics, signed audit export manifests, admin upgrade health, and on-prem install profile pack validation.
 
 ### Governance And Release Readiness
 

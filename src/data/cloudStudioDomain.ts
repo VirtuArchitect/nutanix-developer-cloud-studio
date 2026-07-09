@@ -1070,6 +1070,104 @@ export type OperationsRunbookConsole = {
   realPrismCallsEnabled: false;
 };
 
+export type DurablePersistenceStatus = {
+  id: string;
+  generatedAt: string;
+  status: "Durable persistence ready" | "Durable persistence scaffold ready" | "Blocked";
+  activeRepository: "memory" | "json-file" | "postgres";
+  postgres: {
+    configured: boolean;
+    driverInstalled: boolean;
+    schema: string;
+    migrationDirectory: string;
+    contractImplemented: boolean;
+    runtimeEnabled: boolean;
+    message: string;
+  };
+  repositoryContract: string[];
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type MigrationBaselineManifest = {
+  id: string;
+  generatedAt: string;
+  status: "Migration baseline ready" | "Migration baseline blocked";
+  schemaVersion: string;
+  latestMigration: string;
+  migrations: Array<{
+    version: string;
+    name: string;
+    checksum: string;
+    destructive: boolean;
+  }>;
+  validation: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type JwtVerificationBoundary = {
+  id: string;
+  generatedAt: string;
+  status: "JWT boundary ready" | "Trusted-header mode only" | "Blocked";
+  authMode: "trusted-header" | "jwt" | "hybrid";
+  issuerConfigured: boolean;
+  audienceConfigured: boolean;
+  jwksConfigured: boolean;
+  verificationChecks: ProductionHardeningCheck[];
+  trustedHeaderFallback: boolean;
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type SignedAuditExportManifest = {
+  id: string;
+  generatedAt: string;
+  status: "Signed" | "Signature pending external signer";
+  manifestDigest: string;
+  signingKeyRef: string;
+  signatureAlgorithm: "sha256-development-signature" | "external-signer";
+  signature: string;
+  verification: ProductionHardeningCheck[];
+  redactionBoundary: string;
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type AdminUpgradeHealthConsole = {
+  id: string;
+  generatedAt: string;
+  status: "Ready for on-prem pilot" | "Blocked";
+  repositoryMode: DurablePersistenceStatus["activeRepository"];
+  schemaVersion: string;
+  authPosture: JwtVerificationBoundary["status"];
+  auditSigningStatus: SignedAuditExportManifest["status"];
+  configDrift: ProductionHardeningCheck[];
+  upgradeBlockers: string[];
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type OnPremInstallProfilePack = {
+  id: string;
+  generatedAt: string;
+  status: "Install profile pack ready";
+  profiles: Array<{
+    name: "local-json" | "on-prem-json" | "on-prem-postgres" | "lab-prep";
+    envFile: string;
+    composeFile: string;
+    purpose: string;
+    requiredSettings: string[];
+  }>;
+  validationCommands: string[];
+  backupRestoreRunbook: string[];
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
 export type PrismInventoryRecord = {
   id: string;
   kind: PrismInventoryKind;

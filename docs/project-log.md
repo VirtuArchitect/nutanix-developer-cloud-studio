@@ -2,6 +2,18 @@
 
 ## 2026-07-09
 
+- Released `v7.5.0-on-prem-install-profile-pack`.
+- Added on-prem install profile templates, validation script, and install pack API evidence.
+- Released `v7.4.0-admin-upgrade-health-console`.
+- Added Admin Operations upgrade health for repository, schema, auth, audit signing, config drift, and blockers.
+- Released `v7.3.0-signed-audit-export-manifests`.
+- Added signed audit export manifest evidence with external signing key references.
+- Released `v7.2.0-jwt-oidc-verification-boundary`.
+- Added JWT/OIDC verification boundary diagnostics with trusted-header fallback.
+- Released `v7.1.0-migration-schema-baseline`.
+- Added additive schema version and signed audit manifest migrations with non-destructive validation.
+- Released `v7.0.0-durable-postgres-repository-foundation`.
+- Added durable persistence status and Postgres repository contract readiness while keeping runtime Postgres fail-closed.
 - Released `v6.5.0-operations-runbook-console`.
 - Added the Admin Operations production-hardening console for runbook score, blocked gates, evidence counters, and fail-closed controls.
 - Released `v6.4.0-deployment-profile-validation`.
