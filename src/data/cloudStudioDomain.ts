@@ -820,6 +820,256 @@ export type EmergencyStopRollbackDrillRecord = {
   createdAt: string;
 };
 
+export type LabReadinessWorkspaceRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Ready for mock-to-lab review" | "Blocked";
+  mockPrismStatus: "Healthy" | "Blocked";
+  readinessSummary: {
+    mockPrismReady: boolean;
+    readOnlyAdapterReady: boolean;
+    runtimePolicyReady: boolean;
+    pilotSessionReady: boolean;
+    evidenceReviewApproved: boolean;
+    emergencyStopDrillPassed: boolean;
+  };
+  blockerSummary: string[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type MockPrismEndpointExpansionRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Expanded simulator contract ready" | "Blocked";
+  workspaceId: string;
+  supportedEndpoints: Array<{
+    method: "GET" | "POST";
+    path: string;
+    responseShape: string;
+  }>;
+  authHeaderMode: "mock-required";
+  latencySimulationMs: number;
+  rateLimitSimulation: {
+    requestsPerMinute: number;
+    mode: "simulated";
+  };
+  failureModes: string[];
+  redactedRequestLogFields: string[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type AdapterContractTestHarnessRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Contract harness passed" | "Blocked";
+  mockExpansionId: string;
+  testSuites: Array<{
+    name: string;
+    status: "Passed" | "Blocked";
+    assertions: string[];
+  }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type LabConnectionDryRunConsoleRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Dry-run console ready" | "Blocked";
+  contractHarnessId: string;
+  selectedEndpointRef: string;
+  credentialProviderRef: string;
+  allowedOperations: PrismReadOnlyOperation[];
+  expectedRequests: Array<{ operation: PrismReadOnlyOperation; method: "POST"; path: string }>;
+  expectedResponses: string[];
+  blockedMutations: string[];
+  rollbackPath: string[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type EvidenceExportPackV2Record = {
+  id: string;
+  requestedBy: string;
+  status: "Export pack ready" | "Blocked";
+  dryRunConsoleId: string;
+  manifest: Array<{ section: string; recordId: string; redacted: boolean }>;
+  checksum: string;
+  readinessSummary: string[];
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type RealLabAuthorizationPacketRecord = {
+  id: string;
+  requestedBy: string;
+  status: "Ready to request real lab access" | "Blocked";
+  evidenceExportPackId: string;
+  requiredLabDetails: string[];
+  prismCentralEndpointRequirements: string[];
+  credentialVaultRequirements: string[];
+  networkBoundary: string[];
+  approvalOwners: string[];
+  rollbackOwner: string;
+  pentestScopeEvidence: string[];
+  goNoGoChecklist: Array<{ name: string; passed: boolean; detail: string }>;
+  checks: Array<{ name: string; passed: boolean; detail: string }>;
+  evidence: string[];
+  provisioningEnabled: false;
+  networkCallEnabled: false;
+  realPrismCallsEnabled: false;
+  createdAt: string;
+};
+
+export type ProductionHardeningCheck = {
+  name: string;
+  passed: boolean;
+  detail: string;
+};
+
+export type ApiContractOperation = {
+  method: "GET" | "POST";
+  path: string;
+  requiredRoles: PlatformRole[];
+  summary: string;
+  responseShape: string;
+  mutationBoundary: "Read-only snapshot" | "Evidence record only" | "Simulated state transition";
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type ApiContractBaseline = {
+  id: string;
+  version: string;
+  generatedAt: string;
+  status: "Contract baseline ready";
+  title: string;
+  openApiVersion: "3.1.0";
+  operations: ApiContractOperation[];
+  examples: Array<{
+    name: string;
+    method: ApiContractOperation["method"];
+    path: string;
+    requestExample?: Record<string, unknown>;
+    responseExample: Record<string, unknown>;
+  }>;
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type RbacEnforcementMatrix = {
+  id: string;
+  generatedAt: string;
+  status: "RBAC matrix enforced";
+  roles: PlatformRole[];
+  routes: Array<{
+    method: ApiContractOperation["method"];
+    path: string;
+    allowedRoles: PlatformRole[];
+    deniedRoles: PlatformRole[];
+    enforcement: "requireRole";
+  }>;
+  negativeTestCases: Array<{
+    actorRole: PlatformRole;
+    method: ApiContractOperation["method"];
+    path: string;
+    expectedStatus: 403;
+  }>;
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type PersistenceBoundaryStatus = {
+  id: string;
+  generatedAt: string;
+  status: "Repository boundary ready" | "Repository boundary needs durable mode";
+  repositoryMode: "memory" | "json-file";
+  durable: boolean;
+  repositoryInterface: string[];
+  migrationTargets: string[];
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type AuditIntegrityManifest = {
+  id: string;
+  generatedAt: string;
+  status: "Integrity manifest ready";
+  retainedEvents: number;
+  digestAlgorithm: "sha256";
+  eventDigests: Array<{
+    eventId: string;
+    action: string;
+    digest: string;
+  }>;
+  manifestDigest: string;
+  redactionBoundary: string;
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type DeploymentProfileValidation = {
+  id: string;
+  generatedAt: string;
+  status: "Profiles validated";
+  activeProfile: "local" | "hosted-demo" | "on-prem-starter" | "lab-prep";
+  profiles: Array<{
+    name: DeploymentProfileValidation["activeProfile"];
+    purpose: string;
+    ready: boolean;
+    checks: ProductionHardeningCheck[];
+  }>;
+  failClosedControls: string[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
+export type OperationsRunbookConsole = {
+  id: string;
+  generatedAt: string;
+  status: "Ready for operator review" | "Blocked";
+  readinessScore: number;
+  blockedGates: string[];
+  runbookSteps: Array<{
+    name: string;
+    state: "Ready" | "Blocked" | "Evidence pending";
+    evidence: string;
+  }>;
+  evidenceSummary: Array<{
+    name: string;
+    count: number;
+  }>;
+  checks: ProductionHardeningCheck[];
+  provisioningEnabled: false;
+  realPrismCallsEnabled: false;
+};
+
 export type PrismInventoryRecord = {
   id: string;
   kind: PrismInventoryKind;

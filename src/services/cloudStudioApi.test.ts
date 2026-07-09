@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkApiHealth,
+  createAdapterContractTestHarnessViaApi,
   createAdapterEnablementRecordViaApi,
   createAdapterPromotionReadinessDossierViaApi,
   createAuthorizedLabConnectionDryRunViaApi,
@@ -34,9 +35,13 @@ import {
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
+  createEvidenceExportPackV2ViaApi,
   createLabAuthorizationScopeViaApi,
+  createLabConnectionDryRunConsoleViaApi,
   createLabConnectivityPreflightViaApi,
+  createLabReadinessWorkspaceViaApi,
   createLifecycleOperationViaApi,
+  createMockPrismEndpointExpansionViaApi,
   createPlatformServiceRequestViaApi,
   createPlatformServiceAdapterContractReviewViaApi,
   createPlatformServicePreflightRunViaApi,
@@ -97,6 +102,7 @@ import {
   createReadOnlyRuntimeEnablementPolicyViaApi,
   createPilotEvidenceReviewViaApi,
   createReleaseEvidenceExportViaApi,
+  createRealLabAuthorizationPacketViaApi,
   createRealAdapterLabScopeActivationViaApi,
   createRealAdapterSwitchStateAuditPackageViaApi,
   createRollbackDestroyProofViaApi,
@@ -106,10 +112,13 @@ import {
   fetchAuthBoundaryDiagnosticsFromApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
+  fetchAdapterContractTestHarnessesFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
   fetchAdapterEnablementRecordsFromApi,
+  fetchApiContractBaselineFromApi,
   fetchAuthorizedLabConnectionDryRunsFromApi,
   fetchAuthorizedReadOnlyLabPilotGatesFromApi,
+  fetchAuditIntegrityManifestFromApi,
   fetchAuditExportsFromApi,
   fetchAuditRetentionDiagnosticsFromApi,
   fetchCredentialReferenceDiagnosticsFromApi,
@@ -126,6 +135,7 @@ import {
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlledSwitchConfigurationRequestsFromApi,
   fetchContainerConfigValidationManifestFromApi,
+  fetchDeploymentProfileValidationFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
   fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchSwitchClosureRetentionPackagesFromApi,
@@ -133,12 +143,15 @@ import {
   fetchEnvironmentsFromApi,
   fetchExecutionBrokerDispatchApprovalsFromApi,
   fetchExecutionBrokerQueueRecordsFromApi,
+  fetchEvidenceExportPacksV2FromApi,
   fetchDisabledPrismReadOnlyHttpClientsFromApi,
   fetchDisabledRealReadOnlyAdapterInterfacesFromApi,
   fetchEmergencyStopRollbackDrillsFromApi,
   fetchLabAdaptersFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabConnectionDryRunConsolesFromApi,
   fetchLabConnectivityPreflightsFromApi,
+  fetchLabReadinessWorkspacesFromApi,
   fetchLabPilotOperatorConsoleFromApi,
   fetchLabPilotRunbookWorkflowsFromApi,
   fetchLabEvidenceReviewsFromApi,
@@ -152,10 +165,12 @@ import {
   fetchHardenedLabConnectionProfileReviewsFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
+  fetchMockPrismEndpointExpansionsFromApi,
   fetchMockPrismStatusFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
   fetchPrismFixtureReplaysFromApi,
   fetchPilotEvidenceReviewsFromApi,
+  fetchPersistenceBoundaryStatusFromApi,
   fetchPrismReadOnlyAdapterDiagnosticsFromApi,
   fetchReadOnlyAdapterObservabilityFromApi,
   fetchReadOnlyAdapterAuthorizationGatesFromApi,
@@ -164,10 +179,12 @@ import {
   fetchReadOnlyPilotSessionsFromApi,
   fetchReadOnlyRuntimeEnablementPoliciesFromApi,
   fetchReadOnlyPrismLabGatesFromApi,
+  fetchRealLabAuthorizationPacketsFromApi,
   fetchPrismFailureScenariosFromApi,
   fetchPrismSimulatorProfilesFromApi,
   fetchPolicyBundlesFromApi,
   fetchOperatorEvidenceExportPacksFromApi,
+  fetchOperationsRunbookConsoleFromApi,
   fetchOfflineContractReplaySuitesFromApi,
   fetchLifecycleOperationsFromApi,
   fetchPlatformConfigFromApi,
@@ -225,6 +242,7 @@ import {
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
+  fetchRbacEnforcementMatrixFromApi,
   fetchRollbackDestroyProofsFromApi,
   fetchResourceProfilesFromApi,
   fetchRuntimeObservabilityFromApi,
@@ -331,15 +349,27 @@ describe("cloudStudioApi", () => {
 
     await fetchAuthBoundaryDiagnosticsFromApi();
     await fetchRuntimeObservabilityFromApi();
+    await fetchApiContractBaselineFromApi();
+    await fetchRbacEnforcementMatrixFromApi();
+    await fetchPersistenceBoundaryStatusFromApi();
+    await fetchAuditIntegrityManifestFromApi();
+    await fetchDeploymentProfileValidationFromApi();
+    await fetchOperationsRunbookConsoleFromApi();
     await fetchProductionReadinessScorecardFromApi();
     await fetchContainerConfigValidationManifestFromApi();
     await fetchLiveReadOnlyPrismCallDesignFromApi();
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/auth/boundary-diagnostics", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/observability/runtime", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/production/readiness-scorecard", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/deployment/config-validation", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/prism/live-read-only-design", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/contracts/openapi", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/security/rbac-matrix", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/storage/persistence-boundary", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/audit/integrity-manifest", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/deployment/profiles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(8, "/api/operations/runbook-console", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/production/readiness-scorecard", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(10, "/api/deployment/config-validation", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(11, "/api/prism/live-read-only-design", expect.any(Object));
   });
 
   it("saves and checks integration configuration", async () => {
@@ -610,6 +640,18 @@ describe("cloudStudioApi", () => {
     await createPilotEvidenceReviewViaApi({ callEnvelopeId: "envelope-1", decision: "Approve" });
     await fetchEmergencyStopRollbackDrillsFromApi();
     await createEmergencyStopRollbackDrillViaApi({ pilotEvidenceReviewId: "review-1" });
+    await fetchLabReadinessWorkspacesFromApi();
+    await createLabReadinessWorkspaceViaApi({ emergencyStopRollbackDrillId: "drill-1" });
+    await fetchMockPrismEndpointExpansionsFromApi();
+    await createMockPrismEndpointExpansionViaApi({ workspaceId: "workspace-1" });
+    await fetchAdapterContractTestHarnessesFromApi();
+    await createAdapterContractTestHarnessViaApi({ mockExpansionId: "expansion-1" });
+    await fetchLabConnectionDryRunConsolesFromApi();
+    await createLabConnectionDryRunConsoleViaApi({ contractHarnessId: "harness-1" });
+    await fetchEvidenceExportPacksV2FromApi();
+    await createEvidenceExportPackV2ViaApi({ dryRunConsoleId: "console-1" });
+    await fetchRealLabAuthorizationPacketsFromApi();
+    await createRealLabAuthorizationPacketViaApi({ evidenceExportPackId: "export-1" });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/prism/read-only-lab-profile-hardening", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -670,6 +712,42 @@ describe("cloudStudioApi", () => {
       20,
       "/api/prism/emergency-stop-rollback-drills",
       expect.objectContaining({ method: "POST", body: expect.stringContaining("review-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(21, "/api/lab-transition/readiness-workspaces", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      22,
+      "/api/lab-transition/readiness-workspaces",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("drill-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(23, "/api/lab-transition/mock-prism-endpoint-expansions", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      24,
+      "/api/lab-transition/mock-prism-endpoint-expansions",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("workspace-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(25, "/api/lab-transition/adapter-contract-harnesses", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      26,
+      "/api/lab-transition/adapter-contract-harnesses",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("expansion-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(27, "/api/lab-transition/dry-run-consoles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      28,
+      "/api/lab-transition/dry-run-consoles",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("harness-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(29, "/api/lab-transition/evidence-export-packs-v2", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      30,
+      "/api/lab-transition/evidence-export-packs-v2",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("console-1") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(31, "/api/lab-transition/real-lab-authorization-packets", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      32,
+      "/api/lab-transition/real-lab-authorization-packets",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("export-1") })
     );
   });
 

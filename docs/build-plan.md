@@ -28,6 +28,18 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 ## Current Implementation Slice
 
+- `v6.5.0-operations-runbook-console` adds the Admin Operations hardening console with readiness score, blocked gates, evidence counters, and fail-closed controls.
+- `v6.4.0-deployment-profile-validation` adds profile validation for local, hosted-demo, on-prem-starter, and lab-prep modes.
+- `v6.3.0-audit-integrity-manifest` adds SHA-256 audit event and manifest digest evidence.
+- `v6.2.0-persistence-boundary-status` adds repository mode, durability, retention, and migration-target diagnostics.
+- `v6.1.0-rbac-enforcement-matrix` adds protected-route RBAC evidence and denied-role negative test coverage.
+- `v6.0.0-api-contract-baseline` adds an OpenAPI-style contract baseline snapshot for key API operations.
+- `v5.5.0-real-lab-authorization-packet` adds the final request-ready packet for authorized Nutanix lab access while keeping live calls disabled.
+- `v5.4.0-evidence-export-pack-v2` adds a consolidated redacted evidence pack for platform and security review.
+- `v5.3.0-lab-connection-dry-run-console` adds an operator console record showing endpoint reference, credential reference, expected requests/responses, blocked mutations, and rollback path.
+- `v5.2.0-adapter-contract-test-harness` adds contract-harness evidence for Prism read-only calls, credential resolution, redaction, timeout/retry, and fail-closed behavior.
+- `v5.1.0-mock-prism-endpoint-expansion` adds expanded simulator evidence for auth-shaped headers, endpoints, failure modes, latency, rate limiting, and redacted logs.
+- `v5.0.0-lab-readiness-workspace` adds the mock-to-lab readiness rollup before any future real lab access request.
 - `v4.5.0-emergency-stop-rollback-drill` adds emergency stop rollback drill evidence for simulated-mode restoration and evidence preservation.
 - `v4.4.0-pilot-evidence-review-queue` adds reviewer approval/rejection records for pilot evidence before any future live HTTP enablement.
 - `v4.3.0-live-read-only-call-envelope` adds non-executing call envelopes for each Prism list operation with method, path, timeout, retry, redaction, request ID, and expected response shape.

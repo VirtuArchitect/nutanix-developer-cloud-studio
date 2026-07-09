@@ -29,13 +29,16 @@ import {
   targetIcons,
   templates,
   type AdapterPromotionReadinessDossier,
+  type AdapterContractTestHarnessRecord,
   type AdapterEnablementRecord,
   type AuthorizedLabConnectionDryRunRecord,
   type AuthorizedReadOnlyLabPilotGateRecord,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
+  type ApiContractBaseline,
   type AuthBoundaryDiagnostics,
   type AuditExportRecord,
+  type AuditIntegrityManifest,
   type AuditRetentionDiagnostics,
   type ContainerConfigValidationManifest,
   type ControlledLabExecutionApprovalGate,
@@ -51,6 +54,7 @@ import {
   type CredentialProviderContractRecord,
   type DisabledRealReadOnlyAdapterInterfaceRecord,
   type DisabledPrismReadOnlyHttpClientRecord,
+  type DeploymentProfileValidation,
   type Environment,
   type ApprovalRequest,
   type ControlledProvisioningGate,
@@ -62,6 +66,7 @@ import {
   type IntegrationConfig,
   type HardenedLabConnectionProfileReview,
   type LabEvidenceReviewRecord,
+  type LabConnectionDryRunConsoleRecord,
   type LabExecutionProposalEnvelope,
   type LabExecutionProposalExportRecord,
   type LabWindowEvidenceExportRecord,
@@ -70,6 +75,7 @@ import {
   type LabAdapterSnapshot,
   type LabAuthorizationScope,
   type LabPilotOperatorConsole,
+  type LabReadinessWorkspaceRecord,
   type LabPilotRunbookWorkflow,
   type LabScopeDiagnostics,
   type LifecycleOperationKind,
@@ -79,9 +85,13 @@ import {
   type LiveReadOnlyInventoryPilotRecord,
   type ManualRealAdapterSwitchReview,
   type MockPrismExecution,
+  type MockPrismEndpointExpansionRecord,
   type MockPrismSimulatorStatus,
   type OfflineContractReplaySuiteRecord,
+  type EvidenceExportPackV2Record,
+  type OperationsRunbookConsole,
   type PilotEvidenceReviewRecord,
+  type PersistenceBoundaryStatus,
   type PrismSimulatorFailureScenario,
   type PrismSimulatorFailureScenarioId,
   type PrismSimulatorProfile,
@@ -159,8 +169,10 @@ import {
   type RealAdapterSwitchStateAuditPackage,
   type RealPrismPreflightRun,
   type EmergencyStopRollbackDrillRecord,
+  type RealLabAuthorizationPacketRecord,
   type ReleaseEvidenceExportRecord,
   type RegistryStatus,
+  type RbacEnforcementMatrix,
   resourceProfiles as defaultResourceProfiles,
   type ResourceProfile,
   type RollbackDestroyProofRecord,
@@ -192,6 +204,7 @@ import {
 } from "./services/provisioningService";
 import {
   checkApiHealth,
+  createAdapterContractTestHarnessViaApi,
   createAdapterPromotionReadinessDossierViaApi,
   createAuthorizedLabConnectionDryRunViaApi,
   createProductionAdapterAuthorizationPacketViaApi,
@@ -256,17 +269,21 @@ import {
   createExecutionBrokerDispatchApprovalViaApi,
   createExecutionBrokerQueueRecordViaApi,
   createLabEvidenceReviewViaApi,
+  createLabConnectionDryRunConsoleViaApi,
   createLabExecutionProposalEnvelopeViaApi,
   createLabExecutionProposalExportViaApi,
   createLabWindowEvidenceExportViaApi,
   createLiveReadOnlyCallEnvelopeViaApi,
   createManualRealAdapterSwitchReviewViaApi,
+  createMockPrismEndpointExpansionViaApi,
   createLabAuthorizationScopeViaApi,
   createLabConnectivityPreflightViaApi,
+  createLabReadinessWorkspaceViaApi,
   createLifecycleOperationViaApi,
   createControlledProvisioningGateViaApi,
   createControlledCreateAuthorizationEnvelopeViaApi,
   createEnvironmentViaApi,
+  createEvidenceExportPackV2ViaApi,
   createPlatformServiceRequestViaApi,
   createPlatformServiceAdapterContractReviewViaApi,
   createPlatformServicePreflightRunViaApi,
@@ -287,6 +304,7 @@ import {
   createReadOnlyPilotSessionViaApi,
   createReadOnlyRuntimeEnablementPolicyViaApi,
   createPilotEvidenceReviewViaApi,
+  createRealLabAuthorizationPacketViaApi,
   createRealAdapterLabScopeActivationViaApi,
   createRealAdapterSwitchStateAuditPackageViaApi,
   createReleaseEvidenceExportViaApi,
@@ -297,8 +315,11 @@ import {
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
+  fetchAdapterContractTestHarnessesFromApi,
   fetchAdapterPromotionReadinessDossiersFromApi,
+  fetchApiContractBaselineFromApi,
   fetchAuthBoundaryDiagnosticsFromApi,
+  fetchAuditIntegrityManifestFromApi,
   fetchProductionAdapterAuthorizationPacketsFromApi,
   fetchProductionChangeFreezeRecordsFromApi,
   fetchProductionCabHandoffPacketsFromApi,
@@ -358,10 +379,12 @@ import {
   fetchControlledLabReleaseRunbooksFromApi,
   fetchControlledSwitchConfigurationRequestsFromApi,
   fetchContainerConfigValidationManifestFromApi,
+  fetchDeploymentProfileValidationFromApi,
   fetchSwitchExecutionHandoffPackagesFromApi,
   fetchSwitchExecutionOutcomeRecordsFromApi,
   fetchSwitchClosureRetentionPackagesFromApi,
   fetchEnvironmentsFromApi,
+  fetchEvidenceExportPacksV2FromApi,
   fetchDisabledPrismReadOnlyHttpClientsFromApi,
   fetchDisabledRealReadOnlyAdapterInterfacesFromApi,
   fetchEmergencyStopRollbackDrillsFromApi,
@@ -372,7 +395,9 @@ import {
   fetchIntegrationConfigsFromApi,
   fetchIntegrationsFromApi,
   fetchLabAuthorizationScopesFromApi,
+  fetchLabConnectionDryRunConsolesFromApi,
   fetchLabConnectivityPreflightsFromApi,
+  fetchLabReadinessWorkspacesFromApi,
   fetchLabEvidenceReviewsFromApi,
   fetchLabExecutionProposalEnvelopesFromApi,
   fetchLabExecutionProposalExportsFromApi,
@@ -382,6 +407,7 @@ import {
   fetchHardenedLabConnectionProfileReviewsFromApi,
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
+  fetchMockPrismEndpointExpansionsFromApi,
   fetchMockPrismStatusFromApi,
   fetchPrismFailureScenariosFromApi,
   fetchPrismSimulatorProfilesFromApi,
@@ -398,11 +424,13 @@ import {
   fetchProviderReleaseReadinessSummaryFromApi,
   fetchPolicyBundlesFromApi,
   fetchOperatorEvidenceExportPacksFromApi,
+  fetchOperationsRunbookConsoleFromApi,
   fetchOfflineContractReplaySuitesFromApi,
   fetchLiveReadOnlyInventoryPilotsFromApi,
   fetchPrismAdapterDiagnosticsFromApi,
   fetchPrismFixtureReplaysFromApi,
   fetchPilotEvidenceReviewsFromApi,
+  fetchPersistenceBoundaryStatusFromApi,
   fetchPrismReadOnlyAdapterDiagnosticsFromApi,
   fetchReadOnlyPrismLabGatesFromApi,
   fetchReadOnlyAdapterObservabilityFromApi,
@@ -411,10 +439,12 @@ import {
   fetchReadOnlyAdapterAuthorizationGatesFromApi,
   fetchReadOnlyPilotSessionsFromApi,
   fetchReadOnlyRuntimeEnablementPoliciesFromApi,
+  fetchRealLabAuthorizationPacketsFromApi,
   fetchRealReadOnlyAdapterConfigBoundariesFromApi,
   fetchRealPrismPreflightRunsFromApi,
   fetchRealAdapterLabScopeActivationsFromApi,
   fetchRealAdapterSwitchStateAuditPackagesFromApi,
+  fetchRbacEnforcementMatrixFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
   fetchProductionReadinessReviewsFromApi,
@@ -479,6 +509,24 @@ export function App() {
   const [runtimeObservability, setRuntimeObservability] = useState<RuntimeObservabilitySnapshot>(() =>
     createMockRuntimeObservability(mockSession)
   );
+  const [apiContractBaseline, setApiContractBaseline] = useState<ApiContractBaseline>(() =>
+    createMockApiContractBaseline()
+  );
+  const [rbacEnforcementMatrix, setRbacEnforcementMatrix] = useState<RbacEnforcementMatrix>(() =>
+    createMockRbacEnforcementMatrix()
+  );
+  const [persistenceBoundaryStatus, setPersistenceBoundaryStatus] = useState<PersistenceBoundaryStatus>(() =>
+    createMockPersistenceBoundaryStatus()
+  );
+  const [auditIntegrityManifest, setAuditIntegrityManifest] = useState<AuditIntegrityManifest>(() =>
+    createMockAuditIntegrityManifest()
+  );
+  const [deploymentProfileValidation, setDeploymentProfileValidation] = useState<DeploymentProfileValidation>(() =>
+    createMockDeploymentProfileValidation()
+  );
+  const [operationsRunbookConsole, setOperationsRunbookConsole] = useState<OperationsRunbookConsole>(() =>
+    createMockOperationsRunbookConsole()
+  );
   const [productionReadinessScorecard, setProductionReadinessScorecard] = useState<ProductionReadinessScorecard>(() =>
     createMockProductionReadinessScorecard()
   );
@@ -524,6 +572,12 @@ export function App() {
   const [liveReadOnlyCallEnvelopes, setLiveReadOnlyCallEnvelopes] = useState<LiveReadOnlyCallEnvelopeRecord[]>([]);
   const [pilotEvidenceReviewRecords, setPilotEvidenceReviewRecords] = useState<PilotEvidenceReviewRecord[]>([]);
   const [emergencyStopRollbackDrillRecords, setEmergencyStopRollbackDrillRecords] = useState<EmergencyStopRollbackDrillRecord[]>([]);
+  const [labReadinessWorkspaces, setLabReadinessWorkspaces] = useState<LabReadinessWorkspaceRecord[]>([]);
+  const [mockPrismEndpointExpansionRecords, setMockPrismEndpointExpansionRecords] = useState<MockPrismEndpointExpansionRecord[]>([]);
+  const [adapterContractTestHarnessRecords, setAdapterContractTestHarnessRecords] = useState<AdapterContractTestHarnessRecord[]>([]);
+  const [labConnectionDryRunConsoleRecords, setLabConnectionDryRunConsoleRecords] = useState<LabConnectionDryRunConsoleRecord[]>([]);
+  const [evidenceExportPackV2Records, setEvidenceExportPackV2Records] = useState<EvidenceExportPackV2Record[]>([]);
+  const [realLabAuthorizationPacketRecords, setRealLabAuthorizationPacketRecords] = useState<RealLabAuthorizationPacketRecord[]>([]);
   const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
   const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
   const [prismAdapterDiagnostics, setPrismAdapterDiagnostics] = useState<PrismAdapterDiagnostics | null>(null);
@@ -746,6 +800,12 @@ export function App() {
             apiAuthBoundaryDiagnostics,
             apiSystemStatus,
             apiRuntimeObservability,
+            apiApiContractBaseline,
+            apiRbacEnforcementMatrix,
+            apiPersistenceBoundaryStatus,
+            apiAuditIntegrityManifest,
+            apiDeploymentProfileValidation,
+            apiOperationsRunbookConsole,
             apiProductionReadinessScorecard,
             apiContainerConfigValidation,
             apiLiveReadOnlyPrismCallDesign,
@@ -780,6 +840,12 @@ export function App() {
             apiLiveReadOnlyCallEnvelopes,
             apiPilotEvidenceReviewRecords,
             apiEmergencyStopRollbackDrillRecords,
+            apiLabReadinessWorkspaces,
+            apiMockPrismEndpointExpansionRecords,
+            apiAdapterContractTestHarnessRecords,
+            apiLabConnectionDryRunConsoleRecords,
+            apiEvidenceExportPackV2Records,
+            apiRealLabAuthorizationPacketRecords,
             apiMockPrismStatus,
             apiMockPrismExecutions,
             apiPrismAdapterDiagnostics,
@@ -881,6 +947,12 @@ export function App() {
             fetchAuthBoundaryDiagnosticsFromApi(),
             fetchSystemStatusFromApi(),
             fetchRuntimeObservabilityFromApi(),
+            fetchApiContractBaselineFromApi(),
+            fetchRbacEnforcementMatrixFromApi(),
+            fetchPersistenceBoundaryStatusFromApi(),
+            fetchAuditIntegrityManifestFromApi(),
+            fetchDeploymentProfileValidationFromApi(),
+            fetchOperationsRunbookConsoleFromApi(),
             fetchProductionReadinessScorecardFromApi(),
             fetchContainerConfigValidationManifestFromApi(),
             fetchLiveReadOnlyPrismCallDesignFromApi(),
@@ -915,6 +987,12 @@ export function App() {
             fetchLiveReadOnlyCallEnvelopesFromApi(),
             fetchPilotEvidenceReviewsFromApi(),
             fetchEmergencyStopRollbackDrillsFromApi(),
+            fetchLabReadinessWorkspacesFromApi(),
+            fetchMockPrismEndpointExpansionsFromApi(),
+            fetchAdapterContractTestHarnessesFromApi(),
+            fetchLabConnectionDryRunConsolesFromApi(),
+            fetchEvidenceExportPacksV2FromApi(),
+            fetchRealLabAuthorizationPacketsFromApi(),
             fetchMockPrismStatusFromApi(),
             fetchMockPrismExecutionsFromApi(),
             fetchPrismAdapterDiagnosticsFromApi(),
@@ -1017,6 +1095,12 @@ export function App() {
             setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
             setSystemStatus(apiSystemStatus);
             setRuntimeObservability(apiRuntimeObservability);
+            setApiContractBaseline(apiApiContractBaseline);
+            setRbacEnforcementMatrix(apiRbacEnforcementMatrix);
+            setPersistenceBoundaryStatus(apiPersistenceBoundaryStatus);
+            setAuditIntegrityManifest(apiAuditIntegrityManifest);
+            setDeploymentProfileValidation(apiDeploymentProfileValidation);
+            setOperationsRunbookConsole(apiOperationsRunbookConsole);
             setProductionReadinessScorecard(apiProductionReadinessScorecard);
             setContainerConfigValidation(apiContainerConfigValidation);
             setLiveReadOnlyPrismCallDesign(apiLiveReadOnlyPrismCallDesign);
@@ -1052,6 +1136,12 @@ export function App() {
             setLiveReadOnlyCallEnvelopes(apiLiveReadOnlyCallEnvelopes);
             setPilotEvidenceReviewRecords(apiPilotEvidenceReviewRecords);
             setEmergencyStopRollbackDrillRecords(apiEmergencyStopRollbackDrillRecords);
+            setLabReadinessWorkspaces(apiLabReadinessWorkspaces);
+            setMockPrismEndpointExpansionRecords(apiMockPrismEndpointExpansionRecords);
+            setAdapterContractTestHarnessRecords(apiAdapterContractTestHarnessRecords);
+            setLabConnectionDryRunConsoleRecords(apiLabConnectionDryRunConsoleRecords);
+            setEvidenceExportPackV2Records(apiEvidenceExportPackV2Records);
+            setRealLabAuthorizationPacketRecords(apiRealLabAuthorizationPacketRecords);
             setMockPrismStatus(apiMockPrismStatus);
             setMockPrismExecutions(apiMockPrismExecutions);
             setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -1310,6 +1400,12 @@ export function App() {
       apiAuthBoundaryDiagnostics,
       apiSystemStatus,
       apiRuntimeObservability,
+      apiApiContractBaseline,
+      apiRbacEnforcementMatrix,
+      apiPersistenceBoundaryStatus,
+      apiAuditIntegrityManifest,
+      apiDeploymentProfileValidation,
+      apiOperationsRunbookConsole,
       apiProductionReadinessScorecard,
       apiContainerConfigValidation,
       apiLiveReadOnlyPrismCallDesign,
@@ -1344,6 +1440,12 @@ export function App() {
       apiLiveReadOnlyCallEnvelopes,
       apiPilotEvidenceReviewRecords,
       apiEmergencyStopRollbackDrillRecords,
+      apiLabReadinessWorkspaces,
+      apiMockPrismEndpointExpansionRecords,
+      apiAdapterContractTestHarnessRecords,
+      apiLabConnectionDryRunConsoleRecords,
+      apiEvidenceExportPackV2Records,
+      apiRealLabAuthorizationPacketRecords,
       apiMockPrismStatus,
       apiMockPrismExecutions,
       apiPrismAdapterDiagnostics,
@@ -1445,6 +1547,12 @@ export function App() {
       fetchAuthBoundaryDiagnosticsFromApi(),
       fetchSystemStatusFromApi(),
       fetchRuntimeObservabilityFromApi(),
+      fetchApiContractBaselineFromApi(),
+      fetchRbacEnforcementMatrixFromApi(),
+      fetchPersistenceBoundaryStatusFromApi(),
+      fetchAuditIntegrityManifestFromApi(),
+      fetchDeploymentProfileValidationFromApi(),
+      fetchOperationsRunbookConsoleFromApi(),
       fetchProductionReadinessScorecardFromApi(),
       fetchContainerConfigValidationManifestFromApi(),
       fetchLiveReadOnlyPrismCallDesignFromApi(),
@@ -1479,6 +1587,12 @@ export function App() {
       fetchLiveReadOnlyCallEnvelopesFromApi(),
       fetchPilotEvidenceReviewsFromApi(),
       fetchEmergencyStopRollbackDrillsFromApi(),
+      fetchLabReadinessWorkspacesFromApi(),
+      fetchMockPrismEndpointExpansionsFromApi(),
+      fetchAdapterContractTestHarnessesFromApi(),
+      fetchLabConnectionDryRunConsolesFromApi(),
+      fetchEvidenceExportPacksV2FromApi(),
+      fetchRealLabAuthorizationPacketsFromApi(),
       fetchMockPrismStatusFromApi(),
       fetchMockPrismExecutionsFromApi(),
       fetchPrismAdapterDiagnosticsFromApi(),
@@ -1580,6 +1694,12 @@ export function App() {
     setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
     setSystemStatus(apiSystemStatus);
     setRuntimeObservability(apiRuntimeObservability);
+    setApiContractBaseline(apiApiContractBaseline);
+    setRbacEnforcementMatrix(apiRbacEnforcementMatrix);
+    setPersistenceBoundaryStatus(apiPersistenceBoundaryStatus);
+    setAuditIntegrityManifest(apiAuditIntegrityManifest);
+    setDeploymentProfileValidation(apiDeploymentProfileValidation);
+    setOperationsRunbookConsole(apiOperationsRunbookConsole);
     setProductionReadinessScorecard(apiProductionReadinessScorecard);
     setContainerConfigValidation(apiContainerConfigValidation);
     setLiveReadOnlyPrismCallDesign(apiLiveReadOnlyPrismCallDesign);
@@ -1615,6 +1735,12 @@ export function App() {
     setLiveReadOnlyCallEnvelopes(apiLiveReadOnlyCallEnvelopes);
     setPilotEvidenceReviewRecords(apiPilotEvidenceReviewRecords);
     setEmergencyStopRollbackDrillRecords(apiEmergencyStopRollbackDrillRecords);
+    setLabReadinessWorkspaces(apiLabReadinessWorkspaces);
+    setMockPrismEndpointExpansionRecords(apiMockPrismEndpointExpansionRecords);
+    setAdapterContractTestHarnessRecords(apiAdapterContractTestHarnessRecords);
+    setLabConnectionDryRunConsoleRecords(apiLabConnectionDryRunConsoleRecords);
+    setEvidenceExportPackV2Records(apiEvidenceExportPackV2Records);
+    setRealLabAuthorizationPacketRecords(apiRealLabAuthorizationPacketRecords);
     setMockPrismStatus(apiMockPrismStatus);
     setMockPrismExecutions(apiMockPrismExecutions);
     setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
@@ -2438,6 +2564,106 @@ export function App() {
 
     setEmergencyStopRollbackDrillRecords((current) => [
       createMockEmergencyStopRollbackDrill(session.user, pilotEvidenceReviewRecords[0], readOnlyRuntimeEnablementPolicies[0]),
+      ...current,
+    ]);
+  }
+
+  async function createLabReadinessWorkspace() {
+    if (apiHealth.mode === "api") {
+      await createLabReadinessWorkspaceViaApi({
+        emergencyStopRollbackDrillId: emergencyStopRollbackDrillRecords[0]?.id,
+        evidenceReviewId: pilotEvidenceReviewRecords[0]?.id,
+        pilotSessionId: readOnlyPilotSessions[0]?.id,
+        runtimePolicyId: readOnlyRuntimeEnablementPolicies[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setLabReadinessWorkspaces((current) => [
+      createMockLabReadinessWorkspace(session.user, mockPrismStatus, disabledPrismReadOnlyHttpClientRecords, readOnlyRuntimeEnablementPolicies[0], readOnlyPilotSessions[0], pilotEvidenceReviewRecords[0], emergencyStopRollbackDrillRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createMockPrismEndpointExpansion() {
+    if (apiHealth.mode === "api") {
+      await createMockPrismEndpointExpansionViaApi({
+        workspaceId: labReadinessWorkspaces[0]?.id,
+        latencySimulationMs: 150,
+        requestsPerMinute: 120,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setMockPrismEndpointExpansionRecords((current) => [
+      createMockPrismEndpointExpansionRecord(session.user, labReadinessWorkspaces[0]),
+      ...current,
+    ]);
+  }
+
+  async function createAdapterContractTestHarness() {
+    if (apiHealth.mode === "api") {
+      await createAdapterContractTestHarnessViaApi({
+        mockExpansionId: mockPrismEndpointExpansionRecords[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setAdapterContractTestHarnessRecords((current) => [
+      createMockAdapterContractTestHarness(session.user, mockPrismEndpointExpansionRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createLabConnectionDryRunConsole() {
+    if (apiHealth.mode === "api") {
+      await createLabConnectionDryRunConsoleViaApi({
+        contractHarnessId: adapterContractTestHarnessRecords[0]?.id,
+        selectedEndpointRef: realReadOnlyAdapterConfigBoundaries[0]?.endpointRef ?? "prism-central-ref",
+        credentialProviderRef: credentialProviderContractRecords[0]?.credentialProviderRef ?? "vault-ref-nci-readonly",
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setLabConnectionDryRunConsoleRecords((current) => [
+      createMockLabConnectionDryRunConsole(session.user, adapterContractTestHarnessRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createEvidenceExportPackV2() {
+    if (apiHealth.mode === "api") {
+      await createEvidenceExportPackV2ViaApi({
+        dryRunConsoleId: labConnectionDryRunConsoleRecords[0]?.id,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setEvidenceExportPackV2Records((current) => [
+      createMockEvidenceExportPackV2(session.user, labConnectionDryRunConsoleRecords[0]),
+      ...current,
+    ]);
+  }
+
+  async function createRealLabAuthorizationPacket() {
+    if (apiHealth.mode === "api") {
+      await createRealLabAuthorizationPacketViaApi({
+        evidenceExportPackId: evidenceExportPackV2Records[0]?.id,
+        approvalOwners: ["platform-owner", "security-reviewer", "lab-owner", "operations-owner"],
+        rollbackOwner: "Cloud Operations",
+        pentestScopeEvidence: ["readonly-lab-pentest-scope.md", "mock-to-lab-boundary-review.md"],
+      });
+      await refreshApiState();
+      return;
+    }
+
+    setRealLabAuthorizationPacketRecords((current) => [
+      createMockRealLabAuthorizationPacket(session.user, evidenceExportPackV2Records[0]),
       ...current,
     ]);
   }
@@ -4433,6 +4659,12 @@ export function App() {
             authBoundaryDiagnostics={authBoundaryDiagnostics}
             systemStatus={systemStatus}
             runtimeObservability={runtimeObservability}
+            apiContractBaseline={apiContractBaseline}
+            rbacEnforcementMatrix={rbacEnforcementMatrix}
+            persistenceBoundaryStatus={persistenceBoundaryStatus}
+            auditIntegrityManifest={auditIntegrityManifest}
+            deploymentProfileValidation={deploymentProfileValidation}
+            operationsRunbookConsole={operationsRunbookConsole}
             productionReadinessScorecard={productionReadinessScorecard}
             containerConfigValidation={containerConfigValidation}
             liveReadOnlyPrismCallDesign={liveReadOnlyPrismCallDesign}
@@ -4468,6 +4700,12 @@ export function App() {
             liveReadOnlyCallEnvelopes={liveReadOnlyCallEnvelopes}
             pilotEvidenceReviewRecords={pilotEvidenceReviewRecords}
             emergencyStopRollbackDrillRecords={emergencyStopRollbackDrillRecords}
+            labReadinessWorkspaces={labReadinessWorkspaces}
+            mockPrismEndpointExpansionRecords={mockPrismEndpointExpansionRecords}
+            adapterContractTestHarnessRecords={adapterContractTestHarnessRecords}
+            labConnectionDryRunConsoleRecords={labConnectionDryRunConsoleRecords}
+            evidenceExportPackV2Records={evidenceExportPackV2Records}
+            realLabAuthorizationPacketRecords={realLabAuthorizationPacketRecords}
             mockPrismStatus={mockPrismStatus}
             mockPrismExecutions={mockPrismExecutions}
             prismAdapterDiagnostics={prismAdapterDiagnostics}
@@ -4611,6 +4849,12 @@ export function App() {
             createLiveReadOnlyCallEnvelope={createLiveReadOnlyCallEnvelope}
             createPilotEvidenceReview={createPilotEvidenceReview}
             createEmergencyStopRollbackDrill={createEmergencyStopRollbackDrill}
+            createLabReadinessWorkspace={createLabReadinessWorkspace}
+            createMockPrismEndpointExpansion={createMockPrismEndpointExpansion}
+            createAdapterContractTestHarness={createAdapterContractTestHarness}
+            createLabConnectionDryRunConsole={createLabConnectionDryRunConsole}
+            createEvidenceExportPackV2={createEvidenceExportPackV2}
+            createRealLabAuthorizationPacket={createRealLabAuthorizationPacket}
             runControlPlaneJobAction={runControlPlaneJobAction}
             createVmSandboxDryRun={createVmSandboxDryRun}
             recordLabAuthorizationScope={recordLabAuthorizationScope}
@@ -5189,6 +5433,12 @@ function AdminView({
   authBoundaryDiagnostics,
   systemStatus,
   runtimeObservability,
+  apiContractBaseline,
+  rbacEnforcementMatrix,
+  persistenceBoundaryStatus,
+  auditIntegrityManifest,
+  deploymentProfileValidation,
+  operationsRunbookConsole,
   productionReadinessScorecard,
   containerConfigValidation,
   liveReadOnlyPrismCallDesign,
@@ -5224,6 +5474,12 @@ function AdminView({
   liveReadOnlyCallEnvelopes,
   pilotEvidenceReviewRecords,
   emergencyStopRollbackDrillRecords,
+  labReadinessWorkspaces,
+  mockPrismEndpointExpansionRecords,
+  adapterContractTestHarnessRecords,
+  labConnectionDryRunConsoleRecords,
+  evidenceExportPackV2Records,
+  realLabAuthorizationPacketRecords,
   mockPrismStatus,
   mockPrismExecutions,
   prismAdapterDiagnostics,
@@ -5351,6 +5607,12 @@ function AdminView({
   createLiveReadOnlyCallEnvelope,
   createPilotEvidenceReview,
   createEmergencyStopRollbackDrill,
+  createLabReadinessWorkspace,
+  createMockPrismEndpointExpansion,
+  createAdapterContractTestHarness,
+  createLabConnectionDryRunConsole,
+  createEvidenceExportPackV2,
+  createRealLabAuthorizationPacket,
   runControlPlaneJobAction,
   createVmSandboxDryRun,
   recordLabAuthorizationScope,
@@ -5444,6 +5706,12 @@ function AdminView({
   authBoundaryDiagnostics: AuthBoundaryDiagnostics;
   systemStatus: SystemStatus;
   runtimeObservability: RuntimeObservabilitySnapshot;
+  apiContractBaseline: ApiContractBaseline;
+  rbacEnforcementMatrix: RbacEnforcementMatrix;
+  persistenceBoundaryStatus: PersistenceBoundaryStatus;
+  auditIntegrityManifest: AuditIntegrityManifest;
+  deploymentProfileValidation: DeploymentProfileValidation;
+  operationsRunbookConsole: OperationsRunbookConsole;
   productionReadinessScorecard: ProductionReadinessScorecard;
   containerConfigValidation: ContainerConfigValidationManifest;
   liveReadOnlyPrismCallDesign: LiveReadOnlyPrismCallDesign;
@@ -5479,6 +5747,12 @@ function AdminView({
   liveReadOnlyCallEnvelopes: LiveReadOnlyCallEnvelopeRecord[];
   pilotEvidenceReviewRecords: PilotEvidenceReviewRecord[];
   emergencyStopRollbackDrillRecords: EmergencyStopRollbackDrillRecord[];
+  labReadinessWorkspaces: LabReadinessWorkspaceRecord[];
+  mockPrismEndpointExpansionRecords: MockPrismEndpointExpansionRecord[];
+  adapterContractTestHarnessRecords: AdapterContractTestHarnessRecord[];
+  labConnectionDryRunConsoleRecords: LabConnectionDryRunConsoleRecord[];
+  evidenceExportPackV2Records: EvidenceExportPackV2Record[];
+  realLabAuthorizationPacketRecords: RealLabAuthorizationPacketRecord[];
   mockPrismStatus: MockPrismSimulatorStatus | null;
   mockPrismExecutions: MockPrismExecution[];
   prismAdapterDiagnostics: PrismAdapterDiagnostics | null;
@@ -5612,6 +5886,12 @@ function AdminView({
   createLiveReadOnlyCallEnvelope: () => void;
   createPilotEvidenceReview: () => void;
   createEmergencyStopRollbackDrill: () => void;
+  createLabReadinessWorkspace: () => void;
+  createMockPrismEndpointExpansion: () => void;
+  createAdapterContractTestHarness: () => void;
+  createLabConnectionDryRunConsole: () => void;
+  createEvidenceExportPackV2: () => void;
+  createRealLabAuthorizationPacket: () => void;
   runControlPlaneJobAction: (jobId: string, action: "advance" | "retry" | "fail") => void;
   createVmSandboxDryRun: () => void;
   recordLabAuthorizationScope: () => void;
@@ -6033,6 +6313,72 @@ function AdminView({
               renderStatus={(record) => record.status}
             />
           </Panel>
+          <Panel title="Lab readiness workspace" action={`${labReadinessWorkspaces.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Mock-to-lab readiness"
+              records={labReadinessWorkspaces}
+              createRecord={createLabReadinessWorkspace}
+              buttonLabel="Build workspace"
+              emptyText="No lab readiness workspace has been recorded."
+              renderSummary={(record) => `${record.blockerSummary.length} blockers / ${record.mockPrismStatus}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Mock Prism endpoint expansion" action={`${mockPrismEndpointExpansionRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Expanded simulator contract"
+              records={mockPrismEndpointExpansionRecords}
+              createRecord={createMockPrismEndpointExpansion}
+              buttonLabel="Expand simulator"
+              emptyText="No mock Prism endpoint expansion has been recorded."
+              renderSummary={(record) => `${record.supportedEndpoints.length} endpoints / ${record.failureModes.length} failure modes`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Adapter contract test harness" action={`${adapterContractTestHarnessRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Contract harness"
+              records={adapterContractTestHarnessRecords}
+              createRecord={createAdapterContractTestHarness}
+              buttonLabel="Run harness"
+              emptyText="No adapter contract test harness has been recorded."
+              renderSummary={(record) => `${record.testSuites.length} suites / ${record.testSuites.filter((suite) => suite.status === "Passed").length} passed`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Lab connection dry-run console" action={`${labConnectionDryRunConsoleRecords.length} records`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Dry-run console"
+              records={labConnectionDryRunConsoleRecords}
+              createRecord={createLabConnectionDryRunConsole}
+              buttonLabel="Prepare console"
+              emptyText="No lab connection dry-run console has been recorded."
+              renderSummary={(record) => `${record.allowedOperations.length} operations / ${record.blockedMutations.length} blocked mutations`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Evidence export pack v2" action={`${evidenceExportPackV2Records.length} packs`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Consolidated evidence export"
+              records={evidenceExportPackV2Records}
+              createRecord={createEvidenceExportPackV2}
+              buttonLabel="Prepare export"
+              emptyText="No evidence export pack v2 has been recorded."
+              renderSummary={(record) => `${record.manifest.length} sections / ${record.checksum}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
+          <Panel title="Real lab authorization packet" action={`${realLabAuthorizationPacketRecords.length} packets`}>
+            <RealReadOnlyAdapterPreparationPanel
+              title="Request-ready lab packet"
+              records={realLabAuthorizationPacketRecords}
+              createRecord={createRealLabAuthorizationPacket}
+              buttonLabel="Prepare packet"
+              emptyText="No real lab authorization packet has been recorded."
+              renderSummary={(record) => `${record.approvalOwners.length} owners / rollback ${record.rollbackOwner}`}
+              renderStatus={(record) => record.status}
+            />
+          </Panel>
           <Panel title="Provider readiness" action={`${provisioningAdapters.length} adapters`}>
             <ProvisioningAdapterPanel adapters={provisioningAdapters} platformConfig={platformConfig} />
           </Panel>
@@ -6132,6 +6478,16 @@ function AdminView({
 
       {activeTab === "operations" && (
         <div className="adminTabPanel">
+          <Panel title="Production hardening foundation" action={operationsRunbookConsole.status}>
+            <ProductionHardeningFoundationPanel
+              apiContractBaseline={apiContractBaseline}
+              rbacEnforcementMatrix={rbacEnforcementMatrix}
+              persistenceBoundaryStatus={persistenceBoundaryStatus}
+              auditIntegrityManifest={auditIntegrityManifest}
+              deploymentProfileValidation={deploymentProfileValidation}
+              operationsRunbookConsole={operationsRunbookConsole}
+            />
+          </Panel>
           <Panel title="Container and config validation" action={containerConfigValidation.status}>
             <ContainerConfigValidationPanel manifest={containerConfigValidation} />
           </Panel>
@@ -6966,6 +7322,90 @@ function VmSandboxDryRunPanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ProductionHardeningFoundationPanel({
+  apiContractBaseline,
+  rbacEnforcementMatrix,
+  persistenceBoundaryStatus,
+  auditIntegrityManifest,
+  deploymentProfileValidation,
+  operationsRunbookConsole,
+}: {
+  apiContractBaseline: ApiContractBaseline;
+  rbacEnforcementMatrix: RbacEnforcementMatrix;
+  persistenceBoundaryStatus: PersistenceBoundaryStatus;
+  auditIntegrityManifest: AuditIntegrityManifest;
+  deploymentProfileValidation: DeploymentProfileValidation;
+  operationsRunbookConsole: OperationsRunbookConsole;
+}) {
+  const activeProfile = deploymentProfileValidation.profiles.find(
+    (profile) => profile.name === deploymentProfileValidation.activeProfile
+  );
+
+  return (
+    <div className="dryRunSummary">
+      <div className="platformConfigGrid">
+        <CheckLine
+          icon={Code2}
+          label="API contract"
+          value={`${apiContractBaseline.operations.length} operations`}
+          passed={apiContractBaseline.operations.length > 0}
+        />
+        <CheckLine
+          icon={ShieldCheck}
+          label="RBAC negative tests"
+          value={`${rbacEnforcementMatrix.negativeTestCases.length} cases`}
+          passed={rbacEnforcementMatrix.negativeTestCases.length > 0}
+        />
+        <CheckLine
+          icon={Archive}
+          label="Persistence"
+          value={persistenceBoundaryStatus.repositoryMode}
+          passed={persistenceBoundaryStatus.durable}
+        />
+        <CheckLine
+          icon={ScrollText}
+          label="Audit digest"
+          value={auditIntegrityManifest.manifestDigest.slice(0, 12)}
+          passed={auditIntegrityManifest.digestAlgorithm === "sha256"}
+        />
+        <CheckLine
+          icon={Settings}
+          label="Deployment profile"
+          value={deploymentProfileValidation.activeProfile}
+          passed={Boolean(activeProfile?.ready)}
+        />
+        <CheckLine
+          icon={Gauge}
+          label="Runbook score"
+          value={`${operationsRunbookConsole.readinessScore}%`}
+          passed={operationsRunbookConsole.blockedGates.length === 0}
+        />
+      </div>
+      <div className="readinessList">
+        {operationsRunbookConsole.runbookSteps.map((step) => (
+          <div className="readinessRow" key={step.name}>
+            <strong>{step.name}</strong>
+            <span>{step.state}</span>
+            <small>{step.evidence}</small>
+          </div>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Evidence summary</strong>
+        {operationsRunbookConsole.evidenceSummary.map((item) => (
+          <span key={item.name}>{item.name}: {item.count}</span>
+        ))}
+      </div>
+      <div className="inventoryEvidence">
+        <strong>Fail-closed controls</strong>
+        {deploymentProfileValidation.failClosedControls.map((item) => (
+          <span key={item}>{item}</span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -13937,7 +14377,7 @@ function createMockAuthBoundaryDiagnostics(session: PlatformSession): AuthBounda
 
 function createMockRuntimeObservability(session: PlatformSession): RuntimeObservabilitySnapshot {
   return {
-    version: "2.90.0-live-read-only-prism-call-design",
+    version: "6.5.0-operations-runbook-console",
     generatedAt: new Date().toISOString(),
     requestId: "browser-mock",
     actor: session.user,
@@ -13966,9 +14406,183 @@ function createMockRuntimeObservability(session: PlatformSession): RuntimeObserv
   };
 }
 
+function createMockApiContractBaseline(): ApiContractBaseline {
+  return {
+    id: "api-contract-baseline-browser",
+    version: "6.5.0-operations-runbook-console",
+    generatedAt: new Date().toISOString(),
+    status: "Contract baseline ready",
+    title: "NDC Studio API contract baseline",
+    openApiVersion: "3.1.0",
+    operations: [
+      {
+        method: "GET",
+        path: "/api/contracts/openapi",
+        requiredRoles: ["Platform Admin"],
+        summary: "API contract baseline",
+        responseShape: "ApiContractBaseline",
+        mutationBoundary: "Read-only snapshot",
+        provisioningEnabled: false,
+        realPrismCallsEnabled: false,
+      },
+      {
+        method: "GET",
+        path: "/api/operations/runbook-console",
+        requiredRoles: ["Platform Admin"],
+        summary: "Operations runbook console",
+        responseShape: "OperationsRunbookConsole",
+        mutationBoundary: "Read-only snapshot",
+        provisioningEnabled: false,
+        realPrismCallsEnabled: false,
+      },
+    ],
+    examples: [
+      {
+        name: "Deployment profile validation",
+        method: "GET",
+        path: "/api/deployment/profiles",
+        responseExample: {
+          activeProfile: "local",
+          provisioningEnabled: false,
+          realPrismCallsEnabled: false,
+        },
+      },
+    ],
+    checks: [
+      { name: "Contracts loaded", passed: true, detail: "Browser fallback exposes v6 contract snapshots." },
+      { name: "No real calls", passed: true, detail: "Static fallback cannot call Prism Central." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockRbacEnforcementMatrix(): RbacEnforcementMatrix {
+  return {
+    id: "rbac-matrix-browser",
+    generatedAt: new Date().toISOString(),
+    status: "RBAC matrix enforced",
+    roles: ["Developer", "Approver", "Platform Admin"],
+    routes: [
+      {
+        method: "GET",
+        path: "/api/security/rbac-matrix",
+        allowedRoles: ["Platform Admin"],
+        deniedRoles: ["Developer", "Approver"],
+        enforcement: "requireRole",
+      },
+    ],
+    negativeTestCases: [
+      {
+        actorRole: "Developer",
+        method: "GET",
+        path: "/api/security/rbac-matrix",
+        expectedStatus: 403,
+      },
+    ],
+    checks: [
+      { name: "Admin routes protected", passed: true, detail: "Hardening endpoints are Platform Admin only in API mode." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockPersistenceBoundaryStatus(): PersistenceBoundaryStatus {
+  return {
+    id: "persistence-boundary-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Repository boundary needs durable mode",
+    repositoryMode: "memory",
+    durable: false,
+    repositoryInterface: ["load(): Promise<ApiState>", "save(state: ApiState): Promise<void>"],
+    migrationTargets: ["PostgresRepository", "SqliteRepository", "ObjectStorageAuditArchive"],
+    checks: [
+      { name: "Repository interface isolated", passed: true, detail: "API mode uses an ApiStore boundary." },
+      { name: "Durable mode configured", passed: false, detail: "Browser fallback is non-durable." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockAuditIntegrityManifest(): AuditIntegrityManifest {
+  return {
+    id: "audit-integrity-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Integrity manifest ready",
+    retainedEvents: 0,
+    digestAlgorithm: "sha256",
+    eventDigests: [],
+    manifestDigest: "browser-mock-audit-digest",
+    redactionBoundary: "Browser fallback has no credential-bearing audit stream.",
+    checks: [
+      { name: "Digest boundary present", passed: true, detail: "API mode emits SHA-256 audit event digests." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockDeploymentProfileValidation(): DeploymentProfileValidation {
+  return {
+    id: "deployment-profiles-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Profiles validated",
+    activeProfile: "local",
+    profiles: [
+      {
+        name: "local",
+        purpose: "Developer workstation with mock identity.",
+        ready: true,
+        checks: [{ name: "Mock identity acceptable", passed: true, detail: "Local profile is demo-only." }],
+      },
+      {
+        name: "on-prem-starter",
+        purpose: "Containerized private deployment starter.",
+        ready: false,
+        checks: [{ name: "Trusted identity required", passed: false, detail: "Requires API runtime configuration." }],
+      },
+    ],
+    failClosedControls: [
+      "Real Prism HTTP remains disabled.",
+      "Provisioning and mutation adapters remain disabled.",
+      "On-prem profile requires durable state and trusted identity.",
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockOperationsRunbookConsole(): OperationsRunbookConsole {
+  return {
+    id: "operations-runbook-browser",
+    generatedAt: new Date().toISOString(),
+    status: "Blocked",
+    readinessScore: 67,
+    blockedGates: ["Persistence boundary", "Real adapter execution"],
+    runbookSteps: [
+      { name: "API contract baseline", state: "Ready", evidence: "Contract snapshot available." },
+      { name: "RBAC enforcement", state: "Ready", evidence: "Admin endpoints require Platform Admin in API mode." },
+      { name: "Persistence boundary", state: "Evidence pending", evidence: "Durable state is configured in API runtime." },
+      { name: "Real adapter execution", state: "Blocked", evidence: "Real calls remain disabled." },
+    ],
+    evidenceSummary: [
+      { name: "Audit events", count: 0 },
+      { name: "Lab authorization packets", count: 0 },
+    ],
+    checks: [
+      { name: "Runbook visible", passed: true, detail: "Operations console is available in Admin." },
+      { name: "Real execution blocked", passed: true, detail: "No real Nutanix calls are enabled." },
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
 function createMockProductionReadinessScorecard(): ProductionReadinessScorecard {
   return {
-    version: "2.90.0-live-read-only-prism-call-design",
+    version: "6.5.0-operations-runbook-console",
     generatedAt: new Date().toISOString(),
     score: 72,
     status: "Needs evidence",
@@ -14983,6 +15597,208 @@ function createMockEmergencyStopRollbackDrill(
       { name: "Simulated mode restored", passed: true, detail: "Rollback target remains mock/simulated mode." },
     ],
     evidence: ["Browser mock emergency stop and rollback drill passed."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockLabReadinessWorkspace(
+  actor: string,
+  mockStatus: MockPrismSimulatorStatus | null,
+  httpClients: DisabledPrismReadOnlyHttpClientRecord[],
+  policy?: ReadOnlyRuntimeEnablementPolicyRecord,
+  pilotSession?: ReadOnlyPilotSessionRecord,
+  review?: PilotEvidenceReviewRecord,
+  drill?: EmergencyStopRollbackDrillRecord
+): LabReadinessWorkspaceRecord {
+  const readinessSummary = {
+    mockPrismReady: mockStatus?.status === "Healthy",
+    readOnlyAdapterReady: httpClients.some((record) => record.status === "Client shape ready; execution disabled"),
+    runtimePolicyReady: policy?.status === "Policy ready for pilot session",
+    pilotSessionReady: pilotSession?.status === "Session window ready",
+    evidenceReviewApproved: review?.status === "Approved for rollback drill",
+    emergencyStopDrillPassed: drill?.status === "Drill passed",
+  };
+  const checks = [
+    { name: "Mock Prism ready", passed: readinessSummary.mockPrismReady, detail: mockStatus?.status ?? "Mock Prism status required." },
+    { name: "Read-only adapter ready", passed: readinessSummary.readOnlyAdapterReady, detail: `${httpClients.length} HTTP client record(s).` },
+    { name: "Runtime policy ready", passed: readinessSummary.runtimePolicyReady, detail: policy?.id ?? "Policy required." },
+    { name: "Pilot session ready", passed: readinessSummary.pilotSessionReady, detail: pilotSession?.id ?? "Session required." },
+    { name: "Evidence review approved", passed: readinessSummary.evidenceReviewApproved, detail: review?.id ?? "Review required." },
+    { name: "Rollback drill passed", passed: readinessSummary.emergencyStopDrillPassed, detail: drill?.id ?? "Drill required." },
+  ];
+  return {
+    id: `mock-lab-readiness-workspace-${Date.now()}`,
+    requestedBy: actor,
+    status: checks.every((item) => item.passed) ? "Ready for mock-to-lab review" : "Blocked",
+    mockPrismStatus: mockStatus?.status ?? "Blocked",
+    readinessSummary,
+    blockerSummary: checks.filter((item) => !item.passed).map((item) => item.name),
+    checks,
+    evidence: ["Browser mock lab readiness workspace recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockPrismEndpointExpansionRecord(
+  actor: string,
+  workspace?: LabReadinessWorkspaceRecord
+): MockPrismEndpointExpansionRecord {
+  const ready = workspace?.status === "Ready for mock-to-lab review";
+  const supportedEndpoints = [
+    { method: "GET" as const, path: "/mock-prism/health", responseShape: "service health envelope" },
+    ...["clusters", "projects", "images", "subnets", "categories", "vms"].map((kind) => ({
+      method: "POST" as const,
+      path: `/mock-prism/api/nutanix/v3/${kind}/list`,
+      responseShape: `${kind} Prism v3 list response`,
+    })),
+  ];
+  return {
+    id: `mock-prism-endpoint-expansion-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Expanded simulator contract ready" : "Blocked",
+    workspaceId: workspace?.id ?? "workspace-required",
+    supportedEndpoints,
+    authHeaderMode: "mock-required",
+    latencySimulationMs: 150,
+    rateLimitSimulation: { requestsPerMinute: 120, mode: "simulated" },
+    failureModes: ["normal-success", "failed-task", "timed-out-task", "rate-limited", "latency-injected"],
+    redactedRequestLogFields: ["authorization", "token", "credential", "endpoint", "cookie"],
+    checks: [
+      { name: "Workspace ready", passed: ready, detail: workspace?.id ?? "Workspace required." },
+      { name: "Read-only endpoints represented", passed: supportedEndpoints.length === 7, detail: `${supportedEndpoints.length} endpoint(s).` },
+      { name: "Request logs redacted", passed: true, detail: "Credential and auth fields redacted." },
+    ],
+    evidence: ["Browser mock Prism endpoint expansion recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAdapterContractTestHarness(
+  actor: string,
+  expansion?: MockPrismEndpointExpansionRecord
+): AdapterContractTestHarnessRecord {
+  const ready = expansion?.status === "Expanded simulator contract ready";
+  const testSuites = ["Prism read-only contract", "Credential resolver contract", "Timeout and retry contract", "Fail-closed contract"].map((name) => ({
+    name,
+    status: ready ? ("Passed" as const) : ("Blocked" as const),
+    assertions: ["response shape validated", "redaction validated", "execution disabled"],
+  }));
+  return {
+    id: `mock-adapter-contract-harness-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Contract harness passed" : "Blocked",
+    mockExpansionId: expansion?.id ?? "expansion-required",
+    testSuites,
+    checks: testSuites.map((suite) => ({ name: suite.name, passed: suite.status === "Passed", detail: suite.assertions.join(", ") })),
+    evidence: ["Browser mock adapter contract harness recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockLabConnectionDryRunConsole(
+  actor: string,
+  harness?: AdapterContractTestHarnessRecord
+): LabConnectionDryRunConsoleRecord {
+  const ready = harness?.status === "Contract harness passed";
+  const expectedRequests = [
+    { operation: "listClusters" as const, method: "POST" as const, path: "/api/nutanix/v3/clusters/list" },
+    { operation: "listProjects" as const, method: "POST" as const, path: "/api/nutanix/v3/projects/list" },
+    { operation: "listImages" as const, method: "POST" as const, path: "/api/nutanix/v3/images/list" },
+    { operation: "listSubnets" as const, method: "POST" as const, path: "/api/nutanix/v3/subnets/list" },
+    { operation: "listCategories" as const, method: "POST" as const, path: "/api/nutanix/v3/categories/list" },
+    { operation: "listVms" as const, method: "POST" as const, path: "/api/nutanix/v3/vms/list" },
+  ];
+  return {
+    id: `mock-lab-connection-dry-run-console-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Dry-run console ready" : "Blocked",
+    contractHarnessId: harness?.id ?? "harness-required",
+    selectedEndpointRef: "prism-central-ref",
+    credentialProviderRef: "vault-ref-nci-readonly",
+    allowedOperations: expectedRequests.map((item) => item.operation),
+    expectedRequests,
+    expectedResponses: expectedRequests.map((item) => `${item.operation} returns entities and metadata.`),
+    blockedMutations: ["create_vm", "clone_vm", "delete_vm", "power_on", "power_off"],
+    rollbackPath: ["keep runtime flag disabled", "return to simulated mode", "preserve evidence"],
+    checks: [
+      { name: "Contract harness passed", passed: ready, detail: harness?.id ?? "Harness required." },
+      { name: "Read-only operations listed", passed: true, detail: `${expectedRequests.length} operation(s).` },
+    ],
+    evidence: ["Browser mock dry-run console recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockEvidenceExportPackV2(
+  actor: string,
+  dryRun?: LabConnectionDryRunConsoleRecord
+): EvidenceExportPackV2Record {
+  const ready = dryRun?.status === "Dry-run console ready";
+  const manifest = ["runtime-policy", "pilot-session", "call-envelope", "evidence-review", "rollback-drill", "contract-harness", "dry-run-console"].map((section) => ({
+    section,
+    recordId: dryRun?.id ?? "record-required",
+    redacted: true,
+  }));
+  return {
+    id: `mock-evidence-export-pack-v2-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Export pack ready" : "Blocked",
+    dryRunConsoleId: dryRun?.id ?? "dry-run-console-required",
+    manifest,
+    checksum: `sha256-mock-${manifest.length}`,
+    readinessSummary: ["Browser mock evidence pack is redacted and ready for review."],
+    checks: [
+      { name: "Dry-run console ready", passed: ready, detail: dryRun?.id ?? "Dry-run console required." },
+      { name: "Manifest redacted", passed: manifest.every((item) => item.redacted), detail: `${manifest.length} section(s).` },
+    ],
+    evidence: ["Browser mock evidence export pack v2 recorded."],
+    provisioningEnabled: false,
+    networkCallEnabled: false,
+    realPrismCallsEnabled: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockRealLabAuthorizationPacket(
+  actor: string,
+  exportPack?: EvidenceExportPackV2Record
+): RealLabAuthorizationPacketRecord {
+  const ready = exportPack?.status === "Export pack ready";
+  const goNoGoChecklist = [
+    { name: "Evidence export ready", passed: ready, detail: exportPack?.id ?? "Export required." },
+    { name: "Approval owners named", passed: true, detail: "Platform, security, lab, and operations owners." },
+    { name: "Live HTTP disabled", passed: true, detail: "Packet is request-only." },
+  ];
+  return {
+    id: `mock-real-lab-authorization-packet-${Date.now()}`,
+    requestedBy: actor,
+    status: ready ? "Ready to request real lab access" : "Blocked",
+    evidenceExportPackId: exportPack?.id ?? "export-required",
+    requiredLabDetails: ["Prism Central version", "lab project", "lab cluster", "lab subnet"],
+    prismCentralEndpointRequirements: ["endpoint reference only", "private CA reference"],
+    credentialVaultRequirements: ["vault reference only", "read-only service account"],
+    networkBoundary: ["operator-approved source", "read-only API paths only"],
+    approvalOwners: ["platform-owner", "security-reviewer", "lab-owner", "operations-owner"],
+    rollbackOwner: "Cloud Operations",
+    pentestScopeEvidence: ["readonly-lab-pentest-scope.md", "mock-to-lab-boundary-review.md"],
+    goNoGoChecklist,
+    checks: goNoGoChecklist,
+    evidence: ["Browser mock real lab authorization packet recorded."],
     provisioningEnabled: false,
     networkCallEnabled: false,
     realPrismCallsEnabled: false,

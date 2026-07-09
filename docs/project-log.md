@@ -1,5 +1,32 @@
 # Nutanix Developer Cloud Studio - Project Log
 
+## 2026-07-09
+
+- Released `v6.5.0-operations-runbook-console`.
+- Added the Admin Operations production-hardening console for runbook score, blocked gates, evidence counters, and fail-closed controls.
+- Released `v6.4.0-deployment-profile-validation`.
+- Added deployment profile validation for local, hosted-demo, on-prem-starter, and lab-prep modes.
+- Released `v6.3.0-audit-integrity-manifest`.
+- Added SHA-256 audit integrity manifests for retained audit event metadata.
+- Released `v6.2.0-persistence-boundary-status`.
+- Added repository mode, durability, retention, and migration-target diagnostics.
+- Released `v6.1.0-rbac-enforcement-matrix`.
+- Added RBAC enforcement matrix and denied-role negative test coverage for hardening endpoints.
+- Released `v6.0.0-api-contract-baseline`.
+- Added OpenAPI-style API contract baseline snapshots for key API operations.
+- Released `v5.5.0-real-lab-authorization-packet`.
+- Added real lab authorization packet records for requesting authorized Nutanix lab access without enabling live calls.
+- Released `v5.4.0-evidence-export-pack-v2`.
+- Added consolidated redacted evidence export pack v2 records for platform and security review.
+- Released `v5.3.0-lab-connection-dry-run-console`.
+- Added lab connection dry-run console records for endpoint references, credential references, expected requests/responses, blocked mutations, and rollback path.
+- Released `v5.2.0-adapter-contract-test-harness`.
+- Added adapter contract harness records for read-only Prism, credential resolver, timeout/retry, redaction, and fail-closed evidence.
+- Released `v5.1.0-mock-prism-endpoint-expansion`.
+- Added mock Prism endpoint expansion records for auth-shaped headers, endpoints, failure modes, latency, rate limiting, and redacted logs.
+- Released `v5.0.0-lab-readiness-workspace`.
+- Added lab readiness workspace records that roll up mock Prism status, adapter readiness, pilot controls, evidence review, rollback drill, and blockers.
+
 ## 2026-07-08
 
 - Released `v4.5.0-emergency-stop-rollback-drill`.

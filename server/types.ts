@@ -30,6 +30,8 @@ import type {
   HardenedLabConnectionProfileReview,
   LabWindowEvidenceExportRecord,
   LabConnectivityPreflightRecord,
+  LabConnectionDryRunConsoleRecord,
+  LabReadinessWorkspaceRecord,
   LabEvidenceReviewRecord,
   LabExecutionProposalEnvelope,
   LabExecutionProposalExportRecord,
@@ -42,7 +44,10 @@ import type {
   LiveReadOnlyCallEnvelopeRecord,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
+  MockPrismEndpointExpansionRecord,
   OfflineContractReplaySuiteRecord,
+  AdapterContractTestHarnessRecord,
+  EvidenceExportPackV2Record,
   PilotEvidenceReviewRecord,
   PrismSimulatorFailureScenario,
   PrismSimulatorProfile,
@@ -78,6 +83,7 @@ import type {
   RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
   EmergencyStopRollbackDrillRecord,
+  RealLabAuthorizationPacketRecord,
   ReleaseEvidenceExportRecord,
   SwitchExecutionHandoffPackage,
   SwitchExecutionOutcomeRecord,
@@ -171,6 +177,12 @@ export type ApiState = {
   liveReadOnlyCallEnvelopes: LiveReadOnlyCallEnvelopeRecord[];
   pilotEvidenceReviewRecords: PilotEvidenceReviewRecord[];
   emergencyStopRollbackDrillRecords: EmergencyStopRollbackDrillRecord[];
+  labReadinessWorkspaces: LabReadinessWorkspaceRecord[];
+  mockPrismEndpointExpansionRecords: MockPrismEndpointExpansionRecord[];
+  adapterContractTestHarnessRecords: AdapterContractTestHarnessRecord[];
+  labConnectionDryRunConsoleRecords: LabConnectionDryRunConsoleRecord[];
+  evidenceExportPackV2Records: EvidenceExportPackV2Record[];
+  realLabAuthorizationPacketRecords: RealLabAuthorizationPacketRecord[];
   mockPrismStatus: MockPrismSimulatorStatus;
   mockPrismExecutions: MockPrismExecution[];
   prismSimulatorProfiles: PrismSimulatorProfile[];
@@ -492,6 +504,41 @@ export type CreateEmergencyStopRollbackDrillRequest = {
   simulatedModeRestored?: boolean;
   evidencePreserved?: boolean;
   emergencyStopOwner?: string;
+};
+
+export type CreateLabReadinessWorkspaceRequest = {
+  emergencyStopRollbackDrillId?: string;
+  evidenceReviewId?: string;
+  pilotSessionId?: string;
+  runtimePolicyId?: string;
+};
+
+export type CreateMockPrismEndpointExpansionRequest = {
+  workspaceId?: string;
+  latencySimulationMs?: number;
+  requestsPerMinute?: number;
+  failureModes?: string[];
+};
+
+export type CreateAdapterContractTestHarnessRequest = {
+  mockExpansionId?: string;
+};
+
+export type CreateLabConnectionDryRunConsoleRequest = {
+  contractHarnessId?: string;
+  selectedEndpointRef?: string;
+  credentialProviderRef?: string;
+};
+
+export type CreateEvidenceExportPackV2Request = {
+  dryRunConsoleId?: string;
+};
+
+export type CreateRealLabAuthorizationPacketRequest = {
+  evidenceExportPackId?: string;
+  approvalOwners?: string[];
+  rollbackOwner?: string;
+  pentestScopeEvidence?: string[];
 };
 
 export type CreateVmLifecycleProofRequest = {

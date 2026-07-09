@@ -1,12 +1,15 @@
 import type {
   ApprovalRequest,
+  AdapterContractTestHarnessRecord,
   AuthBoundaryDiagnostics,
   AuthorizedLabConnectionDryRunRecord,
   AdapterPromotionReadinessDossier,
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   AhvCreateAdapterContractReview,
+  ApiContractBaseline,
   AuditExportRecord,
+  AuditIntegrityManifest,
   AuditRetentionDiagnostics,
   ControlledLabExecutionApprovalGate,
   ControlledLabDryRunExecutionChecklist,
@@ -26,6 +29,7 @@ import type {
   ExecutionBrokerDispatchApproval,
   ExecutionBrokerQueueRecord,
   Environment,
+  DeploymentProfileValidation,
   DisabledPrismReadOnlyHttpClientRecord,
   DisabledRealReadOnlyAdapterInterfaceRecord,
   HardenedLabConnectionProfileReview,
@@ -43,14 +47,20 @@ import type {
   LabScopeDiagnostics,
   LifecycleOperationKind,
   LifecycleOperationRecord,
+  LabConnectionDryRunConsoleRecord,
+  LabReadinessWorkspaceRecord,
   LiveReadOnlyCallEnvelopeRecord,
   LiveReadOnlyInventoryPilotRecord,
   LiveReadOnlyPrismCallDesign,
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
+  MockPrismEndpointExpansionRecord,
   MockPrismSimulatorStatus,
   OfflineContractReplaySuiteRecord,
+  EvidenceExportPackV2Record,
+  OperationsRunbookConsole,
   PilotEvidenceReviewRecord,
+  PersistenceBoundaryStatus,
   PrismAdapterDiagnostics,
   PrismSimulatorFailureScenario,
   PrismSimulatorFailureScenarioId,
@@ -126,9 +136,11 @@ import type {
   RealPrismPreflightRun,
   RealAdapterSwitchStateAuditPackage,
   EmergencyStopRollbackDrillRecord,
+  RealLabAuthorizationPacketRecord,
   ReleaseEvidenceExportRecord,
   ResourceProfile,
   RollbackDestroyProofRecord,
+  RbacEnforcementMatrix,
   RuntimeObservabilitySnapshot,
   SessionDiagnostics,
   TemplateRegistryEntry,
@@ -245,6 +257,30 @@ export async function fetchSystemStatusFromApi() {
 
 export async function fetchRuntimeObservabilityFromApi() {
   return fetchJson<RuntimeObservabilitySnapshot>("/api/observability/runtime");
+}
+
+export async function fetchApiContractBaselineFromApi() {
+  return fetchJson<ApiContractBaseline>("/api/contracts/openapi");
+}
+
+export async function fetchRbacEnforcementMatrixFromApi() {
+  return fetchJson<RbacEnforcementMatrix>("/api/security/rbac-matrix");
+}
+
+export async function fetchPersistenceBoundaryStatusFromApi() {
+  return fetchJson<PersistenceBoundaryStatus>("/api/storage/persistence-boundary");
+}
+
+export async function fetchAuditIntegrityManifestFromApi() {
+  return fetchJson<AuditIntegrityManifest>("/api/audit/integrity-manifest");
+}
+
+export async function fetchDeploymentProfileValidationFromApi() {
+  return fetchJson<DeploymentProfileValidation>("/api/deployment/profiles");
+}
+
+export async function fetchOperationsRunbookConsoleFromApi() {
+  return fetchJson<OperationsRunbookConsole>("/api/operations/runbook-console");
 }
 
 export async function fetchProductionReadinessScorecardFromApi() {
@@ -666,6 +702,95 @@ export async function createEmergencyStopRollbackDrillViaApi(payload: {
   emergencyStopOwner?: string;
 } = {}) {
   return fetchJson<EmergencyStopRollbackDrillRecord>("/api/prism/emergency-stop-rollback-drills", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchLabReadinessWorkspacesFromApi() {
+  return fetchJson<LabReadinessWorkspaceRecord[]>("/api/lab-transition/readiness-workspaces");
+}
+
+export async function createLabReadinessWorkspaceViaApi(payload: {
+  emergencyStopRollbackDrillId?: string;
+  evidenceReviewId?: string;
+  pilotSessionId?: string;
+  runtimePolicyId?: string;
+} = {}) {
+  return fetchJson<LabReadinessWorkspaceRecord>("/api/lab-transition/readiness-workspaces", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchMockPrismEndpointExpansionsFromApi() {
+  return fetchJson<MockPrismEndpointExpansionRecord[]>("/api/lab-transition/mock-prism-endpoint-expansions");
+}
+
+export async function createMockPrismEndpointExpansionViaApi(payload: {
+  workspaceId?: string;
+  latencySimulationMs?: number;
+  requestsPerMinute?: number;
+  failureModes?: string[];
+} = {}) {
+  return fetchJson<MockPrismEndpointExpansionRecord>("/api/lab-transition/mock-prism-endpoint-expansions", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchAdapterContractTestHarnessesFromApi() {
+  return fetchJson<AdapterContractTestHarnessRecord[]>("/api/lab-transition/adapter-contract-harnesses");
+}
+
+export async function createAdapterContractTestHarnessViaApi(payload: {
+  mockExpansionId?: string;
+} = {}) {
+  return fetchJson<AdapterContractTestHarnessRecord>("/api/lab-transition/adapter-contract-harnesses", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchLabConnectionDryRunConsolesFromApi() {
+  return fetchJson<LabConnectionDryRunConsoleRecord[]>("/api/lab-transition/dry-run-consoles");
+}
+
+export async function createLabConnectionDryRunConsoleViaApi(payload: {
+  contractHarnessId?: string;
+  selectedEndpointRef?: string;
+  credentialProviderRef?: string;
+} = {}) {
+  return fetchJson<LabConnectionDryRunConsoleRecord>("/api/lab-transition/dry-run-consoles", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchEvidenceExportPacksV2FromApi() {
+  return fetchJson<EvidenceExportPackV2Record[]>("/api/lab-transition/evidence-export-packs-v2");
+}
+
+export async function createEvidenceExportPackV2ViaApi(payload: {
+  dryRunConsoleId?: string;
+} = {}) {
+  return fetchJson<EvidenceExportPackV2Record>("/api/lab-transition/evidence-export-packs-v2", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchRealLabAuthorizationPacketsFromApi() {
+  return fetchJson<RealLabAuthorizationPacketRecord[]>("/api/lab-transition/real-lab-authorization-packets");
+}
+
+export async function createRealLabAuthorizationPacketViaApi(payload: {
+  evidenceExportPackId?: string;
+  approvalOwners?: string[];
+  rollbackOwner?: string;
+  pentestScopeEvidence?: string[];
+} = {}) {
+  return fetchJson<RealLabAuthorizationPacketRecord>("/api/lab-transition/real-lab-authorization-packets", {
     method: "POST",
     body: JSON.stringify(payload),
   });

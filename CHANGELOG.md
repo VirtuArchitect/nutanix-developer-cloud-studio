@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v4.5.0-emergency-stop-rollback-drill`.
+This project uses release tags for public milestones. The current release is `v6.5.0-operations-runbook-console`.
 
 ## [Unreleased]
 
@@ -12,6 +12,138 @@ This project uses release tags for public milestones. The current release is `v4
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v6.5.0-operations-runbook-console] - 2026-07-09
+
+### Added
+
+- Operations runbook console snapshot at `/api/operations/runbook-console`.
+- Admin Operations panel showing runbook score, blocked gates, evidence summary, and fail-closed controls.
+
+### Notes
+
+- The console intentionally keeps real adapter execution blocked.
+
+## [v6.4.0-deployment-profile-validation] - 2026-07-09
+
+### Added
+
+- Deployment profile validation at `/api/deployment/profiles` for local, hosted-demo, on-prem-starter, and lab-prep modes.
+- Fail-closed checks for trusted identity, durable state, and disabled real Prism HTTP calls.
+
+### Notes
+
+- On-prem starter readiness requires durable state and trusted identity before production-like use.
+
+## [v6.3.0-audit-integrity-manifest] - 2026-07-09
+
+### Added
+
+- Audit integrity manifest at `/api/audit/integrity-manifest`.
+- SHA-256 event digests and a manifest digest for tamper-evident review.
+
+### Notes
+
+- The manifest hashes stored metadata only and does not export secrets.
+
+## [v6.2.0-persistence-boundary-status] - 2026-07-09
+
+### Added
+
+- Persistence boundary diagnostics at `/api/storage/persistence-boundary`.
+- Repository mode, durability status, repository interface, and future migration target evidence.
+
+### Notes
+
+- The existing API store boundary remains compatible with future Postgres repository work.
+
+## [v6.1.0-rbac-enforcement-matrix] - 2026-07-09
+
+### Added
+
+- RBAC enforcement matrix at `/api/security/rbac-matrix`.
+- Denied-role negative test cases for Platform Admin-only hardening routes.
+
+### Notes
+
+- Hardening endpoints are protected with `requireRole` and return 403 for non-admin sessions.
+
+## [v6.0.0-api-contract-baseline] - 2026-07-09
+
+### Added
+
+- OpenAPI-style API contract baseline at `/api/contracts/openapi`.
+- Request/response examples and disabled provisioning/real-Prism flags for documented operations.
+
+### Notes
+
+- This is a contract baseline snapshot, not generated production OpenAPI tooling.
+
+## [v5.5.0-real-lab-authorization-packet] - 2026-07-09
+
+### Added
+
+- Real lab authorization packet records at `/api/lab-transition/real-lab-authorization-packets`.
+- Admin Providers panel for lab details, endpoint requirements, credential vault requirements, network boundary, approval owners, rollback owner, pentest scope evidence, and go/no-go checks.
+
+### Notes
+
+- Authorization packets are request-ready evidence only and do not enable live HTTP or real Prism calls.
+
+## [v5.4.0-evidence-export-pack-v2] - 2026-07-09
+
+### Added
+
+- Evidence export pack v2 records at `/api/lab-transition/evidence-export-packs-v2`.
+- Redacted manifest coverage for runtime policy, session, call envelopes, evidence review, rollback drill, contract harness, and dry-run console.
+
+### Notes
+
+- Export packs store metadata references only and no provider secrets.
+
+## [v5.3.0-lab-connection-dry-run-console] - 2026-07-09
+
+### Added
+
+- Lab connection dry-run console records at `/api/lab-transition/dry-run-consoles`.
+- Operator view of selected endpoint reference, credential provider reference, expected read-only requests, expected responses, blocked mutations, and rollback path.
+
+### Notes
+
+- Dry-run consoles do not open sockets or import live inventory.
+
+## [v5.2.0-adapter-contract-test-harness] - 2026-07-09
+
+### Added
+
+- Adapter contract test harness records at `/api/lab-transition/adapter-contract-harnesses`.
+- Evidence suites for Prism read-only contract, credential resolver contract, timeout/retry behavior, redaction, and fail-closed behavior.
+
+### Notes
+
+- Harness records are non-executing evidence records in this release.
+
+## [v5.1.0-mock-prism-endpoint-expansion] - 2026-07-09
+
+### Added
+
+- Mock Prism endpoint expansion records at `/api/lab-transition/mock-prism-endpoint-expansions`.
+- Simulator contract evidence for auth-shaped headers, list endpoints, latency simulation, rate-limit simulation, failure modes, and redacted request logs.
+
+### Notes
+
+- Expanded simulator records remain local mock evidence and do not contact Nutanix infrastructure.
+
+## [v5.0.0-lab-readiness-workspace] - 2026-07-09
+
+### Added
+
+- Lab readiness workspace records at `/api/lab-transition/readiness-workspaces`.
+- Rollup of mock Prism status, read-only adapter readiness, runtime policy, pilot session, evidence review, emergency stop drill, and blockers before any real lab request.
+
+### Notes
+
+- Workspaces prepare for future lab authorization while keeping live calls disabled.
 
 ## [v4.5.0-emergency-stop-rollback-drill] - 2026-07-08
 

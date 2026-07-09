@@ -147,6 +147,87 @@ describe("api server", () => {
     );
   });
 
+  it("reports production hardening foundation snapshots and denies non-admin roles", async () => {
+    const adminHeaders = {
+      "x-ndc-user": "ops.admin",
+      "x-ndc-display-name": "Ops Admin",
+      "x-ndc-roles": "Platform Admin",
+      "x-ndc-issuer": "https://idp.example",
+    };
+    const developerHeaders = {
+      "x-ndc-user": "dev.user",
+      "x-ndc-display-name": "Dev User",
+      "x-ndc-roles": "Developer",
+      "x-ndc-issuer": "https://idp.example",
+    };
+
+    const contract = await requestJson("/api/contracts/openapi", { headers: adminHeaders });
+    const rbac = await requestJson("/api/security/rbac-matrix", { headers: adminHeaders });
+    const persistence = await requestJson("/api/storage/persistence-boundary", { headers: adminHeaders });
+    const audit = await requestJson("/api/audit/integrity-manifest", { headers: adminHeaders });
+    const profiles = await requestJson("/api/deployment/profiles", { headers: adminHeaders });
+    const runbook = await requestJson("/api/operations/runbook-console", { headers: adminHeaders });
+
+    expect(contract.data).toMatchObject({
+      status: "Contract baseline ready",
+      openApiVersion: "3.1.0",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(contract.data.operations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: "/api/operations/runbook-console", requiredRoles: ["Platform Admin"] }),
+      ])
+    );
+    expect(rbac.data).toMatchObject({
+      status: "RBAC matrix enforced",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(rbac.data.negativeTestCases).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ actorRole: "Developer", path: "/api/contracts/openapi", expectedStatus: 403 }),
+      ])
+    );
+    expect(persistence.data).toMatchObject({
+      repositoryMode: "memory",
+      durable: false,
+      provisioningEnabled: false,
+    });
+    expect(audit.data).toMatchObject({
+      status: "Integrity manifest ready",
+      digestAlgorithm: "sha256",
+      provisioningEnabled: false,
+    });
+    expect(audit.data.manifestDigest).toHaveLength(64);
+    expect(profiles.data).toMatchObject({
+      status: "Profiles validated",
+      activeProfile: "local",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(runbook.data).toMatchObject({
+      status: "Blocked",
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(runbook.data.runbookSteps).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Real adapter execution", state: "Blocked" })])
+    );
+
+    await expectJson(
+      "/api/contracts/openapi",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      { headers: developerHeaders }
+    );
+  });
+
   it("fails closed for API routes when trusted identity headers are required", async () => {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
@@ -729,7 +810,7 @@ describe("api server", () => {
     );
   });
 
-  it("records controlled read-only lab enablement gates and production pilot controls without live calls", async () => {
+  it("records controlled read-only lab enablement gates, production pilot controls, and mock-to-lab transition without live calls", async () => {
     await requestJson("/api/integration-config/NCI", {
       method: "PUT",
       body: JSON.stringify({
@@ -956,6 +1037,48 @@ describe("api server", () => {
         emergencyStopOwner: "Cloud Operations",
       }),
     });
+    const labWorkspace = await requestJson("/api/lab-transition/readiness-workspaces", {
+      method: "POST",
+      body: JSON.stringify({
+        emergencyStopRollbackDrillId: rollbackDrill.data.id,
+        evidenceReviewId: evidenceReview.data.id,
+        pilotSessionId: pilotSession.data.id,
+        runtimePolicyId: runtimePolicy.data.id,
+      }),
+    });
+    const mockExpansion = await requestJson("/api/lab-transition/mock-prism-endpoint-expansions", {
+      method: "POST",
+      body: JSON.stringify({
+        workspaceId: labWorkspace.data.id,
+        latencySimulationMs: 150,
+        requestsPerMinute: 120,
+      }),
+    });
+    const contractHarness = await requestJson("/api/lab-transition/adapter-contract-harnesses", {
+      method: "POST",
+      body: JSON.stringify({ mockExpansionId: mockExpansion.data.id }),
+    });
+    const dryRunConsole = await requestJson("/api/lab-transition/dry-run-consoles", {
+      method: "POST",
+      body: JSON.stringify({
+        contractHarnessId: contractHarness.data.id,
+        selectedEndpointRef: "prism-central-ref",
+        credentialProviderRef: "vault-ref-nci-readonly",
+      }),
+    });
+    const exportPackV2 = await requestJson("/api/lab-transition/evidence-export-packs-v2", {
+      method: "POST",
+      body: JSON.stringify({ dryRunConsoleId: dryRunConsole.data.id }),
+    });
+    const realLabPacket = await requestJson("/api/lab-transition/real-lab-authorization-packets", {
+      method: "POST",
+      body: JSON.stringify({
+        evidenceExportPackId: exportPackV2.data.id,
+        approvalOwners: ["platform-owner", "security-reviewer", "lab-owner", "operations-owner"],
+        rollbackOwner: "Cloud Operations",
+        pentestScopeEvidence: ["readonly-lab-pentest-scope.md", "mock-to-lab-boundary-review.md"],
+      }),
+    });
     const hardeningRecords = await requestJson("/api/prism/read-only-lab-profile-hardening");
     const resolverRecords = await requestJson("/api/credentials/resolver-stubs");
     const clientRecords = await requestJson("/api/prism/read-only-http-clients");
@@ -966,6 +1089,12 @@ describe("api server", () => {
     const callEnvelopeRecords = await requestJson("/api/prism/live-read-only-call-envelopes");
     const evidenceReviewRecords = await requestJson("/api/prism/pilot-evidence-reviews");
     const rollbackDrillRecords = await requestJson("/api/prism/emergency-stop-rollback-drills");
+    const labWorkspaceRecords = await requestJson("/api/lab-transition/readiness-workspaces");
+    const mockExpansionRecords = await requestJson("/api/lab-transition/mock-prism-endpoint-expansions");
+    const contractHarnessRecords = await requestJson("/api/lab-transition/adapter-contract-harnesses");
+    const dryRunConsoleRecords = await requestJson("/api/lab-transition/dry-run-consoles");
+    const exportPackV2Records = await requestJson("/api/lab-transition/evidence-export-packs-v2");
+    const realLabPacketRecords = await requestJson("/api/lab-transition/real-lab-authorization-packets");
     const auditEvents = await requestJson("/api/audit-events");
 
     expect(hardenedProfile.data).toMatchObject({
@@ -1051,6 +1180,55 @@ describe("api server", () => {
       networkCallEnabled: false,
       realPrismCallsEnabled: false,
     });
+    expect(labWorkspace.data).toMatchObject({
+      status: "Ready for mock-to-lab review",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(mockExpansion.data).toMatchObject({
+      status: "Expanded simulator contract ready",
+      authHeaderMode: "mock-required",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(mockExpansion.data.supportedEndpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ method: "POST", path: "/mock-prism/api/nutanix/v3/vms/list" }),
+      ])
+    );
+    expect(contractHarness.data).toMatchObject({
+      status: "Contract harness passed",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(dryRunConsole.data).toMatchObject({
+      status: "Dry-run console ready",
+      selectedEndpointRef: "prism-central-ref",
+      credentialProviderRef: "vault-ref-nci-readonly",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(dryRunConsole.data.allowedOperations).toHaveLength(6);
+    expect(exportPackV2.data).toMatchObject({
+      status: "Export pack ready",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    expect(exportPackV2.data.manifest).toEqual(
+      expect.arrayContaining([expect.objectContaining({ section: "contract-harness", redacted: true })])
+    );
+    expect(realLabPacket.data).toMatchObject({
+      status: "Ready to request real lab access",
+      rollbackOwner: "Cloud Operations",
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
     expect(hardeningRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: hardenedProfile.data.id })]));
     expect(resolverRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: resolverStub.data.id })]));
     expect(clientRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: httpClient.data.id })]));
@@ -1061,6 +1239,12 @@ describe("api server", () => {
     expect(callEnvelopeRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: callEnvelope.data.id })]));
     expect(evidenceReviewRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: evidenceReview.data.id })]));
     expect(rollbackDrillRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: rollbackDrill.data.id })]));
+    expect(labWorkspaceRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: labWorkspace.data.id })]));
+    expect(mockExpansionRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: mockExpansion.data.id })]));
+    expect(contractHarnessRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: contractHarness.data.id })]));
+    expect(dryRunConsoleRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: dryRunConsole.data.id })]));
+    expect(exportPackV2Records.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: exportPackV2.data.id })]));
+    expect(realLabPacketRecords.data).toEqual(expect.arrayContaining([expect.objectContaining({ id: realLabPacket.data.id })]));
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "prism.readonly.lab-profile-hardening.recorded" }),
@@ -1073,6 +1257,12 @@ describe("api server", () => {
         expect.objectContaining({ action: "prism.readonly.call-envelope.recorded" }),
         expect.objectContaining({ action: "prism.readonly.evidence-review.recorded" }),
         expect.objectContaining({ action: "prism.readonly.rollback-drill.recorded" }),
+        expect.objectContaining({ action: "lab-transition.readiness-workspace.recorded" }),
+        expect.objectContaining({ action: "lab-transition.mock-prism-expansion.recorded" }),
+        expect.objectContaining({ action: "lab-transition.adapter-contract-harness.recorded" }),
+        expect.objectContaining({ action: "lab-transition.dry-run-console.recorded" }),
+        expect.objectContaining({ action: "lab-transition.evidence-export-pack-v2.recorded" }),
+        expect.objectContaining({ action: "lab-transition.real-lab-authorization-packet.recorded" }),
       ])
     );
   });

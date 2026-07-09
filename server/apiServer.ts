@@ -371,6 +371,15 @@ import {
   ProductionReadOnlyPilotControlsError,
 } from "./productionReadOnlyPilotControls";
 import {
+  ControlledMockToLabTransitionError,
+  createAdapterContractTestHarnessRecord,
+  createEvidenceExportPackV2Record,
+  createLabConnectionDryRunConsoleRecord,
+  createLabReadinessWorkspaceRecord,
+  createMockPrismEndpointExpansionRecord,
+  createRealLabAuthorizationPacketRecord,
+} from "./controlledMockToLabTransition";
+import {
   AuthorizationError,
   createAuthBoundaryDiagnostics,
   createRequestContext,
@@ -388,6 +397,14 @@ import {
   createProductionReadinessScorecard,
   createRuntimeObservabilitySnapshot,
 } from "./runtimeReadiness";
+import {
+  createApiContractBaseline,
+  createAuditIntegrityManifest,
+  createDeploymentProfileValidation,
+  createOperationsRunbookConsole,
+  createPersistenceBoundaryStatus,
+  createRbacEnforcementMatrix,
+} from "./productionHardeningFoundation";
 import type { ApiStore } from "./storage";
 import { createVmSandboxDryRunPlan } from "./vmSandboxDryRun";
 import type {
@@ -483,10 +500,16 @@ import type {
   CreateLiveReadOnlyInventoryPilotRequest,
   CreateProductionReadinessDecisionGateRequest,
   CreateEmergencyStopRollbackDrillRequest,
+  CreateAdapterContractTestHarnessRequest,
+  CreateEvidenceExportPackV2Request,
+  CreateLabConnectionDryRunConsoleRequest,
+  CreateLabReadinessWorkspaceRequest,
   CreateLiveReadOnlyCallEnvelopeRequest,
+  CreateMockPrismEndpointExpansionRequest,
   CreatePilotEvidenceReviewRequest,
   CreateReadOnlyPilotSessionRequest,
   CreateReadOnlyRuntimeEnablementPolicyRequest,
+  CreateRealLabAuthorizationPacketRequest,
   CreateAuthorizedLabConnectionDryRunRequest,
   CreateAuthorizedReadOnlyLabPilotGateRequest,
   CreateCredentialResolverAdapterStubRequest,
@@ -673,6 +696,16 @@ export function createApiServer({ store, staticDir, rateLimiter = new MemoryRate
       }
 
       if (error instanceof ProductionReadOnlyPilotControlsError) {
+        sendJson(response, 400, {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        });
+        return;
+      }
+
+      if (error instanceof ControlledMockToLabTransitionError) {
         sendJson(response, 400, {
           error: {
             code: error.code,
@@ -1389,6 +1422,42 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "GET" && url.pathname === "/api/contracts/openapi") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createApiContractBaseline(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/security/rbac-matrix") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createRbacEnforcementMatrix() });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/storage/persistence-boundary") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createPersistenceBoundaryStatus(store.constructor.name) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/audit/integrity-manifest") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createAuditIntegrityManifest(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/deployment/profiles") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createDeploymentProfileValidation() });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/operations/runbook-console") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createOperationsRunbookConsole(state) });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/production/readiness-scorecard") {
     sendJson(response, 200, { data: createProductionReadinessScorecard(state) });
     return;
@@ -1600,6 +1669,42 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/prism/emergency-stop-rollback-drills") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.emergencyStopRollbackDrillRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-transition/readiness-workspaces") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labReadinessWorkspaces });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-transition/mock-prism-endpoint-expansions") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.mockPrismEndpointExpansionRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-transition/adapter-contract-harnesses") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.adapterContractTestHarnessRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-transition/dry-run-consoles") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.labConnectionDryRunConsoleRecords });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-transition/evidence-export-packs-v2") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.evidenceExportPackV2Records });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/lab-transition/real-lab-authorization-packets") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: state.realLabAuthorizationPacketRecords });
     return;
   }
 
@@ -3013,6 +3118,107 @@ async function routeApi(
     addAuditEvent(state, "prism.readonly.rollback-drill.recorded", context.session.user, record.id, {
       status: record.status,
       rollbackMode: record.rollbackMode,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-transition/readiness-workspaces") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabReadinessWorkspaceRequest>(request);
+    const record = createLabReadinessWorkspaceRecord(state, body, context.session.user);
+    state.labReadinessWorkspaces = [record, ...state.labReadinessWorkspaces];
+    addAuditEvent(state, "lab-transition.readiness-workspace.recorded", context.session.user, record.id, {
+      status: record.status,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-transition/mock-prism-endpoint-expansions") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateMockPrismEndpointExpansionRequest>(request);
+    const record = createMockPrismEndpointExpansionRecord(state, body, context.session.user);
+    state.mockPrismEndpointExpansionRecords = [record, ...state.mockPrismEndpointExpansionRecords];
+    addAuditEvent(state, "lab-transition.mock-prism-expansion.recorded", context.session.user, record.id, {
+      status: record.status,
+      endpointCount: record.supportedEndpoints.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-transition/adapter-contract-harnesses") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateAdapterContractTestHarnessRequest>(request);
+    const record = createAdapterContractTestHarnessRecord(state, body, context.session.user);
+    state.adapterContractTestHarnessRecords = [record, ...state.adapterContractTestHarnessRecords];
+    addAuditEvent(state, "lab-transition.adapter-contract-harness.recorded", context.session.user, record.id, {
+      status: record.status,
+      suiteCount: record.testSuites.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-transition/dry-run-consoles") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateLabConnectionDryRunConsoleRequest>(request);
+    const record = createLabConnectionDryRunConsoleRecord(state, body, context.session.user);
+    state.labConnectionDryRunConsoleRecords = [record, ...state.labConnectionDryRunConsoleRecords];
+    addAuditEvent(state, "lab-transition.dry-run-console.recorded", context.session.user, record.id, {
+      status: record.status,
+      operationCount: record.allowedOperations.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-transition/evidence-export-packs-v2") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateEvidenceExportPackV2Request>(request);
+    const record = createEvidenceExportPackV2Record(state, body, context.session.user);
+    state.evidenceExportPackV2Records = [record, ...state.evidenceExportPackV2Records];
+    addAuditEvent(state, "lab-transition.evidence-export-pack-v2.recorded", context.session.user, record.id, {
+      status: record.status,
+      manifestCount: record.manifest.length,
+      provisioningEnabled: false,
+      networkCallEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 201, { data: record });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/lab-transition/real-lab-authorization-packets") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<CreateRealLabAuthorizationPacketRequest>(request);
+    const record = createRealLabAuthorizationPacketRecord(state, body, context.session.user);
+    state.realLabAuthorizationPacketRecords = [record, ...state.realLabAuthorizationPacketRecords];
+    addAuditEvent(state, "lab-transition.real-lab-authorization-packet.recorded", context.session.user, record.id, {
+      status: record.status,
+      approvalOwners: record.approvalOwners.length,
       provisioningEnabled: false,
       networkCallEnabled: false,
       realPrismCallsEnabled: false,

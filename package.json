@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "4.5.0-emergency-stop-rollback-drill",
+  "version": "6.5.0-operations-runbook-console",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

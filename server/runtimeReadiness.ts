@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "4.5.0-emergency-stop-rollback-drill";
+  return process.env.npm_package_version ?? "6.5.0-operations-runbook-console";
 }
 
 export function createRuntimeObservabilitySnapshot(

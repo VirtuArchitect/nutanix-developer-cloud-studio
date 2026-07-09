@@ -62,6 +62,12 @@ Health and readiness endpoints remain public when strict trusted identity mode i
 - `GET /api/auth/boundary-diagnostics`
 - `GET /api/system/status`
 - `GET /api/observability/runtime`
+- `GET /api/contracts/openapi`
+- `GET /api/security/rbac-matrix`
+- `GET /api/storage/persistence-boundary`
+- `GET /api/audit/integrity-manifest`
+- `GET /api/deployment/profiles`
+- `GET /api/operations/runbook-console`
 - `GET /api/production/readiness-scorecard`
 - `GET /api/deployment/config-validation`
 - `GET /api/environments`
@@ -90,6 +96,28 @@ When `NDC_REQUIRE_TRUSTED_IDENTITY=true`, API routes fail closed with `401 unaut
 `GET /api/auth/boundary-diagnostics` returns current identity-boundary evidence, role claims, trusted header checks, malformed-header rejection state, and audit recording state. When trusted identity mode is required, malformed user, issuer, or role headers are rejected before route handling.
 
 `GET /api/observability/runtime` returns version, request ID, actor, storage mode, static serving state, rate-limit configuration, retained audit events, and runtime guardrails.
+
+### Production Hardening Foundation
+
+- `GET /api/contracts/openapi`
+- `GET /api/security/rbac-matrix`
+- `GET /api/storage/persistence-boundary`
+- `GET /api/audit/integrity-manifest`
+- `GET /api/deployment/profiles`
+- `GET /api/operations/runbook-console`
+
+Required role: `Platform Admin`.
+
+These endpoints expose the v6 hardening foundation:
+
+- API contract baseline with OpenAPI-style metadata, request/response examples, role requirements, and disabled real-infrastructure flags.
+- RBAC enforcement matrix with denied-role negative test cases for protected hardening routes.
+- Persistence boundary diagnostics for the active repository mode, durable-state posture, repository interface, retention boundary, and future migration targets.
+- Audit integrity manifest with SHA-256 event digests and a manifest digest over retained metadata.
+- Deployment profile validation for `local`, `hosted-demo`, `on-prem-starter`, and `lab-prep` with fail-closed controls.
+- Operations runbook console with readiness score, blocked gates, runbook steps, and evidence counters.
+
+All v6 hardening endpoints are read-only snapshots. They do not provision, mutate, contact Prism Central, resolve credentials, or enable real adapters.
 
 `GET /api/production/readiness-scorecard` returns a readiness score, category checks, blockers, `provisioningEnabled=false`, and `realPrismCallsEnabled=false`.
 
@@ -241,6 +269,18 @@ Required role: `Platform Admin`.
 - `POST /api/prism/pilot-evidence-reviews`
 - `GET /api/prism/emergency-stop-rollback-drills`
 - `POST /api/prism/emergency-stop-rollback-drills`
+- `GET /api/lab-transition/readiness-workspaces`
+- `POST /api/lab-transition/readiness-workspaces`
+- `GET /api/lab-transition/mock-prism-endpoint-expansions`
+- `POST /api/lab-transition/mock-prism-endpoint-expansions`
+- `GET /api/lab-transition/adapter-contract-harnesses`
+- `POST /api/lab-transition/adapter-contract-harnesses`
+- `GET /api/lab-transition/dry-run-consoles`
+- `POST /api/lab-transition/dry-run-consoles`
+- `GET /api/lab-transition/evidence-export-packs-v2`
+- `POST /api/lab-transition/evidence-export-packs-v2`
+- `GET /api/lab-transition/real-lab-authorization-packets`
+- `POST /api/lab-transition/real-lab-authorization-packets`
 - `GET /api/mock-prism/status`
 - `GET /api/mock-prism/executions`
 - `GET /api/prism/adapter-diagnostics`
@@ -276,6 +316,17 @@ The production read-only pilot control endpoints add formal governance before an
 - Emergency stop rollback drills prove simulated-mode rollback and evidence preservation.
 
 These controls are evidence-only. They do not enable live HTTP, resolve secrets, provision resources, import live inventory, or call Prism Central.
+
+The controlled mock-to-lab transition endpoints prepare an authorized lab request while keeping all live infrastructure calls disabled:
+
+- Lab readiness workspaces roll up mock Prism status, read-only adapter readiness, runtime policy, pilot session, evidence review, emergency stop drill, and blockers.
+- Mock Prism endpoint expansion records document auth-shaped headers, read-only list endpoints, latency simulation, rate-limit simulation, failure modes, and redacted request-log fields.
+- Adapter contract harness records capture Prism read-only, credential resolver, timeout/retry, redaction, and fail-closed contract evidence.
+- Lab connection dry-run consoles show the selected endpoint reference, credential provider reference, allowed operations, expected requests, expected responses, blocked mutations, and rollback path.
+- Evidence export pack v2 records consolidate runtime policy, session, call envelopes, evidence review, rollback drill, contract harness, and dry-run console references.
+- Real lab authorization packets define required lab details, endpoint reference requirements, credential vault requirements, network boundary, approval owners, rollback owner, pentest scope evidence, and go/no-go checks.
+
+These routes create review evidence only. They do not enable `NDC_PRISM_READONLY_HTTP_ENABLED`, open sockets, resolve credentials, mutate Nutanix resources, or call Prism Central.
 - `GET /api/prism/real-preflight-runs`
 - `POST /api/prism/real-preflight-runs`
 
