@@ -1,8 +1,8 @@
 # Nutanix Developer Cloud Studio
 
-A clickable MVP prototype for a Nutanix-powered internal developer platform.
+A hosted/on-prem internal developer platform prototype for governed environment requests, simulated provisioning, approvals, and operations readiness.
 
-Nutanix Developer Cloud Studio shows how developers could request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal.
+Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
 Current release: `v7.5.0-on-prem-install-profile-pack`
 
@@ -10,11 +10,11 @@ Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
 ## Disclaimer
 
-This repository is an independent clickable MVP prototype. All Nutanix integrations, provisioning jobs, policy checks, costs, environments, and admin workflows are simulated for demonstration purposes only. This project does not currently provision real Nutanix infrastructure and is not affiliated with, sponsored by, or endorsed by Nutanix unless explicitly stated otherwise.
+This repository is an independent product prototype. Nutanix integrations, policy checks, costs, environments, approvals, and provisioning workflows run in simulated mode for demonstration and design validation. This project does not currently provision or mutate real Nutanix infrastructure and is not affiliated with, sponsored by, or endorsed by Nutanix unless explicitly stated otherwise.
 
 ## MVP Scope
 
-Nutanix Developer Cloud Studio is currently a polished, simulated product prototype. It demonstrates how an internal developer platform could coordinate self-service requests, platform governance, and on-prem/private-cloud operations before real infrastructure adapters are enabled.
+Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem product prototype. It demonstrates how an internal developer platform can coordinate self-service requests, platform governance, and private-cloud operations before real infrastructure adapters are enabled.
 
 ### Developer Experience
 
@@ -33,7 +33,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated product protot
 
 ### Hosted / On-Prem Starter API
 
-- API-backed prototype flows for environments, approvals, control-plane jobs, lifecycle destroy simulation, system status, request logging, rate limits, and security headers.
+- API-backed prototype flows for environments, approvals, simulated provisioning, control-plane jobs, lifecycle destroy simulation, system status, request logging, rate limits, and security headers.
 - OIDC-shaped role context, RBAC guardrails, trusted-header diagnostics, and provider credential reference checks.
 - State backup/restore tooling and containerized on-prem starter deployment.
 - Mock Prism Central simulator for local testing when no Nutanix lab is available.
@@ -59,7 +59,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated product protot
 
 ### Current Boundary
 
-All provisioning, policy checks, integrations, costs, and environments are simulated. The prototype records evidence and exercises adapter-shaped workflows, but it does not currently provision or mutate real Nutanix infrastructure.
+Simulated provisioning is enabled for the prototype control plane. Real Nutanix adapters, Prism Central calls, credential resolution, and infrastructure mutation remain disabled. The application records evidence and exercises adapter-shaped workflows without creating, changing, or deleting real infrastructure.
 
 <img width="1720" height="1260" alt="image" src="https://github.com/user-attachments/assets/355abe1b-c5d0-40b5-814f-89d051332836" />
 

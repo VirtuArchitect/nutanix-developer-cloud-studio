@@ -1495,7 +1495,7 @@ describe("api server", () => {
     expect(status.data).toMatchObject({
       api: "Healthy",
       storage: "Ready",
-      provisioningEnabled: false,
+      provisioningEnabled: true,
       integrations: expect.objectContaining({ readOnlyCandidates: 1 }),
     });
   });
@@ -1649,7 +1649,7 @@ describe("api server", () => {
     );
     expect(config.data).toMatchObject({
       defaultProject: "developer-cloud-lab",
-      provisioningEnabled: false,
+      provisioningEnabled: true,
     });
     expect(adapters.data).toEqual(
       expect.arrayContaining([

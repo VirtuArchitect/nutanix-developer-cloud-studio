@@ -40,6 +40,7 @@ The React frontend now checks `/healthz` on load:
 - System status and lab adapter pilot state are API-backed so hosted/on-prem demos can show provisioning guardrails.
 - Control-plane job state is API-backed so the hosted starter can model queue, worker, retry, and failure behavior.
 - Provider readiness, platform configuration references, and image/profile inventory are API-backed for adapter planning.
+- Simulated provisioning is enabled for mock adapter workflows. Real Nutanix adapter execution, Prism Central calls, credential resolution, and infrastructure mutation remain disabled.
 - Environment destroy requests queue simulated teardown lifecycle jobs; no real infrastructure is deleted.
 - Template registry, resource profile governance, and policy bundles are API-backed so platform teams can model publication controls before real provisioning is enabled.
 - Prism Central read-only inventory import is API-backed and remains mock-only until lab authorization enables live discovery.

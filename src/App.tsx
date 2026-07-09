@@ -12,6 +12,7 @@ import {
   Network,
   Pencil,
   Play,
+  PlayCircle,
   RefreshCw,
   ScrollText,
   Settings,
@@ -14052,9 +14053,9 @@ function ProvisioningAdapterPanel({
   return (
     <div className="provisioningAdapterList">
       <div className="guardrailBanner">
-        <LockKeyhole size={18} />
+        <PlayCircle size={18} />
         <div>
-          <strong>Adapter contract only</strong>
+          <strong>{platformConfig.provisioningEnabled ? "Simulated provisioning enabled" : "Provisioning disabled"}</strong>
           <span>{platformConfig.message}</span>
         </div>
       </div>
@@ -14078,7 +14079,11 @@ function ProvisioningAdapterPanel({
           </div>
           <div className="labScope">
             <span>{adapter.nextGate}</span>
-            <small>Provisioning disabled until adapter-specific gates are approved.</small>
+            <small>
+              {platformConfig.provisioningEnabled
+                ? "Mock provisioning can validate, plan, queue, poll, and destroy simulated environments."
+                : "Provisioning disabled until adapter-specific gates are approved."}
+            </small>
           </div>
         </div>
       ))}

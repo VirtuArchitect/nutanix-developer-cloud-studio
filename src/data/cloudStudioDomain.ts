@@ -157,7 +157,7 @@ export type SystemStatus = {
     reachable: number;
     readOnlyCandidates: number;
   };
-  provisioningEnabled: false;
+  provisioningEnabled: boolean;
 };
 
 export type ResourceProfile = {
@@ -200,7 +200,7 @@ export type PlatformConfig = {
   defaultCluster: string;
   networkProfile: string;
   credentialReference: string;
-  provisioningEnabled: false;
+  provisioningEnabled: boolean;
   message: string;
 };
 
@@ -210,7 +210,7 @@ export type ProvisioningAdapterReadiness = {
   mode: "Mock";
   capabilities: ProvisioningAdapterCapability[];
   configured: boolean;
-  provisioningEnabled: false;
+  provisioningEnabled: boolean;
   nextGate: string;
 };
 
@@ -4467,8 +4467,8 @@ export const platformConfig: PlatformConfig = {
   defaultCluster: "berlin-ahv-lab",
   networkProfile: "dev-segment-placeholder",
   credentialReference: "nci-lab-readonly",
-  provisioningEnabled: false,
-  message: "Provider configuration stores references only. Sensitive credential values live outside this prototype.",
+  provisioningEnabled: true,
+  message: "Simulated provisioning is enabled for prototype workflows. Real Nutanix adapters, Prism calls, and infrastructure mutation remain disabled.",
 };
 
 export const provisioningEvents: JobEvent[] = [

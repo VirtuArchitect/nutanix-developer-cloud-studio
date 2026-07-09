@@ -35,9 +35,9 @@ export function createRuntimeObservabilitySnapshot(
     })),
     guardrails: [
       {
-        name: "Real provisioning disabled",
+        name: "Simulated provisioning enabled",
         passed: true,
-        detail: "The API reports provisioningEnabled=false across platform workflows.",
+        detail: "Mock adapter workflows can plan and queue simulated environments; real infrastructure mutation remains disabled.",
       },
       {
         name: "Real Prism calls disabled",
@@ -86,7 +86,7 @@ export function createProductionReadinessScorecard(state: ApiState): ProductionR
       check("Adapter contract tests available", true, "Prism adapter and read-only inventory contract tests are checked in."),
     ]),
     category("Security boundary", [
-      check("Provisioning disabled", true, "provisioningEnabled=false remains the platform boundary."),
+      check("Real provisioning disabled", true, "Simulated provisioning is enabled, but real infrastructure mutation remains outside the platform boundary."),
       check("Real Prism calls disabled", true, "realPrismCallsEnabled=false remains the live-call boundary."),
     ]),
   ];

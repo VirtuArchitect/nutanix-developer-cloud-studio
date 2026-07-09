@@ -5161,7 +5161,7 @@ function createSystemStatus(state: Awaited<ReturnType<ApiStore["load"]>>): Syste
       reachable: state.integrationConfigs.filter((item) => item.status === "Reachable").length,
       readOnlyCandidates: state.labAdapters.filter((item) => item.mode === "Read-only candidate").length,
     },
-    provisioningEnabled: false,
+    provisioningEnabled: state.platformConfig.provisioningEnabled,
   };
 }
 

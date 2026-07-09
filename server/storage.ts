@@ -106,7 +106,7 @@ function defaultProvisioningAdapters(): ProvisioningAdapterReadiness[] {
     provisioningEnabled: false,
     nextGate:
       integration.name === "NCI"
-        ? "Map Prism Central image, project, subnet, category, and credential references."
+        ? "Map Prism Central image, project, subnet, category, and credential references before any real adapter pilot."
         : integration.nextStep,
   }));
 }
