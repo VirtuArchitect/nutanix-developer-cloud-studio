@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "8.5.0-ahv-lab-lifecycle",
+  "version": "8.6.0-console-operations-hardening",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

@@ -4,7 +4,7 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v8.5.0-ahv-lab-lifecycle`
+Current release: `v8.6.0-console-operations-hardening`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 

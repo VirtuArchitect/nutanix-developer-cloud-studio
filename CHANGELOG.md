@@ -2,9 +2,17 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v8.5.0-ahv-lab-lifecycle`.
+This project uses release tags for public milestones. The current release is `v8.6.0-console-operations-hardening`.
 
 ## [Unreleased]
+
+### Planned
+
+- Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
+- Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
+- Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v8.6.0-console-operations-hardening] - 2026-07-13
 
 ### Added
 
@@ -13,11 +21,11 @@ This project uses release tags for public milestones. The current release is `v8
 - Configurable IAM, local-user policy, and Active Directory connectivity sections with credential-reference-only AD bind configuration.
 - Console operations hardening with settings validation, connection tests, role mappings, audit filters, admin activity timeline, redacted config export, provider drill-down, operations queue, and environment lifecycle actions.
 
-### Planned
+### Notes
 
-- Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
-- Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
-- Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+- Real AHV lifecycle remains lab-scoped and opt-in; public/static demo behavior remains simulated.
+- Admin configuration surfaces reject inline secrets and expose redacted status/evidence only.
+- The next major technical phase is `v9.0.0-ahv-lab-acceptance` for proving real AHV lifecycle against authorized Prism Central test infrastructure.
 
 ## [v8.5.0-ahv-lab-lifecycle] - 2026-07-09
 
