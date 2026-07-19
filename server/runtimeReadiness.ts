@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "8.9.0-provisioning-mode-selector";
+  return process.env.npm_package_version ?? "9.0.0-ahv-lab-acceptance-pack";
 }
 
 export function createRuntimeObservabilitySnapshot(

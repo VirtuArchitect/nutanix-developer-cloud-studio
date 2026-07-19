@@ -96,4 +96,4 @@ These values must match `fixtures/mock-prism/seed.json`.
 
 ## Next Phase
 
-After the mock harness is stable, `v9.0.0-ahv-lab-acceptance` should repeat the same lifecycle smoke against an explicitly authorized Prism Central test environment with disposable AHV resources.
+After the mock harness is stable, use `docs/ahv-lab-acceptance-pack.md` to prepare a real lab acceptance window before repeating the lifecycle smoke against an explicitly authorized Prism Central test environment with disposable AHV resources.

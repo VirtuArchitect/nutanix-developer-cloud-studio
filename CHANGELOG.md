@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v8.9.0-provisioning-mode-selector`.
+This project uses release tags for public milestones. The current release is `v9.0.0-ahv-lab-acceptance-pack`.
 
 ## [Unreleased]
 
@@ -12,6 +12,20 @@ This project uses release tags for public milestones. The current release is `v8
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v9.0.0-ahv-lab-acceptance-pack] - 2026-07-19
+
+### Added
+
+- AHV lab acceptance pack for authorized Prism Central/AHV lifecycle validation.
+- Acceptance report template covering authorization, configuration, lifecycle evidence, audit redaction, and go/no-go decision.
+- `validate:ahv-lab-acceptance-pack` metadata-only validator for required lab docs, deployment files, smoke scripts, and disabled default switches.
+
+### Notes
+
+- The acceptance pack does not enable real AHV lifecycle by itself.
+- `.env.lab.example` keeps real AHV lifecycle disabled by default.
+- Lifecycle smoke remains opt-in and requires written lab approval, rollback ownership, and private runtime configuration.
 
 ## [v8.9.0-provisioning-mode-selector] - 2026-07-19
 

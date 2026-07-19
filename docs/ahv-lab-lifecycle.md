@@ -6,6 +6,8 @@ The feature is disabled by default. Enable it only for an explicitly authorized 
 
 If no AHV test cluster is available yet, use the local mock Prism Central harness first. It exercises the same NDC create, poll, power, destroy, and reconciliation workflow without contacting Nutanix infrastructure. See `docs/mock-prism-central-harness.md`.
 
+Before any real AHV lifecycle smoke, complete the formal acceptance checklist in `docs/ahv-lab-acceptance-pack.md` and capture results in `docs/ahv-lab-acceptance-report-template.md`.
+
 ## Deployment
 
 1. Copy `.env.lab.example` to `.env.lab` on the private lab host.
@@ -35,6 +37,7 @@ The default `.env.example` and `.env.lab.example` keep these disabled.
 Run a config-only validation first:
 
 ```powershell
+npm run validate:ahv-lab-acceptance-pack
 npm run validate:ahv-lab-config
 ```
 
