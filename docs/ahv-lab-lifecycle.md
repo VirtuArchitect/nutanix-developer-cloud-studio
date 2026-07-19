@@ -4,6 +4,8 @@ This guide describes the first lab-only real AHV lifecycle path for NDC Studio.
 
 The feature is disabled by default. Enable it only for an explicitly authorized AHV test cluster with disposable image, project, subnet, and rollback ownership.
 
+If no AHV test cluster is available yet, use the local mock Prism Central harness first. It exercises the same NDC create, poll, power, destroy, and reconciliation workflow without contacting Nutanix infrastructure. See `docs/mock-prism-central-harness.md`.
+
 ## Deployment
 
 1. Copy `.env.lab.example` to `.env.lab` on the private lab host.

@@ -1,0 +1,70 @@
+{
+  "clusters": [
+    {
+      "metadata": { "uuid": "mock-cluster-uuid" },
+      "status": {
+        "name": "Mock AHV Cluster",
+        "resources": {
+          "nodes": 3,
+          "hypervisor_type": "AHV"
+        }
+      }
+    }
+  ],
+  "projects": [
+    {
+      "metadata": { "uuid": "mock-project-uuid" },
+      "status": {
+        "name": "Mock Developer Cloud Project",
+        "resources": {
+          "account_reference_list": []
+        }
+      }
+    }
+  ],
+  "subnets": [
+    {
+      "metadata": { "uuid": "mock-subnet-uuid" },
+      "status": {
+        "name": "Mock Lab Subnet",
+        "resources": {
+          "subnet_type": "VLAN",
+          "ip_config": {
+            "pool_list": []
+          }
+        }
+      }
+    }
+  ],
+  "images": [
+    {
+      "metadata": { "uuid": "mock-image-uuid" },
+      "status": {
+        "name": "Mock Rocky Linux 9 Hardened Image",
+        "resources": {
+          "image_type": "DISK_IMAGE",
+          "architecture": "X86_64"
+        }
+      }
+    }
+  ],
+  "vms": [
+    {
+      "metadata": {
+        "uuid": "mock-existing-vm-uuid",
+        "kind": "vm"
+      },
+      "spec": {
+        "name": "ndc-lab-existing-fixture"
+      },
+      "status": {
+        "name": "ndc-lab-existing-fixture",
+        "state": "COMPLETE",
+        "resources": {
+          "power_state": "ON"
+        }
+      }
+    }
+  ],
+  "tasks": []
+}

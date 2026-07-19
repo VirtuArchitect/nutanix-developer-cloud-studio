@@ -1,12 +1,13 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "8.6.0-console-operations-hardening",
+  "version": "8.7.0-mock-prism-central-harness",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "api:dev": "tsx server/index.ts",
     "api:start": "tsx server/index.ts",
+    "mock-prism:start": "tsx server/mockPrismServer.ts",
     "build": "tsc && vite build",
     "build:api": "tsc -p tsconfig.server.json",
     "build:all": "npm run build && npm run build:api",
@@ -21,8 +22,10 @@
     "validate:container-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-container-config-pack.ps1",
     "validate:onprem-profile-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-onprem-profile-pack.ps1",
     "validate:ahv-lab-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-lab-config.ps1",
+    "validate:mock-prism-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-mock-prism-config.ps1",
     "smoke:ahv-lab-readonly": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-lab-readonly.ps1",
-    "smoke:ahv-lab-lifecycle": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-lab-lifecycle.ps1"
+    "smoke:ahv-lab-lifecycle": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-lab-lifecycle.ps1",
+    "smoke:mock-prism-lifecycle": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-mock-prism-lifecycle.ps1"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

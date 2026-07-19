@@ -4,6 +4,7 @@
 
 - Released `v8.5.0-ahv-lab-lifecycle`.
 - Released `v8.6.0-console-operations-hardening` to package the Admin Settings, IAM/directory configuration, audit review, and console operations hardening work.
+- Implemented `v8.7.0-mock-prism-central-harness` to test the AHV lifecycle flow against a local Prism Central v3-shaped service before authorized lab acceptance.
 - Added lab-only AHV Prism Central v3 config validation, read-only preflight, opt-in VM create/poll/power/destroy lifecycle, Docker Compose lab overlay, and redacted audit evidence.
 - Released `v7.5.0-on-prem-install-profile-pack`.
 - Added on-prem install profile templates, validation script, and install pack API evidence.

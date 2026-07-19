@@ -2,15 +2,32 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v8.6.0-console-operations-hardening`.
+This project uses release tags for public milestones. The current release is `v8.7.0-mock-prism-central-harness`.
 
 ## [Unreleased]
 
 ### Planned
 
+- Continue toward `v9.0.0-ahv-lab-acceptance` after mock Prism lifecycle smoke is stable.
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v8.7.0-mock-prism-central-harness] - 2026-07-13
+
+### Added
+
+- Standalone local mock Prism Central server that implements Prism v3-shaped cluster, project, image, subnet, VM, task, power, and delete endpoints.
+- Fixture data for mock clusters, projects, subnets, images, VMs, and tasks.
+- `.env.mock-prism.example` and `docker-compose.mock-prism.yml` for running NDC Studio API with a local mock Prism Central service.
+- Mock Prism config validation and lifecycle smoke scripts covering read-only inventory, create VM, poll task, power VM, destroy VM, and reconciliation checks.
+- Unit coverage for the standalone mock Prism Central harness, including Basic Auth, lifecycle state transitions, inventory reconciliation, and safety-prefix enforcement.
+
+### Notes
+
+- Real AHV lab mode remains disabled by default in `.env.example` and `.env.lab.example`.
+- The mock harness is for local simulated testing only and does not contact Nutanix infrastructure.
+- `v9.0.0-ahv-lab-acceptance` remains the next major phase for authorized Prism Central lab validation.
 
 ## [v8.6.0-console-operations-hardening] - 2026-07-13
 

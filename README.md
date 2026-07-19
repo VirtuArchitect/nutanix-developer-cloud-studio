@@ -4,7 +4,7 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v8.6.0-console-operations-hardening`
+Current release: `v8.7.0-mock-prism-central-harness`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -52,6 +52,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - Production hardening foundation with API contract baseline, RBAC enforcement matrix, persistence boundary diagnostics, audit integrity manifest, deployment profile validation, and an operations runbook console.
 - Durable on-prem operations foundation with Postgres repository contract readiness, migration baseline manifests, JWT/OIDC verification boundary diagnostics, signed audit export manifests, admin upgrade health, and on-prem install profile pack validation.
 - Lab-only AHV test infrastructure enablement with Prism Central v3 configuration validation, read-only preflight, opt-in VM create/poll/power/destroy lifecycle, Docker Compose lab deployment, and redacted audit evidence.
+- Standalone mock Prism Central harness with fixture-backed clusters, projects, subnets, images, VMs, tasks, Docker Compose deployment, read-only validation, and create/poll/power/destroy/reconciliation smoke testing.
 
 ### Governance And Release Readiness
 
@@ -62,7 +63,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 
 ### Current Boundary
 
-Simulated provisioning is enabled for the prototype control plane. Real AHV lifecycle is available only in an explicitly configured `APP_ENV=lab` deployment with all AHV lab switches enabled, authorized test infrastructure, private credentials, and Platform Admin approval gates. All other real Nutanix adapters, Prism calls, credential resolution, and infrastructure mutation remain disabled by default.
+Simulated provisioning is enabled for the prototype control plane. The public GitHub Pages demo never provisions infrastructure. A local mock Prism Central harness can exercise Prism-shaped AHV lifecycle calls without touching Nutanix infrastructure. Real AHV lifecycle is available only in an explicitly configured `APP_ENV=lab` deployment with all AHV lab switches enabled, authorized test infrastructure, private credentials, and Platform Admin approval gates. All other real Nutanix adapters, Prism calls, credential resolution, and infrastructure mutation remain disabled by default.
 
 <img width="1720" height="1260" alt="image" src="https://github.com/user-attachments/assets/355abe1b-c5d0-40b5-814f-89d051332836" />
 
@@ -155,6 +156,29 @@ Validate the hosted starter locally:
 .\scripts\validate-hosted-starter.ps1
 ```
 
+## Run The Mock Prism Central Harness
+
+Use this mode when you want to test the AHV provisioning workflow without a Nutanix lab:
+
+```powershell
+Copy-Item .env.mock-prism.example .env.mock-prism
+docker compose -f docker-compose.mock-prism.yml --env-file .env.mock-prism up --build
+```
+
+Validate the mock Prism endpoint and fixture inventory:
+
+```powershell
+npm run validate:mock-prism-config -- -EnvFile .env.mock-prism -PrismUrl http://127.0.0.1:9440
+```
+
+Run the mock-backed AHV lifecycle smoke:
+
+```powershell
+npm run smoke:mock-prism-lifecycle -- -BaseUrl http://127.0.0.1:8080 -PrismUrl http://127.0.0.1:9440
+```
+
+This path submits create, poll, power, and destroy calls to the mock Prism Central service only. It does not contact real Nutanix infrastructure.
+
 ## Documentation
 
 Project documentation lives in `docs/`.
@@ -182,6 +206,7 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/api.md` for the backend API starter
 - `docs/on-prem-deployment.md` for the containerized deployment starter
 - `docs/ahv-lab-lifecycle.md` for authorized AHV test infrastructure deployment
+- `docs/mock-prism-central-harness.md` for mock Prism Central lifecycle testing without Nutanix infrastructure
 - `docs/release-notes/` for GitHub Release copy
 - `docs/upgrade-path.md` for gated phase sequencing and promotion rules
 

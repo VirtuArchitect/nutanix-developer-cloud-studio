@@ -8,6 +8,8 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+!.env.mock-prism.example
+!.env.lab.example
 *.pem
 *.key
 

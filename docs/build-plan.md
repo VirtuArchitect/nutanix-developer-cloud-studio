@@ -30,6 +30,7 @@ The goal is to make the product thesis visible quickly: developers can request g
 
 - `v8.5.0-ahv-lab-lifecycle` adds lab-only Prism Central v3 runtime config, read-only preflight, controlled AHV VM create/poll/power/destroy, Docker Compose lab deployment, and AHV lab validation/smoke scripts.
 - `v8.6.0-console-operations-hardening` packages Admin Settings, configurable IAM/local user/Active Directory sections, audit review, settings validation, connection testing, role mappings, provider drill-down, operations queue triage, redacted configuration export, and controlled environment lifecycle actions.
+- `v8.7.0-mock-prism-central-harness` adds a standalone fixture-backed Prism Central v3 mock service, compose/env wiring, validation scripts, and lifecycle smoke coverage for create, poll, power, destroy, and reconciliation without Nutanix infrastructure.
 - `v7.5.0-on-prem-install-profile-pack` adds on-prem profile templates, validation command, backup/restore runbook entries, and disabled-adapter install guardrails.
 - `v7.4.0-admin-upgrade-health-console` adds Admin Operations upgrade health for repository, schema, auth, audit signing, config drift, and blockers.
 - `v7.3.0-signed-audit-export-manifests` adds signed audit manifest evidence with external signing key references.

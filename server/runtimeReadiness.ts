@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "8.6.0-console-operations-hardening";
+  return process.env.npm_package_version ?? "8.7.0-mock-prism-central-harness";
 }
 
 export function createRuntimeObservabilitySnapshot(
