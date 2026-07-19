@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "8.8.0-mock-prism-console-integration";
+  return process.env.npm_package_version ?? "8.9.0-provisioning-mode-selector";
 }
 
 export function createRuntimeObservabilitySnapshot(

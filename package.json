@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "8.8.0-mock-prism-console-integration",
+  "version": "8.9.0-provisioning-mode-selector",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

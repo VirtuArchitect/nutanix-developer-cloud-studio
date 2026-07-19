@@ -4,7 +4,7 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v8.8.0-mock-prism-console-integration`
+Current release: `v8.9.0-provisioning-mode-selector`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -53,6 +53,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - Durable on-prem operations foundation with Postgres repository contract readiness, migration baseline manifests, JWT/OIDC verification boundary diagnostics, signed audit export manifests, admin upgrade health, and on-prem install profile pack validation.
 - Lab-only AHV test infrastructure enablement with Prism Central v3 configuration validation, read-only preflight, opt-in VM create/poll/power/destroy lifecycle, Docker Compose lab deployment, and redacted audit evidence.
 - Standalone mock Prism Central harness with fixture-backed clusters, projects, subnets, images, VMs, tasks, Docker Compose deployment, read-only validation, and create/poll/power/destroy/reconciliation smoke testing.
+- API-backed provisioning mode selector that clearly distinguishes Static Demo, Simulated API, Mock Prism, and Real AHV Lab modes on the dashboard.
 
 ### Governance And Release Readiness
 

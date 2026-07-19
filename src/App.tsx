@@ -124,6 +124,7 @@ import {
   type PrismInventoryKind,
   type PrismInventoryRecord,
   type PrismReadOnlyAdapterDiagnostics,
+  type ProvisioningModeStatus,
   type ReadOnlyAdapterObservabilityRecord,
   type ReadOnlyAdapterRuntimeModeRecord,
   type ProvisioningAdapterReadiness,
@@ -470,6 +471,7 @@ import {
   fetchRbacEnforcementMatrixFromApi,
   fetchPrismInventoryFromApi,
   fetchProvisioningAdaptersFromApi,
+  fetchProvisioningModeStatusFromApi,
   fetchProductionReadinessReviewsFromApi,
   fetchProductionReadinessDecisionGatesFromApi,
   fetchProductionReadinessScorecardFromApi,
@@ -541,6 +543,9 @@ export function App() {
   const [settingsExport, setSettingsExport] = useState<PlatformSettingsExport | null>(null);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>(() =>
     createMockSystemStatus(mockSession, deriveMockIntegrationConfigs(integrations), deriveMockLabAdapters(integrations))
+  );
+  const [provisioningModeStatus, setProvisioningModeStatus] = useState<ProvisioningModeStatus>(() =>
+    createMockProvisioningModeStatus()
   );
   const [runtimeObservability, setRuntimeObservability] = useState<RuntimeObservabilitySnapshot>(() =>
     createMockRuntimeObservability(mockSession)
@@ -857,6 +862,7 @@ export function App() {
             apiAuthBoundaryDiagnostics,
             apiPlatformSettings,
             apiSystemStatus,
+            apiProvisioningModeStatus,
             apiRuntimeObservability,
             apiApiContractBaseline,
             apiRbacEnforcementMatrix,
@@ -1013,6 +1019,7 @@ export function App() {
             fetchAuthBoundaryDiagnosticsFromApi(),
             fetchPlatformSettingsFromApi(),
             fetchSystemStatusFromApi(),
+            fetchProvisioningModeStatusFromApi(),
             fetchRuntimeObservabilityFromApi(),
             fetchApiContractBaselineFromApi(),
             fetchRbacEnforcementMatrixFromApi(),
@@ -1170,6 +1177,7 @@ export function App() {
             setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
             setPlatformSettings(apiPlatformSettings);
             setSystemStatus(apiSystemStatus);
+            setProvisioningModeStatus(apiProvisioningModeStatus);
             setRuntimeObservability(apiRuntimeObservability);
             setApiContractBaseline(apiApiContractBaseline);
             setRbacEnforcementMatrix(apiRbacEnforcementMatrix);
@@ -1484,6 +1492,7 @@ export function App() {
       apiAuthBoundaryDiagnostics,
       apiPlatformSettings,
       apiSystemStatus,
+      apiProvisioningModeStatus,
       apiRuntimeObservability,
       apiApiContractBaseline,
       apiRbacEnforcementMatrix,
@@ -1640,6 +1649,7 @@ export function App() {
       fetchAuthBoundaryDiagnosticsFromApi(),
       fetchPlatformSettingsFromApi(),
       fetchSystemStatusFromApi(),
+      fetchProvisioningModeStatusFromApi(),
       fetchRuntimeObservabilityFromApi(),
       fetchApiContractBaselineFromApi(),
       fetchRbacEnforcementMatrixFromApi(),
@@ -1796,6 +1806,7 @@ export function App() {
     setAuthBoundaryDiagnostics(apiAuthBoundaryDiagnostics);
     setPlatformSettings(apiPlatformSettings);
     setSystemStatus(apiSystemStatus);
+    setProvisioningModeStatus(apiProvisioningModeStatus);
     setRuntimeObservability(apiRuntimeObservability);
     setApiContractBaseline(apiApiContractBaseline);
     setRbacEnforcementMatrix(apiRbacEnforcementMatrix);
@@ -4787,6 +4798,7 @@ export function App() {
             session={session}
             sessionDiagnostics={sessionDiagnostics}
             systemStatus={systemStatus}
+            provisioningModeStatus={provisioningModeStatus}
             controlPlaneJobs={controlPlaneJobs}
             apiHealth={apiHealth}
             openTemplate={openTemplate}
@@ -5170,6 +5182,7 @@ function Dashboard({
   session,
   sessionDiagnostics,
   systemStatus,
+  provisioningModeStatus,
   controlPlaneJobs,
   apiHealth,
   openTemplate,
@@ -5184,6 +5197,7 @@ function Dashboard({
   session: PlatformSession;
   sessionDiagnostics: SessionDiagnostics;
   systemStatus: SystemStatus;
+  provisioningModeStatus: ProvisioningModeStatus;
   controlPlaneJobs: ControlPlaneJob[];
   apiHealth: ApiHealth;
   openTemplate: (id: string) => void;
@@ -5223,8 +5237,8 @@ function Dashboard({
         </div>
         <div className="statusTile">
           <span>Provisioning</span>
-          <strong>{systemStatus.provisioningEnabled ? "Enabled" : "Disabled"}</strong>
-          <small>{systemStatus.integrations.readOnlyCandidates} read-only candidates</small>
+          <strong>{provisioningModeStatus.label}</strong>
+          <small>{provisioningModeStatus.status}</small>
         </div>
         <div className="statusTile">
           <span>Control plane</span>
@@ -5277,6 +5291,9 @@ function Dashboard({
           </Panel>
           <Panel title="Control plane queue" action={`${activeControlPlaneJobs.length} active`}>
             <ControlPlaneQueue jobs={controlPlaneJobs.slice(0, 4)} compact />
+          </Panel>
+          <Panel title="Provisioning modes" action={provisioningModeStatus.activeMode}>
+            <ProvisioningModePanel status={provisioningModeStatus} readOnlyCandidates={systemStatus.integrations.readOnlyCandidates} />
           </Panel>
           <Panel title="Integration readiness" action={`${readinessAverage}%`}>
             <div className="miniIntegrationGrid">
@@ -5363,6 +5380,74 @@ function Dashboard({
         </Panel>
       </div>
     </section>
+  );
+}
+
+function ProvisioningModePanel({
+  status,
+  readOnlyCandidates,
+}: {
+  status: ProvisioningModeStatus;
+  readOnlyCandidates: number;
+}) {
+  const primaryChecks = status.checks.slice(0, 4);
+
+  return (
+    <div className="provisioningModePanel">
+      <div className={`modeSummary ${status.realInfrastructureMutation ? "armed" : "safe"}`}>
+        <div>
+          <strong>{status.activeMode}</strong>
+          <span>{status.summary}</span>
+        </div>
+        <small>{status.endpointLabel}</small>
+      </div>
+      <div className="modeGrid">
+        {status.availableModes.map((mode) => (
+          <div className={`modeOption ${mode.enabled ? "active" : ""}`} key={mode.mode}>
+            <strong>{mode.mode}</strong>
+            <span>{mode.purpose}</span>
+            <small>{mode.mutationBoundary}</small>
+          </div>
+        ))}
+      </div>
+      <div className="controlGrid">
+        <CheckLine
+          icon={ShieldCheck}
+          label="Real infrastructure mutation"
+          value={status.realInfrastructureMutation ? "Lab scoped" : "Inactive"}
+          passed={!status.realInfrastructureMutation || status.activeMode === "Real AHV Lab"}
+        />
+        <CheckLine
+          icon={LockKeyhole}
+          label="Provisioning switch"
+          value={status.mutationEnabled ? "Armed" : "Not armed"}
+          passed={status.activeMode !== "Real AHV Lab" || status.mutationEnabled}
+        />
+        <CheckLine
+          icon={Cloud}
+          label="Read-only candidates"
+          value={String(readOnlyCandidates)}
+          passed={readOnlyCandidates >= 0}
+        />
+      </div>
+      <div className="eventList">
+        {primaryChecks.map((check) => (
+          <div className="eventRow" key={check.name}>
+            <strong>{check.name}</strong>
+            <span>{check.detail}</span>
+            <small>{check.passed ? "Passed" : "Needs configuration"}</small>
+          </div>
+        ))}
+      </div>
+      <div className="eventList">
+        {status.nextActions.slice(0, 3).map((action) => (
+          <div className="eventRow" key={action}>
+            <strong>Next action</strong>
+            <span>{action}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -24450,6 +24535,63 @@ function createMockSystemStatus(
       readOnlyCandidates: adapters.filter((item) => item.mode === "Read-only candidate").length,
     },
     provisioningEnabled: false,
+  };
+}
+
+function createMockProvisioningModeStatus(): ProvisioningModeStatus {
+  return {
+    version: "8.9.0-provisioning-mode-selector",
+    generatedAt: new Date().toISOString(),
+    activeMode: "Static Demo",
+    label: "Static Demo",
+    summary: "Browser-only demonstration with no API, Prism Central calls, or infrastructure mutation.",
+    status: "Demo only",
+    runtime: "browser",
+    endpointLabel: "browser fixture state",
+    mutationEnabled: false,
+    realInfrastructureMutation: false,
+    provisioningEnabled: false,
+    checks: [
+      { name: "Browser runtime", passed: true, detail: "The dashboard is running from local/static React state." },
+      { name: "External calls blocked", passed: true, detail: "No Prism Central endpoint can be contacted from this mode." },
+      { name: "Mock workflow available", passed: true, detail: "Use the hosted API and mock Prism harness for lifecycle smoke tests." },
+      { name: "Real AHV lab disabled", passed: true, detail: "Lab lifecycle switches are private API runtime settings." },
+    ],
+    availableModes: [
+      {
+        mode: "Static Demo",
+        purpose: "Public clickable prototype and browser-only demonstrations.",
+        enabled: true,
+        mutationBoundary: "No API, no Prism calls, no infrastructure mutation.",
+      },
+      {
+        mode: "Simulated API",
+        purpose: "Hosted/on-prem API workflows, approvals, audit, and simulated jobs.",
+        enabled: false,
+        mutationBoundary: "API records only; no Prism task submission.",
+      },
+      {
+        mode: "Mock Prism",
+        purpose: "Local Prism v3-shaped lifecycle testing without Nutanix infrastructure.",
+        enabled: false,
+        mutationBoundary: "Mutates only the local mock Prism runtime.",
+      },
+      {
+        mode: "Real AHV Lab",
+        purpose: "Authorized AHV VM lifecycle validation against a test Prism Central endpoint.",
+        enabled: false,
+        mutationBoundary: "Lab-scoped Prism tasks only; never enabled by default.",
+      },
+    ],
+    nextActions: [
+      "Run the hosted API to test simulated provisioning.",
+      "Use docker-compose.mock-prism.yml for full mock lifecycle testing.",
+      "Prepare v9 lab acceptance evidence before connecting Prism Central.",
+    ],
+    commands: [
+      { label: "Run frontend", command: "npm run dev -- --host localhost --port 4180" },
+      { label: "Run API", command: "npm run api:dev" },
+    ],
   };
 }
 

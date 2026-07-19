@@ -97,6 +97,26 @@ describe("api server", () => {
     );
   });
 
+  it("reports the active provisioning mode without exposing credentials", async () => {
+    configureAhvLabEnv("http://127.0.0.1:9440");
+    const mode = await requestJson("/api/provisioning/mode");
+
+    expect(mode.data).toMatchObject({
+      activeMode: "Mock Prism",
+      status: "Mock lifecycle ready",
+      endpointLabel: "127.0.0.1:9440",
+      mutationEnabled: true,
+      realInfrastructureMutation: false,
+    });
+    expect(JSON.stringify(mode.data)).not.toContain("placeholder-not-a-secret");
+    expect(mode.data.availableModes).toEqual(
+      expect.arrayContaining([expect.objectContaining({ mode: "Real AHV Lab", enabled: false })])
+    );
+    expect(mode.data.commands).toEqual(
+      expect.arrayContaining([expect.objectContaining({ label: "Run mock lifecycle" })])
+    );
+  });
+
   it("rejects invalid Mock Prism Central VM create payloads", async () => {
     const response = await nodeRequest("/mock-prism/api/nutanix/v3/vms", {
       method: "POST",

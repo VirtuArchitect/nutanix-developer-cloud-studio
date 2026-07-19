@@ -180,7 +180,7 @@ button {
 
 .opsStatusStrip {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 12px;
 }
 
@@ -214,10 +214,71 @@ button {
   color: #111b22;
   font-size: 24px;
   line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 
 .statusTile.strong strong {
   color: #fff;
+}
+
+.provisioningModePanel {
+  display: grid;
+  gap: 12px;
+}
+
+.modeSummary {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+  background: #f8fafb;
+}
+
+.modeSummary.armed {
+  border-color: #c9952d;
+  background: #fff8e8;
+}
+
+.modeSummary.safe {
+  border-color: #cae8dc;
+  background: #f4fbf7;
+}
+
+.modeSummary > div {
+  display: grid;
+  gap: 4px;
+}
+
+.modeSummary strong,
+.modeOption strong {
+  color: #111b22;
+}
+
+.modeSummary span,
+.modeOption span,
+.modeOption small {
+  color: #526873;
+  line-height: 1.35;
+}
+
+.modeGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.modeOption {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.modeOption.active {
+  border-color: #2ca58d;
+  box-shadow: inset 3px 0 0 #2ca58d;
 }
 
 .dashboardGrid {

@@ -256,6 +256,7 @@ import {
   fetchSessionDiagnosticsFromApi,
   fetchSignedAuditExportManifestFromApi,
   fetchSystemStatusFromApi,
+  fetchProvisioningModeStatusFromApi,
   fetchTemplateRegistryFromApi,
   fetchVmSandboxDryRunsFromApi,
   fetchVmLifecycleProofsFromApi,
@@ -427,13 +428,15 @@ describe("cloudStudioApi", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await fetchSystemStatusFromApi();
+    await fetchProvisioningModeStatusFromApi();
     await fetchLabAdaptersFromApi();
     await runLabDiscoveryViaApi("NCI");
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/system/status", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/lab-adapters", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/provisioning/mode", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/lab-adapters", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      3,
+      4,
       "/api/lab-adapters/NCI/discover",
       expect.objectContaining({ method: "POST" })
     );

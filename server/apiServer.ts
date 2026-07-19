@@ -79,6 +79,7 @@ import {
   createControlledLabExecutionReadinessAttestation,
 } from "./controlledLabExecutionReadinessAttestation";
 import { createMockPrismHarnessConsole } from "./mockPrismHarnessConsole";
+import { createProvisioningModeStatus } from "./provisioningModeStatus";
 import {
   createExecutionBrokerQueueRecord,
   ExecutionBrokerError,
@@ -1505,6 +1506,11 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/system/status") {
     sendJson(response, 200, { data: createSystemStatus(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/provisioning/mode") {
+    sendJson(response, 200, { data: createProvisioningModeStatus("api") });
     return;
   }
 

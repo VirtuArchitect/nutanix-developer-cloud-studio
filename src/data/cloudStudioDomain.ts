@@ -310,6 +310,36 @@ export type SystemStatus = {
   provisioningEnabled: boolean;
 };
 
+export type ProvisioningModeStatus = {
+  version: string;
+  generatedAt: string;
+  activeMode: "Static Demo" | "Simulated API" | "Mock Prism" | "Real AHV Lab";
+  label: string;
+  summary: string;
+  status: "Demo only" | "Simulated" | "Mock lifecycle ready" | "Lab lifecycle armed" | "Needs configuration";
+  runtime: "browser" | "api";
+  endpointLabel: string;
+  mutationEnabled: boolean;
+  realInfrastructureMutation: boolean;
+  provisioningEnabled: boolean;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  availableModes: Array<{
+    mode: ProvisioningModeStatus["activeMode"];
+    purpose: string;
+    enabled: boolean;
+    mutationBoundary: string;
+  }>;
+  nextActions: string[];
+  commands: Array<{
+    label: string;
+    command: string;
+  }>;
+};
+
 export type ResourceProfile = {
   id: string;
   kind: ResourceProfileKind;

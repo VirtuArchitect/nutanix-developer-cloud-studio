@@ -87,6 +87,7 @@ import type {
   PrismInventoryRecord,
   PrismFixtureReplayRecord,
   PrismReadOnlyAdapterDiagnostics,
+  ProvisioningModeStatus,
   ReadOnlyAdapterObservabilityRecord,
   ReadOnlyAdapterRuntimeMode,
   ReadOnlyAdapterRuntimeModeRecord,
@@ -287,6 +288,10 @@ export async function fetchAuthBoundaryDiagnosticsFromApi() {
 
 export async function fetchSystemStatusFromApi() {
   return fetchJson<SystemStatus>("/api/system/status");
+}
+
+export async function fetchProvisioningModeStatusFromApi() {
+  return fetchJson<ProvisioningModeStatus>("/api/provisioning/mode");
 }
 
 export async function fetchRuntimeObservabilityFromApi() {

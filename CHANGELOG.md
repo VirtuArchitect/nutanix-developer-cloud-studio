@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v8.8.0-mock-prism-console-integration`.
+This project uses release tags for public milestones. The current release is `v8.9.0-provisioning-mode-selector`.
 
 ## [Unreleased]
 
@@ -12,6 +12,20 @@ This project uses release tags for public milestones. The current release is `v8
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v8.9.0-provisioning-mode-selector] - 2026-07-19
+
+### Added
+
+- API-backed provisioning mode status at `/api/provisioning/mode`.
+- Dashboard provisioning mode panel that distinguishes Static Demo, Simulated API, Mock Prism, and Real AHV Lab.
+- Mode-specific safety boundaries, checks, next actions, and operator commands.
+
+### Notes
+
+- Static/GitHub Pages mode remains browser-only and cannot contact Prism Central.
+- Mock Prism mode reports local/mock lifecycle readiness without real Nutanix infrastructure mutation.
+- Real AHV Lab mode appears only when the private lab switches and Prism configuration are deliberately armed.
 
 ## [v8.8.0-mock-prism-console-integration] - 2026-07-19
 
