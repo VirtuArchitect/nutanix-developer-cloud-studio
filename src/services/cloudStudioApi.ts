@@ -58,6 +58,7 @@ import type {
   ManualRealAdapterSwitchReview,
   MockPrismExecution,
   MockPrismEndpointExpansionRecord,
+  MockPrismHarnessConsole,
   MockPrismSimulatorStatus,
   OfflineContractReplaySuiteRecord,
   EvidenceExportPackV2Record,
@@ -863,6 +864,10 @@ export async function fetchMockPrismStatusFromApi() {
 
 export async function fetchMockPrismExecutionsFromApi() {
   return fetchJson<MockPrismExecution[]>("/api/mock-prism/executions");
+}
+
+export async function fetchMockPrismHarnessConsoleFromApi() {
+  return fetchJson<MockPrismHarnessConsole>("/api/mock-prism/harness-console");
 }
 
 export async function fetchPrismAdapterDiagnosticsFromApi() {

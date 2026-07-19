@@ -76,6 +76,27 @@ describe("api server", () => {
     });
   });
 
+  it("reports standalone mock Prism harness console for Platform Admins", async () => {
+    const consoleStatus = await requestJson("/api/mock-prism/harness-console", {
+      headers: { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" },
+    });
+
+    expect(consoleStatus.data).toMatchObject({
+      mode: "Standalone mock harness",
+      dockerComposeFile: "docker-compose.mock-prism.yml",
+      envTemplate: ".env.mock-prism.example",
+      realPrismCallsEnabled: false,
+    });
+    expect(consoleStatus.data.inventory).toMatchObject({
+      clusters: expect.any(Number),
+      images: expect.any(Number),
+      subnets: expect.any(Number),
+    });
+    expect(consoleStatus.data.commands).toEqual(
+      expect.arrayContaining([expect.objectContaining({ label: "Run lifecycle smoke" })])
+    );
+  });
+
   it("rejects invalid Mock Prism Central VM create payloads", async () => {
     const response = await nodeRequest("/mock-prism/api/nutanix/v3/vms", {
       method: "POST",

@@ -78,6 +78,7 @@ import {
   ControlledLabExecutionReadinessAttestationError,
   createControlledLabExecutionReadinessAttestation,
 } from "./controlledLabExecutionReadinessAttestation";
+import { createMockPrismHarnessConsole } from "./mockPrismHarnessConsole";
 import {
   createExecutionBrokerQueueRecord,
   ExecutionBrokerError,
@@ -1848,6 +1849,12 @@ async function routeApi(
 
   if (request.method === "GET" && url.pathname === "/api/mock-prism/executions") {
     sendJson(response, 200, { data: state.mockPrismExecutions });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/mock-prism/harness-console") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createMockPrismHarnessConsole(state) });
     return;
   }
 

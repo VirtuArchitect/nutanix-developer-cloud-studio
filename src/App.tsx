@@ -91,6 +91,7 @@ import {
   type ManualRealAdapterSwitchReview,
   type MockPrismExecution,
   type MockPrismEndpointExpansionRecord,
+  type MockPrismHarnessConsole,
   type MockPrismSimulatorStatus,
   type OfflineContractReplaySuiteRecord,
   type EvidenceExportPackV2Record,
@@ -427,6 +428,7 @@ import {
   fetchManualRealAdapterSwitchReviewsFromApi,
   fetchMockPrismExecutionsFromApi,
   fetchMockPrismEndpointExpansionsFromApi,
+  fetchMockPrismHarnessConsoleFromApi,
   fetchMockPrismStatusFromApi,
   fetchMigrationBaselineManifestFromApi,
   fetchPrismFailureScenariosFromApi,
@@ -632,6 +634,7 @@ export function App() {
   const [realLabAuthorizationPacketRecords, setRealLabAuthorizationPacketRecords] = useState<RealLabAuthorizationPacketRecord[]>([]);
   const [mockPrismStatus, setMockPrismStatus] = useState<MockPrismSimulatorStatus | null>(null);
   const [mockPrismExecutions, setMockPrismExecutions] = useState<MockPrismExecution[]>([]);
+  const [mockPrismHarnessConsole, setMockPrismHarnessConsole] = useState<MockPrismHarnessConsole | null>(null);
   const [prismAdapterDiagnostics, setPrismAdapterDiagnostics] = useState<PrismAdapterDiagnostics | null>(null);
   const [prismSimulatorProfiles, setPrismSimulatorProfiles] = useState<PrismSimulatorProfile[]>([]);
   const [prismFailureScenarios, setPrismFailureScenarios] = useState<PrismSimulatorFailureScenario[]>([]);
@@ -909,6 +912,7 @@ export function App() {
             apiRealLabAuthorizationPacketRecords,
             apiMockPrismStatus,
             apiMockPrismExecutions,
+            apiMockPrismHarnessConsole,
             apiPrismAdapterDiagnostics,
             apiPrismSimulatorProfiles,
             apiPrismFailureScenarios,
@@ -1064,6 +1068,7 @@ export function App() {
             fetchRealLabAuthorizationPacketsFromApi(),
             fetchMockPrismStatusFromApi(),
             fetchMockPrismExecutionsFromApi(),
+            fetchMockPrismHarnessConsoleFromApi(),
             fetchPrismAdapterDiagnosticsFromApi(),
             fetchPrismSimulatorProfilesFromApi(),
             fetchPrismFailureScenariosFromApi(),
@@ -1221,6 +1226,7 @@ export function App() {
             setRealLabAuthorizationPacketRecords(apiRealLabAuthorizationPacketRecords);
             setMockPrismStatus(apiMockPrismStatus);
             setMockPrismExecutions(apiMockPrismExecutions);
+            setMockPrismHarnessConsole(apiMockPrismHarnessConsole);
             setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
             setPrismSimulatorProfiles(apiPrismSimulatorProfiles);
             setPrismFailureScenarios(apiPrismFailureScenarios);
@@ -1533,6 +1539,7 @@ export function App() {
       apiRealLabAuthorizationPacketRecords,
       apiMockPrismStatus,
       apiMockPrismExecutions,
+      apiMockPrismHarnessConsole,
       apiPrismAdapterDiagnostics,
       apiPrismSimulatorProfiles,
       apiPrismFailureScenarios,
@@ -1688,6 +1695,7 @@ export function App() {
       fetchRealLabAuthorizationPacketsFromApi(),
       fetchMockPrismStatusFromApi(),
       fetchMockPrismExecutionsFromApi(),
+      fetchMockPrismHarnessConsoleFromApi(),
       fetchPrismAdapterDiagnosticsFromApi(),
       fetchPrismSimulatorProfilesFromApi(),
       fetchPrismFailureScenariosFromApi(),
@@ -1844,6 +1852,7 @@ export function App() {
     setRealLabAuthorizationPacketRecords(apiRealLabAuthorizationPacketRecords);
     setMockPrismStatus(apiMockPrismStatus);
     setMockPrismExecutions(apiMockPrismExecutions);
+    setMockPrismHarnessConsole(apiMockPrismHarnessConsole);
     setPrismAdapterDiagnostics(apiPrismAdapterDiagnostics);
     setPrismSimulatorProfiles(apiPrismSimulatorProfiles);
     setPrismFailureScenarios(apiPrismFailureScenarios);
@@ -4894,6 +4903,7 @@ export function App() {
             realLabAuthorizationPacketRecords={realLabAuthorizationPacketRecords}
             mockPrismStatus={mockPrismStatus}
             mockPrismExecutions={mockPrismExecutions}
+            mockPrismHarnessConsole={mockPrismHarnessConsole}
             prismAdapterDiagnostics={prismAdapterDiagnostics}
             prismSimulatorProfiles={prismSimulatorProfiles}
             prismFailureScenarios={prismFailureScenarios}
@@ -5682,6 +5692,7 @@ function AdminView({
   realLabAuthorizationPacketRecords,
   mockPrismStatus,
   mockPrismExecutions,
+  mockPrismHarnessConsole,
   prismAdapterDiagnostics,
   prismSimulatorProfiles,
   prismFailureScenarios,
@@ -5969,6 +5980,7 @@ function AdminView({
   realLabAuthorizationPacketRecords: RealLabAuthorizationPacketRecord[];
   mockPrismStatus: MockPrismSimulatorStatus | null;
   mockPrismExecutions: MockPrismExecution[];
+  mockPrismHarnessConsole: MockPrismHarnessConsole | null;
   prismAdapterDiagnostics: PrismAdapterDiagnostics | null;
   prismSimulatorProfiles: PrismSimulatorProfile[];
   prismFailureScenarios: PrismSimulatorFailureScenario[];
@@ -6414,6 +6426,9 @@ function AdminView({
           </Panel>
           <Panel title="Mock Prism simulator" action={mockPrismStatus?.status ?? "Checking"}>
             <MockPrismSimulatorPanel status={mockPrismStatus} executions={mockPrismExecutions} />
+          </Panel>
+          <Panel title="Mock Prism harness console" action={mockPrismHarnessConsole?.status ?? "Not loaded"}>
+            <MockPrismHarnessConsolePanel consoleStatus={mockPrismHarnessConsole} />
           </Panel>
           <Panel title="Prism adapter contract" action={prismAdapterDiagnostics?.activeMode ?? "Not loaded"}>
             <PrismAdapterContractPanel diagnostics={prismAdapterDiagnostics} />
@@ -14585,6 +14600,76 @@ function MockPrismSimulatorPanel({
       ) : (
         <p className="emptyState">Create a VM environment to record the first simulated Prism task.</p>
       )}
+    </div>
+  );
+}
+
+function MockPrismHarnessConsolePanel({ consoleStatus }: { consoleStatus: MockPrismHarnessConsole | null }) {
+  if (!consoleStatus) {
+    return <p className="emptyState">Mock Prism harness console has not been loaded from the API yet.</p>;
+  }
+
+  const inventory = consoleStatus.inventory;
+  return (
+    <div className="prismInventoryPanel">
+      <div className="guardrailBanner">
+        <TerminalSquare size={18} />
+        <div>
+          <strong>{consoleStatus.mode}</strong>
+          <span>{consoleStatus.endpoint} / {consoleStatus.fixturePath}</span>
+        </div>
+      </div>
+      <div className="controlGrid">
+        <CheckLine icon={Cloud} label="Endpoint" value={consoleStatus.endpoint} passed={consoleStatus.status === "Ready"} />
+        <CheckLine icon={Layers3} label="Fixtures" value={`${inventory.clusters} clusters, ${inventory.images} images, ${inventory.subnets} subnets`} passed={inventory.clusters > 0 && inventory.images > 0 && inventory.subnets > 0} />
+        <CheckLine icon={Activity} label="Lifecycle" value={`${consoleStatus.lifecycleSteps.length} steps`} passed />
+        <CheckLine icon={ShieldCheck} label="Real Prism calls" value={consoleStatus.realPrismCallsEnabled ? "Enabled" : "Disabled"} passed={!consoleStatus.realPrismCallsEnabled} />
+      </div>
+      <div className="eventList">
+        {consoleStatus.configChecks.map((check) => (
+          <div className="eventRow" key={check.name}>
+            <strong>{check.name}</strong>
+            <span>{check.detail}</span>
+            <small>{check.passed ? "passed" : "needs config"}</small>
+          </div>
+        ))}
+      </div>
+      <div className="eventList">
+        {consoleStatus.lifecycleSteps.map((step) => (
+          <div className="eventRow" key={step.order}>
+            <strong>{step.order}. {step.name}</strong>
+            <span>{step.endpoint}</span>
+            <small>{step.status}</small>
+          </div>
+        ))}
+      </div>
+      {consoleStatus.latestRun && (
+        <div className="inventoryEvidence">
+          <strong>{consoleStatus.latestRun.environmentName}</strong>
+          <span>{consoleStatus.latestRun.status} / {consoleStatus.latestRun.adapterMode}</span>
+          <small>
+            {consoleStatus.latestRun.prismTaskUuid ?? "No task"} / {consoleStatus.latestRun.reconciliationStatus ?? "No reconciliation"}
+          </small>
+        </div>
+      )}
+      <div className="eventList">
+        {consoleStatus.commands.map((command) => (
+          <div className="eventRow" key={command.label}>
+            <strong>{command.label}</strong>
+            <span>{command.command}</span>
+            <small>operator command</small>
+          </div>
+        ))}
+      </div>
+      <div className="eventList">
+        {consoleStatus.safetyBoundary.map((item) => (
+          <div className="eventRow" key={item}>
+            <strong>Boundary</strong>
+            <span>{item}</span>
+            <small>enforced</small>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1362,6 +1362,54 @@ export type MockPrismSimulatorStatus = {
   };
 };
 
+export type MockPrismHarnessConsole = {
+  version: string;
+  generatedAt: string;
+  mode: "Standalone mock harness";
+  endpoint: string;
+  fixturePath: string;
+  dockerComposeFile: string;
+  envTemplate: string;
+  status: "Ready" | "Needs configuration";
+  inventory: {
+    clusters: number;
+    projects: number;
+    images: number;
+    subnets: number;
+    vms: number;
+    tasks: number;
+  };
+  configChecks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  lifecycleSteps: Array<{
+    order: number;
+    name: string;
+    endpoint: string;
+    status: "Ready" | "Evidence" | "Operator command";
+  }>;
+  commands: Array<{
+    label: string;
+    command: string;
+  }>;
+  latestRun?: {
+    id: string;
+    environmentName: string;
+    status: string;
+    adapterMode: string;
+    vmUuid?: string;
+    prismTaskUuid?: string;
+    destroyStatus?: string;
+    reconciliationStatus?: string;
+    updatedAt?: string;
+  };
+  safetyBoundary: string[];
+  provisioningEnabled: boolean;
+  realPrismCallsEnabled: boolean;
+};
+
 export type MockPrismExecution = {
   id: string;
   environmentName: string;

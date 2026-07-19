@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v8.7.0-mock-prism-central-harness`.
+This project uses release tags for public milestones. The current release is `v8.8.0-mock-prism-console-integration`.
 
 ## [Unreleased]
 
@@ -12,6 +12,19 @@ This project uses release tags for public milestones. The current release is `v8
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v8.8.0-mock-prism-console-integration] - 2026-07-19
+
+### Added
+
+- API-backed Mock Prism harness console at `/api/mock-prism/harness-console`.
+- Admin Providers panel for standalone mock Prism endpoint, fixture counts, lifecycle steps, operator commands, safety boundaries, and latest AHV run/reconciliation evidence.
+- Typed console model for mock harness readiness without exposing Prism credentials or Authorization material.
+
+### Notes
+
+- Browser controls provide operator evidence and commands only; shell smoke scripts still run from the operator workstation.
+- Real Prism Central calls remain disabled in the mock harness console.
 
 ## [v8.7.0-mock-prism-central-harness] - 2026-07-13
 
