@@ -21,11 +21,9 @@ if ([Environment]::GetEnvironmentVariable("NDC_PRISM_TLS_INSECURE") -eq "true") 
 }
 
 $baseUri = $endpoint.TrimEnd("/")
-$pair = "{0}:{1}" -f $username, $password
-$encoded = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
-$headers = @{
-  Authorization = "Basic $encoded"
-  Accept = "application/json"
+$curl = Get-Command curl.exe -ErrorAction SilentlyContinue
+if (-not $curl) {
+  throw "curl.exe is required for Prism Element read-only smoke on Windows PowerShell."
 }
 
 $paths = @(
@@ -37,7 +35,17 @@ $paths = @(
 
 foreach ($path in $paths) {
   $uri = "$baseUri$path"
-  Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -TimeoutSec 30 | Out-Null
+  $args = @("-sS", "--connect-timeout", "10", "--max-time", "30", "-u", "${username}:${password}", "-H", "Accept: application/json", "-o", "NUL", "-w", "%{http_code}")
+  if ([Environment]::GetEnvironmentVariable("NDC_PRISM_TLS_INSECURE") -eq "true") {
+    $args = @("-k") + $args
+  }
+  $statusCode = & $curl.Source @args $uri
+  if ($LASTEXITCODE -ne 0) {
+    throw "Read-only Prism Element check failed for $path. curl exit code $LASTEXITCODE."
+  }
+  if ($statusCode -ne "200") {
+    throw "Read-only Prism Element check failed for $path. HTTP $statusCode."
+  }
   Write-Output "Read-only Prism Element check passed: $path"
 }
 
