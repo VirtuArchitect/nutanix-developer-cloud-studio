@@ -9,7 +9,7 @@ import type { RequestContext } from "./security";
 import type { ApiState } from "./types";
 
 export function currentVersion() {
-  return process.env.npm_package_version ?? "9.0.0-ahv-lab-acceptance-pack";
+  return process.env.npm_package_version ?? "9.1.0-prism-element-lab-adapter";
 }
 
 export function createRuntimeObservabilitySnapshot(

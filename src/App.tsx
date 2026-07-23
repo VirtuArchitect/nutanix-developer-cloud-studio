@@ -8014,16 +8014,20 @@ function FeatureFlagSettingsPanel({ settings }: { settings: PlatformSettingsSumm
 
 function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }) {
   const lab = settings.ahvLab;
+  const providerLabel = lab.provider === "prism-element" ? "Prism Element" : "Prism Central";
+  const endpointConfigured = lab.provider === "prism-element" ? lab.prismElementConfigured : lab.prismCentralConfigured;
 
   return (
     <div className="dryRunPanel">
       <div className="platformConfigGrid">
-        <CheckLine icon={Network} label="Prism Central URL" value={lab.prismCentralConfigured ? "Configured" : "Missing"} passed={lab.prismCentralConfigured} />
+        <CheckLine icon={Network} label={`${providerLabel} URL`} value={endpointConfigured ? "Configured" : "Missing"} passed={endpointConfigured} />
+        <CheckLine icon={Settings} label="Lab provider" value={providerLabel} passed={lab.provider === "prism-element" || lab.provider === "prism-central"} />
         <CheckLine icon={UserRound} label="Prism username" value={lab.usernameConfigured ? "Configured" : "Missing"} passed={lab.usernameConfigured} />
         <CheckLine icon={LockKeyhole} label="Prism password" value={lab.passwordConfigured ? "Configured" : "Missing"} passed={lab.passwordConfigured} />
         <CheckLine icon={PlayCircle} label="Lifecycle" value={lab.lifecycleEnabled ? "Enabled" : "Disabled"} passed={lab.lifecycleEnabled && lab.labMode} />
+        <CheckLine icon={ShieldCheck} label="PE adapter" value={lab.prismElementAdapterEnabled ? "Enabled" : "Disabled"} passed={lab.provider !== "prism-element" || lab.prismElementAdapterEnabled} />
         <CheckLine icon={Layers3} label="Cluster" value={lab.allowedClusterConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedClusterConfigured} />
-        <CheckLine icon={Archive} label="Project" value={lab.allowedProjectConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedProjectConfigured} />
+        <CheckLine icon={Archive} label="Project" value={lab.provider === "prism-element" ? "Not required for PE" : lab.allowedProjectConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedProjectConfigured} />
         <CheckLine icon={Cloud} label="Subnet" value={lab.allowedSubnetConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedSubnetConfigured} />
         <CheckLine icon={Gauge} label="Image" value={lab.allowedImageConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedImageConfigured} />
       </div>
@@ -15551,11 +15555,14 @@ function createMockPlatformSettingsSummary(
       message: config.message,
     })),
     ahvLab: {
+      provider: "prism-central",
       realAdapterEnabled: false,
+      prismElementAdapterEnabled: false,
       controlledProvisioningEnabled: false,
       lifecycleEnabled: false,
       labMode: false,
       prismCentralConfigured: false,
+      prismElementConfigured: false,
       usernameConfigured: false,
       passwordConfigured: false,
       allowedClusterConfigured: false,

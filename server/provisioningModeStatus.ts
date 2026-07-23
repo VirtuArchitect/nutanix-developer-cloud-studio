@@ -10,7 +10,9 @@ export function createProvisioningModeStatus(runtime: RuntimeKind, env = process
   }
 
   const labConfig = createAhvLabRuntimeConfig(env);
-  const endpoint = labConfig.prismCentralUrlHost ?? "not configured";
+  const endpoint = labConfig.provider === "prism-element"
+    ? labConfig.prismElementUrlHost ?? "not configured"
+    : labConfig.prismCentralUrlHost ?? "not configured";
   const mockEndpoint = isMockEndpoint(endpoint);
   const activeMode = labConfig.provisioningEnabled
     ? mockEndpoint
@@ -23,7 +25,7 @@ export function createProvisioningModeStatus(runtime: RuntimeKind, env = process
       ? "Lab lifecycle armed"
       : activeMode === "Mock Prism"
         ? "Mock lifecycle ready"
-        : labConfig.checks.some((check) => check.name === "Prism Central endpoint" && check.passed)
+        : labConfig.checks.some((check) => /Prism (Central|Element) endpoint/.test(check.name) && check.passed)
           ? "Needs configuration"
           : "Simulated";
 
@@ -32,7 +34,7 @@ export function createProvisioningModeStatus(runtime: RuntimeKind, env = process
     generatedAt: new Date().toISOString(),
     activeMode,
     label: activeMode,
-    summary: summaryFor(activeMode),
+    summary: summaryFor(activeMode, labConfig.provider),
     status,
     runtime,
     endpointLabel: endpoint,
@@ -50,13 +52,13 @@ export function createProvisioningModeStatus(runtime: RuntimeKind, env = process
         name: "Real infrastructure mutation boundary",
         passed: realInfrastructureMutation ? labConfig.provisioningEnabled : true,
         detail: realInfrastructureMutation
-          ? "Real AHV lab lifecycle can submit Prism tasks."
+          ? `Real AHV lab lifecycle can submit ${labConfig.provider === "prism-element" ? "Prism Element" : "Prism Central"} tasks.`
           : "No real infrastructure mutation is active in this mode.",
       },
     ],
     availableModes: availableModes(activeMode),
-    nextActions: nextActionsFor(activeMode, labConfig.provisioningEnabled),
-    commands: commandsFor(activeMode),
+    nextActions: nextActionsFor(activeMode, labConfig.provisioningEnabled, labConfig.provider),
+    commands: commandsFor(activeMode, labConfig.provider),
   };
 }
 
@@ -90,7 +92,7 @@ function browserMode(): ProvisioningModeStatus {
   };
 }
 
-function summaryFor(mode: ProvisioningModeStatus["activeMode"]) {
+function summaryFor(mode: ProvisioningModeStatus["activeMode"], provider: "prism-central" | "prism-element" = "prism-central") {
   switch (mode) {
     case "Static Demo":
       return "Browser-only demonstration with no API or Prism Central calls.";
@@ -99,16 +101,20 @@ function summaryFor(mode: ProvisioningModeStatus["activeMode"]) {
     case "Mock Prism":
       return "Hosted API is configured for local mock Prism lifecycle testing with no real Nutanix infrastructure.";
     case "Real AHV Lab":
-      return "Hosted API is lab-scoped and armed for AHV VM lifecycle against an authorized Prism Central test endpoint.";
+      return provider === "prism-element"
+        ? "Hosted API is lab-scoped and armed for AHV VM lifecycle against an authorized Prism Element test endpoint."
+        : "Hosted API is lab-scoped and armed for AHV VM lifecycle against an authorized Prism Central test endpoint.";
   }
 }
 
-function nextActionsFor(mode: ProvisioningModeStatus["activeMode"], provisioningEnabled: boolean) {
+function nextActionsFor(mode: ProvisioningModeStatus["activeMode"], provisioningEnabled: boolean, provider: "prism-central" | "prism-element" = "prism-central") {
   if (mode === "Real AHV Lab") {
     return [
       "Run validate:ahv-lab-config before any lifecycle smoke.",
       "Confirm Platform Admin identity, lab authorization scope, rollback proof, gate approval, and lifecycle proof.",
-      "Run smoke:ahv-lab-readonly before the opt-in lifecycle smoke.",
+      provider === "prism-element"
+        ? "Run smoke:ahv-pe-readonly before the opt-in lifecycle smoke."
+        : "Run smoke:ahv-lab-readonly before the opt-in lifecycle smoke.",
     ];
   }
 
@@ -138,11 +144,14 @@ function nextActionsFor(mode: ProvisioningModeStatus["activeMode"], provisioning
   ];
 }
 
-function commandsFor(mode: ProvisioningModeStatus["activeMode"]) {
+function commandsFor(mode: ProvisioningModeStatus["activeMode"], provider: "prism-central" | "prism-element" = "prism-central") {
   if (mode === "Real AHV Lab") {
     return [
       { label: "Validate lab config", command: "npm run validate:ahv-lab-config" },
-      { label: "Read-only lab smoke", command: "npm run smoke:ahv-lab-readonly" },
+      {
+        label: provider === "prism-element" ? "Read-only PE smoke" : "Read-only lab smoke",
+        command: provider === "prism-element" ? "npm run smoke:ahv-pe-readonly" : "npm run smoke:ahv-lab-readonly",
+      },
       { label: "Opt-in lifecycle smoke", command: "npm run smoke:ahv-lab-lifecycle" },
     ];
   }

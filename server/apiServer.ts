@@ -14,6 +14,7 @@ import {
   AhvLabRuntimeError,
   createAhvLabRuntimeConfig,
   LabAhvPrismAdapter,
+  LabAhvPrismElementAdapter,
   redactSensitive,
 } from "./ahvLabRuntime";
 import {
@@ -3588,7 +3589,7 @@ async function routeApi(
 
   if (request.method === "POST" && url.pathname === "/api/ahv/lab-runtime/preflight") {
     requireRole(context, ["Platform Admin"]);
-    const adapter = new LabAhvPrismAdapter();
+    const adapter = createActiveAhvLabAdapter();
     const preflight = await adapter.preflight(context.session.user);
     state.ahvLabRuntimePreflights = [preflight, ...state.ahvLabRuntimePreflights];
     addAuditEvent(state, "ahv.lab-runtime.preflight", context.session.user, preflight.id, {
@@ -3609,7 +3610,7 @@ async function routeApi(
       const body = await readJson<CreateAhvControlledProvisioningRunRequest>(request);
       const runtimeConfig = createAhvLabRuntimeConfig();
       const run = runtimeConfig.provisioningEnabled
-        ? await new LabAhvPrismAdapter().create(state, body.gateId, context.session.user)
+        ? await createActiveAhvLabAdapter().create(state, body.gateId, context.session.user)
         : createDisabledAhvControlledProvisioningAdapter().preflight(state, body, context.session.user);
       state.ahvControlledProvisioningRuns = [run, ...state.ahvControlledProvisioningRuns];
       addAuditEvent(state, run.provisioningEnabled ? "ahv.controlled.create.submitted" : "ahv.controlled.preflight.recorded", context.session.user, run.environmentName, {
@@ -3652,7 +3653,7 @@ async function routeApi(
       });
       return;
     }
-    if (existing.adapterMode !== "Lab AHV Prism adapter") {
+    if (!["Lab AHV Prism adapter", "Lab AHV Prism Element adapter"].includes(existing.adapterMode)) {
       sendJson(response, 409, {
         error: {
           code: "ahv_run_not_lab_adapter",
@@ -3662,7 +3663,7 @@ async function routeApi(
       return;
     }
 
-    const adapter = new LabAhvPrismAdapter();
+    const adapter = existing.adapterMode === "Lab AHV Prism Element adapter" ? new LabAhvPrismElementAdapter() : new LabAhvPrismAdapter();
     const body = await readJson<{ powerState?: "ON" | "OFF" }>(request);
     const updated =
       action === "poll"
@@ -5351,6 +5352,11 @@ function createSystemStatus(state: Awaited<ReturnType<ApiStore["load"]>>): Syste
   };
 }
 
+function createActiveAhvLabAdapter() {
+  const config = createAhvLabRuntimeConfig();
+  return config.provider === "prism-element" ? new LabAhvPrismElementAdapter() : new LabAhvPrismAdapter();
+}
+
 function createPlatformSettingsSummary(state: ApiState, context: RequestContext): PlatformSettingsSummary {
   const retentionLimit = positiveNumber(process.env.NDC_AUDIT_RETENTION_EVENTS, 500);
   const labConfig = createAhvLabRuntimeConfig();
@@ -5389,11 +5395,14 @@ function createPlatformSettingsSummary(state: ApiState, context: RequestContext)
       message: config.message,
     })),
     ahvLab: {
+      provider: labConfig.provider,
       realAdapterEnabled: labConfig.switches.realAdapter,
+      prismElementAdapterEnabled: labConfig.switches.prismElementAdapter,
       controlledProvisioningEnabled: labConfig.switches.controlledProvisioning,
       lifecycleEnabled: labConfig.switches.labLifecycle,
       labMode: labConfig.appEnv === "lab",
       prismCentralConfigured: labConfig.prismCentralUrlConfigured,
+      prismElementConfigured: labConfig.prismElementUrlConfigured,
       usernameConfigured: labConfig.usernameConfigured,
       passwordConfigured: labConfig.passwordConfigured,
       allowedClusterConfigured: labConfig.allowedClusterUuidConfigured,

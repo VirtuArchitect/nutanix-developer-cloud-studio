@@ -154,11 +154,14 @@ export type PlatformSettingsSummary = {
     message: string;
   }>;
   ahvLab: {
+    provider: AhvLabRuntimeConfig["provider"];
     realAdapterEnabled: boolean;
+    prismElementAdapterEnabled: boolean;
     controlledProvisioningEnabled: boolean;
     lifecycleEnabled: boolean;
     labMode: boolean;
     prismCentralConfigured: boolean;
+    prismElementConfigured: boolean;
     usernameConfigured: boolean;
     passwordConfigured: boolean;
     allowedClusterConfigured: boolean;
@@ -1869,7 +1872,7 @@ export type AhvControlledProvisioningRun = {
   dryRunPlanId: string;
   environmentName: string;
   action: "Create VM" | "Power VM" | "Destroy VM";
-  adapterMode: "Disabled real adapter" | "Lab AHV Prism adapter";
+  adapterMode: "Disabled real adapter" | "Lab AHV Prism adapter" | "Lab AHV Prism Element adapter";
   status:
     | "Preflight blocked"
     | "Ready but disabled"
@@ -1909,9 +1912,12 @@ export type AhvControlledProvisioningRun = {
 
 export type AhvLabRuntimeConfig = {
   mode: "Disabled" | "Lab ready";
+  provider: "prism-central" | "prism-element";
   appEnv: string;
   prismCentralUrlConfigured: boolean;
   prismCentralUrlHost?: string;
+  prismElementUrlConfigured: boolean;
+  prismElementUrlHost?: string;
   usernameConfigured: boolean;
   passwordConfigured: boolean;
   allowedClusterUuidConfigured: boolean;
@@ -1927,6 +1933,7 @@ export type AhvLabRuntimeConfig = {
   };
   switches: {
     realAdapter: boolean;
+    prismElementAdapter: boolean;
     controlledProvisioning: boolean;
     labLifecycle: boolean;
     trustedIdentityRequired: boolean;
@@ -1947,7 +1954,7 @@ export type AhvLabRuntimePreflight = {
   requestedBy: string;
   config: AhvLabRuntimeConfig;
   readOnlyChecks: Array<{
-    operation: "listClusters" | "listProjects" | "listImages" | "listSubnets";
+    operation: "listClusters" | "listProjects" | "listImages" | "listSubnets" | "listVms";
     passed: boolean;
     detail: string;
   }>;

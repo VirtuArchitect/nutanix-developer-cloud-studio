@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "9.0.0-ahv-lab-acceptance-pack",
+  "version": "9.1.0-prism-element-lab-adapter",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -25,6 +25,7 @@
     "validate:mock-prism-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-mock-prism-config.ps1",
     "validate:ahv-lab-acceptance-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-lab-acceptance-pack.ps1",
     "smoke:ahv-lab-readonly": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-lab-readonly.ps1",
+    "smoke:ahv-pe-readonly": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-pe-readonly.ps1",
     "smoke:ahv-lab-lifecycle": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-ahv-lab-lifecycle.ps1",
     "smoke:mock-prism-lifecycle": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-mock-prism-lifecycle.ps1"
   },

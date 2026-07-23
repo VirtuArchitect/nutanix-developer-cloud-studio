@@ -2378,6 +2378,24 @@ describe("api server", () => {
     );
   });
 
+  it("reports Prism Element lab runtime config when PE mode is selected", async () => {
+    configurePrismElementLabEnv();
+    const config = await requestJson("/api/ahv/lab-runtime/config", {
+      headers: { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" },
+    });
+
+    expect(config.data).toMatchObject({
+      mode: "Lab ready",
+      provider: "prism-element",
+      provisioningEnabled: true,
+      realPrismCallsEnabled: true,
+      prismElementUrlHost: "prism-element.example.invalid:9440",
+      passwordConfigured: true,
+      allowedProjectUuidConfigured: true,
+    });
+    expect(JSON.stringify(config.data)).not.toContain("placeholder-not-a-secret");
+  });
+
   it("executes lab AHV create, poll, power, and destroy against the mock Prism endpoint", async () => {
     configureAhvLabEnv(`${baseUrl}/mock-prism`);
 
@@ -4610,20 +4628,44 @@ describe("api server", () => {
     process.env.NDC_AUTHORIZED_PENTEST_SCOPE_ACTIVE = "true";
   }
 
+  function configurePrismElementLabEnv() {
+    process.env.APP_ENV = "lab";
+    process.env.NDC_AHV_LAB_PROVIDER = "prism-element";
+    process.env.NDC_AHV_REAL_ADAPTER_ENABLED = "true";
+    process.env.NDC_AHV_PE_LAB_ADAPTER_ENABLED = "true";
+    process.env.NDC_CONTROLLED_PROVISIONING_ENABLED = "true";
+    process.env.NDC_AHV_LAB_LIFECYCLE_ENABLED = "true";
+    process.env.NUTANIX_PRISM_ELEMENT_URL = "https://prism-element.example.invalid:9440";
+    process.env.NUTANIX_PRISM_ELEMENT_USERNAME = "lab-user";
+    process.env.NUTANIX_PRISM_ELEMENT_PASSWORD = "placeholder-not-a-secret";
+    process.env.NDC_AHV_PE_ALLOWED_CLUSTER_UUID = "cluster-uuid";
+    process.env.NDC_AHV_PE_ALLOWED_SUBNET_UUID = "subnet-uuid";
+    process.env.NDC_AHV_PE_ALLOWED_IMAGE_UUID = "image-uuid";
+    process.env.NDC_AHV_VM_NAME_PREFIX = "ndc-lab-";
+  }
+
   function resetAhvLabEnv() {
     delete process.env.APP_ENV;
+    delete process.env.NDC_AHV_LAB_PROVIDER;
     delete process.env.NDC_REQUIRE_TRUSTED_IDENTITY;
     delete process.env.NDC_RATE_LIMIT_PER_MINUTE;
     delete process.env.NDC_AHV_REAL_ADAPTER_ENABLED;
+    delete process.env.NDC_AHV_PE_LAB_ADAPTER_ENABLED;
     delete process.env.NDC_CONTROLLED_PROVISIONING_ENABLED;
     delete process.env.NDC_AHV_LAB_LIFECYCLE_ENABLED;
     delete process.env.NUTANIX_PRISM_CENTRAL_URL;
     delete process.env.NUTANIX_PRISM_USERNAME;
     delete process.env.NUTANIX_PRISM_PASSWORD;
+    delete process.env.NUTANIX_PRISM_ELEMENT_URL;
+    delete process.env.NUTANIX_PRISM_ELEMENT_USERNAME;
+    delete process.env.NUTANIX_PRISM_ELEMENT_PASSWORD;
     delete process.env.NDC_AHV_ALLOWED_CLUSTER_UUID;
     delete process.env.NDC_AHV_ALLOWED_PROJECT_UUID;
     delete process.env.NDC_AHV_ALLOWED_SUBNET_UUID;
     delete process.env.NDC_AHV_ALLOWED_IMAGE_UUID;
+    delete process.env.NDC_AHV_PE_ALLOWED_CLUSTER_UUID;
+    delete process.env.NDC_AHV_PE_ALLOWED_SUBNET_UUID;
+    delete process.env.NDC_AHV_PE_ALLOWED_IMAGE_UUID;
     delete process.env.NDC_AHV_VM_NAME_PREFIX;
     delete process.env.NDC_AUTHORIZED_PENTEST_SCOPE_REF;
     delete process.env.NDC_AUTHORIZED_PENTEST_SCOPE_ACTIVE;

@@ -27,6 +27,7 @@ if ($missingFiles.Count -gt 0) {
 $envExample = Get-Content -LiteralPath (Join-Path $repoRoot ".env.lab.example") -Raw
 $requiredDisabledDefaults = @(
   "NDC_AHV_REAL_ADAPTER_ENABLED=false",
+  "NDC_AHV_PE_LAB_ADAPTER_ENABLED=false",
   "NDC_CONTROLLED_PROVISIONING_ENABLED=false",
   "NDC_AHV_LAB_LIFECYCLE_ENABLED=false"
 )

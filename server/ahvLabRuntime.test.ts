@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   LabAhvPrismAdapter,
+  LabAhvPrismElementAdapter,
   PrismCentralV3Client,
+  PrismElementV2Client,
   createAhvLabRuntimeConfig,
   redactSensitive,
 } from "./ahvLabRuntime";
@@ -36,6 +38,20 @@ describe("AHV lab runtime", () => {
     expect(config.checks.every((check) => check.passed)).toBe(true);
   });
 
+  it("marks Prism Element lab runtime ready with PE-specific configuration", () => {
+    const config = createAhvLabRuntimeConfig(prismElementEnv());
+
+    expect(config).toMatchObject({
+      mode: "Lab ready",
+      provider: "prism-element",
+      provisioningEnabled: true,
+      realPrismCallsEnabled: true,
+      prismElementUrlHost: "prism-element.example.invalid:9440",
+      allowedProjectUuidConfigured: true,
+    });
+    expect(config.checks.every((check) => check.passed)).toBe(true);
+  });
+
   it("redacts authorization and secret-shaped fields", () => {
     expect(
       redactSensitive({
@@ -66,6 +82,24 @@ describe("AHV lab runtime", () => {
     ]);
   });
 
+  it("builds Prism Element v2 requests through an injectable transport", async () => {
+    const requests: Array<{ method: string; path: string; body?: Record<string, unknown> }> = [];
+    const client = new PrismElementV2Client(prismElementEnv(), async (request) => {
+      requests.push(request);
+      return { task_uuid: "task-pe-1" };
+    });
+
+    await client.list("getCluster");
+    await client.list("listNetworks");
+    await client.createVm({ name: "ndc-lab-pe-01" });
+
+    expect(requests).toEqual([
+      expect.objectContaining({ method: "GET", path: "/PrismGateway/services/rest/v2.0/cluster" }),
+      expect.objectContaining({ method: "GET", path: "/PrismGateway/services/rest/v2.0/networks" }),
+      expect.objectContaining({ method: "POST", path: "/PrismGateway/services/rest/v2.0/vms" }),
+    ]);
+  });
+
   it("preflights read-only Prism operations without submitting VM lifecycle tasks", async () => {
     const adapter = new LabAhvPrismAdapter(
       new PrismCentralV3Client(labEnv(), async () => ({ metadata: { total_matches: 1 }, entities: [] }))
@@ -80,6 +114,27 @@ describe("AHV lab runtime", () => {
         realPrismCallsEnabled: true,
         redactionApplied: true,
       });
+      expect(preflight.readOnlyChecks).toHaveLength(4);
+    } finally {
+      restoreEnv(previousEnv);
+    }
+  });
+
+  it("preflights read-only Prism Element operations without submitting VM lifecycle tasks", async () => {
+    const adapter = new LabAhvPrismElementAdapter(
+      new PrismElementV2Client(prismElementEnv(), async () => ({ entities: [] }))
+    );
+    const previousEnv = snapshotEnv();
+    Object.assign(process.env, prismElementEnv());
+    try {
+      const preflight = await adapter.preflight("platform.admin");
+      expect(preflight).toMatchObject({
+        status: "Ready",
+        provisioningEnabled: false,
+        realPrismCallsEnabled: true,
+        redactionApplied: true,
+      });
+      expect(preflight.config.provider).toBe("prism-element");
       expect(preflight.readOnlyChecks).toHaveLength(4);
     } finally {
       restoreEnv(previousEnv);
@@ -100,6 +155,24 @@ function labEnv() {
     NDC_AHV_ALLOWED_PROJECT_UUID: "project-uuid",
     NDC_AHV_ALLOWED_SUBNET_UUID: "subnet-uuid",
     NDC_AHV_ALLOWED_IMAGE_UUID: "image-uuid",
+    NDC_AHV_VM_NAME_PREFIX: "ndc-lab-",
+  };
+}
+
+function prismElementEnv() {
+  return {
+    APP_ENV: "lab",
+    NDC_AHV_LAB_PROVIDER: "prism-element",
+    NDC_AHV_REAL_ADAPTER_ENABLED: "true",
+    NDC_AHV_PE_LAB_ADAPTER_ENABLED: "true",
+    NDC_CONTROLLED_PROVISIONING_ENABLED: "true",
+    NDC_AHV_LAB_LIFECYCLE_ENABLED: "true",
+    NUTANIX_PRISM_ELEMENT_URL: "https://prism-element.example.invalid:9440",
+    NUTANIX_PRISM_ELEMENT_USERNAME: "lab-user",
+    NUTANIX_PRISM_ELEMENT_PASSWORD: "placeholder-not-a-secret",
+    NDC_AHV_PE_ALLOWED_CLUSTER_UUID: "cluster-uuid",
+    NDC_AHV_PE_ALLOWED_SUBNET_UUID: "subnet-uuid",
+    NDC_AHV_PE_ALLOWED_IMAGE_UUID: "image-uuid",
     NDC_AHV_VM_NAME_PREFIX: "ndc-lab-",
   };
 }

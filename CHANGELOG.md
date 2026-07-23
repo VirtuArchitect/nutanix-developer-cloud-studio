@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v9.0.0-ahv-lab-acceptance-pack`.
+This project uses release tags for public milestones. The current release is `v9.1.0-prism-element-lab-adapter`.
 
 ## [Unreleased]
 
@@ -12,6 +12,22 @@ This project uses release tags for public milestones. The current release is `v9
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v9.1.0-prism-element-lab-adapter] - 2026-07-23
+
+### Added
+
+- Prism Element lab provider mode for one-node AHV/PE test environments.
+- PE-specific runtime configuration, endpoint checks, allowed cluster/subnet/image UUID guardrails, and adapter switch.
+- Prism Element v2 client path for read-only discovery plus controlled create, poll, power, and destroy adapter operations.
+- Admin Settings visibility for the selected AHV lab provider and PE adapter switch.
+- `smoke:ahv-pe-readonly` script for PE cluster, image, network, and VM read-only validation.
+
+### Notes
+
+- Real PE credentials and private endpoint details are not committed.
+- The PE path remains lab-only, disabled by default, and requires `APP_ENV=lab`, `NDC_AHV_LAB_PROVIDER=prism-element`, `NDC_AHV_PE_LAB_ADAPTER_ENABLED=true`, and the existing lifecycle switches.
+- Prism Element does not provide all Prism Central project/multi-cluster governance semantics; those remain simulated or Prism Central-specific.
 
 ## [v9.0.0-ahv-lab-acceptance-pack] - 2026-07-19
 

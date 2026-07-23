@@ -16,6 +16,7 @@ testing, linting, security scanning, or smoke testing.
 - `validate-ahv-lab-acceptance-pack.ps1`: validates the AHV lab acceptance documentation pack and confirms lab lifecycle defaults remain disabled.
 - `validate-mock-prism-config.ps1`: validates a local mock Prism Central endpoint, Basic Auth, and fixture UUID coverage without making mutation calls.
 - `smoke-ahv-lab-readonly.ps1`: calls Prism Central v3 list endpoints only.
+- `smoke-ahv-pe-readonly.ps1`: calls Prism Element v2 cluster, image, network, and VM read-only endpoints only.
 - `smoke-ahv-lab-lifecycle.ps1`: opt-in AHV create/poll/power/destroy smoke for authorized lab infrastructure.
 - `smoke-mock-prism-lifecycle.ps1`: runs NDC AHV create/poll/power/destroy/reconciliation against the standalone mock Prism Central harness.
 - `validate-audit-export-config.ps1`: validates audit retention and export destination references without connecting to external storage.
