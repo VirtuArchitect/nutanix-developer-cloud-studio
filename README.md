@@ -193,7 +193,7 @@ This path submits create, poll, power, and destroy calls to the mock Prism Centr
 
 ## Test Against Real Lab Infrastructure
 
-Authorized testers with a disposable Prism Element or Prism Central lab can use **Admin > Settings > AHV lab runtime > Connect infrastructure** to enter Prism details and run a one-time read-only connection test from the browser. The password is not saved or returned by the API.
+Authorized testers with a disposable Prism Element or Prism Central lab can use **Admin > Settings > Connect infrastructure** to enter Prism details and run a one-time read-only connection test from the browser. The password is not saved or returned by the API.
 
 Operators can also use the script workflow when preparing a private lab host:
 

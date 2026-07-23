@@ -7,7 +7,7 @@ The public GitHub Pages demo remains browser-only and never calls Prism. Real in
 Most testers should start in the console:
 
 ```text
-Admin > Settings > AHV lab runtime > Connect infrastructure
+Admin > Settings > Connect infrastructure
 ```
 
 The browser wizard sends Prism endpoint and credentials to the private NDC API for a one-time read-only test. The password is not saved, returned, or written to audit records.
