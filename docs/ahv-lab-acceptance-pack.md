@@ -65,7 +65,7 @@ Run these from the management/test VM.
 npm install
 npm run validate:ahv-lab-config
 npm run smoke:ahv-lab-readonly
-npm run smoke:ahv-lab-lifecycle -- -BaseUrl http://127.0.0.1:8080 -EnvironmentName ndc-lab-acceptance-01
+npm run smoke:ahv-lab-lifecycle -- -BaseUrl http://127.0.0.1:18080 -EnvironmentName ndc-lab-acceptance-01
 ```
 
 The lifecycle smoke is opt-in. Do not run it until the lab authorization, rollback owner, and operator window are approved.

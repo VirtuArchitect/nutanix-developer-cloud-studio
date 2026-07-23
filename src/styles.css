@@ -582,6 +582,35 @@ button {
   border-radius: 7px;
 }
 
+.settingsFormGrid .checkboxRow {
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  min-height: 38px;
+  padding: 10px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.settingsFormGrid .checkboxRow input {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+}
+
+.codeBlock {
+  max-width: 100%;
+  overflow: auto;
+  padding: 12px;
+  color: #dce9ec;
+  background: #101820;
+  border: 1px solid #24353d;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
 .toggleGrid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }

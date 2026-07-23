@@ -12,6 +12,8 @@ import {
 } from "./ahvControlledProvisioning";
 import {
   AhvLabRuntimeError,
+  PrismCentralV3Client,
+  PrismElementV2Client,
   createAhvLabRuntimeConfig,
   LabAhvPrismAdapter,
   LabAhvPrismElementAdapter,
@@ -431,6 +433,8 @@ import type {
   PlatformSettingsConfig,
   PlatformSettingsConnectionTest,
   PlatformSettingsExport,
+  AhvLabConnectionTestRequest,
+  AhvLabConnectionTestResult,
   ProvisioningAdapterName,
   PrismInventoryImportResult,
   PrismInventoryRecord,
@@ -2013,6 +2017,22 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/ahv/lab-runtime/preflights") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: state.ahvLabRuntimePreflights });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/ahv/lab-runtime/connection-test") {
+    requireRole(context, ["Platform Admin"]);
+    const payload = await readJson<AhvLabConnectionTestRequest>(request);
+    const result = await createAhvLabConnectionTest(payload, context.session.user);
+    addAuditEvent(state, "ahv.lab-runtime.connection-test", context.session.user, result.provider, {
+      endpointHost: result.endpointHost,
+      status: result.status,
+      readOnlyChecks: result.readOnlyChecks.map((check) => ({ operation: check.operation, passed: check.passed })),
+      redactionApplied: true,
+      lifecycleMutationEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: result });
     return;
   }
 
@@ -5357,6 +5377,116 @@ function createActiveAhvLabAdapter() {
   return config.provider === "prism-element" ? new LabAhvPrismElementAdapter() : new LabAhvPrismAdapter();
 }
 
+async function createAhvLabConnectionTest(
+  payload: AhvLabConnectionTestRequest,
+  actor: string
+): Promise<AhvLabConnectionTestResult> {
+  const provider = payload.provider === "prism-element" ? "prism-element" : "prism-central";
+  const endpoint = safeConnectionUrl(payload.endpoint);
+  const endpointHost = endpoint?.host ?? "invalid";
+  const configChecks = [
+    check("Endpoint URL", Boolean(endpoint), endpoint ? `Host ${endpoint.host}.` : "Enter a valid http or https URL."),
+    check("Username", Boolean(payload.username), payload.username ? "Username supplied for this one-time test." : "Username is required."),
+    check("Password", Boolean(payload.password), payload.password ? "Password supplied for this one-time test." : "Password is required."),
+    check(
+      "Cluster UUID",
+      Boolean(payload.allowedClusterUuid),
+      payload.allowedClusterUuid ? "Allowed cluster UUID captured." : "Required before lifecycle enablement."
+    ),
+    check(
+      "Subnet/network UUID",
+      Boolean(payload.allowedSubnetUuid),
+      payload.allowedSubnetUuid ? "Allowed subnet/network UUID captured." : "Required before lifecycle enablement."
+    ),
+    check(
+      "Image UUID",
+      Boolean(payload.allowedImageUuid),
+      payload.allowedImageUuid ? "Allowed image UUID captured." : "Required before lifecycle enablement."
+    ),
+    check(
+      "Project UUID",
+      provider === "prism-element" || Boolean(payload.allowedProjectUuid),
+      provider === "prism-element" ? "Not required for Prism Element." : "Required for Prism Central lifecycle scoping."
+    ),
+    check(
+      "TLS policy",
+      !payload.tlsInsecure || process.env.APP_ENV === "lab",
+      payload.tlsInsecure ? "Insecure TLS is accepted only when APP_ENV=lab." : "TLS verification requested."
+    ),
+    check(
+      "Runtime boundary",
+      process.env.APP_ENV !== "production",
+      "One-time infrastructure tests are blocked when APP_ENV=production."
+    ),
+  ];
+
+  const readOnlyChecks: AhvLabConnectionTestResult["readOnlyChecks"] = [];
+  if (configChecks.every((item) => item.passed) && endpoint) {
+    if (provider === "prism-element") {
+      const client = new PrismElementV2Client({
+        APP_ENV: process.env.APP_ENV,
+        NDC_PRISM_TLS_INSECURE: payload.tlsInsecure ? "true" : "false",
+        NUTANIX_PRISM_ELEMENT_URL: endpoint.toString(),
+        NUTANIX_PRISM_ELEMENT_USERNAME: payload.username,
+        NUTANIX_PRISM_ELEMENT_PASSWORD: payload.password,
+      } as NodeJS.ProcessEnv);
+      const operations = [
+        { request: "getCluster" as const, operation: "listClusters" as const },
+        { request: "listImages" as const, operation: "listImages" as const },
+        { request: "listNetworks" as const, operation: "listSubnets" as const },
+        { request: "listVms" as const, operation: "listVms" as const },
+      ];
+      for (const item of operations) {
+        try {
+          await client.list(item.request);
+          readOnlyChecks.push({ operation: item.operation, passed: true, detail: `${item.request} succeeded.` });
+        } catch (error) {
+          readOnlyChecks.push({
+            operation: item.operation,
+            passed: false,
+            detail: error instanceof Error ? error.message : `${item.request} failed.`,
+          });
+        }
+      }
+    } else {
+      const client = new PrismCentralV3Client({
+        APP_ENV: process.env.APP_ENV,
+        NDC_PRISM_TLS_INSECURE: payload.tlsInsecure ? "true" : "false",
+        NUTANIX_PRISM_CENTRAL_URL: endpoint.toString(),
+        NUTANIX_PRISM_USERNAME: payload.username,
+        NUTANIX_PRISM_PASSWORD: payload.password,
+      } as NodeJS.ProcessEnv);
+      const operations = ["listClusters", "listProjects", "listImages", "listSubnets"] as const;
+      for (const operation of operations) {
+        try {
+          await client.list(operation);
+          readOnlyChecks.push({ operation, passed: true, detail: `${operation} succeeded.` });
+        } catch (error) {
+          readOnlyChecks.push({
+            operation,
+            passed: false,
+            detail: error instanceof Error ? error.message : `${operation} failed.`,
+          });
+        }
+      }
+    }
+  }
+
+  const status = configChecks.every((item) => item.passed) && readOnlyChecks.length > 0 && readOnlyChecks.every((item) => item.passed) ? "Ready" : "Blocked";
+  return {
+    id: `ahv-lab-connection-test-${provider}-${Date.now()}`,
+    provider,
+    endpointHost,
+    status,
+    readOnlyChecks,
+    configChecks,
+    lifecycleMutationEnabled: false,
+    redactionApplied: true,
+    requestedBy: actor,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 function createPlatformSettingsSummary(state: ApiState, context: RequestContext): PlatformSettingsSummary {
   const retentionLimit = positiveNumber(process.env.NDC_AUDIT_RETENTION_EVENTS, 500);
   const labConfig = createAhvLabRuntimeConfig();
@@ -5710,6 +5840,19 @@ function safeUrlOrEmpty(value: string | undefined) {
     return parsed.protocol === "https:" ? parsed.toString() : "";
   } catch {
     return "";
+  }
+}
+
+function safeConnectionUrl(value: string | undefined) {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) {
+    return undefined;
+  }
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed : undefined;
+  } catch {
+    return undefined;
   }
 }
 

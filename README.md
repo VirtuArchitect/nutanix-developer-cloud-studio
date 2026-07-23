@@ -56,6 +56,8 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - API-backed provisioning mode selector that clearly distinguishes Static Demo, Simulated API, Mock Prism, and Real AHV Lab modes on the dashboard.
 - AHV lab acceptance pack with authorization checklist, execution sequence, evidence report template, and metadata-only validator before authorized Prism Central testing.
 - Prism Element lab adapter starter for one-node AHV/PE validation with PE-specific configuration, read-only smoke, and controlled lifecycle provider selection.
+- Browser-based Connect Infrastructure wizard for private Prism Element or Prism Central labs, with one-time read-only testing, redacted evidence, and guarded lifecycle enablement.
+- Real-infrastructure tester workflow for private Prism Element or Prism Central labs using the UI wizard or ignored `.env.lab` files, read-only smoke tests, and guarded lifecycle enablement.
 
 ### Governance And Release Readiness
 
@@ -149,7 +151,14 @@ docker compose up --build
 
 Open:
 
-`http://localhost:8080`
+`http://localhost:18080`
+
+Docker Compose publishes the container's internal `8080` port on host port `18080` by default because Windows can reserve `8080` in excluded TCP ranges. Override the host binding when needed:
+
+```powershell
+$env:NDC_STUDIO_HOST_PORT="18180"
+docker compose up --build
+```
 
 In the hosted/on-prem starter, the frontend auto-detects the same-origin API through `/healthz`, loads environments from `/api/environments`, and submits requests to `POST /api/environments`. If no API is available, it falls back to browser mock mode for the public GitHub Pages demo.
 
@@ -171,16 +180,30 @@ docker compose -f docker-compose.mock-prism.yml --env-file .env.mock-prism up --
 Validate the mock Prism endpoint and fixture inventory:
 
 ```powershell
-npm run validate:mock-prism-config -- -EnvFile .env.mock-prism -PrismUrl http://127.0.0.1:9440
+npm run validate:mock-prism-config -- -EnvFile .env.mock-prism -PrismUrl http://127.0.0.1:19440
 ```
 
 Run the mock-backed AHV lifecycle smoke:
 
 ```powershell
-npm run smoke:mock-prism-lifecycle -- -BaseUrl http://127.0.0.1:8080 -PrismUrl http://127.0.0.1:9440
+npm run smoke:mock-prism-lifecycle -- -BaseUrl http://127.0.0.1:18080 -PrismUrl http://127.0.0.1:19440
 ```
 
 This path submits create, poll, power, and destroy calls to the mock Prism Central service only. It does not contact real Nutanix infrastructure.
+
+## Test Against Real Lab Infrastructure
+
+Authorized testers with a disposable Prism Element or Prism Central lab can use **Admin > Settings > AHV lab runtime > Connect infrastructure** to enter Prism details and run a one-time read-only connection test from the browser. The password is not saved or returned by the API.
+
+Operators can also use the script workflow when preparing a private lab host:
+
+```powershell
+npm run lab:env -- -Provider prism-element
+npm run validate:ahv-lab-readiness
+docker compose -f docker-compose.lab.yml up --build -d
+```
+
+Read the full tester guide: [`docs/real-infrastructure-testing.md`](docs/real-infrastructure-testing.md).
 
 ## Documentation
 

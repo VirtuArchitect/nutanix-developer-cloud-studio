@@ -4,12 +4,12 @@ services:
       context: .
     image: nutanix-developer-cloud-studio:mock-prism
     env_file:
-      - .env.mock-prism
+      - ${NDC_STUDIO_ENV_FILE:-.env.mock-prism}
     depends_on:
       mock-prism:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "${NDC_STUDIO_HOST_PORT:-18080}:8080"
     volumes:
       - ndc-studio-mock-prism-data:/data
     healthcheck:
@@ -25,9 +25,9 @@ services:
     image: nutanix-developer-cloud-studio:mock-prism
     command: ["npm", "run", "mock-prism:start"]
     env_file:
-      - .env.mock-prism
+      - ${NDC_STUDIO_ENV_FILE:-.env.mock-prism}
     ports:
-      - "9440:9440"
+      - "${NDC_MOCK_PRISM_HOST_PORT:-19440}:9440"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9440/healthz"]
       interval: 10s

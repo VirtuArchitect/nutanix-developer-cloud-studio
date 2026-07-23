@@ -50,7 +50,7 @@ npm run smoke:ahv-lab-readonly
 Run the lifecycle smoke only after explicit lab approval:
 
 ```powershell
-npm run smoke:ahv-lab-lifecycle -- -BaseUrl http://127.0.0.1:8080 -EnvironmentName ndc-lab-smoke-01
+npm run smoke:ahv-lab-lifecycle -- -BaseUrl http://127.0.0.1:18080 -EnvironmentName ndc-lab-smoke-01
 ```
 
 ## Lifecycle Path

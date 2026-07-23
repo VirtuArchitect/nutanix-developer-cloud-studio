@@ -36,7 +36,7 @@ docker compose up --build
 
 Open:
 
-`http://localhost:8080`
+`http://localhost:18080`
 
 The starter exposes:
 

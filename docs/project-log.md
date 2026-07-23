@@ -10,6 +10,8 @@
 - Prepared `v9.0.0-ahv-lab-acceptance-pack` with an authorization checklist, execution sequence, acceptance report template, and metadata-only pack validator for future authorized AHV lab testing.
 - Published missing GitHub releases for `v8.8.0`, `v8.9.0`, and `v9.0.0`, refreshed repository topics/about metadata, and replaced the README screenshot with a committed v9 dashboard capture.
 - Implemented `v9.1.0-prism-element-lab-adapter` to support a one-node AHV/Prism Element lab provider mode without committing private PE endpoint or credential values.
+- Added real-infrastructure tester workflow documentation and helper scripts so external testers can configure private Prism Element or Prism Central labs, validate read-only connectivity, and keep lifecycle mutation explicitly gated.
+- Added an Admin Settings Connect Infrastructure wizard backed by a one-time read-only API connection test so testers can validate Prism Element or Prism Central from the browser without editing scripts first.
 - Added lab-only AHV Prism Central v3 config validation, read-only preflight, opt-in VM create/poll/power/destroy lifecycle, Docker Compose lab overlay, and redacted audit evidence.
 - Released `v7.5.0-on-prem-install-profile-pack`.
 - Added on-prem install profile templates, validation script, and install pack API evidence.

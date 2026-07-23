@@ -21,6 +21,8 @@
     "validate:backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-state-backup-restore.ps1",
     "validate:container-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-container-config-pack.ps1",
     "validate:onprem-profile-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-onprem-profile-pack.ps1",
+    "lab:env": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/new-ahv-lab-env.ps1",
+    "validate:ahv-lab-readiness": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-ahv-lab-readiness.ps1",
     "validate:ahv-lab-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-lab-config.ps1",
     "validate:mock-prism-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-mock-prism-config.ps1",
     "validate:ahv-lab-acceptance-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-lab-acceptance-pack.ps1",

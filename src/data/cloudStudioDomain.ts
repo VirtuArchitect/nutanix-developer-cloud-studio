@@ -1964,6 +1964,35 @@ export type AhvLabRuntimePreflight = {
   createdAt: string;
 };
 
+export type AhvLabConnectionTestRequest = {
+  provider: "prism-central" | "prism-element";
+  endpoint: string;
+  username: string;
+  password: string;
+  tlsInsecure?: boolean;
+  allowedClusterUuid?: string;
+  allowedProjectUuid?: string;
+  allowedSubnetUuid?: string;
+  allowedImageUuid?: string;
+};
+
+export type AhvLabConnectionTestResult = {
+  id: string;
+  provider: AhvLabConnectionTestRequest["provider"];
+  endpointHost: string;
+  status: "Ready" | "Blocked";
+  readOnlyChecks: AhvLabRuntimePreflight["readOnlyChecks"];
+  configChecks: Array<{
+    name: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  lifecycleMutationEnabled: false;
+  redactionApplied: true;
+  createdAt: string;
+  requestedBy: string;
+};
+
 export type PlatformServiceKind = "NKP Namespace" | "NDB PostgreSQL" | "NUS Storage" | "NAI Endpoint";
 
 export type PlatformServiceRequest = {

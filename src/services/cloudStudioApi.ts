@@ -7,6 +7,8 @@ import type {
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   AhvCreateAdapterContractReview,
+  AhvLabConnectionTestRequest,
+  AhvLabConnectionTestResult,
   AdminUpgradeHealthConsole,
   ApiContractBaseline,
   AuditEvent,
@@ -275,6 +277,13 @@ export async function testPlatformSettingsConnectionViaApi(target: PlatformSetti
   return fetchJson<PlatformSettingsConnectionTest>("/api/admin/settings/test", {
     method: "POST",
     body: JSON.stringify({ target }),
+  });
+}
+
+export async function testAhvLabConnectionViaApi(payload: AhvLabConnectionTestRequest) {
+  return fetchJson<AhvLabConnectionTestResult>("/api/ahv/lab-runtime/connection-test", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 

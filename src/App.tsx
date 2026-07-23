@@ -34,6 +34,8 @@ import {
   type AdapterEnablementRecord,
   type AuthorizedLabConnectionDryRunRecord,
   type AuthorizedReadOnlyLabPilotGateRecord,
+  type AhvLabConnectionTestRequest,
+  type AhvLabConnectionTestResult,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
   type AdminUpgradeHealthConsole,
@@ -501,6 +503,7 @@ import {
   saveIntegrationConfigViaApi,
   savePlatformSettingsViaApi,
   selectPrismSimulatorProfileViaApi,
+  testAhvLabConnectionViaApi,
   testPlatformSettingsConnectionViaApi,
   exportPlatformSettingsViaApi,
   type ApiHealth,
@@ -6388,7 +6391,7 @@ function AdminView({
           <Panel title="Feature flags" action={`${platformSettings.featureFlags.filter((flag) => flag.enabled).length} enabled`}>
             <FeatureFlagSettingsPanel settings={platformSettings} />
           </Panel>
-          <Panel title="AHV lab runtime" action={platformSettings.ahvLab.labMode ? "Lab" : "Disabled"}>
+          <Panel title="Connect infrastructure" action={platformSettings.ahvLab.labMode ? "Lab" : "Read-only setup"}>
             <AhvLabSettingsPanel settings={platformSettings} />
           </Panel>
           <Panel title="Active Directory connectivity" action={platformSettings.configurable.activeDirectory.status}>
@@ -8016,9 +8019,169 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
   const lab = settings.ahvLab;
   const providerLabel = lab.provider === "prism-element" ? "Prism Element" : "Prism Central";
   const endpointConfigured = lab.provider === "prism-element" ? lab.prismElementConfigured : lab.prismCentralConfigured;
+  const [draft, setDraft] = useState<AhvLabConnectionTestRequest>({
+    provider: lab.provider,
+    endpoint: "",
+    username: "",
+    password: "",
+    tlsInsecure: false,
+    allowedClusterUuid: "",
+    allowedProjectUuid: "",
+    allowedSubnetUuid: "",
+    allowedImageUuid: "",
+  });
+  const [connectionTest, setConnectionTest] = useState<AhvLabConnectionTestResult | null>(null);
+  const [connectionTestState, setConnectionTestState] = useState<"Idle" | "Testing" | "Passed" | "Blocked">("Idle");
+  const [connectionTestMessage, setConnectionTestMessage] = useState("");
+  const draftProviderLabel = draft.provider === "prism-element" ? "Prism Element" : "Prism Central";
+  const envPreview = [
+    "APP_ENV=lab",
+    `NDC_AHV_LAB_PROVIDER=${draft.provider}`,
+    "NDC_AHV_REAL_ADAPTER_ENABLED=true",
+    `NDC_AHV_PE_LAB_ADAPTER_ENABLED=${draft.provider === "prism-element" ? "true" : "false"}`,
+    "NDC_CONTROLLED_PROVISIONING_ENABLED=true",
+    "NDC_AHV_LAB_LIFECYCLE_ENABLED=false",
+    `NDC_PRISM_TLS_INSECURE=${draft.tlsInsecure ? "true" : "false"}`,
+    draft.provider === "prism-element" ? `NUTANIX_PRISM_ELEMENT_URL=${draft.endpoint || "<pe-url>"}` : `NUTANIX_PRISM_CENTRAL_URL=${draft.endpoint || "<pc-url>"}`,
+    draft.provider === "prism-element" ? `NUTANIX_PRISM_ELEMENT_USERNAME=${draft.username || "<username>"}` : `NUTANIX_PRISM_USERNAME=${draft.username || "<username>"}`,
+    draft.provider === "prism-element" ? "NUTANIX_PRISM_ELEMENT_PASSWORD=<private-password>" : "NUTANIX_PRISM_PASSWORD=<private-password>",
+    draft.provider === "prism-element"
+      ? `NDC_AHV_PE_ALLOWED_CLUSTER_UUID=${draft.allowedClusterUuid || "<cluster-uuid>"}`
+      : `NDC_AHV_ALLOWED_CLUSTER_UUID=${draft.allowedClusterUuid || "<cluster-uuid>"}`,
+    draft.provider === "prism-central" ? `NDC_AHV_ALLOWED_PROJECT_UUID=${draft.allowedProjectUuid || "<project-uuid>"}` : "",
+    draft.provider === "prism-element"
+      ? `NDC_AHV_PE_ALLOWED_SUBNET_UUID=${draft.allowedSubnetUuid || "<subnet-or-network-uuid>"}`
+      : `NDC_AHV_ALLOWED_SUBNET_UUID=${draft.allowedSubnetUuid || "<subnet-uuid>"}`,
+    draft.provider === "prism-element"
+      ? `NDC_AHV_PE_ALLOWED_IMAGE_UUID=${draft.allowedImageUuid || "<image-uuid>"}`
+      : `NDC_AHV_ALLOWED_IMAGE_UUID=${draft.allowedImageUuid || "<image-uuid>"}`,
+    "NDC_AHV_VM_NAME_PREFIX=ndc-lab-",
+  ].filter(Boolean);
+
+  const runConnectionTest = async () => {
+    setConnectionTestState("Testing");
+    setConnectionTestMessage("");
+    setConnectionTest(null);
+    try {
+      const result = await testAhvLabConnectionViaApi(draft);
+      setConnectionTest(result);
+      setConnectionTestState(result.status === "Ready" ? "Passed" : "Blocked");
+      setConnectionTestMessage(
+        result.status === "Ready"
+          ? `${draftProviderLabel} read-only connection passed. Lifecycle mutation remains disabled.`
+          : `${draftProviderLabel} connection is blocked. Review the checks below.`
+      );
+    } catch (error) {
+      setConnectionTestState("Blocked");
+      setConnectionTestMessage(error instanceof Error ? error.message : "Connection test failed.");
+    }
+  };
 
   return (
     <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Network size={18} />
+        <div>
+          <strong>Connect infrastructure</strong>
+          <span>Enter Prism details for a one-time read-only test. The password is not saved, returned, or added to audit records.</span>
+        </div>
+      </div>
+      <div className="settingsFormGrid">
+        <label>
+          <span>Provider</span>
+          <select
+            value={draft.provider}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                provider: event.target.value as AhvLabConnectionTestRequest["provider"],
+                allowedProjectUuid: event.target.value === "prism-element" ? "" : current.allowedProjectUuid,
+              }))
+            }
+          >
+            <option value="prism-element">Prism Element</option>
+            <option value="prism-central">Prism Central</option>
+          </select>
+        </label>
+        <label>
+          <span>{draftProviderLabel} URL</span>
+          <input
+            value={draft.endpoint}
+            placeholder={draft.provider === "prism-element" ? "https://prism-element.lab:9440" : "https://prism-central.lab:9440"}
+            onChange={(event) => setDraft((current) => ({ ...current, endpoint: event.target.value }))}
+          />
+        </label>
+        <label>
+          <span>Username</span>
+          <input value={draft.username} autoComplete="off" onChange={(event) => setDraft((current) => ({ ...current, username: event.target.value }))} />
+        </label>
+        <label>
+          <span>Password</span>
+          <input
+            value={draft.password}
+            type="password"
+            autoComplete="new-password"
+            onChange={(event) => setDraft((current) => ({ ...current, password: event.target.value }))}
+          />
+        </label>
+        <label>
+          <span>Allowed cluster UUID</span>
+          <input value={draft.allowedClusterUuid} onChange={(event) => setDraft((current) => ({ ...current, allowedClusterUuid: event.target.value }))} />
+        </label>
+        {draft.provider === "prism-central" && (
+          <label>
+            <span>Allowed project UUID</span>
+            <input value={draft.allowedProjectUuid} onChange={(event) => setDraft((current) => ({ ...current, allowedProjectUuid: event.target.value }))} />
+          </label>
+        )}
+        <label>
+          <span>Allowed subnet/network UUID</span>
+          <input value={draft.allowedSubnetUuid} onChange={(event) => setDraft((current) => ({ ...current, allowedSubnetUuid: event.target.value }))} />
+        </label>
+        <label>
+          <span>Allowed image UUID</span>
+          <input value={draft.allowedImageUuid} onChange={(event) => setDraft((current) => ({ ...current, allowedImageUuid: event.target.value }))} />
+        </label>
+        <label className="checkboxRow">
+          <input
+            type="checkbox"
+            checked={Boolean(draft.tlsInsecure)}
+            onChange={(event) => setDraft((current) => ({ ...current, tlsInsecure: event.target.checked }))}
+          />
+          <span>Allow insecure TLS for lab certificate testing</span>
+        </label>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={runConnectionTest} disabled={connectionTestState === "Testing"}>
+          <PlayCircle size={15} />
+          {connectionTestState === "Testing" ? "Testing connection" : "Test read-only connection"}
+        </button>
+        <span className={`status ${connectionTestState === "Passed" ? "ready" : connectionTestState === "Blocked" ? "failed" : "approval"}`}>
+          {connectionTestState}
+        </span>
+      </div>
+      {connectionTestMessage && <p className="emptyState">{connectionTestMessage}</p>}
+      {connectionTest && (
+        <div className="dryRunValidationList">
+          {[...connectionTest.configChecks, ...connectionTest.readOnlyChecks.map((check) => ({ name: check.operation, passed: check.passed, detail: check.detail }))].map((check) => (
+            <div className="dryRunValidationRow" key={`${check.name}-${check.detail}`}>
+              <span className={`status ${check.passed ? "ready" : "failed"}`}>{check.passed ? "Pass" : "Gate"}</span>
+              <div>
+                <strong>{check.name}</strong>
+                <small>{check.detail}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="guardrailBanner">
+        <TerminalSquare size={18} />
+        <div>
+          <strong>Deployment configuration</strong>
+          <span>Use this redacted block for the lab API container after read-only testing. Lifecycle stays off until explicitly enabled.</span>
+        </div>
+      </div>
+      <pre className="codeBlock">{envPreview.join("\n")}</pre>
       <div className="platformConfigGrid">
         <CheckLine icon={Network} label={`${providerLabel} URL`} value={endpointConfigured ? "Configured" : "Missing"} passed={endpointConfigured} />
         <CheckLine icon={Settings} label="Lab provider" value={providerLabel} passed={lab.provider === "prism-element" || lab.provider === "prism-central"} />

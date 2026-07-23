@@ -35,6 +35,8 @@ The goal is to make the product thesis visible quickly: developers can request g
 - `v8.9.0-provisioning-mode-selector` adds an API-backed provisioning mode selector and dashboard panel that separates Static Demo, Simulated API, Mock Prism, and Real AHV Lab behavior.
 - `v9.0.0-ahv-lab-acceptance-pack` adds the formal AHV lab acceptance pack, report template, and metadata-only validator required before authorized Prism Central test execution.
 - `v9.1.0-prism-element-lab-adapter` adds a one-node AHV/Prism Element lab provider path with PE-specific config, read-only smoke, and controlled lifecycle adapter selection.
+- Real-infrastructure tester enablement adds private `.env.lab` generation, provider-specific readiness validation, safer Docker host ports, and tester documentation for Prism Element or Prism Central labs.
+- Browser-based infrastructure connection setup adds a one-time Prism Element or Prism Central read-only connection test in Admin Settings, with password redaction and lifecycle mutation disabled.
 - `v7.5.0-on-prem-install-profile-pack` adds on-prem profile templates, validation command, backup/restore runbook entries, and disabled-adapter install guardrails.
 - `v7.4.0-admin-upgrade-health-console` adds Admin Operations upgrade health for repository, schema, auth, audit signing, config drift, and blockers.
 - `v7.3.0-signed-audit-export-manifests` adds signed audit manifest evidence with external signing key references.

@@ -4,7 +4,7 @@ services:
       context: .
     image: nutanix-developer-cloud-studio:local
     ports:
-      - "8080:8080"
+      - "${NDC_STUDIO_HOST_PORT:-18080}:8080"
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0

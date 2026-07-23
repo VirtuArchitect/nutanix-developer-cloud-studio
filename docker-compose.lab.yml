@@ -4,9 +4,9 @@ services:
       context: .
     image: nutanix-developer-cloud-studio:lab
     env_file:
-      - .env.lab
+      - ${NDC_STUDIO_ENV_FILE:-.env.lab}
     ports:
-      - "8080:8080"
+      - "${NDC_STUDIO_HOST_PORT:-18080}:8080"
     volumes:
       - ndc-studio-lab-data:/data
     healthcheck:

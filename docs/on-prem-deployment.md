@@ -14,13 +14,13 @@ docker compose up --build
 
 Open:
 
-`http://localhost:8080`
+`http://localhost:18080`
 
 Health checks:
 
 ```powershell
-Invoke-WebRequest http://localhost:8080/healthz
-Invoke-WebRequest http://localhost:8080/readyz
+Invoke-WebRequest http://localhost:18080/healthz
+Invoke-WebRequest http://localhost:18080/readyz
 ```
 
 Hosted starter validation:
@@ -172,7 +172,7 @@ For a future real deployment:
 When no Nutanix test environment is available, use the local Mock Prism Central simulator:
 
 ```text
-http://localhost:8080/mock-prism
+http://localhost:18080/mock-prism
 ```
 
 The simulator exposes Prism-shaped list, VM-create, and task-poll responses for adapter contract testing. It is not a Nutanix emulator and does not persist or mutate real infrastructure.

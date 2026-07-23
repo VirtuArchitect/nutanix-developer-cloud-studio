@@ -37,13 +37,13 @@ docker compose -f docker-compose.mock-prism.yml --env-file .env.mock-prism up --
 Open NDC Studio:
 
 ```text
-http://127.0.0.1:8080
+http://127.0.0.1:18080
 ```
 
 Mock Prism Central listens locally on:
 
 ```text
-http://127.0.0.1:9440
+http://127.0.0.1:19440
 ```
 
 ## Validate Mock Prism
@@ -51,7 +51,7 @@ http://127.0.0.1:9440
 Run the read-only config and fixture check:
 
 ```powershell
-npm run validate:mock-prism-config -- -EnvFile .env.mock-prism -PrismUrl http://127.0.0.1:9440
+npm run validate:mock-prism-config -- -EnvFile .env.mock-prism -PrismUrl http://127.0.0.1:19440
 ```
 
 This calls only list endpoints and verifies that configured UUIDs exist in fixture data.
@@ -61,7 +61,7 @@ This calls only list endpoints and verifies that configured UUIDs exist in fixtu
 Run the full mock-backed lifecycle smoke:
 
 ```powershell
-npm run smoke:mock-prism-lifecycle -- -BaseUrl http://127.0.0.1:8080 -PrismUrl http://127.0.0.1:9440
+npm run smoke:mock-prism-lifecycle -- -BaseUrl http://127.0.0.1:18080 -PrismUrl http://127.0.0.1:19440
 ```
 
 The smoke performs:

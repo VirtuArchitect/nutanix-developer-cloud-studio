@@ -12,6 +12,8 @@ testing, linting, security scanning, or smoke testing.
 - `validate-runtime-package.ps1`: validates Dockerfile, Compose, `.env.example`, static/API serving, healthcheck, and disabled adapter guardrails.
 - `validate-postgres-repository.ps1`: validates migration files, schema naming, and fail-closed Postgres repository configuration without opening a database connection.
 - `validate-onprem-profile-pack.ps1`: validates on-prem profile templates for disabled real-adapter guardrails and missing secret material.
+- `new-ahv-lab-env.ps1`: interactively creates a private `.env.lab` for authorized Prism Element or Prism Central testers without echoing the password.
+- `test-ahv-lab-readiness.ps1`: loads `.env.lab`, validates AHV lab configuration, and runs the provider-specific read-only smoke.
 - `validate-ahv-lab-config.ps1`: validates private AHV lab environment variables without making Prism mutation calls.
 - `validate-ahv-lab-acceptance-pack.ps1`: validates the AHV lab acceptance documentation pack and confirms lab lifecycle defaults remain disabled.
 - `validate-mock-prism-config.ps1`: validates a local mock Prism Central endpoint, Basic Auth, and fixture UUID coverage without making mutation calls.

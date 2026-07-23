@@ -13,7 +13,7 @@ if (-not $PrismUrl) {
   $PrismUrl = $env:NUTANIX_PRISM_CENTRAL_URL
 }
 if (-not $PrismUrl) {
-  $PrismUrl = "http://127.0.0.1:9440"
+  $PrismUrl = "http://127.0.0.1:19440"
 }
 
 $username = $env:NUTANIX_PRISM_USERNAME

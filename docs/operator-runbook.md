@@ -29,11 +29,13 @@ For container evaluation:
 docker compose up --build
 ```
 
+The default Compose host port is `18080` to avoid common Windows excluded-port reservations around `8080`. To use a different host port, set `NDC_STUDIO_HOST_PORT` before starting Compose.
+
 Validate:
 
 ```powershell
-Invoke-WebRequest http://localhost:8080/healthz
-Invoke-WebRequest http://localhost:8080/readyz
+Invoke-WebRequest http://localhost:18080/healthz
+Invoke-WebRequest http://localhost:18080/readyz
 .\scripts\validate-hosted-starter.ps1
 ```
 

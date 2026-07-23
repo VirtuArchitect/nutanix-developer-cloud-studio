@@ -2396,6 +2396,63 @@ describe("api server", () => {
     expect(JSON.stringify(config.data)).not.toContain("placeholder-not-a-secret");
   });
 
+  it("runs a one-time Prism Central connection test without persisting credentials", async () => {
+    const adminHeaders = { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" };
+    const secret = "connection-secret-value";
+    const result = await requestJson("/api/ahv/lab-runtime/connection-test", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        provider: "prism-central",
+        endpoint: `${baseUrl}/mock-prism`,
+        username: "mock-prism-user",
+        password: secret,
+        tlsInsecure: false,
+        allowedClusterUuid: "mock-cluster-uuid",
+        allowedProjectUuid: "mock-project-uuid",
+        allowedSubnetUuid: "mock-subnet-uuid",
+        allowedImageUuid: "mock-image-uuid",
+      }),
+    });
+    const auditEvents = await requestJson("/api/audit-events", { headers: adminHeaders });
+
+    expect(result.data).toMatchObject({
+      provider: "prism-central",
+      status: "Ready",
+      lifecycleMutationEnabled: false,
+      redactionApplied: true,
+    });
+    expect(result.data.readOnlyChecks).toHaveLength(4);
+    expect(JSON.stringify(result.data)).not.toContain(secret);
+    expect(JSON.stringify(auditEvents.data)).not.toContain(secret);
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "ahv.lab-runtime.connection-test", target: "prism-central" })])
+    );
+  });
+
+  it("requires Platform Admin for one-time infrastructure connection tests", async () => {
+    await expectJson(
+      "/api/ahv/lab-runtime/connection-test",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      {
+        method: "POST",
+        headers: { "x-ndc-user": "developer.user", "x-ndc-roles": "Developer" },
+        body: JSON.stringify({
+          provider: "prism-central",
+          endpoint: `${baseUrl}/mock-prism`,
+          username: "mock-prism-user",
+          password: "developer-secret",
+        }),
+      }
+    );
+  });
+
   it("executes lab AHV create, poll, power, and destroy against the mock Prism endpoint", async () => {
     configureAhvLabEnv(`${baseUrl}/mock-prism`);
 
