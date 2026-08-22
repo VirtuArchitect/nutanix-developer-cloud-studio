@@ -8,7 +8,7 @@ Prove one complete, reversible AHV VM lifecycle through NDC Studio against an ex
 
 1. Validate private lab configuration.
 2. Confirm read-only Prism Central connectivity.
-3. Create one `ndc-lab-*` VM from an approved image, project, subnet, and cluster.
+3. Create one `ndc-lab-*` VM from an approved image or source VM, project, subnet, and cluster.
 4. Poll Prism task state to completion.
 5. Perform an approved power-state action when lab policy allows it.
 6. Destroy the VM.
@@ -18,7 +18,7 @@ Prove one complete, reversible AHV VM lifecycle through NDC Studio against an ex
 ## Required Authorization
 
 - Written authorization for the Prism Central endpoint and AHV cluster.
-- Confirmed disposable image UUID.
+- Confirmed disposable image UUID or approved source VM UUID.
 - Confirmed subnet/project/cluster UUIDs.
 - Approved VM name prefix, default `ndc-lab-`.
 - Platform Admin test operator.
@@ -42,6 +42,7 @@ NDC_AHV_ALLOWED_CLUSTER_UUID=<authorized-cluster-uuid>
 NDC_AHV_ALLOWED_PROJECT_UUID=<authorized-project-uuid>
 NDC_AHV_ALLOWED_SUBNET_UUID=<authorized-subnet-uuid>
 NDC_AHV_ALLOWED_IMAGE_UUID=<authorized-image-uuid>
+NDC_AHV_ALLOWED_SOURCE_VM_UUID=<authorized-source-vm-uuid>
 NDC_AHV_VM_NAME_PREFIX=ndc-lab-
 ```
 
@@ -97,7 +98,7 @@ Go only when:
 No-go when:
 
 - Prism Central scope is unclear.
-- The image, subnet, project, or cluster UUID is not disposable/test scoped.
+- The image/source VM, subnet, project, or cluster UUID is not disposable/test scoped.
 - TLS trust is not understood.
 - A destroy path is unavailable.
 - Screenshots or audit evidence would expose private infrastructure or customer data.

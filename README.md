@@ -4,13 +4,13 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v9.1.0-prism-element-lab-adapter`
+Current release: `v9.8.0-controlled-source-vm-clone`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
 ## Disclaimer
 
-This repository is an independent product prototype. Nutanix integrations, policy checks, costs, environments, approvals, and provisioning workflows run in simulated mode for demonstration and design validation. This project does not currently provision or mutate real Nutanix infrastructure and is not affiliated with, sponsored by, or endorsed by Nutanix unless explicitly stated otherwise.
+This repository is an independent product prototype. The public demo and default local configuration run in simulated mode for demonstration and design validation. Authorized lab deployments can opt in to controlled AHV lifecycle testing against Prism Element or Prism Central, but that path is disabled by default, Platform Admin-gated, and requires private credentials plus explicit lab environment switches. This project is not affiliated with, sponsored by, or endorsed by Nutanix unless explicitly stated otherwise.
 
 ## MVP Scope
 
@@ -56,8 +56,15 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - API-backed provisioning mode selector that clearly distinguishes Static Demo, Simulated API, Mock Prism, and Real AHV Lab modes on the dashboard.
 - AHV lab acceptance pack with authorization checklist, execution sequence, evidence report template, and metadata-only validator before authorized Prism Central testing.
 - Prism Element lab adapter starter for one-node AHV/PE validation with PE-specific configuration, read-only smoke, and controlled lifecycle provider selection.
-- Browser-based Connect Infrastructure wizard for private Prism Element or Prism Central labs, with one-time read-only testing, redacted evidence, and guarded lifecycle enablement.
+- Browser-based Connect Infrastructure wizard for private Prism Element or Prism Central labs, with one-time read-only testing, sanitized inventory preview, redacted evidence, and guarded lifecycle enablement.
 - Real-infrastructure tester workflow for private Prism Element or Prism Central labs using the UI wizard or ignored `.env.lab` files, read-only smoke tests, and guarded lifecycle enablement.
+- Admin Infrastructure workspace that guides testers through real PE/PC connection, read-only inventory import, connection profile validation, image/network/cluster approval, controlled AHV VM create/preflight, poll, power, destroy, audit review, and reconciliation evidence.
+- API-backed inventory scope approval for discovered Prism clusters, networks/subnets, and images, with Platform Admin-only approve/reject actions, redacted audit events, and browser-demo fallback behavior.
+- Controlled AHV create UI now requires approved cluster, network/subnet, and image selections before recording or submitting a create/preflight run.
+- AHV lifecycle event ledger and reconciliation dashboard summarize create, poll, power, destroy, and inventory-cleanup evidence for lab runs.
+- One-time Prism Element or Prism Central connection-test previews can now be loaded directly into the inventory browser for approval and controlled-create selection.
+- PE/PC validation rings guide testers from local safety checks through connection, read-only discovery, scope approval, guardrails, controlled lifecycle, audit redaction, and resilience testing.
+- Controlled source VM clone flow allows Platform Admins to approve a discovered VM as a bounded golden source when no Image Service disk image is available.
 
 ### Governance And Release Readiness
 
@@ -205,6 +212,18 @@ docker compose -f docker-compose.lab.yml up --build -d
 
 Read the full tester guide: [`docs/real-infrastructure-testing.md`](docs/real-infrastructure-testing.md).
 
+For staged PE/PC validation, start with [`docs/pe-pc-validation-rings.md`](docs/pe-pc-validation-rings.md):
+
+```powershell
+npm run validate:pe-pc-test-pack
+npm run validate:ahv-lab-config
+npm run smoke:ahv-pe-readonly
+npm run smoke:ahv-lab-readonly
+npm run smoke:mock-prism-lifecycle
+```
+
+Run `npm run smoke:ahv-lab-lifecycle` only after read-only checks, scope approval, rollback ownership, and explicit lab authorization are complete.
+
 ## Documentation
 
 Project documentation lives in `docs/`.
@@ -233,6 +252,7 @@ As the prototype develops, update `docs/` alongside the code. The key living not
 - `docs/on-prem-deployment.md` for the containerized deployment starter
 - `docs/ahv-lab-lifecycle.md` for authorized AHV test infrastructure deployment
 - `docs/ahv-lab-acceptance-pack.md` for the formal AHV lab acceptance checklist and evidence requirements
+- `docs/pe-pc-validation-rings.md` for staged Prism Element and Prism Central validation
 - `docs/mock-prism-central-harness.md` for mock Prism Central lifecycle testing without Nutanix infrastructure
 - `docs/release-notes/` for GitHub Release copy
 - `docs/upgrade-path.md` for gated phase sequencing and promotion rules

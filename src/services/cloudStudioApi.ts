@@ -925,6 +925,24 @@ export async function importPrismInventoryViaApi() {
   });
 }
 
+export async function importPrismInventoryPreviewViaApi(payload: {
+  provider: AhvLabConnectionTestResult["provider"];
+  endpointHost: string;
+  records: PrismInventoryRecord[];
+}) {
+  return fetchJson<PrismInventoryImportResult>("/api/prism/inventory/preview-import", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function decidePrismInventoryRecordViaApi(recordId: string, decision: "approve" | "reject") {
+  return fetchJson<PrismInventoryRecord>(
+    `/api/prism/inventory/${encodeURIComponent(recordId)}/${decision}`,
+    { method: "POST" }
+  );
+}
+
 export async function fetchResourceProfilesFromApi() {
   return fetchJson<ResourceProfile[]>("/api/resource-profiles");
 }
@@ -2219,11 +2237,39 @@ export async function createAhvCreateAdapterContractReviewViaApi() {
 export async function createAhvControlledProvisioningRunViaApi(payload: {
   gateId?: string;
   action?: AhvControlledProvisioningRun["action"];
+  clusterRecordId?: string;
+  networkRecordId?: string;
+  imageRecordId?: string;
+  sourceVmRecordId?: string;
 }) {
   return fetchJson<AhvControlledProvisioningRun>("/api/ahv/controlled-provisioning/runs", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export async function pollAhvControlledProvisioningRunViaApi(runId: string) {
+  return fetchJson<AhvControlledProvisioningRun>(
+    `/api/ahv/controlled-provisioning/runs/${encodeURIComponent(runId)}/poll`,
+    { method: "POST" }
+  );
+}
+
+export async function powerAhvControlledProvisioningRunViaApi(runId: string, powerState: "ON" | "OFF") {
+  return fetchJson<AhvControlledProvisioningRun>(
+    `/api/ahv/controlled-provisioning/runs/${encodeURIComponent(runId)}/power`,
+    {
+      method: "POST",
+      body: JSON.stringify({ powerState }),
+    }
+  );
+}
+
+export async function destroyAhvControlledProvisioningRunViaApi(runId: string) {
+  return fetchJson<AhvControlledProvisioningRun>(
+    `/api/ahv/controlled-provisioning/runs/${encodeURIComponent(runId)}/destroy`,
+    { method: "POST" }
+  );
 }
 
 export async function runControlPlaneJobActionViaApi(

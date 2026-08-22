@@ -168,6 +168,7 @@ export type PlatformSettingsSummary = {
     allowedProjectConfigured: boolean;
     allowedSubnetConfigured: boolean;
     allowedImageConfigured: boolean;
+    allowedSourceVmConfigured?: boolean;
     vmNamePrefix: string;
     quotas: {
       maxCpu: number;
@@ -1355,7 +1356,7 @@ export type PrismInventoryRecord = {
   id: string;
   kind: PrismInventoryKind;
   name: string;
-  source: "Mock Prism Central" | "Prism Central";
+  source: "Mock Prism Central" | "Prism Central" | "Prism Element";
   cluster?: string;
   project?: string;
   network?: string;
@@ -1364,11 +1365,15 @@ export type PrismInventoryRecord = {
   importedAt: string;
   rawRef: string;
   profileCandidate?: boolean;
+  approvalStatus?: "Discovered" | "Approved" | "Rejected";
+  approvedBy?: string;
+  approvedAt?: string;
+  approvalEvidence?: string[];
 };
 
 export type PrismInventoryImportResult = {
   adapter: "NCI";
-  mode: "Mock read-only" | "Real adapter disabled";
+  mode: "Mock read-only" | "Real adapter disabled" | "Connection preview";
   readOnly: true;
   provisioningEnabled: false;
   importedAt: string;
@@ -1889,6 +1894,36 @@ export type AhvControlledProvisioningRun = {
   requestedBy: string;
   labScopeId?: string;
   lifecycleProofId?: string;
+  selectedScope?: {
+    cluster: {
+      recordId: string;
+      name: string;
+      rawRef: string;
+      approvedBy?: string;
+      approvedAt?: string;
+    };
+    network: {
+      recordId: string;
+      name: string;
+      rawRef: string;
+      approvedBy?: string;
+      approvedAt?: string;
+    };
+    image?: {
+      recordId: string;
+      name: string;
+      rawRef: string;
+      approvedBy?: string;
+      approvedAt?: string;
+    };
+    sourceVm?: {
+      recordId: string;
+      name: string;
+      rawRef: string;
+      approvedBy?: string;
+      approvedAt?: string;
+    };
+  };
   prismTaskUuid?: string;
   prismTaskUuids?: string[];
   vmUuid?: string;
@@ -1897,6 +1932,13 @@ export type AhvControlledProvisioningRun = {
   destroyStatus?: "Not requested" | "Submitted" | "Succeeded" | "Failed";
   lastPollAt?: string;
   failureReason?: string;
+  lifecycleEvents?: Array<{
+    at: string;
+    action: "Create submitted" | "Poll" | "Power submitted" | "Destroy submitted" | "Reconciled" | "Notice";
+    status: string;
+    detail: string;
+    prismTaskUuid?: string;
+  }>;
   rollbackDestroyEvidence?: string[];
   inventoryReconciliation?: {
     checkedAt: string;
@@ -1924,6 +1966,7 @@ export type AhvLabRuntimeConfig = {
   allowedProjectUuidConfigured: boolean;
   allowedSubnetUuidConfigured: boolean;
   allowedImageUuidConfigured: boolean;
+  allowedSourceVmUuidConfigured?: boolean;
   vmNamePrefix: string;
   quotas: {
     maxCpu: number;
@@ -1974,6 +2017,7 @@ export type AhvLabConnectionTestRequest = {
   allowedProjectUuid?: string;
   allowedSubnetUuid?: string;
   allowedImageUuid?: string;
+  allowedSourceVmUuid?: string;
 };
 
 export type AhvLabConnectionTestResult = {
@@ -1982,6 +2026,7 @@ export type AhvLabConnectionTestResult = {
   endpointHost: string;
   status: "Ready" | "Blocked";
   readOnlyChecks: AhvLabRuntimePreflight["readOnlyChecks"];
+  inventoryPreview?: PrismInventoryRecord[];
   configChecks: Array<{
     name: string;
     passed: boolean;

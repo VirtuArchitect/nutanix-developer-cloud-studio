@@ -570,6 +570,10 @@ export type CreateRollbackDestroyProofRequest = {
 export type CreateAhvControlledProvisioningRunRequest = {
   gateId?: string;
   action?: AhvControlledProvisioningRun["action"];
+  clusterRecordId?: string;
+  networkRecordId?: string;
+  imageRecordId?: string;
+  sourceVmRecordId?: string;
 };
 
 export type CreateLifecycleOperationRequest = {

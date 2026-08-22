@@ -7,16 +7,26 @@ import type {
   VmSandboxDryRunPlan,
 } from "../src/data/cloudStudioDomain";
 import { getActiveLabAuthorizationScope } from "./authorizationEvidence";
-import type { ApiState } from "./types";
+import { requireApprovedInventoryScope } from "./ahvControlledProvisioning";
+import type { ApiState, CreateAhvControlledProvisioningRunRequest } from "./types";
 
 type PrismTaskState = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
-type PrismOperation = "listClusters" | "listProjects" | "listImages" | "listSubnets";
+type PrismOperation = "listClusters" | "listProjects" | "listImages" | "listSubnets" | "listVms";
 type PrismElementOperation = "getCluster" | "listImages" | "listNetworks" | "listVms";
 const prismListPath: Record<PrismOperation, string> = {
   listClusters: "clusters",
   listProjects: "projects",
   listImages: "images",
   listSubnets: "subnets",
+  listVms: "vms",
+};
+
+const prismKind: Record<PrismOperation, string> = {
+  listClusters: "cluster",
+  listProjects: "project",
+  listImages: "image",
+  listSubnets: "subnet",
+  listVms: "vm",
 };
 
 const prismElementPath: Record<PrismElementOperation, string> = {
@@ -73,10 +83,11 @@ export function createAhvLabRuntimeConfig(env = process.env): AhvLabRuntimeConfi
   const tlsInsecure = env.NDC_PRISM_TLS_INSECURE === "true";
   const usernameConfigured = provider === "prism-element" ? Boolean(env.NUTANIX_PRISM_ELEMENT_USERNAME) : Boolean(env.NUTANIX_PRISM_USERNAME);
   const passwordConfigured = provider === "prism-element" ? Boolean(env.NUTANIX_PRISM_ELEMENT_PASSWORD) : Boolean(env.NUTANIX_PRISM_PASSWORD);
-  const allowedClusterUuidConfigured = provider === "prism-element" ? Boolean(env.NDC_AHV_PE_ALLOWED_CLUSTER_UUID) : Boolean(env.NDC_AHV_ALLOWED_CLUSTER_UUID);
-  const allowedProjectUuidConfigured = provider === "prism-element" ? true : Boolean(env.NDC_AHV_ALLOWED_PROJECT_UUID);
-  const allowedSubnetUuidConfigured = provider === "prism-element" ? Boolean(env.NDC_AHV_PE_ALLOWED_SUBNET_UUID) : Boolean(env.NDC_AHV_ALLOWED_SUBNET_UUID);
   const allowedImageUuidConfigured = provider === "prism-element" ? Boolean(env.NDC_AHV_PE_ALLOWED_IMAGE_UUID) : Boolean(env.NDC_AHV_ALLOWED_IMAGE_UUID);
+  const allowedSourceVmUuidConfigured = provider === "prism-element" ? Boolean(env.NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID) : Boolean(env.NDC_AHV_ALLOWED_SOURCE_VM_UUID);
+  const allowedClusterUuidConfigured = provider === "prism-element" ? Boolean(env.NDC_AHV_PE_ALLOWED_CLUSTER_UUID) : Boolean(env.NDC_AHV_ALLOWED_CLUSTER_UUID);
+  const allowedProjectUuidConfigured = provider === "prism-element" ? true : Boolean(env.NDC_AHV_ALLOWED_PROJECT_UUID) || allowedSourceVmUuidConfigured;
+  const allowedSubnetUuidConfigured = provider === "prism-element" ? Boolean(env.NDC_AHV_PE_ALLOWED_SUBNET_UUID) : Boolean(env.NDC_AHV_ALLOWED_SUBNET_UUID);
   const vmNamePrefix = env.NDC_AHV_VM_NAME_PREFIX || "ndc-lab-";
   const quotas = {
     maxCpu: positiveNumber(env.NDC_AHV_MAX_CPU, 4),
@@ -103,9 +114,23 @@ export function createAhvLabRuntimeConfig(env = process.env): AhvLabRuntimeConfi
     check("Prism username", usernameConfigured, usernameConfigured ? "Username is configured." : `${provider === "prism-element" ? "NUTANIX_PRISM_ELEMENT_USERNAME" : "NUTANIX_PRISM_USERNAME"} is required.`),
     check("Prism password", passwordConfigured, passwordConfigured ? "Password is configured." : `${provider === "prism-element" ? "NUTANIX_PRISM_ELEMENT_PASSWORD" : "NUTANIX_PRISM_PASSWORD"} is required.`),
     check("Allowed cluster UUID", allowedClusterUuidConfigured, `${provider === "prism-element" ? "NDC_AHV_PE_ALLOWED_CLUSTER_UUID" : "NDC_AHV_ALLOWED_CLUSTER_UUID"} must be configured.`),
-    check("Allowed project UUID", allowedProjectUuidConfigured, provider === "prism-element" ? "Prism Element lab does not require project scoping." : "NDC_AHV_ALLOWED_PROJECT_UUID must be configured."),
+    check(
+      "Allowed project UUID",
+      allowedProjectUuidConfigured,
+      provider === "prism-element"
+        ? "Prism Element lab does not require project scoping."
+        : allowedSourceVmUuidConfigured
+          ? "Project scoping is optional for source VM clone labs."
+          : "NDC_AHV_ALLOWED_PROJECT_UUID must be configured."
+    ),
     check("Allowed subnet UUID", allowedSubnetUuidConfigured, `${provider === "prism-element" ? "NDC_AHV_PE_ALLOWED_SUBNET_UUID" : "NDC_AHV_ALLOWED_SUBNET_UUID"} must be configured.`),
-    check("Allowed image UUID", allowedImageUuidConfigured, `${provider === "prism-element" ? "NDC_AHV_PE_ALLOWED_IMAGE_UUID" : "NDC_AHV_ALLOWED_IMAGE_UUID"} must be configured.`),
+    check(
+      "Allowed image or source VM UUID",
+      allowedImageUuidConfigured || allowedSourceVmUuidConfigured,
+      allowedImageUuidConfigured
+        ? `${provider === "prism-element" ? "NDC_AHV_PE_ALLOWED_IMAGE_UUID" : "NDC_AHV_ALLOWED_IMAGE_UUID"} is configured.`
+        : `${provider === "prism-element" ? "NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID" : "NDC_AHV_ALLOWED_SOURCE_VM_UUID"} must be configured when no Image Service image is available.`
+    ),
     check("VM name prefix", vmNamePrefix.length >= 4 && !/prod|production/i.test(vmNamePrefix), `Prefix ${vmNamePrefix}.`),
     check("TLS policy", !tlsInsecure || appEnv === "lab", tlsInsecure ? "Insecure TLS is allowed only in lab mode." : "TLS verification is required."),
   ];
@@ -125,6 +150,7 @@ export function createAhvLabRuntimeConfig(env = process.env): AhvLabRuntimeConfi
     allowedProjectUuidConfigured,
     allowedSubnetUuidConfigured,
     allowedImageUuidConfigured,
+    allowedSourceVmUuidConfigured,
     vmNamePrefix,
     quotas,
     switches: {
@@ -188,11 +214,15 @@ export class PrismCentralV3Client {
   }
 
   list(operation: PrismOperation) {
-    return this.request("POST", `/api/nutanix/v3/${prismListPath[operation]}/list`, { kind: operation });
+    return this.request("POST", `/api/nutanix/v3/${prismListPath[operation]}/list`, { kind: prismKind[operation], length: 20, offset: 0 });
   }
 
   createVm(payload: Record<string, unknown>) {
     return this.request("POST", "/api/nutanix/v3/vms", payload);
+  }
+
+  cloneVm(sourceVmUuid: string, payload: Record<string, unknown>) {
+    return this.request("POST", `/api/nutanix/v3/vms/${encodeURIComponent(sourceVmUuid)}/clone`, payload);
   }
 
   pollTask(taskUuid: string) {
@@ -286,6 +316,10 @@ export class PrismElementV2Client {
     return this.request("POST", "/PrismGateway/services/rest/v2.0/vms", payload);
   }
 
+  cloneVm(sourceVmUuid: string, payload: Record<string, unknown>) {
+    return this.request("POST", `/PrismGateway/services/rest/v2.0/vms/${encodeURIComponent(sourceVmUuid)}/clone`, payload);
+  }
+
   pollTask(taskUuid: string) {
     return this.request("GET", `/PrismGateway/services/rest/v2.0/tasks/${encodeURIComponent(taskUuid)}`);
   }
@@ -353,7 +387,7 @@ export class LabAhvPrismAdapter {
 
   async preflight(actor: string): Promise<AhvLabRuntimePreflight> {
     const config = createAhvLabRuntimeConfig();
-    const operations: PrismOperation[] = ["listClusters", "listProjects", "listImages", "listSubnets"];
+    const operations: PrismOperation[] = ["listClusters", "listProjects", "listImages", "listSubnets", "listVms"];
     const readOnlyChecks = [];
     if (config.provisioningEnabled) {
       for (const operation of operations) {
@@ -380,14 +414,14 @@ export class LabAhvPrismAdapter {
     };
   }
 
-  async create(state: ApiState, gateId: string | undefined, actor: string): Promise<AhvControlledProvisioningRun> {
+  async create(state: ApiState, input: CreateAhvControlledProvisioningRunRequest, actor: string): Promise<AhvControlledProvisioningRun> {
     const config = assertAhvLabRuntimeReady();
-    const { gate, dryRun, lifecycleProof } = findReadyLifecycleInputs(state, gateId);
+    const { gate, dryRun, lifecycleProof } = findReadyLifecycleInputs(state, input.gateId);
+    const selectedScope = requireApprovedInventoryScope(state, input);
     validateDryRunAgainstLabConfig(dryRun, config);
     ensureNoActiveRun(state, dryRun.environmentName, "Lab AHV Prism adapter");
 
-    const payload = createVmPayload(dryRun);
-    const response = (await this.client.createVm(payload)) as PrismTaskResponse;
+    const { response, sourceVmUuid } = await submitPrismCentralCreateOrClone(this.client, dryRun, selectedScope);
     const taskUuid = extractTaskUuid(response);
     const vmUuid = extractVmUuid(response) ?? `pending-${taskUuid}`;
     const now = new Date().toISOString();
@@ -403,12 +437,24 @@ export class LabAhvPrismAdapter {
       requestedBy: actor,
       labScopeId: getActiveLabAuthorizationScope(state)?.id,
       lifecycleProofId: lifecycleProof.id,
+      selectedScope,
       prismTaskUuid: taskUuid,
       prismTaskUuids: [taskUuid],
       vmUuid,
       createStatus: "Submitted",
       powerStatus: "Not requested",
       destroyStatus: "Not requested",
+      lifecycleEvents: [
+        {
+          at: now,
+          action: "Create submitted",
+          status: "Submitted",
+          detail: sourceVmUuid
+            ? `Clone VM task submitted for ${dryRun.environmentName} from approved source VM.`
+            : `Create VM task submitted for ${dryRun.environmentName}.`,
+          prismTaskUuid: taskUuid,
+        },
+      ],
       rollbackDestroyEvidence: [`Destroy route available for ${dryRun.environmentName}.`],
       mutationOperationsBlocked: ["bulk_delete", "unscoped_create", "network_change", "image_delete", "production_workload_change"],
       provisioningEnabled: true,
@@ -434,6 +480,16 @@ export class LabAhvPrismAdapter {
       createStatus: run.createStatus === "Submitted" ? (succeeded ? "Succeeded" : failed ? "Failed" : "Submitted") : run.createStatus,
       failureReason: failed ? task.status?.message ?? "Prism task failed." : run.failureReason,
       lastPollAt: new Date().toISOString(),
+      lifecycleEvents: [
+        ...(run.lifecycleEvents ?? []),
+        {
+          at: new Date().toISOString(),
+          action: "Poll",
+          status: state,
+          detail: succeeded ? "Create task succeeded." : failed ? "Create task failed." : "Create task is still running.",
+          prismTaskUuid: taskUuid,
+        },
+      ],
       updatedAt: new Date().toISOString(),
     };
   }
@@ -449,6 +505,16 @@ export class LabAhvPrismAdapter {
       prismTaskUuid: taskUuid,
       prismTaskUuids: [...(run.prismTaskUuids ?? []), taskUuid],
       powerStatus: "Submitted",
+      lifecycleEvents: [
+        ...(run.lifecycleEvents ?? []),
+        {
+          at: new Date().toISOString(),
+          action: "Power submitted",
+          status: state,
+          detail: `Power ${state} task submitted for ${run.environmentName}.`,
+          prismTaskUuid: taskUuid,
+        },
+      ],
       updatedAt: new Date().toISOString(),
     };
   }
@@ -470,6 +536,22 @@ export class LabAhvPrismAdapter {
         status: "Reconciled",
         detail: "Destroy task submitted; operator must confirm Prism inventory remains clean after task completion.",
       },
+      lifecycleEvents: [
+        ...(run.lifecycleEvents ?? []),
+        {
+          at: new Date().toISOString(),
+          action: "Destroy submitted",
+          status: "Submitted",
+          detail: `Destroy task submitted for ${run.environmentName}.`,
+          prismTaskUuid: taskUuid,
+        },
+        {
+          at: new Date().toISOString(),
+          action: "Reconciled",
+          status: "Reconciled",
+          detail: "Destroy task submitted and inventory reconciliation evidence recorded.",
+        },
+      ],
       updatedAt: new Date().toISOString(),
     };
   }
@@ -507,13 +589,14 @@ export class LabAhvPrismElementAdapter {
     };
   }
 
-  async create(state: ApiState, gateId: string | undefined, actor: string): Promise<AhvControlledProvisioningRun> {
+  async create(state: ApiState, input: CreateAhvControlledProvisioningRunRequest, actor: string): Promise<AhvControlledProvisioningRun> {
     const config = assertAhvLabRuntimeReady();
-    const { gate, dryRun, lifecycleProof } = findReadyLifecycleInputs(state, gateId);
+    const { gate, dryRun, lifecycleProof } = findReadyLifecycleInputs(state, input.gateId);
+    const selectedScope = requireApprovedInventoryScope(state, input);
     validateDryRunAgainstLabConfig(dryRun, config);
     ensureNoActiveRun(state, dryRun.environmentName, "Lab AHV Prism Element adapter");
 
-    const response = (await this.client.createVm(createPrismElementVmPayload(dryRun))) as PrismTaskResponse;
+    const { response, sourceVmUuid } = await submitPrismElementCreateOrClone(this.client, dryRun, selectedScope);
     const taskUuid = extractTaskUuid(response);
     const vmUuid = extractVmUuid(response) ?? response.entity_uuid ?? `pending-${taskUuid}`;
     const now = new Date().toISOString();
@@ -529,12 +612,24 @@ export class LabAhvPrismElementAdapter {
       requestedBy: actor,
       labScopeId: getActiveLabAuthorizationScope(state)?.id,
       lifecycleProofId: lifecycleProof.id,
+      selectedScope,
       prismTaskUuid: taskUuid,
       prismTaskUuids: [taskUuid],
       vmUuid,
       createStatus: "Submitted",
       powerStatus: "Not requested",
       destroyStatus: "Not requested",
+      lifecycleEvents: [
+        {
+          at: now,
+          action: "Create submitted",
+          status: "Submitted",
+          detail: sourceVmUuid
+            ? `Clone VM task submitted for ${dryRun.environmentName} from approved source VM.`
+            : `Create VM task submitted for ${dryRun.environmentName}.`,
+          prismTaskUuid: taskUuid,
+        },
+      ],
       rollbackDestroyEvidence: [`Destroy route available for ${dryRun.environmentName}.`],
       mutationOperationsBlocked: ["bulk_delete", "unscoped_create", "network_change", "image_delete", "production_workload_change"],
       provisioningEnabled: true,
@@ -560,6 +655,16 @@ export class LabAhvPrismElementAdapter {
       createStatus: run.createStatus === "Submitted" ? (succeeded ? "Succeeded" : failed ? "Failed" : "Submitted") : run.createStatus,
       failureReason: failed ? task.status?.message ?? "Prism Element task failed." : run.failureReason,
       lastPollAt: new Date().toISOString(),
+      lifecycleEvents: [
+        ...(run.lifecycleEvents ?? []),
+        {
+          at: new Date().toISOString(),
+          action: "Poll",
+          status: state,
+          detail: succeeded ? "Create task succeeded." : failed ? "Create task failed." : "Create task is still running.",
+          prismTaskUuid: taskUuid,
+        },
+      ],
       updatedAt: new Date().toISOString(),
     };
   }
@@ -575,6 +680,16 @@ export class LabAhvPrismElementAdapter {
       prismTaskUuid: taskUuid,
       prismTaskUuids: [...(run.prismTaskUuids ?? []), taskUuid],
       powerStatus: "Submitted",
+      lifecycleEvents: [
+        ...(run.lifecycleEvents ?? []),
+        {
+          at: new Date().toISOString(),
+          action: "Power submitted",
+          status: state,
+          detail: `Power ${state} task submitted for ${run.environmentName}.`,
+          prismTaskUuid: taskUuid,
+        },
+      ],
       updatedAt: new Date().toISOString(),
     };
   }
@@ -596,6 +711,22 @@ export class LabAhvPrismElementAdapter {
         status: "Reconciled",
         detail: "Destroy task submitted; operator must confirm Prism Element inventory remains clean after task completion.",
       },
+      lifecycleEvents: [
+        ...(run.lifecycleEvents ?? []),
+        {
+          at: new Date().toISOString(),
+          action: "Destroy submitted",
+          status: "Submitted",
+          detail: `Destroy task submitted for ${run.environmentName}.`,
+          prismTaskUuid: taskUuid,
+        },
+        {
+          at: new Date().toISOString(),
+          action: "Reconciled",
+          status: "Reconciled",
+          detail: "Destroy task submitted and inventory reconciliation evidence recorded.",
+        },
+      ],
       updatedAt: new Date().toISOString(),
     };
   }
@@ -660,6 +791,53 @@ function ensureNoActiveRun(state: ApiState, environmentName: string, adapterMode
   }
 }
 
+async function submitPrismCentralCreateOrClone(
+  client: PrismCentralV3Client,
+  dryRun: VmSandboxDryRunPlan,
+  selectedScope: NonNullable<AhvControlledProvisioningRun["selectedScope"]>
+) {
+  const sourceVmUuid = selectedScope.sourceVm ? requireAllowedSourceVmUuid(selectedScope.sourceVm.rawRef, process.env.NDC_AHV_ALLOWED_SOURCE_VM_UUID) : undefined;
+  const response = sourceVmUuid
+    ? ((await client.cloneVm(sourceVmUuid, createPrismCentralClonePayload(dryRun))) as PrismTaskResponse)
+    : ((await client.createVm(createVmPayload(dryRun))) as PrismTaskResponse);
+
+  return { response, sourceVmUuid };
+}
+
+async function submitPrismElementCreateOrClone(
+  client: PrismElementV2Client,
+  dryRun: VmSandboxDryRunPlan,
+  selectedScope: NonNullable<AhvControlledProvisioningRun["selectedScope"]>
+) {
+  const sourceVmUuid = selectedScope.sourceVm
+    ? requireAllowedSourceVmUuid(selectedScope.sourceVm.rawRef, process.env.NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID)
+    : undefined;
+  const response = sourceVmUuid
+    ? ((await client.cloneVm(sourceVmUuid, createPrismElementClonePayload(dryRun))) as PrismTaskResponse)
+    : ((await client.createVm(createPrismElementVmPayload(dryRun))) as PrismTaskResponse);
+
+  return { response, sourceVmUuid };
+}
+
+function requireAllowedSourceVmUuid(rawRef: string, allowedUuid: string | undefined) {
+  const sourceVmUuid = extractUuidFromRawRef(rawRef);
+  if (!sourceVmUuid) {
+    throw new AhvLabRuntimeError("source_vm_uuid_missing", "Approved source VM record does not include a usable UUID reference.");
+  }
+  if (!allowedUuid) {
+    throw new AhvLabRuntimeError("source_vm_uuid_not_allowed", "Allowed source VM UUID is not configured in the private lab environment.");
+  }
+  if (sourceVmUuid !== allowedUuid) {
+    throw new AhvLabRuntimeError("source_vm_uuid_scope_mismatch", "Approved source VM does not match the configured allowed source VM UUID.");
+  }
+  return sourceVmUuid;
+}
+
+function extractUuidFromRawRef(rawRef: string) {
+  const match = rawRef.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return match?.[0];
+}
+
 function createVmPayload(dryRun: VmSandboxDryRunPlan) {
   return {
     spec: {
@@ -679,6 +857,28 @@ function createVmPayload(dryRun: VmSandboxDryRunPlan) {
       kind: "vm",
       categories: { Lifecycle: `${dryRun.expiryDays}-day-expiry`, Source: "NDCStudioLab" },
     },
+  };
+}
+
+function createPrismCentralClonePayload(dryRun: VmSandboxDryRunPlan) {
+  const projectReference = process.env.NDC_AHV_ALLOWED_PROJECT_UUID
+    ? { project_reference: { uuid: process.env.NDC_AHV_ALLOWED_PROJECT_UUID, kind: "project" } }
+    : {};
+
+  return {
+    spec_list: [
+      {
+        name: dryRun.environmentName,
+        resources: {
+          num_sockets: dryRun.quota.cpu,
+          memory_size_mib: dryRun.quota.memoryGb * 1024,
+          subnet_reference: { uuid: process.env.NDC_AHV_ALLOWED_SUBNET_UUID, kind: "subnet" },
+          cluster_reference: { uuid: process.env.NDC_AHV_ALLOWED_CLUSTER_UUID, kind: "cluster" },
+          ...projectReference,
+        },
+        categories: { Lifecycle: `${dryRun.expiryDays}-day-expiry`, Owner: dryRun.owner, Source: "NDCStudioSourceVmClone" },
+      },
+    ],
   };
 }
 
@@ -710,6 +910,31 @@ function createPrismElementVmPayload(dryRun: VmSandboxDryRunPlan) {
       Source: "NDCStudioPrismElementLab",
       Owner: dryRun.owner,
     },
+  };
+}
+
+function createPrismElementClonePayload(dryRun: VmSandboxDryRunPlan) {
+  return {
+    spec_list: [
+      {
+        name: dryRun.environmentName,
+        memory_mb: dryRun.quota.memoryGb * 1024,
+        num_vcpus: dryRun.quota.cpu,
+        num_cores_per_vcpu: 1,
+        vm_nics: [
+          {
+            network_uuid: process.env.NDC_AHV_PE_ALLOWED_SUBNET_UUID,
+            request_ip: false,
+          },
+        ],
+        description: `Cloned by NDC Studio PE lab adapter; expires in ${dryRun.expiryDays} days.`,
+        categories: {
+          Lifecycle: `${dryRun.expiryDays}-day-expiry`,
+          Source: "NDCStudioSourceVmClone",
+          Owner: dryRun.owner,
+        },
+      },
+    ],
   };
 }
 

@@ -32,6 +32,16 @@ function Read-RequiredValue {
   return $value.Trim()
 }
 
+function Read-OptionalValue {
+  param([string]$Prompt)
+
+  $value = Read-Host $Prompt
+  if ([string]::IsNullOrWhiteSpace($value)) {
+    return ""
+  }
+  return $value.Trim()
+}
+
 function Escape-EnvValue {
   param([string]$Value)
   return $Value.Replace("`r", "").Replace("`n", "").Replace('"', '\"')
@@ -53,7 +63,11 @@ $username = Read-RequiredValue "Prism username"
 $password = Read-RequiredValue "Prism password" -Secret
 $clusterUuid = Read-RequiredValue "Allowed cluster UUID"
 $subnetUuid = Read-RequiredValue "Allowed subnet/network UUID"
-$imageUuid = Read-RequiredValue "Allowed image UUID"
+$imageUuid = Read-OptionalValue "Allowed image UUID (leave blank when using an approved source VM)"
+$sourceVmUuid = Read-OptionalValue "Allowed source VM UUID for clone flow (leave blank when using an image)"
+if (-not $imageUuid -and -not $sourceVmUuid) {
+  throw "Either an allowed image UUID or allowed source VM UUID is required."
+}
 $projectUuid = if ($Provider -eq "prism-central") { Read-RequiredValue "Allowed project UUID" } else { "" }
 $tlsInsecure = Read-Host "Allow insecure TLS for this lab only? Type true or false"
 if ($tlsInsecure -notin @("true", "false")) {
@@ -100,13 +114,15 @@ if ($Provider -eq "prism-element") {
     "NDC_AHV_PE_ALLOWED_CLUSTER_UUID=$(Escape-EnvValue $clusterUuid)",
     "NDC_AHV_PE_ALLOWED_SUBNET_UUID=$(Escape-EnvValue $subnetUuid)",
     "NDC_AHV_PE_ALLOWED_IMAGE_UUID=$(Escape-EnvValue $imageUuid)",
+    "NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID=$(Escape-EnvValue $sourceVmUuid)",
     "NUTANIX_PRISM_CENTRAL_URL=",
     "NUTANIX_PRISM_USERNAME=",
     "NUTANIX_PRISM_PASSWORD=",
     "NDC_AHV_ALLOWED_CLUSTER_UUID=",
     "NDC_AHV_ALLOWED_PROJECT_UUID=",
     "NDC_AHV_ALLOWED_SUBNET_UUID=",
-    "NDC_AHV_ALLOWED_IMAGE_UUID="
+    "NDC_AHV_ALLOWED_IMAGE_UUID=",
+    "NDC_AHV_ALLOWED_SOURCE_VM_UUID="
   )
 } else {
   $lines += @(
@@ -117,12 +133,14 @@ if ($Provider -eq "prism-element") {
     "NDC_AHV_ALLOWED_PROJECT_UUID=$(Escape-EnvValue $projectUuid)",
     "NDC_AHV_ALLOWED_SUBNET_UUID=$(Escape-EnvValue $subnetUuid)",
     "NDC_AHV_ALLOWED_IMAGE_UUID=$(Escape-EnvValue $imageUuid)",
+    "NDC_AHV_ALLOWED_SOURCE_VM_UUID=$(Escape-EnvValue $sourceVmUuid)",
     "NUTANIX_PRISM_ELEMENT_URL=",
     "NUTANIX_PRISM_ELEMENT_USERNAME=",
     "NUTANIX_PRISM_ELEMENT_PASSWORD=",
     "NDC_AHV_PE_ALLOWED_CLUSTER_UUID=",
     "NDC_AHV_PE_ALLOWED_SUBNET_UUID=",
-    "NDC_AHV_PE_ALLOWED_IMAGE_UUID="
+    "NDC_AHV_PE_ALLOWED_IMAGE_UUID=",
+    "NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID="
   )
 }
 

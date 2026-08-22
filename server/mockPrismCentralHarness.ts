@@ -123,6 +123,11 @@ export function handleMockPrismRequest(
     return createVm(state, request.body ?? {});
   }
 
+  const cloneMatch = path.match(/^\/api\/nutanix\/v3\/vms\/([^/]+)\/clone$/);
+  if (method === "POST" && cloneMatch) {
+    return cloneVm(state, decodeURIComponent(cloneMatch[1]), request.body ?? {});
+  }
+
   const taskMatch = path.match(/^\/api\/nutanix\/v3\/tasks\/([^/]+)$/);
   if (method === "GET" && taskMatch) {
     return pollTask(state, decodeURIComponent(taskMatch[1]));
@@ -196,6 +201,59 @@ function createVm(state: MockPrismState, body: Record<string, unknown>): MockPri
   };
   state.vms.push(vm);
   const task = createTask("create_vm", vmUuid, "Create VM accepted by Mock Prism Central.");
+  state.tasks.push(task);
+  return ok(task, 202);
+}
+
+function cloneVm(state: MockPrismState, sourceVmUuid: string, body: Record<string, unknown>): MockPrismResponse {
+  const sourceVm = findVm(state, sourceVmUuid);
+  if (!sourceVm) {
+    return notFound("Source VM", sourceVmUuid);
+  }
+
+  const spec = (body.spec && typeof body.spec === "object" ? body.spec : {}) as Record<string, unknown>;
+  const name = typeof spec.name === "string" ? spec.name : `ndc-lab-clone-${Date.now()}`;
+  if (!name.startsWith("ndc-lab-") || /prod|production/i.test(name)) {
+    return {
+      statusCode: 400,
+      body: {
+        error: "Bad Request",
+        message: "Mock Prism refuses VM clone names outside the ndc-lab-* safety prefix.",
+      },
+    };
+  }
+
+  const existing = state.vms.find((vm) => vm.spec?.name === name || vm.status.name === name);
+  if (existing) {
+    return {
+      statusCode: 409,
+      body: {
+        error: "Conflict",
+        message: `VM ${name} already exists in Mock Prism inventory.`,
+      },
+    };
+  }
+
+  const vmUuid = `mock-vm-${slug(name)}-${Date.now()}`;
+  const sourceResources = (sourceVm.status.resources && typeof sourceVm.status.resources === "object" ? sourceVm.status.resources : {}) as Record<string, unknown>;
+  const vm: PrismEntity = {
+    metadata: { uuid: vmUuid, kind: "vm" },
+    spec: {
+      ...sourceVm.spec,
+      ...spec,
+      name,
+    },
+    status: {
+      name,
+      state: "COMPLETE",
+      resources: {
+        ...sourceResources,
+        power_state: "OFF",
+      },
+    },
+  };
+  state.vms.push(vm);
+  const task = createTask("clone_vm", vmUuid, `Clone VM accepted by Mock Prism Central from ${sourceVmUuid}.`);
   state.tasks.push(task);
   return ok(task, 202);
 }

@@ -34,8 +34,10 @@ export function createDisabledAhvControlledProvisioningAdapter(): AhvControlledP
 
       const scope = getActiveLabAuthorizationScope(state);
       const lifecycleProof = state.vmLifecycleProofs.find((proof) => proof.gateId === gate.id && proof.status === "Verified");
+      const selectedScope = getApprovedInventoryScope(state, input);
       const adapterEnabled = process.env.NDC_AHV_REAL_ADAPTER_ENABLED === "true";
       const createSwitchEnabled = process.env.NDC_CONTROLLED_PROVISIONING_ENABLED === "true";
+      const now = new Date().toISOString();
       const checks = [
         {
           name: "Controlled gate approved",
@@ -54,6 +56,13 @@ export function createDisabledAhvControlledProvisioningAdapter(): AhvControlledP
           name: "Lifecycle proof verified",
           passed: Boolean(lifecycleProof),
           detail: lifecycleProof ? "Rollback and destroy proof is verified." : "Verified lifecycle proof is required.",
+        },
+        {
+          name: "Approved Prism scope selected",
+          passed: Boolean(selectedScope),
+          detail: selectedScope
+            ? `${selectedScope.cluster.name} / ${selectedScope.network.name} / ${selectedScope.image?.name ?? selectedScope.sourceVm?.name}`
+            : "Select approved cluster, network, and either image or source VM inventory records before controlled create.",
         },
         {
           name: "Create switch enabled",
@@ -80,10 +89,69 @@ export function createDisabledAhvControlledProvisioningAdapter(): AhvControlledP
         requestedBy: actor,
         labScopeId: scope?.id,
         lifecycleProofId: lifecycleProof?.id,
+        selectedScope,
+        lifecycleEvents: [
+          {
+            at: now,
+            action: "Notice",
+            status: ready ? "Ready but disabled" : "Preflight blocked",
+            detail: ready
+              ? "Controlled create gates passed, but the real adapter remains disabled."
+              : "Controlled create preflight recorded without Prism mutation.",
+          },
+        ],
         mutationOperationsBlocked: ["create_vm", "clone_vm", "power_on", "power_off", "delete_vm", "update_network", "update_category"],
         provisioningEnabled: false,
-        createdAt: new Date().toISOString(),
+        createdAt: now,
       };
     },
+  };
+}
+
+export function requireApprovedInventoryScope(
+  state: ApiState,
+  input: CreateAhvControlledProvisioningRunRequest
+): NonNullable<AhvControlledProvisioningRun["selectedScope"]> {
+  const selectedScope = getApprovedInventoryScope(state, input);
+  if (!selectedScope) {
+    throw new AhvControlledProvisioningError(
+      "approved_prism_scope_required",
+      "Approved Prism cluster, network, and image or source VM inventory records are required before controlled AHV create."
+    );
+  }
+  return selectedScope;
+}
+
+function getApprovedInventoryScope(
+  state: ApiState,
+  input: CreateAhvControlledProvisioningRunRequest
+): AhvControlledProvisioningRun["selectedScope"] | undefined {
+  const cluster = findApprovedScopeRecord(state, input.clusterRecordId, "Cluster");
+  const network = findApprovedScopeRecord(state, input.networkRecordId, "Network");
+  const image = findApprovedScopeRecord(state, input.imageRecordId, "Image");
+  const sourceVm = findApprovedScopeRecord(state, input.sourceVmRecordId, "VM");
+  if (!cluster || !network || (!image && !sourceVm)) {
+    return undefined;
+  }
+
+  return {
+    cluster: scopeRecordSummary(cluster),
+    network: scopeRecordSummary(network),
+    ...(image ? { image: scopeRecordSummary(image) } : {}),
+    ...(sourceVm ? { sourceVm: scopeRecordSummary(sourceVm) } : {}),
+  };
+}
+
+function findApprovedScopeRecord(state: ApiState, id: string | undefined, kind: "Cluster" | "Network" | "Image" | "VM") {
+  return state.prismInventory.find((record) => record.id === id && record.kind === kind && record.approvalStatus === "Approved");
+}
+
+function scopeRecordSummary(record: NonNullable<ReturnType<typeof findApprovedScopeRecord>>) {
+  return {
+    recordId: record.id,
+    name: record.name,
+    rawRef: record.rawRef,
+    approvedBy: record.approvedBy,
+    approvedAt: record.approvedAt,
   };
 }

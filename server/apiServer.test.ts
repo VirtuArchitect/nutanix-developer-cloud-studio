@@ -1736,6 +1736,80 @@ describe("api server", () => {
     );
   });
 
+  it("approves discovered Prism scope records with RBAC and redacted audit evidence", async () => {
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      body: JSON.stringify({
+        endpoint: "https://prism.lab.example",
+        credentialProfile: "nci-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST" });
+    await requestJson("/api/prism/inventory/import", { method: "POST" });
+
+    await expectJson(
+      "/api/prism/inventory/pc-cluster-berlin-01/approve",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      {
+        method: "POST",
+        headers: { "x-ndc-user": "demo.dev", "x-ndc-roles": "Developer" },
+      }
+    );
+
+    const approved = await requestJson("/api/prism/inventory/pc-cluster-berlin-01/approve", { method: "POST" });
+    const approvedSourceVm = await requestJson("/api/prism/inventory/pc-vm-payments-dev/approve", { method: "POST" });
+    const blockedProject = await nodeRequest("/api/prism/inventory/pc-project-devcloud/approve", { method: "POST" });
+    const inventory = await requestJson("/api/prism/inventory");
+    const auditEvents = await requestJson("/api/audit-events");
+    const serializedAudit = JSON.stringify(auditEvents.data);
+
+    expect(approved.data).toMatchObject({
+      id: "pc-cluster-berlin-01",
+      kind: "Cluster",
+      approvalStatus: "Approved",
+      approvedBy: "platform.admin",
+    });
+    expect(JSON.parse(blockedProject.body)).toEqual({
+      error: {
+        code: "prism_inventory_scope_not_approvable",
+        message: "Only cluster, image, network, and source VM records can be approved for controlled provisioning scope. Project is read-only evidence.",
+      },
+    });
+    expect(approvedSourceVm.data).toMatchObject({
+      id: "pc-vm-payments-dev",
+      kind: "VM",
+      approvalStatus: "Approved",
+      approvalEvidence: expect.arrayContaining([
+        expect.stringContaining("bounded clone source"),
+      ]),
+    });
+    expect(blockedProject.status).toBe(409);
+    expect(inventory.data.records).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "pc-cluster-berlin-01", approvalStatus: "Approved" }),
+      ])
+    );
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "prism.inventory.approved",
+          target: "pc-cluster-berlin-01",
+          metadata: expect.objectContaining({
+            provisioningEnabled: false,
+            realPrismCallsEnabled: false,
+          }),
+        }),
+      ])
+    );
+    expect(serializedAudit).not.toMatch(/Authorization|password|token/i);
+  });
+
   it("exposes a disabled read-only Prism adapter scaffold and lab gate", async () => {
     const blockedDiagnostics = await requestJson("/api/prism/read-only-adapter/diagnostics");
     const blockedGate = await requestJson("/api/prism/read-only-lab-gates", { method: "POST" });
@@ -2340,6 +2414,7 @@ describe("api server", () => {
     expect(run.data.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "Controlled gate approved", passed: false }),
+        expect.objectContaining({ name: "Approved Prism scope selected", passed: false }),
         expect.objectContaining({ name: "AHV adapter enabled", passed: false }),
       ])
     );
@@ -2422,11 +2497,73 @@ describe("api server", () => {
       lifecycleMutationEnabled: false,
       redactionApplied: true,
     });
-    expect(result.data.readOnlyChecks).toHaveLength(4);
+    expect(result.data.readOnlyChecks).toEqual(expect.arrayContaining([expect.objectContaining({ operation: "listVms" })]));
+    expect(result.data.inventoryPreview).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "Cluster", name: "berlin-ahv-lab" }),
+        expect.objectContaining({ kind: "Image", name: "Rocky Linux 9 Hardened", profileCandidate: true }),
+        expect.objectContaining({ kind: "Network", name: "dev-segment" }),
+      ])
+    );
     expect(JSON.stringify(result.data)).not.toContain(secret);
     expect(JSON.stringify(auditEvents.data)).not.toContain(secret);
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([expect.objectContaining({ action: "ahv.lab-runtime.connection-test", target: "prism-central" })])
+    );
+  });
+
+  it("loads sanitized connection-test inventory previews into the inventory browser", async () => {
+    const adminHeaders = { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" };
+    const secret = "preview-secret-value";
+    const result = await requestJson("/api/ahv/lab-runtime/connection-test", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        provider: "prism-central",
+        endpoint: `${baseUrl}/mock-prism`,
+        username: "mock-prism-user",
+        password: secret,
+        tlsInsecure: false,
+        allowedClusterUuid: "mock-cluster-uuid",
+        allowedProjectUuid: "mock-project-uuid",
+        allowedSubnetUuid: "mock-subnet-uuid",
+        allowedImageUuid: "mock-image-uuid",
+      }),
+    });
+    const imported = await requestJson("/api/prism/inventory/preview-import", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        provider: result.data.provider,
+        endpointHost: result.data.endpointHost,
+        records: result.data.inventoryPreview,
+      }),
+    });
+    const inventory = await requestJson("/api/prism/inventory", { headers: adminHeaders });
+    const profiles = await requestJson("/api/resource-profiles", { headers: adminHeaders });
+    const auditEvents = await requestJson("/api/audit-events", { headers: adminHeaders });
+
+    expect(imported.data).toMatchObject({
+      mode: "Connection preview",
+      readOnly: true,
+      provisioningEnabled: false,
+      recordsImported: expect.any(Number),
+    });
+    expect(inventory.data.records).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "Cluster", name: "berlin-ahv-lab", approvalStatus: "Discovered" }),
+        expect.objectContaining({ kind: "Image", name: "Rocky Linux 9 Hardened", source: "Prism Central" }),
+      ])
+    );
+    expect(profiles.data).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: expect.stringContaining("connection-preview-prism-central-listImages") })])
+    );
+    expect(JSON.stringify(inventory.data)).not.toContain(secret);
+    expect(JSON.stringify(auditEvents.data)).not.toContain(secret);
+    expect(auditEvents.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "prism.inventory.preview-imported", target: "prism-central" }),
+      ])
     );
   });
 
@@ -2458,6 +2595,19 @@ describe("api server", () => {
 
     const adminHeaders = { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" };
     const preflight = await requestJson("/api/ahv/lab-runtime/preflight", { method: "POST", headers: adminHeaders });
+    await requestJson("/api/integration-config/NCI", {
+      method: "PUT",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        endpoint: `${baseUrl}/mock-prism`,
+        credentialProfile: "mock-prism-readonly",
+      }),
+    });
+    await requestJson("/api/integrations/NCI/check", { method: "POST", headers: adminHeaders });
+    await requestJson("/api/prism/inventory/import", { method: "POST", headers: adminHeaders });
+    const approvedCluster = await requestJson("/api/prism/inventory/pc-cluster-berlin-01/approve", { method: "POST", headers: adminHeaders });
+    const approvedNetwork = await requestJson("/api/prism/inventory/pc-network-dev-segment/approve", { method: "POST", headers: adminHeaders });
+    const approvedImage = await requestJson("/api/prism/inventory/pc-image-rocky-9-hardened/approve", { method: "POST", headers: adminHeaders });
     const plan = await requestJson("/api/vm-sandbox/dry-runs", {
       method: "POST",
       headers: adminHeaders,
@@ -2509,7 +2659,13 @@ describe("api server", () => {
     const created = await requestJson("/api/ahv/controlled-provisioning/runs", {
       method: "POST",
       headers: adminHeaders,
-      body: JSON.stringify({ gateId: gate.data.id, action: "Create VM" }),
+      body: JSON.stringify({
+        gateId: gate.data.id,
+        action: "Create VM",
+        clusterRecordId: approvedCluster.data.id,
+        networkRecordId: approvedNetwork.data.id,
+        imageRecordId: approvedImage.data.id,
+      }),
     });
     const polled = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/poll`, {
       method: "POST",
@@ -2527,7 +2683,7 @@ describe("api server", () => {
     const auditEvents = await requestJson("/api/audit-events", { headers: adminHeaders });
 
     expect(preflight.data).toMatchObject({ status: "Ready", realPrismCallsEnabled: true });
-    expect(preflight.data.readOnlyChecks).toHaveLength(4);
+    expect(preflight.data.readOnlyChecks).toEqual(expect.arrayContaining([expect.objectContaining({ operation: "listVms" })]));
     expect(approved.data).toMatchObject({ status: "Approved for controlled create" });
     expect(envelope.data).toMatchObject({ status: "Ready for authorization review" });
     expect(created.data).toMatchObject({
@@ -2536,14 +2692,35 @@ describe("api server", () => {
       provisioningEnabled: true,
       createStatus: "Submitted",
       prismTaskUuid: expect.any(String),
+      selectedScope: expect.objectContaining({
+        cluster: expect.objectContaining({ recordId: "pc-cluster-berlin-01" }),
+        network: expect.objectContaining({ recordId: "pc-network-dev-segment" }),
+        image: expect.objectContaining({ recordId: "pc-image-rocky-9-hardened" }),
+      }),
+      lifecycleEvents: expect.arrayContaining([
+        expect.objectContaining({ action: "Create submitted", status: "Submitted" }),
+      ]),
     });
-    expect(polled.data).toMatchObject({ status: "Succeeded", createStatus: "Succeeded", vmUuid: expect.stringContaining("mock-vm") });
-    expect(powered.data).toMatchObject({ action: "Power VM", powerStatus: "Submitted" });
+    expect(polled.data).toMatchObject({
+      status: "Succeeded",
+      createStatus: "Succeeded",
+      vmUuid: expect.stringContaining("mock-vm"),
+      lifecycleEvents: expect.arrayContaining([expect.objectContaining({ action: "Poll", status: "SUCCEEDED" })]),
+    });
+    expect(powered.data).toMatchObject({
+      action: "Power VM",
+      powerStatus: "Submitted",
+      lifecycleEvents: expect.arrayContaining([expect.objectContaining({ action: "Power submitted", status: "OFF" })]),
+    });
     expect(destroyed.data).toMatchObject({
       action: "Destroy VM",
       status: "Destroyed",
       destroyStatus: "Submitted",
       inventoryReconciliation: expect.objectContaining({ status: "Reconciled", vmPresent: false }),
+      lifecycleEvents: expect.arrayContaining([
+        expect.objectContaining({ action: "Destroy submitted", status: "Submitted" }),
+        expect.objectContaining({ action: "Reconciled", status: "Reconciled" }),
+      ]),
     });
     expect(JSON.stringify(auditEvents.data)).not.toContain("placeholder-not-a-secret");
     expect(JSON.stringify(auditEvents.data)).not.toContain("Authorization");
@@ -4720,9 +4897,11 @@ describe("api server", () => {
     delete process.env.NDC_AHV_ALLOWED_PROJECT_UUID;
     delete process.env.NDC_AHV_ALLOWED_SUBNET_UUID;
     delete process.env.NDC_AHV_ALLOWED_IMAGE_UUID;
+    delete process.env.NDC_AHV_ALLOWED_SOURCE_VM_UUID;
     delete process.env.NDC_AHV_PE_ALLOWED_CLUSTER_UUID;
     delete process.env.NDC_AHV_PE_ALLOWED_SUBNET_UUID;
     delete process.env.NDC_AHV_PE_ALLOWED_IMAGE_UUID;
+    delete process.env.NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID;
     delete process.env.NDC_AHV_VM_NAME_PREFIX;
     delete process.env.NDC_AUTHORIZED_PENTEST_SCOPE_REF;
     delete process.env.NDC_AUTHORIZED_PENTEST_SCOPE_ACTIVE;

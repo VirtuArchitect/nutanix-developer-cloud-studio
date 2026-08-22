@@ -264,7 +264,9 @@ import {
   activatePrismFailureScenarioViaApi,
   createRealPrismPreflightRunViaApi,
   createReadOnlyPrismLabGateViaApi,
+  decidePrismInventoryRecordViaApi,
   importPrismInventoryViaApi,
+  importPrismInventoryPreviewViaApi,
   runResourceProfileActionViaApi,
   runLabPilotRunbookWorkflowActionViaApi,
   setReadOnlyAdapterRuntimeModeViaApi,
@@ -448,6 +450,12 @@ describe("cloudStudioApi", () => {
 
     await fetchPrismInventoryFromApi();
     await importPrismInventoryViaApi();
+    await importPrismInventoryPreviewViaApi({
+      provider: "prism-element",
+      endpointHost: "prism-element.lab:9440",
+      records: [],
+    });
+    await decidePrismInventoryRecordViaApi("pc-cluster-berlin-01", "approve");
     await fetchMockPrismStatusFromApi();
     await fetchMockPrismExecutionsFromApi();
     await fetchMockPrismHarnessConsoleFromApi();
@@ -468,32 +476,42 @@ describe("cloudStudioApi", () => {
       "/api/prism/inventory/import",
       expect.objectContaining({ method: "POST" })
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(3, "/api/mock-prism/status", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(4, "/api/mock-prism/executions", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/mock-prism/harness-console", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/prism/adapter-diagnostics", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/prism/read-only-adapter/diagnostics", expect.any(Object));
-    expect(fetchMock).toHaveBeenNthCalledWith(8, "/api/prism/read-only-lab-gates", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      9,
+      3,
+      "/api/prism/inventory/preview-import",
+      expect.objectContaining({ method: "POST", body: expect.stringContaining("prism-element.lab:9440") })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "/api/prism/inventory/pc-cluster-berlin-01/approve",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(5, "/api/mock-prism/status", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(6, "/api/mock-prism/executions", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(7, "/api/mock-prism/harness-console", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(8, "/api/prism/adapter-diagnostics", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(9, "/api/prism/read-only-adapter/diagnostics", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(10, "/api/prism/read-only-lab-gates", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      11,
       "/api/prism/read-only-lab-gates",
       expect.objectContaining({ method: "POST" })
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(10, "/api/prism/simulator-profiles", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(12, "/api/prism/simulator-profiles", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      11,
+      13,
       "/api/prism/simulator-profiles/sim-image-ubuntu-2404/select",
       expect.objectContaining({ method: "POST" })
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(12, "/api/prism/failure-scenarios", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(14, "/api/prism/failure-scenarios", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      13,
+      15,
       "/api/prism/failure-scenarios/task-failed/activate",
       expect.objectContaining({ method: "POST" })
     );
-    expect(fetchMock).toHaveBeenNthCalledWith(14, "/api/prism/real-preflight-runs", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(16, "/api/prism/real-preflight-runs", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
-      15,
+      17,
       "/api/prism/real-preflight-runs",
       expect.objectContaining({ method: "POST" })
     );
@@ -894,13 +912,22 @@ describe("cloudStudioApi", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await fetchAhvControlledProvisioningRunsFromApi();
-    await createAhvControlledProvisioningRunViaApi({ gateId: "vm-controlled-1", action: "Create VM" });
+    await createAhvControlledProvisioningRunViaApi({
+      gateId: "vm-controlled-1",
+      action: "Create VM",
+      clusterRecordId: "pc-cluster-berlin-01",
+      networkRecordId: "pc-network-dev-segment",
+      sourceVmRecordId: "pc-vm-testvm-01",
+    });
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/ahv/controlled-provisioning/runs", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/ahv/controlled-provisioning/runs",
-      expect.objectContaining({ method: "POST", body: expect.stringContaining("vm-controlled-1") })
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("pc-vm-testvm-01"),
+      })
     );
   });
 

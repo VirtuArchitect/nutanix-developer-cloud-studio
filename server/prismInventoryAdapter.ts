@@ -91,6 +91,7 @@ function createMockPrismInventory(scope: PrismReadOnlyScope, importedAt: string)
       categories: ["Environment:Lab", "Platform:NCI"],
       importedAt,
       rawRef: "mock://prism/clusters/berlin-01",
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-project-devcloud",
@@ -102,6 +103,7 @@ function createMockPrismInventory(scope: PrismReadOnlyScope, importedAt: string)
       categories: ["Owner:DeveloperCloud", "CostCenter:Sandbox"],
       importedAt,
       rawRef: "mock://prism/projects/developer-cloud-lab",
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-image-rocky-9-hardened",
@@ -114,6 +116,7 @@ function createMockPrismInventory(scope: PrismReadOnlyScope, importedAt: string)
       importedAt,
       rawRef: "mock://prism/images/rocky-9-hardened",
       profileCandidate: true,
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-image-ubuntu-2404-lts",
@@ -126,6 +129,7 @@ function createMockPrismInventory(scope: PrismReadOnlyScope, importedAt: string)
       importedAt,
       rawRef: "mock://prism/images/ubuntu-2404-lts",
       profileCandidate: true,
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-network-dev-segment",
@@ -138,6 +142,7 @@ function createMockPrismInventory(scope: PrismReadOnlyScope, importedAt: string)
       categories: ["Network:Developer", "Exposure:Internal"],
       importedAt,
       rawRef: "mock://prism/networks/dev-segment",
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-category-expiry",
@@ -148,6 +153,7 @@ function createMockPrismInventory(scope: PrismReadOnlyScope, importedAt: string)
       categories: ["Lifecycle:Expiry", "Governance:NCM"],
       importedAt,
       rawRef: "mock://prism/categories/lifecycle-expiry",
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-vm-payments-dev",

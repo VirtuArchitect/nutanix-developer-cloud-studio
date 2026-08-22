@@ -9,6 +9,7 @@ import {
   Gauge,
   Layers3,
   LockKeyhole,
+  MonitorCog,
   Network,
   Pencil,
   Play,
@@ -492,7 +493,12 @@ import {
   activatePrismFailureScenarioViaApi,
   createRealPrismPreflightRunViaApi,
   createReadOnlyPrismLabGateViaApi,
+  destroyAhvControlledProvisioningRunViaApi,
+  decidePrismInventoryRecordViaApi,
   importPrismInventoryViaApi,
+  importPrismInventoryPreviewViaApi,
+  pollAhvControlledProvisioningRunViaApi,
+  powerAhvControlledProvisioningRunViaApi,
   runResourceProfileActionViaApi,
   runLabPilotRunbookWorkflowActionViaApi,
   setReadOnlyAdapterRuntimeModeViaApi,
@@ -510,7 +516,7 @@ import {
   type EnvironmentDetail,
 } from "./services/cloudStudioApi";
 
-type AdminTab = "overview" | "settings" | "providers" | "control" | "operations" | "governance" | "templates";
+type AdminTab = "overview" | "settings" | "infrastructure" | "providers" | "control" | "operations" | "governance" | "templates";
 
 export function App() {
   const [view, setView] = useState<View>("dashboard");
@@ -2207,6 +2213,91 @@ export function App() {
     );
   }
 
+  async function importPrismConnectionPreview(result: AhvLabConnectionTestResult) {
+    const records = (result.inventoryPreview ?? []).map((record) => ({
+      ...record,
+      approvalStatus: "Discovered" as const,
+    }));
+    if (records.length === 0) {
+      return;
+    }
+
+    if (apiHealth.mode === "api") {
+      await importPrismInventoryPreviewViaApi({
+        provider: result.provider,
+        endpointHost: result.endpointHost,
+        records,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    const importedAt = new Date().toISOString();
+    setPrismInventory(records.map((record) => ({ ...record, importedAt })));
+    setPrismInventoryImport({
+      adapter: "NCI",
+      mode: "Connection preview",
+      readOnly: true,
+      provisioningEnabled: false,
+      importedAt,
+      recordsImported: records.length,
+      profileCandidates: records.filter((record) => record.profileCandidate).length,
+      scope: {
+        endpoint: `connection-preview://${result.endpointHost}`,
+        credentialProfile: "browser-one-time-credential-not-persisted",
+        project: records.find((record) => record.project)?.project ?? "connection-preview",
+        cluster: records.find((record) => record.cluster)?.cluster ?? records.find((record) => record.kind === "Cluster")?.name ?? "connection-preview",
+        network: records.find((record) => record.network)?.network ?? records.find((record) => record.kind === "Network")?.name ?? "connection-preview",
+        authorizedScopeRef: "Browser one-time read-only connection preview",
+        realAdapterEnabled: false,
+      },
+      evidence: `${result.provider === "prism-element" ? "Prism Element" : "Prism Central"} one-time read-only connection preview loaded into the inventory browser.`,
+      mutationOperationsBlocked: ["create_vm", "clone_vm", "delete_vm", "power_on", "power_off", "update_network"],
+    });
+  }
+
+  async function decidePrismInventoryRecord(recordId: string, decision: "approve" | "reject") {
+    if (apiHealth.mode === "api") {
+      await decidePrismInventoryRecordViaApi(recordId, decision);
+      await refreshApiState();
+      return;
+    }
+
+    const now = new Date().toISOString();
+    setPrismInventory((current) =>
+      current.map((record) =>
+        record.id === recordId
+          ? {
+              ...record,
+              approvalStatus: decision === "approve" ? "Approved" : "Rejected",
+              approvedBy: session.user,
+              approvedAt: now,
+              approvalEvidence: [
+                `${record.kind} ${record.name} ${decision === "approve" ? "approved" : "rejected"} for controlled AHV lab scope by ${session.user}.`,
+                "Browser mock decision stores sanitized inventory reference only.",
+                "Approval is advisory scope evidence and does not submit infrastructure mutation.",
+              ],
+            }
+          : record
+      )
+    );
+    setAuditEvents((current) => [
+      {
+        id: `browser-prism-inventory-${decision}-${Date.now()}`,
+        timestamp: now,
+        createdAt: now,
+        actor: session.user,
+        action: `prism.inventory.${decision === "approve" ? "approved" : "rejected"}`,
+        target: recordId,
+        metadata: {
+          provisioningEnabled: false,
+          realPrismCallsEnabled: false,
+        },
+      },
+      ...current,
+    ]);
+  }
+
   async function selectPrismSimulatorProfile(profileId: string) {
     if (apiHealth.mode === "api") {
       await selectPrismSimulatorProfileViaApi(profileId);
@@ -2274,6 +2365,67 @@ export function App() {
     }
 
     setReadOnlyLabConnectionProfiles((current) => [createMockReadOnlyLabConnectionProfile(session.user), ...current]);
+  }
+
+  async function createReadOnlyLabConnectionProfileFromConnection(
+    result: AhvLabConnectionTestResult,
+    request: AhvLabConnectionTestRequest
+  ) {
+    const providerLabel = result.provider === "prism-element" ? "Prism Element" : "Prism Central";
+    const endpointRef = `${result.provider}-${safeReferenceSlug(result.endpointHost)}-endpoint-ref`;
+    const credentialProfileRef = `${result.provider}-browser-test-credential-ref`;
+    const allowedProviderScope = {
+      projects: request.allowedProjectUuid ? [request.allowedProjectUuid] : ["prism-element-local-scope"],
+      clusters: request.allowedClusterUuid ? [request.allowedClusterUuid] : [],
+      networks: request.allowedSubnetUuid ? [request.allowedSubnetUuid] : [],
+      categories: ["env:lab", "source:browser-validated"],
+    };
+    const evidence = [
+      `${providerLabel} one-time connection test ${result.id} completed with status ${result.status}.`,
+      `${result.readOnlyChecks.filter((check) => check.passed).length}/${result.readOnlyChecks.length} read-only list operations passed.`,
+      `${result.inventoryPreview?.length ?? 0} sanitized inventory preview records were returned.`,
+      "Credential value and raw endpoint URL were not persisted in the profile.",
+    ];
+
+    if (apiHealth.mode === "api") {
+      await createReadOnlyLabConnectionProfileViaApi({
+        name: `${providerLabel} validated read-only lab profile`,
+        prismCentralEndpointRef: endpointRef,
+        credentialProfileRef,
+        owner: session.user,
+        approvedBy: session.user,
+        approvalState: result.status === "Ready" ? "Approved" : "Draft",
+        allowedProviderScope,
+        evidence,
+      });
+      await refreshApiState();
+      return;
+    }
+
+    const now = new Date();
+    const profile: ReadOnlyLabConnectionProfile = {
+      id: `browser-validated-profile-${Date.now()}`,
+      name: `${providerLabel} validated read-only lab profile`,
+      provider: "NCI",
+      prismCentralEndpointRef: endpointRef,
+      credentialProfileRef,
+      allowedProviderScope,
+      owner: session.user,
+      approvedBy: result.status === "Ready" ? session.user : undefined,
+      approvalState: result.status === "Ready" ? "Approved" : "Draft",
+      expiresAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      checks: [
+        { name: "Connection test passed", passed: result.status === "Ready", detail: result.status },
+        { name: "Read-only operations passed", passed: result.readOnlyChecks.every((check) => check.passed), detail: `${result.readOnlyChecks.length} operation(s).` },
+        { name: "Provider scope bounded", passed: allowedProviderScope.clusters.length > 0 && allowedProviderScope.networks.length > 0, detail: "Cluster and network UUID references captured." },
+        { name: "Credential value excluded", passed: true, detail: "Profile stores a credential reference only." },
+      ],
+      evidence,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+      createdAt: now.toISOString(),
+    };
+    setReadOnlyLabConnectionProfiles((current) => [profile, ...current]);
   }
 
   async function createPrismFixtureReplay() {
@@ -3073,23 +3225,68 @@ export function App() {
     ]);
   }
 
-  async function runAhvControlledProvisioningPreflight() {
+  async function runAhvControlledProvisioningPreflight(selection?: {
+    clusterRecordId?: string;
+    networkRecordId?: string;
+    imageRecordId?: string;
+    sourceVmRecordId?: string;
+  }) {
     const gate = controlledProvisioningGates[0];
     if (!gate) {
       return;
     }
 
     if (apiHealth.mode === "api") {
-      const run = await createAhvControlledProvisioningRunViaApi({ gateId: gate.id, action: "Create VM" });
+      const run = await createAhvControlledProvisioningRunViaApi({ gateId: gate.id, action: "Create VM", ...selection });
       await refreshApiState();
       setAhvControlledProvisioningRuns((current) => [run, ...current.filter((item) => item.id !== run.id)]);
       return;
     }
 
     setAhvControlledProvisioningRuns((current) => [
-      createMockAhvControlledProvisioningRun(gate, vmSandboxDryRuns, labAuthorizationScopes, vmLifecycleProofs, session.user),
+      createMockAhvControlledProvisioningRun(
+        gate,
+        vmSandboxDryRuns,
+        labAuthorizationScopes,
+        vmLifecycleProofs,
+        session.user,
+        prismInventory,
+        selection
+      ),
       ...current,
     ]);
+  }
+
+  async function runAhvControlledProvisioningAction(runId: string, action: "poll" | "power-on" | "power-off" | "destroy") {
+    if (apiHealth.mode !== "api") {
+      setAhvControlledProvisioningRuns((current) =>
+        current.map((run) =>
+          run.id === runId
+            ? {
+                ...run,
+                status: run.provisioningEnabled ? "Polling" : run.status,
+                updatedAt: new Date().toISOString(),
+                failureReason: run.provisioningEnabled
+                  ? run.failureReason
+                  : "Lifecycle actions require the hosted/on-prem API and an armed lab adapter.",
+              }
+            : run
+        )
+      );
+      return;
+    }
+
+    const updated =
+      action === "poll"
+        ? await pollAhvControlledProvisioningRunViaApi(runId)
+        : action === "power-on"
+          ? await powerAhvControlledProvisioningRunViaApi(runId, "ON")
+          : action === "power-off"
+            ? await powerAhvControlledProvisioningRunViaApi(runId, "OFF")
+            : await destroyAhvControlledProvisioningRunViaApi(runId);
+
+    await refreshApiState();
+    setAhvControlledProvisioningRuns((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
   }
 
   async function createPlatformServiceRequest(kind: PlatformServiceKind) {
@@ -5035,11 +5232,14 @@ export function App() {
             runIntegrationCheck={runIntegrationCheck}
             runLabDiscovery={runLabDiscovery}
             importPrismInventory={importPrismInventory}
+            importPrismConnectionPreview={importPrismConnectionPreview}
+            decidePrismInventoryRecord={decidePrismInventoryRecord}
             selectPrismSimulatorProfile={selectPrismSimulatorProfile}
             activatePrismFailureScenario={activatePrismFailureScenario}
             createRealPrismPreflightRun={createRealPrismPreflightRun}
             createReadOnlyPrismLabGate={createReadOnlyPrismLabGate}
             createReadOnlyLabConnectionProfile={createReadOnlyLabConnectionProfile}
+            createReadOnlyLabConnectionProfileFromConnection={createReadOnlyLabConnectionProfileFromConnection}
             createPrismFixtureReplay={createPrismFixtureReplay}
             createReadOnlyAdapterAuthorizationGate={createReadOnlyAdapterAuthorizationGate}
             createOperatorEvidenceExportPack={createOperatorEvidenceExportPack}
@@ -5080,6 +5280,7 @@ export function App() {
             reviewControlledCreateAuthorization={reviewControlledCreateAuthorization}
             reviewAhvCreateAdapterContract={reviewAhvCreateAdapterContract}
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
+            runAhvControlledProvisioningAction={runAhvControlledProvisioningAction}
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
             reviewPlatformServiceAdapterContract={reviewPlatformServiceAdapterContract}
@@ -5881,11 +6082,14 @@ function AdminView({
   runIntegrationCheck,
   runLabDiscovery,
   importPrismInventory,
+  importPrismConnectionPreview,
+  decidePrismInventoryRecord,
   selectPrismSimulatorProfile,
   activatePrismFailureScenario,
   createRealPrismPreflightRun,
   createReadOnlyPrismLabGate,
   createReadOnlyLabConnectionProfile,
+  createReadOnlyLabConnectionProfileFromConnection,
   createPrismFixtureReplay,
   createReadOnlyAdapterAuthorizationGate,
   createOperatorEvidenceExportPack,
@@ -5926,6 +6130,7 @@ function AdminView({
   reviewControlledCreateAuthorization,
   reviewAhvCreateAdapterContract,
   runAhvControlledProvisioningPreflight,
+  runAhvControlledProvisioningAction,
   createPlatformServiceRequest,
   runPlatformServicePreflight,
   reviewPlatformServiceAdapterContract,
@@ -6172,11 +6377,17 @@ function AdminView({
   runIntegrationCheck: (integrationName: string) => void;
   runLabDiscovery: (adapterName: string) => void;
   importPrismInventory: () => void;
+  importPrismConnectionPreview: (result: AhvLabConnectionTestResult) => void;
+  decidePrismInventoryRecord: (recordId: string, decision: "approve" | "reject") => void;
   selectPrismSimulatorProfile: (profileId: string) => void;
   activatePrismFailureScenario: (scenarioId: PrismSimulatorFailureScenarioId) => void;
   createRealPrismPreflightRun: () => void;
   createReadOnlyPrismLabGate: () => void;
   createReadOnlyLabConnectionProfile: () => void;
+  createReadOnlyLabConnectionProfileFromConnection: (
+    result: AhvLabConnectionTestResult,
+    request: AhvLabConnectionTestRequest
+  ) => void;
   createPrismFixtureReplay: () => void;
   createReadOnlyAdapterAuthorizationGate: () => void;
   createOperatorEvidenceExportPack: () => void;
@@ -6219,7 +6430,16 @@ function AdminView({
   recordRollbackDestroyProof: () => void;
   reviewControlledCreateAuthorization: () => void;
   reviewAhvCreateAdapterContract: () => void;
-  runAhvControlledProvisioningPreflight: () => void;
+  runAhvControlledProvisioningPreflight: (selection?: {
+    clusterRecordId?: string;
+    networkRecordId?: string;
+    imageRecordId?: string;
+    sourceVmRecordId?: string;
+  }) => void;
+  runAhvControlledProvisioningAction: (
+    runId: string,
+    action: "poll" | "power-on" | "power-off" | "destroy"
+  ) => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
   reviewPlatformServiceAdapterContract: () => void;
@@ -6305,6 +6525,7 @@ function AdminView({
   const adminTabs: Array<{ id: AdminTab; label: string; detail: string }> = [
     { id: "overview", label: "Overview", detail: "Access and readiness" },
     { id: "settings", label: "Settings", detail: "Config and audit" },
+    { id: "infrastructure", label: "Infrastructure", detail: "Connect and test" },
     { id: "providers", label: "Providers", detail: "Config and adapters" },
     { id: "control", label: "Control plane", detail: "Jobs and approvals" },
     { id: "operations", label: "Operations", detail: "Lifecycle and audit" },
@@ -6392,7 +6613,11 @@ function AdminView({
             <FeatureFlagSettingsPanel settings={platformSettings} />
           </Panel>
           <Panel title="Connect infrastructure" action={platformSettings.ahvLab.labMode ? "Lab" : "Read-only setup"}>
-            <AhvLabSettingsPanel settings={platformSettings} />
+            <AhvLabSettingsPanel
+              settings={platformSettings}
+              createReadOnlyLabConnectionProfileFromConnection={createReadOnlyLabConnectionProfileFromConnection}
+              importPrismConnectionPreview={importPrismConnectionPreview}
+            />
           </Panel>
           <Panel title="Active Directory connectivity" action={platformSettings.configurable.activeDirectory.status}>
             <ActiveDirectorySettingsPanel settings={platformSettings} savePlatformSettings={savePlatformSettings} />
@@ -6442,6 +6667,59 @@ function AdminView({
                 <CheckLine icon={Network} label="Real mutation" value="Lab gated" passed={platformSettings.ahvLab.labMode} />
               </div>
             </div>
+          </Panel>
+        </div>
+      )}
+
+      {activeTab === "infrastructure" && (
+        <div className="adminTabPanel">
+          <Panel title="Connect infrastructure" action={platformSettings.ahvLab.labMode ? "Lab runtime" : "Read-only test"}>
+            <AhvLabSettingsPanel
+              settings={platformSettings}
+              createReadOnlyLabConnectionProfileFromConnection={createReadOnlyLabConnectionProfileFromConnection}
+              importPrismConnectionPreview={importPrismConnectionPreview}
+            />
+          </Panel>
+          <Panel title="Real PE / PC inventory browser" action={`${prismInventory.length} records`}>
+            <PrismInventoryPanel
+              records={prismInventory}
+              lastImport={prismInventoryImport}
+              importPrismInventory={importPrismInventory}
+            />
+          </Panel>
+          <Panel title="Connection profiles and validation" action={`${readOnlyLabConnectionProfiles.length} profiles`}>
+            <InfrastructureConnectionProfileWorkspace
+              profiles={readOnlyLabConnectionProfiles}
+              gates={readOnlyPrismLabGates}
+              connectionTests={settingsConnectionTests}
+              createReadOnlyLabConnectionProfile={createReadOnlyLabConnectionProfile}
+              createReadOnlyPrismLabGate={createReadOnlyPrismLabGate}
+              testPlatformSettingsConnection={testPlatformSettingsConnection}
+            />
+          </Panel>
+          <Panel title="Image, subnet, and cluster approval" action={`${resourceProfiles.filter((profile) => profile.kind === "AHV Image").length} images`}>
+            <InfrastructureDiscoveryApprovalPanel
+              inventory={prismInventory}
+              resourceProfiles={resourceProfiles}
+              runResourceProfileAction={runResourceProfileAction}
+              decidePrismInventoryRecord={decidePrismInventoryRecord}
+            />
+          </Panel>
+          <Panel title="Controlled AHV VM lifecycle" action={`${ahvControlledProvisioningRuns.length} runs`}>
+            <AhvControlledPreflightPanel
+              runs={ahvControlledProvisioningRuns}
+              inventory={prismInventory}
+              runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
+              runAhvControlledProvisioningAction={runAhvControlledProvisioningAction}
+            />
+          </Panel>
+          <Panel title="Audit and reconciliation" action={`${auditEvents.length} events`}>
+            <InfrastructureAuditReconciliationPanel
+              runs={ahvControlledProvisioningRuns}
+              events={auditEvents}
+              retention={auditRetentionDiagnostics}
+              settings={platformSettings}
+            />
           </Panel>
         </div>
       )}
@@ -6830,7 +7108,9 @@ function AdminView({
           <Panel title="AHV controlled preflight" action={`${ahvControlledProvisioningRuns.length} runs`}>
             <AhvControlledPreflightPanel
               runs={ahvControlledProvisioningRuns}
+              inventory={prismInventory}
               runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
+              runAhvControlledProvisioningAction={runAhvControlledProvisioningAction}
             />
           </Panel>
           <Panel title="Platform service flows" action={`${platformServiceRequests.length} planned`}>
@@ -8015,7 +8295,18 @@ function FeatureFlagSettingsPanel({ settings }: { settings: PlatformSettingsSumm
   );
 }
 
-function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }) {
+function AhvLabSettingsPanel({
+  settings,
+  createReadOnlyLabConnectionProfileFromConnection,
+  importPrismConnectionPreview,
+}: {
+  settings: PlatformSettingsSummary;
+  createReadOnlyLabConnectionProfileFromConnection?: (
+    result: AhvLabConnectionTestResult,
+    request: AhvLabConnectionTestRequest
+  ) => void;
+  importPrismConnectionPreview?: (result: AhvLabConnectionTestResult) => void;
+}) {
   const lab = settings.ahvLab;
   const providerLabel = lab.provider === "prism-element" ? "Prism Element" : "Prism Central";
   const endpointConfigured = lab.provider === "prism-element" ? lab.prismElementConfigured : lab.prismCentralConfigured;
@@ -8029,6 +8320,7 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
     allowedProjectUuid: "",
     allowedSubnetUuid: "",
     allowedImageUuid: "",
+    allowedSourceVmUuid: "",
   });
   const [connectionTest, setConnectionTest] = useState<AhvLabConnectionTestResult | null>(null);
   const [connectionTestState, setConnectionTestState] = useState<"Idle" | "Testing" | "Passed" | "Blocked">("Idle");
@@ -8055,6 +8347,9 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
     draft.provider === "prism-element"
       ? `NDC_AHV_PE_ALLOWED_IMAGE_UUID=${draft.allowedImageUuid || "<image-uuid>"}`
       : `NDC_AHV_ALLOWED_IMAGE_UUID=${draft.allowedImageUuid || "<image-uuid>"}`,
+    draft.provider === "prism-element"
+      ? `NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID=${draft.allowedSourceVmUuid || "<source-vm-uuid>"}`
+      : `NDC_AHV_ALLOWED_SOURCE_VM_UUID=${draft.allowedSourceVmUuid || "<source-vm-uuid>"}`,
     "NDC_AHV_VM_NAME_PREFIX=ndc-lab-",
   ].filter(Boolean);
 
@@ -8142,6 +8437,10 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
           <span>Allowed image UUID</span>
           <input value={draft.allowedImageUuid} onChange={(event) => setDraft((current) => ({ ...current, allowedImageUuid: event.target.value }))} />
         </label>
+        <label>
+          <span>Allowed source VM UUID</span>
+          <input value={draft.allowedSourceVmUuid} onChange={(event) => setDraft((current) => ({ ...current, allowedSourceVmUuid: event.target.value }))} />
+        </label>
         <label className="checkboxRow">
           <input
             type="checkbox"
@@ -8159,6 +8458,28 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
         <span className={`status ${connectionTestState === "Passed" ? "ready" : connectionTestState === "Blocked" ? "failed" : "approval"}`}>
           {connectionTestState}
         </span>
+        {connectionTest && createReadOnlyLabConnectionProfileFromConnection && (
+          <button
+            className="iconTextButton"
+            onClick={() => createReadOnlyLabConnectionProfileFromConnection(connectionTest, draft)}
+            disabled={connectionTest.status !== "Ready"}
+            type="button"
+          >
+            <ShieldCheck size={15} />
+            Record validated profile
+          </button>
+        )}
+        {connectionTest?.inventoryPreview && connectionTest.inventoryPreview.length > 0 && importPrismConnectionPreview && (
+          <button
+            className="iconTextButton"
+            onClick={() => importPrismConnectionPreview(connectionTest)}
+            disabled={connectionTest.status !== "Ready"}
+            type="button"
+          >
+            <Archive size={15} />
+            Load preview into inventory browser
+          </button>
+        )}
       </div>
       {connectionTestMessage && <p className="emptyState">{connectionTestMessage}</p>}
       {connectionTest && (
@@ -8170,6 +8491,24 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
                 <strong>{check.name}</strong>
                 <small>{check.detail}</small>
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {connectionTest?.inventoryPreview && connectionTest.inventoryPreview.length > 0 && (
+        <div className="prismInventoryList">
+          {connectionTest.inventoryPreview.slice(0, 8).map((record) => (
+            <div className="prismInventoryRow" key={record.id}>
+              <div>
+                <strong>{record.name}</strong>
+                <span>
+                  {record.kind} / {record.cluster ?? "No cluster"} / {record.project ?? "No project"}
+                </span>
+                <small>{record.rawRef}</small>
+              </div>
+              <span className={`status ${record.profileCandidate ? "approval" : "ready"}`}>
+                {record.profileCandidate ? "Image candidate" : "Read-only"}
+              </span>
             </div>
           ))}
         </div>
@@ -8192,7 +8531,18 @@ function AhvLabSettingsPanel({ settings }: { settings: PlatformSettingsSummary }
         <CheckLine icon={Layers3} label="Cluster" value={lab.allowedClusterConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedClusterConfigured} />
         <CheckLine icon={Archive} label="Project" value={lab.provider === "prism-element" ? "Not required for PE" : lab.allowedProjectConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedProjectConfigured} />
         <CheckLine icon={Cloud} label="Subnet" value={lab.allowedSubnetConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedSubnetConfigured} />
-        <CheckLine icon={Gauge} label="Image" value={lab.allowedImageConfigured ? "Allowed UUID set" : "Missing"} passed={lab.allowedImageConfigured} />
+        <CheckLine
+          icon={Gauge}
+          label="Artifact"
+          value={
+            lab.allowedImageConfigured
+              ? "Image UUID set"
+              : lab.allowedSourceVmConfigured
+                ? "Source VM UUID set"
+                : "Missing"
+          }
+          passed={lab.allowedImageConfigured || Boolean(lab.allowedSourceVmConfigured)}
+        />
       </div>
       <div className="guardrailBanner">
         <ShieldCheck size={18} />
@@ -9206,6 +9556,257 @@ function ReadOnlyLabConnectionProfilePanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function InfrastructureConnectionProfileWorkspace({
+  profiles,
+  gates,
+  connectionTests,
+  createReadOnlyLabConnectionProfile,
+  createReadOnlyPrismLabGate,
+  testPlatformSettingsConnection,
+}: {
+  profiles: ReadOnlyLabConnectionProfile[];
+  gates: ReadOnlyPrismLabGate[];
+  connectionTests: PlatformSettingsConnectionTest[];
+  createReadOnlyLabConnectionProfile: () => void;
+  createReadOnlyPrismLabGate: () => void;
+  testPlatformSettingsConnection: (target: PlatformSettingsConnectionTest["target"]) => void;
+}) {
+  const latestProfile = profiles[0];
+  const latestGate = gates[0];
+  const latestTest = connectionTests.find((test) => test.target === "Prism Central" || test.target === "NCI");
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <ShieldCheck size={18} />
+        <div>
+          <strong>Profile, validate, authorize</strong>
+          <span>Profiles capture endpoint and credential references only. Browser-entered passwords are used for one-time read-only tests and are not retained.</span>
+        </div>
+      </div>
+      <div className="platformConfigGrid">
+        <CheckLine icon={Network} label="Latest profile" value={latestProfile?.name ?? "Not recorded"} passed={Boolean(latestProfile)} />
+        <CheckLine icon={ShieldCheck} label="Approval state" value={latestProfile?.approvalState ?? "Draft required"} passed={latestProfile?.approvalState === "Approved"} />
+        <CheckLine icon={LockKeyhole} label="Read-only gate" value={latestGate?.status ?? "Not recorded"} passed={latestGate?.status === "Ready for fixture contract validation"} />
+        <CheckLine icon={Gauge} label="Last validation" value={latestTest?.status ?? "Not run"} passed={latestTest?.status === "Passed"} />
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={createReadOnlyLabConnectionProfile} type="button">
+          <Pencil size={15} />
+          Record profile
+        </button>
+        <button className="iconTextButton" onClick={createReadOnlyPrismLabGate} type="button">
+          <ShieldCheck size={15} />
+          Record read-only gate
+        </button>
+        <button className="iconTextButton" onClick={() => testPlatformSettingsConnection("Prism Central")} type="button">
+          <RefreshCw size={15} />
+          Validate provider
+        </button>
+      </div>
+      {latestProfile ? (
+        <div className="inventoryEvidence">
+          <strong>{latestProfile.name}</strong>
+          <span>{latestProfile.prismCentralEndpointRef} / {latestProfile.credentialProfileRef}</span>
+          <span>Clusters: {latestProfile.allowedProviderScope.clusters.join(", ") || "not scoped"}</span>
+          <span>Networks: {latestProfile.allowedProviderScope.networks.join(", ") || "not scoped"}</span>
+        </div>
+      ) : (
+        <p className="emptyState">Record a connection profile after the endpoint, credential reference, and allowed provider scope are known.</p>
+      )}
+    </div>
+  );
+}
+
+function InfrastructureDiscoveryApprovalPanel({
+  inventory,
+  resourceProfiles,
+  runResourceProfileAction,
+  decidePrismInventoryRecord,
+}: {
+  inventory: PrismInventoryRecord[];
+  resourceProfiles: ResourceProfile[];
+  runResourceProfileAction: (
+    profileId: string,
+    action: "submit" | "approve" | "deprecate" | "restore"
+  ) => void;
+  decidePrismInventoryRecord: (recordId: string, decision: "approve" | "reject") => void;
+}) {
+  const imageProfiles = resourceProfiles.filter((profile) => profile.kind === "AHV Image");
+  const imageInventory = inventory.filter((record) => record.kind === "Image");
+  const sourceVmInventory = inventory.filter((record) => record.kind === "VM");
+  const networkInventory = inventory.filter((record) => record.kind === "Network");
+  const clusterInventory = inventory.filter((record) => record.kind === "Cluster");
+  const approvableInventory = inventory.filter((record) => ["Cluster", "Image", "Network", "VM"].includes(record.kind));
+  const approvedInventory = approvableInventory.filter((record) => record.approvalStatus === "Approved");
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Layers3 size={18} />
+        <div>
+          <strong>Approve real catalog candidates before create</strong>
+          <span>Imported images, source VMs, networks, and clusters become useful only after platform teams approve the mapped profile and allowed scope.</span>
+        </div>
+      </div>
+      <div className="platformConfigGrid">
+        <CheckLine icon={Cloud} label="Clusters" value={`${clusterInventory.filter((record) => record.approvalStatus === "Approved").length}/${clusterInventory.length} approved`} passed={clusterInventory.some((record) => record.approvalStatus === "Approved")} />
+        <CheckLine icon={Network} label="Networks" value={`${networkInventory.filter((record) => record.approvalStatus === "Approved").length}/${networkInventory.length} approved`} passed={networkInventory.some((record) => record.approvalStatus === "Approved")} />
+        <CheckLine icon={Archive} label="Images" value={`${imageInventory.filter((record) => record.approvalStatus === "Approved").length}/${imageInventory.length} approved`} passed={imageInventory.some((record) => record.approvalStatus === "Approved")} />
+        <CheckLine icon={MonitorCog} label="Source VMs" value={`${sourceVmInventory.filter((record) => record.approvalStatus === "Approved").length}/${sourceVmInventory.length} approved`} passed={sourceVmInventory.some((record) => record.approvalStatus === "Approved")} />
+        <CheckLine icon={ShieldCheck} label="Approved images" value={`${imageProfiles.filter((profile) => profile.status === "Published").length}/${imageProfiles.length}`} passed={imageProfiles.some((profile) => profile.status === "Published")} />
+      </div>
+      {approvableInventory.length === 0 ? (
+        <p className="emptyState">Import or preview Prism inventory before approving cluster, network, image, or source VM scope.</p>
+      ) : (
+        <div className="prismInventoryList">
+          {approvableInventory.slice(0, 8).map((record) => {
+            const status = record.approvalStatus ?? "Discovered";
+            return (
+              <div className="prismInventoryRow" key={record.id}>
+                <div>
+                  <strong>{record.name}</strong>
+                  <span>{record.kind} / {record.source}</span>
+                  <small>{record.rawRef}</small>
+                  {record.approvedBy && <small>Approved by {record.approvedBy} at {record.approvedAt ?? "unknown time"}</small>}
+                </div>
+                <div className="inlineActions">
+                  <span className={`status ${status === "Approved" ? "ready" : status === "Rejected" ? "failed" : "approval"}`}>{status}</span>
+                  {status !== "Approved" && (
+                    <button
+                      aria-label={`Approve scope ${record.name}`}
+                      className="iconTextButton"
+                      onClick={() => decidePrismInventoryRecord(record.id, "approve")}
+                      type="button"
+                    >
+                      Approve
+                    </button>
+                  )}
+                  {status !== "Rejected" && (
+                    <button
+                      aria-label={`Reject scope ${record.name}`}
+                      className="iconTextButton"
+                      onClick={() => decidePrismInventoryRecord(record.id, "reject")}
+                      type="button"
+                    >
+                      Reject
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div className="controlGrid">
+        <CheckLine icon={ShieldCheck} label="Approved scope records" value={`${approvedInventory.length}/${approvableInventory.length}`} passed={approvedInventory.length > 0} />
+        <CheckLine icon={Activity} label="Mutation status" value="No Prism mutation" passed />
+      </div>
+      {imageProfiles.length === 0 ? (
+        <p className="emptyState">Import Prism inventory to create AHV image profile candidates.</p>
+      ) : (
+        <div className="prismInventoryList">
+          {imageProfiles.slice(0, 6).map((profile) => (
+            <div className="prismInventoryRow" key={profile.id}>
+              <div>
+                <strong>{profile.name}</strong>
+                <span>{profile.provider} / {profile.version} / {profile.region}</span>
+                <small>{profile.notes}</small>
+              </div>
+              <div className="inlineActions">
+                <span className={`status ${profile.status === "Published" ? "ready" : "approval"}`}>{profile.status}</span>
+                {profile.status === "Draft" && (
+                  <button className="iconTextButton" onClick={() => runResourceProfileAction(profile.id, "submit")} type="button">
+                    Submit
+                  </button>
+                )}
+                {profile.status !== "Published" && (
+                  <button className="iconTextButton" onClick={() => runResourceProfileAction(profile.id, "approve")} type="button">
+                    Approve
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InfrastructureAuditReconciliationPanel({
+  runs,
+  events,
+  retention,
+  settings,
+}: {
+  runs: AhvControlledProvisioningRun[];
+  events: AuditEvent[];
+  retention: AuditRetentionDiagnostics;
+  settings: PlatformSettingsSummary;
+}) {
+  const latestRun = runs[0];
+  const infrastructureEvents = events.filter((event) =>
+    /ahv|prism|inventory|lab-runtime|controlled/.test(event.action)
+  );
+  const activeRuns = runs.filter((run) => !["Destroyed", "Failed"].includes(run.status));
+  const reconciledRuns = runs.filter((run) => run.inventoryReconciliation?.status === "Reconciled");
+  const lifecycleEvents = runs.flatMap((run) =>
+    (run.lifecycleEvents ?? []).map((event) => ({
+      ...event,
+      runId: run.id,
+      environmentName: run.environmentName,
+    }))
+  );
+
+  return (
+    <div className="dryRunPanel">
+      <div className="platformConfigGrid">
+        <CheckLine icon={ScrollText} label="Audit events" value={`${events.length}/${retention.retentionEvents ?? settings.audit.retentionLimit} retained`} passed />
+        <CheckLine icon={LockKeyhole} label="Redaction" value="Credentials excluded" passed />
+        <CheckLine icon={RefreshCw} label="Reconciliation" value={latestRun?.inventoryReconciliation?.status ?? "Pending"} passed={latestRun?.inventoryReconciliation?.status === "Reconciled"} />
+        <CheckLine icon={Activity} label="Active runs" value={`${activeRuns.length}`} passed={activeRuns.length === 0 || activeRuns.some((run) => run.provisioningEnabled)} />
+        <CheckLine icon={Archive} label="Reconciled runs" value={`${reconciledRuns.length}/${runs.length}`} passed={runs.length === 0 || reconciledRuns.length > 0} />
+      </div>
+      {latestRun?.inventoryReconciliation && (
+        <div className="inventoryEvidence">
+          <strong>Latest reconciliation</strong>
+          <span>{latestRun.inventoryReconciliation.detail}</span>
+          <span>VM present: {latestRun.inventoryReconciliation.vmPresent ? "yes" : "no"}</span>
+          <span>Checked: {formatDateTime(latestRun.inventoryReconciliation.checkedAt)}</span>
+        </div>
+      )}
+      {lifecycleEvents.length > 0 && (
+        <div className="prismInventoryList">
+          {lifecycleEvents.slice(-6).reverse().map((event, index) => (
+            <div className="prismInventoryRow" key={`${event.runId}-${event.at}-${index}`}>
+              <div>
+                <strong>{event.action}</strong>
+                <span>{event.environmentName} / {event.status}</span>
+                <small>{event.detail}</small>
+              </div>
+              <small>{formatDateTime(event.at)}</small>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="prismInventoryList">
+        {infrastructureEvents.slice(0, 6).map((event) => (
+          <div className="prismInventoryRow" key={event.id}>
+            <div>
+              <strong>{event.action}</strong>
+              <span>{event.actor} / {event.target}</span>
+              <small>{formatDateTime(event.createdAt)}</small>
+            </div>
+            <span className="status ready">Redacted</span>
+          </div>
+        ))}
+      </div>
+      {infrastructureEvents.length === 0 && <p className="emptyState">No infrastructure audit events have been recorded yet.</p>}
     </div>
   );
 }
@@ -14438,12 +15039,49 @@ function AhvCreateAdapterContractPanel({
 
 function AhvControlledPreflightPanel({
   runs,
+  inventory,
   runAhvControlledProvisioningPreflight,
+  runAhvControlledProvisioningAction,
 }: {
   runs: AhvControlledProvisioningRun[];
-  runAhvControlledProvisioningPreflight: () => void;
+  inventory: PrismInventoryRecord[];
+  runAhvControlledProvisioningPreflight: (selection?: {
+    clusterRecordId?: string;
+    networkRecordId?: string;
+    imageRecordId?: string;
+    sourceVmRecordId?: string;
+  }) => void;
+  runAhvControlledProvisioningAction: (
+    runId: string,
+    action: "poll" | "power-on" | "power-off" | "destroy"
+  ) => void;
 }) {
   const latest = runs[0];
+  const lifecycleEnabled = Boolean(latest?.provisioningEnabled);
+  const approvedClusters = inventory.filter((record) => record.kind === "Cluster" && record.approvalStatus === "Approved");
+  const approvedNetworks = inventory.filter((record) => record.kind === "Network" && record.approvalStatus === "Approved");
+  const approvedImages = inventory.filter((record) => record.kind === "Image" && record.approvalStatus === "Approved");
+  const approvedSourceVms = inventory.filter((record) => record.kind === "VM" && record.approvalStatus === "Approved");
+  const [clusterRecordId, setClusterRecordId] = useState(approvedClusters[0]?.id ?? "");
+  const [networkRecordId, setNetworkRecordId] = useState(approvedNetworks[0]?.id ?? "");
+  const [imageRecordId, setImageRecordId] = useState(approvedImages[0]?.id ?? "");
+  const [sourceVmRecordId, setSourceVmRecordId] = useState(approvedSourceVms[0]?.id ?? "");
+  const selectedScopeReady = Boolean(clusterRecordId && networkRecordId && (imageRecordId || sourceVmRecordId));
+
+  useEffect(() => {
+    if (!clusterRecordId && approvedClusters[0]) {
+      setClusterRecordId(approvedClusters[0].id);
+    }
+    if (!networkRecordId && approvedNetworks[0]) {
+      setNetworkRecordId(approvedNetworks[0].id);
+    }
+    if (!imageRecordId && approvedImages[0]) {
+      setImageRecordId(approvedImages[0].id);
+    }
+    if (!sourceVmRecordId && approvedSourceVms[0] && approvedImages.length === 0) {
+      setSourceVmRecordId(approvedSourceVms[0].id);
+    }
+  }, [approvedClusters, approvedNetworks, approvedImages, approvedSourceVms, clusterRecordId, networkRecordId, imageRecordId, sourceVmRecordId]);
 
   return (
     <div className="dryRunPanel">
@@ -14454,11 +15092,94 @@ function AhvControlledPreflightPanel({
           <span>Evaluates the controlled create chain through a disabled real-adapter preflight without mutating Prism Central.</span>
         </div>
       </div>
+      <div className="settingsGrid">
+        <label>
+          Approved cluster
+          <select value={clusterRecordId} onChange={(event) => setClusterRecordId(event.target.value)}>
+            <option value="">Select approved cluster</option>
+            {approvedClusters.map((record) => (
+              <option key={record.id} value={record.id}>{record.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Approved network/subnet
+          <select value={networkRecordId} onChange={(event) => setNetworkRecordId(event.target.value)}>
+            <option value="">Select approved network</option>
+            {approvedNetworks.map((record) => (
+              <option key={record.id} value={record.id}>{record.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Approved image
+          <select value={imageRecordId} onChange={(event) => setImageRecordId(event.target.value)}>
+            <option value="">Select approved image</option>
+            {approvedImages.map((record) => (
+              <option key={record.id} value={record.id}>{record.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Approved source VM
+          <select value={sourceVmRecordId} onChange={(event) => setSourceVmRecordId(event.target.value)}>
+            <option value="">Select approved source VM</option>
+            {approvedSourceVms.map((record) => (
+              <option key={record.id} value={record.id}>{record.name}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="controlGrid">
+        <CheckLine icon={ShieldCheck} label="Approved scope selected" value={selectedScopeReady ? "Ready" : "Required"} passed={selectedScopeReady} />
+        <CheckLine icon={Cloud} label="Cluster" value={approvedClusters.find((record) => record.id === clusterRecordId)?.name ?? "not selected"} passed={Boolean(clusterRecordId)} />
+        <CheckLine icon={Network} label="Network" value={approvedNetworks.find((record) => record.id === networkRecordId)?.name ?? "not selected"} passed={Boolean(networkRecordId)} />
+        <CheckLine
+          icon={Archive}
+          label="Artifact"
+          value={
+            approvedImages.find((record) => record.id === imageRecordId)?.name ??
+            approvedSourceVms.find((record) => record.id === sourceVmRecordId)?.name ??
+            "not selected"
+          }
+          passed={Boolean(imageRecordId || sourceVmRecordId)}
+        />
+      </div>
       <div className="inlineActions">
-        <button className="iconTextButton" onClick={runAhvControlledProvisioningPreflight}>
+        <button
+          className="iconTextButton"
+          onClick={() =>
+            runAhvControlledProvisioningPreflight({
+              clusterRecordId,
+              networkRecordId,
+              imageRecordId,
+              sourceVmRecordId,
+            })
+          }
+        >
           <Play size={15} />
-          Run AHV preflight
+          Create / preflight VM
         </button>
+        {latest && (
+          <>
+            <button className="iconTextButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "poll")}>
+              <RefreshCw size={15} />
+              Poll
+            </button>
+            <button className="iconTextButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "power-on")} disabled={!lifecycleEnabled}>
+              <PlayCircle size={15} />
+              Power on
+            </button>
+            <button className="iconTextButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "power-off")} disabled={!lifecycleEnabled}>
+              <Gauge size={15} />
+              Power off
+            </button>
+            <button className="iconTextButton dangerButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "destroy")} disabled={!lifecycleEnabled}>
+              <Archive size={15} />
+              Destroy
+            </button>
+          </>
+        )}
       </div>
       {!latest ? (
         <p className="emptyState">No AHV controlled provisioning preflight runs have been recorded.</p>
@@ -14474,11 +15195,39 @@ function AhvControlledPreflightPanel({
             <span className={`status ${latest.status === "Ready but disabled" ? "approval" : "failed"}`}>{latest.status}</span>
           </div>
           <div className="platformConfigGrid">
-            <CheckLine icon={ShieldCheck} label="Adapter" value={latest.adapterMode} passed={false} />
+            <CheckLine icon={ShieldCheck} label="Adapter" value={latest.adapterMode} passed={lifecycleEnabled} />
             <CheckLine icon={Activity} label="Action" value={latest.action} passed />
-            <CheckLine icon={LockKeyhole} label="Provisioning" value="Disabled" passed={false} />
-            <CheckLine icon={Gauge} label="Blocked ops" value={`${latest.mutationOperationsBlocked.length}`} passed={false} />
+            <CheckLine icon={LockKeyhole} label="Provisioning" value={latest.provisioningEnabled ? "Lab enabled" : "Disabled"} passed={latest.provisioningEnabled} />
+            <CheckLine icon={Gauge} label="VM UUID" value={latest.vmUuid ?? "Pending"} passed={Boolean(latest.vmUuid)} />
           </div>
+          <div className="inventoryEvidence">
+            <strong>Lifecycle evidence</strong>
+            <span>
+              Approved scope:{" "}
+              {latest.selectedScope
+                ? `${latest.selectedScope.cluster.name} / ${latest.selectedScope.network.name} / ${latest.selectedScope.image?.name ?? latest.selectedScope.sourceVm?.name}`
+                : "not attached"}
+            </span>
+            <span>Task UUIDs: {latest.prismTaskUuids?.join(", ") || latest.prismTaskUuid || "none yet"}</span>
+            <span>Create: {latest.createStatus ?? "Not submitted"} / Power: {latest.powerStatus ?? "Not requested"} / Destroy: {latest.destroyStatus ?? "Not requested"}</span>
+            <span>Last poll: {latest.lastPollAt ? formatDateTime(latest.lastPollAt) : "not polled"}</span>
+            <span>Reconciliation: {latest.inventoryReconciliation?.detail ?? "pending"}</span>
+            {latest.failureReason && <span>Latest notice: {latest.failureReason}</span>}
+          </div>
+          {(latest.lifecycleEvents?.length ?? 0) > 0 && (
+            <div className="prismInventoryList">
+              {latest.lifecycleEvents?.slice(-6).map((event, index) => (
+                <div className="prismInventoryRow" key={`${event.at}-${event.action}-${index}`}>
+                  <div>
+                    <strong>{event.action}</strong>
+                    <span>{event.status}</span>
+                    <small>{event.detail}</small>
+                  </div>
+                  <small>{formatDateTime(event.at)}</small>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="dryRunValidationList">
             {latest.checks.map((check) => (
               <div className="dryRunValidationRow" key={check.name}>
@@ -15732,6 +16481,7 @@ function createMockPlatformSettingsSummary(
       allowedProjectConfigured: false,
       allowedSubnetConfigured: false,
       allowedImageConfigured: false,
+      allowedSourceVmConfigured: false,
       vmNamePrefix: "ndc-lab-",
       quotas: {
         maxCpu: 4,
@@ -17546,6 +18296,7 @@ function createMockPrismInventoryRecords(
       categories: ["Environment:Lab", "Platform:NCI"],
       importedAt,
       rawRef: "mock://prism/clusters/berlin-01",
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-project-devcloud",
@@ -17569,6 +18320,7 @@ function createMockPrismInventoryRecords(
       importedAt,
       rawRef: "mock://prism/images/rocky-9-hardened",
       profileCandidate: true,
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-image-ubuntu-2404-lts",
@@ -17581,6 +18333,7 @@ function createMockPrismInventoryRecords(
       importedAt,
       rawRef: "mock://prism/images/ubuntu-2404-lts",
       profileCandidate: true,
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-network-dev-segment",
@@ -17593,6 +18346,7 @@ function createMockPrismInventoryRecords(
       categories: ["Network:Developer", "Exposure:Internal"],
       importedAt,
       rawRef: "mock://prism/networks/dev-segment",
+      approvalStatus: "Discovered",
     },
     {
       id: "pc-vm-billing-sandbox",
@@ -18108,11 +18862,20 @@ function createMockAhvControlledProvisioningRun(
   dryRuns: VmSandboxDryRunPlan[],
   scopes: LabAuthorizationScope[],
   proofs: VmLifecycleProof[],
-  actor: string
+  actor: string,
+  inventory: PrismInventoryRecord[],
+  selection?: {
+    clusterRecordId?: string;
+    networkRecordId?: string;
+    imageRecordId?: string;
+    sourceVmRecordId?: string;
+  }
 ): AhvControlledProvisioningRun {
   const dryRun = dryRuns.find((item) => item.id === gate.dryRunPlanId) ?? dryRuns[0];
   const activeScope = scopes.find((scope) => scope.status === "Approved" && scope.pentestScopeStructurallyValid);
   const lifecycleProof = proofs.find((proof) => proof.gateId === gate.id && proof.status === "Verified");
+  const selectedScope = createBrowserApprovedInventoryScope(inventory, selection);
+  const now = new Date().toISOString();
   const checks = [
     {
       name: "Controlled gate approved",
@@ -18130,6 +18893,13 @@ function createMockAhvControlledProvisioningRun(
       name: "Lifecycle proof verified",
       passed: Boolean(lifecycleProof),
       detail: lifecycleProof ? "Rollback and destroy proof is verified." : "Verified lifecycle proof is required.",
+    },
+    {
+      name: "Approved Prism scope selected",
+      passed: Boolean(selectedScope),
+      detail: selectedScope
+        ? `${selectedScope.cluster.name} / ${selectedScope.network.name} / ${selectedScope.image?.name ?? selectedScope.sourceVm?.name}`
+        : "Select approved cluster, network, and image or source VM inventory records before controlled create.",
     },
     {
       name: "Create switch enabled",
@@ -18155,9 +18925,59 @@ function createMockAhvControlledProvisioningRun(
     requestedBy: actor,
     labScopeId: activeScope?.id,
     lifecycleProofId: lifecycleProof?.id,
+    selectedScope,
+    lifecycleEvents: [
+      {
+        at: now,
+        action: "Notice",
+        status: checks.every((check) => check.passed) ? "Ready but disabled" : "Preflight blocked",
+        detail: "Browser mock controlled create preflight recorded without Prism mutation.",
+      },
+    ],
     mutationOperationsBlocked: ["create_vm", "clone_vm", "power_on", "power_off", "delete_vm", "update_network", "update_category"],
     provisioningEnabled: false,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+  };
+}
+
+function createBrowserApprovedInventoryScope(
+  inventory: PrismInventoryRecord[],
+  selection?: {
+    clusterRecordId?: string;
+    networkRecordId?: string;
+    imageRecordId?: string;
+    sourceVmRecordId?: string;
+  }
+): AhvControlledProvisioningRun["selectedScope"] | undefined {
+  const cluster = inventory.find(
+    (record) => record.id === selection?.clusterRecordId && record.kind === "Cluster" && record.approvalStatus === "Approved"
+  );
+  const network = inventory.find(
+    (record) => record.id === selection?.networkRecordId && record.kind === "Network" && record.approvalStatus === "Approved"
+  );
+  const image = inventory.find(
+    (record) => record.id === selection?.imageRecordId && record.kind === "Image" && record.approvalStatus === "Approved"
+  );
+  const sourceVm = inventory.find(
+    (record) => record.id === selection?.sourceVmRecordId && record.kind === "VM" && record.approvalStatus === "Approved"
+  );
+  if (!cluster || !network || (!image && !sourceVm)) {
+    return undefined;
+  }
+
+  const summarize = (record: PrismInventoryRecord) => ({
+    recordId: record.id,
+    name: record.name,
+    rawRef: record.rawRef,
+    approvedBy: record.approvedBy,
+    approvedAt: record.approvedAt,
+  });
+
+  return {
+    cluster: summarize(cluster),
+    network: summarize(network),
+    ...(image ? { image: summarize(image) } : {}),
+    ...(sourceVm ? { sourceVm: summarize(sourceVm) } : {}),
   };
 }
 
@@ -25035,6 +25855,14 @@ function formatDateTime(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+}
+
+function safeReferenceSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64) || "lab";
 }
 
 function jobHeadline(jobState: JobState) {

@@ -11,7 +11,7 @@ Before any real AHV lifecycle smoke, complete the formal acceptance checklist in
 ## Deployment
 
 1. Copy `.env.lab.example` to `.env.lab` on the private lab host.
-2. Fill in Prism Central endpoint, username, password, and allowed UUIDs.
+2. Fill in Prism Central endpoint, username, password, and allowed UUIDs. Use either an allowed image UUID or an allowed source VM UUID.
 3. Keep all three lifecycle switches disabled until config validation passes.
 4. Start the lab deployment:
 
@@ -53,6 +53,12 @@ Run the lifecycle smoke only after explicit lab approval:
 npm run smoke:ahv-lab-lifecycle -- -BaseUrl http://127.0.0.1:18080 -EnvironmentName ndc-lab-smoke-01
 ```
 
+For labs that use an approved golden source VM instead of an Image Service image, run the dedicated clone smoke:
+
+```powershell
+npm run smoke:ahv-source-vm-clone -- -BaseUrl http://127.0.0.1:18080 -EnvironmentName ndc-lab-source-clone-01
+```
+
 ## Lifecycle Path
 
 The API keeps the existing gated workflow:
@@ -74,6 +80,7 @@ The API keeps the existing gated workflow:
 - VM names must use the `ndc-lab-` prefix.
 - Production-like names are blocked.
 - CPU, memory, and disk quotas are enforced.
-- Only configured cluster, project, subnet, and image UUIDs are allowed.
+- Only configured cluster, project, subnet, and image or source VM UUIDs are allowed.
+- Source VM clone is permitted only when the source VM is approved in NDC inventory and its UUID matches the private allowed source VM UUID.
 - Secrets are accepted only through private deployment environment variables.
 - Passwords, tokens, and Authorization headers must not appear in API responses, audit metadata, docs, or committed files.

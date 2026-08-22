@@ -45,7 +45,7 @@ Use the wizard to:
 
 1. Select Prism Element or Prism Central.
 2. Enter the Prism URL, username, and password.
-3. Enter allowed cluster, subnet/network, image, and project UUIDs where required.
+3. Enter allowed cluster, subnet/network, project UUIDs where required, and either an image UUID or source VM UUID.
 4. Select insecure TLS only for an accepted lab certificate scenario.
 5. Run **Test read-only connection**.
 6. Copy the generated redacted `.env.lab` block for the lab deployment after the test passes.

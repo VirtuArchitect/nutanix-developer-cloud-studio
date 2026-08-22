@@ -133,6 +133,34 @@ export async function routeMockPrismCentral(
     return true;
   }
 
+  const cloneMatch = url.pathname.match(/^\/mock-prism\/api\/nutanix\/v3\/vms\/([^/]+)\/clone$/);
+  if (request.method === "POST" && cloneMatch) {
+    const body = await readMockPrismJson<Record<string, unknown>>(request);
+    if (!body.ok) {
+      sendMockPrismJson(response, 400, {
+        error: {
+          code: "mock_prism_invalid_json",
+          message: "Mock Prism Central clone request body must be valid JSON.",
+        },
+      });
+      return true;
+    }
+
+    const sourceVmUuid = decodeURIComponent(cloneMatch[1]);
+    const name = extractVmName(body);
+    const task = createMockPrismTask(`Mock VM clone accepted for ${name} from ${sourceVmUuid}. No real VM was created.`, `mock-vm-${name}`);
+    sendMockPrismJson(response, 202, {
+      metadata: { kind: "vm_clone_response" },
+      status: {
+        execution_context: "mock-prism",
+        state: "ACCEPTED",
+        message: task.status.message,
+      },
+      task_reference: reference("task", task.metadata.uuid, `clone-${name}`),
+    });
+    return true;
+  }
+
   const powerMatch = url.pathname.match(/^\/mock-prism\/api\/nutanix\/v3\/vms\/([^/]+)\/set_power_state$/);
   if (request.method === "POST" && powerMatch) {
     const vmUuid = decodeURIComponent(powerMatch[1]);

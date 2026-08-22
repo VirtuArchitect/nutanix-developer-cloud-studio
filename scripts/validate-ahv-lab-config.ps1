@@ -15,24 +15,30 @@ if ($provider -eq "prism-element") {
     "NUTANIX_PRISM_ELEMENT_USERNAME",
     "NUTANIX_PRISM_ELEMENT_PASSWORD",
     "NDC_AHV_PE_ALLOWED_CLUSTER_UUID",
-    "NDC_AHV_PE_ALLOWED_SUBNET_UUID",
-    "NDC_AHV_PE_ALLOWED_IMAGE_UUID"
+    "NDC_AHV_PE_ALLOWED_SUBNET_UUID"
   )
+  $imageOrSourceVm = @("NDC_AHV_PE_ALLOWED_IMAGE_UUID", "NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID")
 } else {
   $required = @(
     "NUTANIX_PRISM_CENTRAL_URL",
     "NUTANIX_PRISM_USERNAME",
     "NUTANIX_PRISM_PASSWORD",
     "NDC_AHV_ALLOWED_CLUSTER_UUID",
-    "NDC_AHV_ALLOWED_PROJECT_UUID",
-    "NDC_AHV_ALLOWED_SUBNET_UUID",
-    "NDC_AHV_ALLOWED_IMAGE_UUID"
+    "NDC_AHV_ALLOWED_SUBNET_UUID"
   )
+  $imageOrSourceVm = @("NDC_AHV_ALLOWED_IMAGE_UUID", "NDC_AHV_ALLOWED_SOURCE_VM_UUID")
+  if (-not [Environment]::GetEnvironmentVariable("NDC_AHV_ALLOWED_SOURCE_VM_UUID")) {
+    $required += "NDC_AHV_ALLOWED_PROJECT_UUID"
+  }
 }
 
 $missing = @($required | Where-Object { -not [Environment]::GetEnvironmentVariable($_) })
 if ($missing.Count -gt 0) {
   throw "Missing AHV lab configuration: $($missing -join ', ')"
+}
+
+if (-not ($imageOrSourceVm | Where-Object { [Environment]::GetEnvironmentVariable($_) })) {
+  throw "Missing AHV lab configuration: configure either $($imageOrSourceVm -join ' or ')"
 }
 
 $prefix = [Environment]::GetEnvironmentVariable("NDC_AHV_VM_NAME_PREFIX")

@@ -12,6 +12,11 @@
 - Implemented `v9.1.0-prism-element-lab-adapter` to support a one-node AHV/Prism Element lab provider mode without committing private PE endpoint or credential values.
 - Added real-infrastructure tester workflow documentation and helper scripts so external testers can configure private Prism Element or Prism Central labs, validate read-only connectivity, and keep lifecycle mutation explicitly gated.
 - Added an Admin Settings Connect Infrastructure wizard backed by a one-time read-only API connection test so testers can validate Prism Element or Prism Central from the browser without editing scripts first.
+- Implemented `v9.2.0-infrastructure-tester-console` with a dedicated Admin Infrastructure tab for real PE/PC connection, read-only inventory browsing, connection profile validation, image/network/cluster approval, controlled AHV lifecycle actions, and audit/reconciliation review.
+- Implemented `v9.3.0-inventory-scope-approval` with Platform Admin-only approve/reject decisions for discovered Prism clusters, networks/subnets, and images, plus redacted audit evidence and static-demo fallback behavior.
+- Implemented `v9.4.0-controlled-ahv-create-ui` so controlled AHV create/preflight requests must include selected approved Prism cluster, network/subnet, and image scope before a hosted/on-prem lab adapter can submit a task.
+- Implemented `v9.5.0-lifecycle-reconciliation` with AHV lifecycle event ledgers, poll/power/destroy/reconcile timeline evidence, and an expanded Admin Infrastructure audit/reconciliation dashboard.
+- Implemented `v9.6.0-preview-inventory-import` so sanitized Prism Element or Prism Central connection-test previews can be loaded into the main inventory browser for approval and controlled-create selection.
 - Added lab-only AHV Prism Central v3 config validation, read-only preflight, opt-in VM create/poll/power/destroy lifecycle, Docker Compose lab overlay, and redacted audit evidence.
 - Released `v7.5.0-on-prem-install-profile-pack`.
 - Added on-prem install profile templates, validation script, and install pack API evidence.
@@ -705,6 +710,13 @@
 - Added tests proving missing active pentest scope blocks live adapter authorization.
 
 ## Documentation Rule
+
+- Started `v9.7.0-pe-pc-validation-rings`.
+- Added PE/PC validation rings so testers can prove local safety, connection, read-only inventory, scope approval, guardrails, controlled lifecycle, audit redaction, and resilience in order.
+- Added a metadata-only validation script for the PE/PC testing pack; it performs no Prism calls and keeps lifecycle testing explicitly lab-gated.
+- Started `v9.8.0-controlled-source-vm-clone`.
+- Added controlled clone-from-approved-source-VM support for labs where PC/PE exposes a golden VM but no Image Service disk image.
+- Updated lab configuration, Admin Infrastructure artifact selection, and tests so controlled AHV create can use either an approved image or an approved source VM UUID.
 
 When the product changes, update the relevant Markdown files in `docs/` during the same work session. An optional local Obsidian vault can mirror those notes.
 

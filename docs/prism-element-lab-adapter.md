@@ -12,7 +12,7 @@ The PE lab adapter can support:
 - Image discovery.
 - Network/subnet discovery.
 - VM inventory discovery.
-- Controlled create of one `ndc-lab-*` VM.
+- Controlled create of one `ndc-lab-*` VM from an approved image or approved source VM clone.
 - Task polling.
 - Power state transition.
 - Destroy/delete.
@@ -41,6 +41,7 @@ NUTANIX_PRISM_ELEMENT_PASSWORD=<private-password>
 NDC_AHV_PE_ALLOWED_CLUSTER_UUID=<authorized-pe-cluster-uuid>
 NDC_AHV_PE_ALLOWED_SUBNET_UUID=<authorized-pe-network-uuid>
 NDC_AHV_PE_ALLOWED_IMAGE_UUID=<authorized-pe-image-uuid>
+NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID=<authorized-pe-source-vm-uuid>
 NDC_AHV_VM_NAME_PREFIX=ndc-lab-
 ```
 

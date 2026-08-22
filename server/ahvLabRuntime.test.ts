@@ -38,6 +38,24 @@ describe("AHV lab runtime", () => {
     expect(config.checks.every((check) => check.passed)).toBe(true);
   });
 
+  it("allows a bounded source VM UUID instead of an Image Service UUID", () => {
+    const env = labEnv();
+    delete env.NDC_AHV_ALLOWED_IMAGE_UUID;
+    delete env.NDC_AHV_ALLOWED_PROJECT_UUID;
+    env.NDC_AHV_ALLOWED_SOURCE_VM_UUID = "source-vm-uuid";
+    const config = createAhvLabRuntimeConfig(env);
+
+    expect(config).toMatchObject({
+      mode: "Lab ready",
+      allowedImageUuidConfigured: false,
+      allowedSourceVmUuidConfigured: true,
+      provisioningEnabled: true,
+    });
+    expect(config.checks).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Allowed image or source VM UUID", passed: true })])
+    );
+  });
+
   it("marks Prism Element lab runtime ready with PE-specific configuration", () => {
     const config = createAhvLabRuntimeConfig(prismElementEnv());
 
@@ -75,10 +93,12 @@ describe("AHV lab runtime", () => {
 
     await client.list("listClusters");
     await client.createVm({ spec: { name: "ndc-lab-api-01" } });
+    await client.cloneVm("source-vm-uuid", { spec_list: [{ name: "ndc-lab-api-02" }] });
 
     expect(requests).toEqual([
-      expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/clusters/list" }),
+      expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/clusters/list", body: expect.objectContaining({ kind: "cluster" }) }),
       expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/vms" }),
+      expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/vms/source-vm-uuid/clone" }),
     ]);
   });
 
@@ -92,11 +112,13 @@ describe("AHV lab runtime", () => {
     await client.list("getCluster");
     await client.list("listNetworks");
     await client.createVm({ name: "ndc-lab-pe-01" });
+    await client.cloneVm("source-vm-uuid", { spec_list: [{ name: "ndc-lab-pe-02" }] });
 
     expect(requests).toEqual([
       expect.objectContaining({ method: "GET", path: "/PrismGateway/services/rest/v2.0/cluster" }),
       expect.objectContaining({ method: "GET", path: "/PrismGateway/services/rest/v2.0/networks" }),
       expect.objectContaining({ method: "POST", path: "/PrismGateway/services/rest/v2.0/vms" }),
+      expect.objectContaining({ method: "POST", path: "/PrismGateway/services/rest/v2.0/vms/source-vm-uuid/clone" }),
     ]);
   });
 
@@ -114,7 +136,8 @@ describe("AHV lab runtime", () => {
         realPrismCallsEnabled: true,
         redactionApplied: true,
       });
-      expect(preflight.readOnlyChecks).toHaveLength(4);
+      expect(preflight.readOnlyChecks).toHaveLength(5);
+      expect(preflight.readOnlyChecks).toEqual(expect.arrayContaining([expect.objectContaining({ operation: "listVms" })]));
     } finally {
       restoreEnv(previousEnv);
     }

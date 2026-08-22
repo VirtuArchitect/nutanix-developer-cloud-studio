@@ -1653,6 +1653,60 @@ async function routeApi(
     return;
   }
 
+  const prismInventoryDecisionMatch = url.pathname.match(/^\/api\/prism\/inventory\/([^/]+)\/(approve|reject)$/);
+  if (request.method === "POST" && prismInventoryDecisionMatch) {
+    requireRole(context, ["Platform Admin"]);
+    const recordId = decodeURIComponent(prismInventoryDecisionMatch[1]);
+    const decision = prismInventoryDecisionMatch[2] as "approve" | "reject";
+    const record = state.prismInventory.find((item) => item.id === recordId);
+    if (!record) {
+      sendJson(response, 404, {
+        error: {
+          code: "prism_inventory_record_not_found",
+          message: `Prism inventory record not found: ${recordId}`,
+        },
+      });
+      return;
+    }
+
+    if (!["Cluster", "Image", "Network", "VM"].includes(record.kind)) {
+      sendJson(response, 409, {
+        error: {
+          code: "prism_inventory_scope_not_approvable",
+          message: `Only cluster, image, network, and source VM records can be approved for controlled provisioning scope. ${record.kind} is read-only evidence.`,
+        },
+      });
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const updated: PrismInventoryRecord = {
+      ...record,
+      approvalStatus: decision === "approve" ? "Approved" : "Rejected",
+      approvedBy: context.session.user,
+      approvedAt: now,
+      approvalEvidence: [
+        `${record.kind} ${record.name} ${decision === "approve" ? "approved" : "rejected"} for controlled AHV lab scope by ${context.session.user}.`,
+        "Decision stores sanitized inventory reference only; no Prism credentials or Authorization headers are persisted.",
+        record.kind === "VM"
+          ? "VM approval allows this record to be selected as a bounded clone source only; it does not submit infrastructure mutation."
+          : "Approval is advisory scope evidence and does not submit infrastructure mutation.",
+      ],
+    };
+    state.prismInventory = state.prismInventory.map((item) => (item.id === recordId ? updated : item));
+    addAuditEvent(state, `prism.inventory.${decision === "approve" ? "approved" : "rejected"}`, context.session.user, record.id, {
+      kind: record.kind,
+      name: record.name,
+      source: record.source,
+      rawRef: record.rawRef,
+      provisioningEnabled: false,
+      realPrismCallsEnabled: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: updated });
+    return;
+  }
+
   if (request.method === "GET" && url.pathname === "/api/prism/read-only-adapter/diagnostics") {
     const integrationConfig = state.integrationConfigs.find((item) => item.name === "NCI");
     sendJson(response, 200, {
@@ -2883,6 +2937,52 @@ async function routeApi(
     return;
   }
 
+  if (request.method === "POST" && url.pathname === "/api/prism/inventory/preview-import") {
+    requireRole(context, ["Platform Admin"]);
+    const body = await readJson<{
+      provider?: "prism-central" | "prism-element";
+      endpointHost?: string;
+      records?: PrismInventoryRecord[];
+    }>(request);
+    const importedAt = new Date().toISOString();
+    const records = sanitizePreviewInventoryRecords(body.records ?? [], importedAt);
+    const importResult: PrismInventoryImportResult & { records: PrismInventoryRecord[] } = {
+      adapter: "NCI",
+      mode: "Connection preview",
+      readOnly: true,
+      provisioningEnabled: false,
+      importedAt,
+      recordsImported: records.length,
+      profileCandidates: records.filter((record) => record.profileCandidate).length,
+      scope: {
+        endpoint: body.endpointHost ? `connection-preview://${body.endpointHost}` : "connection-preview://unknown",
+        credentialProfile: "browser-one-time-credential-not-persisted",
+        project: records.find((record) => record.project)?.project ?? "connection-preview",
+        cluster: records.find((record) => record.cluster)?.cluster ?? records.find((record) => record.kind === "Cluster")?.name ?? "connection-preview",
+        network: records.find((record) => record.network)?.network ?? records.find((record) => record.kind === "Network")?.name ?? "connection-preview",
+        authorizedScopeRef: "Browser one-time read-only connection preview",
+        realAdapterEnabled: false,
+      },
+      evidence: `${body.provider === "prism-element" ? "Prism Element" : "Prism Central"} one-time read-only connection preview loaded into the inventory browser.`,
+      mutationOperationsBlocked: ["create_vm", "clone_vm", "delete_vm", "power_on", "power_off", "update_network"],
+      records,
+    };
+    state.prismInventory = records;
+    state.prismInventoryImport = stripInventoryRecords(importResult);
+    state.resourceProfiles = mergePrismImageProfileCandidates(state.resourceProfiles, records);
+    addAuditEvent(state, "prism.inventory.preview-imported", context.session.user, body.provider ?? "unknown", {
+      endpointHost: body.endpointHost,
+      recordsImported: importResult.recordsImported,
+      profileCandidates: importResult.profileCandidates,
+      readOnly: true,
+      provisioningEnabled: false,
+      credentialMaterialPersisted: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: state.prismInventoryImport });
+    return;
+  }
+
   if (request.method === "POST" && url.pathname === "/api/prism/read-only-lab-gates") {
     requireRole(context, ["Platform Admin"]);
     const gate = createReadOnlyPrismLabGate(state, context.session.user);
@@ -3630,7 +3730,7 @@ async function routeApi(
       const body = await readJson<CreateAhvControlledProvisioningRunRequest>(request);
       const runtimeConfig = createAhvLabRuntimeConfig();
       const run = runtimeConfig.provisioningEnabled
-        ? await createActiveAhvLabAdapter().create(state, body.gateId, context.session.user)
+        ? await createActiveAhvLabAdapter().create(state, body, context.session.user)
         : createDisabledAhvControlledProvisioningAdapter().preflight(state, body, context.session.user);
       state.ahvControlledProvisioningRuns = [run, ...state.ahvControlledProvisioningRuns];
       addAuditEvent(state, run.provisioningEnabled ? "ahv.controlled.create.submitted" : "ahv.controlled.preflight.recorded", context.session.user, run.environmentName, {
@@ -3639,6 +3739,8 @@ async function routeApi(
         adapterMode: run.adapterMode,
         prismTaskUuid: run.prismTaskUuid,
         vmUuid: run.vmUuid,
+        selectedScope: run.selectedScope,
+        lifecycleEventCount: run.lifecycleEvents?.length ?? 0,
         provisioningEnabled: run.provisioningEnabled,
       });
       await store.save(state);
@@ -3702,6 +3804,7 @@ async function routeApi(
       prismTaskUuids: updated.prismTaskUuids,
       vmUuid: updated.vmUuid,
       inventoryReconciliation: redactSensitive(updated.inventoryReconciliation),
+      lifecycleEvents: redactSensitive(updated.lifecycleEvents),
       provisioningEnabled: updated.provisioningEnabled,
     });
     await store.save(state);
@@ -5399,14 +5502,22 @@ async function createAhvLabConnectionTest(
       payload.allowedSubnetUuid ? "Allowed subnet/network UUID captured." : "Required before lifecycle enablement."
     ),
     check(
-      "Image UUID",
-      Boolean(payload.allowedImageUuid),
-      payload.allowedImageUuid ? "Allowed image UUID captured." : "Required before lifecycle enablement."
+      "Image or source VM UUID",
+      Boolean(payload.allowedImageUuid || payload.allowedSourceVmUuid),
+      payload.allowedImageUuid
+        ? "Allowed image UUID captured."
+        : payload.allowedSourceVmUuid
+          ? "Allowed source VM UUID captured for clone flow."
+          : "Required before lifecycle enablement."
     ),
     check(
       "Project UUID",
-      provider === "prism-element" || Boolean(payload.allowedProjectUuid),
-      provider === "prism-element" ? "Not required for Prism Element." : "Required for Prism Central lifecycle scoping."
+      provider === "prism-element" || Boolean(payload.allowedProjectUuid) || Boolean(payload.allowedSourceVmUuid),
+      provider === "prism-element"
+        ? "Not required for Prism Element."
+        : payload.allowedSourceVmUuid
+          ? "Optional for Prism Central source VM clone labs."
+          : "Required for Prism Central lifecycle scoping."
     ),
     check(
       "TLS policy",
@@ -5421,6 +5532,7 @@ async function createAhvLabConnectionTest(
   ];
 
   const readOnlyChecks: AhvLabConnectionTestResult["readOnlyChecks"] = [];
+  const inventoryPreview: PrismInventoryRecord[] = [];
   if (configChecks.every((item) => item.passed) && endpoint) {
     if (provider === "prism-element") {
       const client = new PrismElementV2Client({
@@ -5438,7 +5550,8 @@ async function createAhvLabConnectionTest(
       ];
       for (const item of operations) {
         try {
-          await client.list(item.request);
+          const result = await client.list(item.request);
+          inventoryPreview.push(...normalizeConnectionInventoryPreview(provider, item.operation, result));
           readOnlyChecks.push({ operation: item.operation, passed: true, detail: `${item.request} succeeded.` });
         } catch (error) {
           readOnlyChecks.push({
@@ -5456,10 +5569,11 @@ async function createAhvLabConnectionTest(
         NUTANIX_PRISM_USERNAME: payload.username,
         NUTANIX_PRISM_PASSWORD: payload.password,
       } as NodeJS.ProcessEnv);
-      const operations = ["listClusters", "listProjects", "listImages", "listSubnets"] as const;
+      const operations = ["listClusters", "listProjects", "listImages", "listSubnets", "listVms"] as const;
       for (const operation of operations) {
         try {
-          await client.list(operation);
+          const result = await client.list(operation);
+          inventoryPreview.push(...normalizeConnectionInventoryPreview(provider, operation, result));
           readOnlyChecks.push({ operation, passed: true, detail: `${operation} succeeded.` });
         } catch (error) {
           readOnlyChecks.push({
@@ -5479,12 +5593,105 @@ async function createAhvLabConnectionTest(
     endpointHost,
     status,
     readOnlyChecks,
+    inventoryPreview: inventoryPreview.slice(0, 50),
     configChecks,
     lifecycleMutationEnabled: false,
     redactionApplied: true,
     requestedBy: actor,
     createdAt: new Date().toISOString(),
   };
+}
+
+function normalizeConnectionInventoryPreview(
+  provider: AhvLabConnectionTestResult["provider"],
+  operation: AhvLabRuntimePreflight["readOnlyChecks"][number]["operation"],
+  response: Record<string, unknown>
+): PrismInventoryRecord[] {
+  const importedAt = new Date().toISOString();
+  const source = provider === "prism-element" ? "Prism Element" : "Prism Central";
+  const records = extractPrismEntities(response);
+  const kind =
+    operation === "listClusters"
+      ? "Cluster"
+      : operation === "listProjects"
+        ? "Project"
+        : operation === "listImages"
+          ? "Image"
+          : operation === "listSubnets"
+            ? "Network"
+            : "VM";
+
+  return records.map((entity, index) => {
+    const metadata = asRecord(entity.metadata);
+    const spec = asRecord(entity.spec);
+    const status = asRecord(entity.status);
+    const entityName =
+      stringValue(metadata.name) ??
+      stringValue(spec.name) ??
+      stringValue(status.name) ??
+      stringValue(entity.name) ??
+      `${kind.toLowerCase()}-${index + 1}`;
+    const uuid =
+      stringValue(metadata.uuid) ??
+      stringValue(entity.uuid) ??
+      stringValue(entity.id) ??
+      stringValue(entity.extId) ??
+      `${provider}-${operation}-${index + 1}`;
+    const clusterName = stringValue(status.cluster_name) ?? stringValue(entity.clusterName) ?? stringValue(entity.cluster);
+    const projectName = stringValue(status.project_name) ?? stringValue(entity.projectName) ?? stringValue(entity.project);
+    const networkName = stringValue(status.subnet_name) ?? stringValue(entity.networkName) ?? stringValue(entity.vlanName);
+
+    return {
+      id: `connection-preview-${provider}-${operation}-${uuid}`,
+      kind,
+      name: entityName,
+      source,
+      cluster: clusterName,
+      project: projectName,
+      network: networkName,
+      powerState: kind === "VM" ? normalizePowerState(stringValue(status.power_state) ?? stringValue(entity.powerState)) : undefined,
+      categories: normalizeCategories(metadata.categories ?? entity.categories),
+      importedAt,
+      rawRef: `${provider}:${operation}:${uuid}`,
+      profileCandidate: kind === "Image",
+      approvalStatus: "Discovered",
+    };
+  });
+}
+
+function extractPrismEntities(response: Record<string, unknown>) {
+  const entities = response.entities ?? response.value ?? response.data;
+  if (Array.isArray(entities)) {
+    return entities.map(asRecord);
+  }
+  if (Array.isArray(response)) {
+    return response.map(asRecord);
+  }
+  return [asRecord(response)].filter((item) => Object.keys(item).length > 0);
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function normalizeCategories(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item : stringValue(asRecord(item).name)))
+      .filter((item): item is string => Boolean(item));
+  }
+  return [];
+}
+
+function normalizePowerState(value?: string): PrismInventoryRecord["powerState"] {
+  if (!value) {
+    return "Unknown";
+  }
+  return /on|powered_on/i.test(value) ? "On" : /off|powered_off/i.test(value) ? "Off" : "Unknown";
 }
 
 function createPlatformSettingsSummary(state: ApiState, context: RequestContext): PlatformSettingsSummary {
@@ -5539,6 +5746,7 @@ function createPlatformSettingsSummary(state: ApiState, context: RequestContext)
       allowedProjectConfigured: labConfig.allowedProjectUuidConfigured,
       allowedSubnetConfigured: labConfig.allowedSubnetUuidConfigured,
       allowedImageConfigured: labConfig.allowedImageUuidConfigured,
+      allowedSourceVmConfigured: labConfig.allowedSourceVmUuidConfigured,
       vmNamePrefix: labConfig.vmNamePrefix,
       quotas: labConfig.quotas,
     },
@@ -5945,6 +6153,39 @@ function stripInventoryRecords(
 ): PrismInventoryImportResult {
   const { records: _records, ...summary } = result;
   return summary;
+}
+
+function sanitizePreviewInventoryRecords(records: PrismInventoryRecord[], importedAt: string): PrismInventoryRecord[] {
+  return records.slice(0, 50).map((record, index) => {
+    const kind = isPrismInventoryKind(record.kind) ? record.kind : "VM";
+    const name = safePreviewValue(record.name) ?? `${kind.toLowerCase()}-${index + 1}`;
+    const source = record.source === "Prism Element" ? "Prism Element" : "Prism Central";
+    return {
+      id: safePreviewValue(record.id) ?? `connection-preview-${kind.toLowerCase()}-${index + 1}`,
+      kind,
+      name,
+      source,
+      cluster: safePreviewValue(record.cluster),
+      project: safePreviewValue(record.project),
+      network: safePreviewValue(record.network),
+      powerState: record.powerState === "On" || record.powerState === "Off" ? record.powerState : record.kind === "VM" ? "Unknown" : undefined,
+      categories: Array.isArray(record.categories)
+        ? record.categories.map(safePreviewValue).filter((item): item is string => Boolean(item)).slice(0, 12)
+        : [],
+      importedAt,
+      rawRef: safePreviewValue(record.rawRef) ?? `connection-preview:${kind}:${name}`,
+      profileCandidate: kind === "Image" ? Boolean(record.profileCandidate ?? true) : undefined,
+      approvalStatus: "Discovered",
+    };
+  });
+}
+
+function isPrismInventoryKind(kind: unknown): kind is PrismInventoryRecord["kind"] {
+  return kind === "Cluster" || kind === "Project" || kind === "Image" || kind === "Network" || kind === "Category" || kind === "VM";
+}
+
+function safePreviewValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim().slice(0, 180) : undefined;
 }
 
 function mergePrismImageProfileCandidates(

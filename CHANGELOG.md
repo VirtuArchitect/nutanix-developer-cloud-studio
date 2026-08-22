@@ -2,16 +2,124 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v9.1.0-prism-element-lab-adapter`.
+This project uses release tags for public milestones. The current release is `v9.8.0-controlled-source-vm-clone`.
 
 ## [Unreleased]
 
 ### Planned
 
-- Continue toward `v9.0.0-ahv-lab-acceptance` after mock Prism lifecycle smoke is stable.
+- Continue toward final completion audit for the full real-infrastructure tester flow and packaging for release.
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v9.8.0-controlled-source-vm-clone] - 2026-07-24
+
+### Added
+
+- Controlled clone-from-approved-source-VM scope for labs where Prism exposes a golden VM but no Image Service disk image.
+- Prism inventory approval now permits VM records as bounded clone sources while keeping project/category records read-only evidence.
+- AHV lab runtime accepts either an allowed image UUID or an allowed source VM UUID.
+- Prism Central read-only connection tests now include VM discovery and send correct Prism v3 `kind` values.
+- Admin Infrastructure lifecycle panel can select an approved source VM instead of an image for controlled create/clone preflight.
+- `.env` templates and lab env generator now include `NDC_AHV_ALLOWED_SOURCE_VM_UUID` and `NDC_AHV_PE_ALLOWED_SOURCE_VM_UUID`.
+- Dedicated `smoke:ahv-source-vm-clone` command validates the controlled clone-from-source-VM lifecycle path.
+
+### Notes
+
+- Source VM clone remains lab-only, Platform Admin-gated, and requires the approved VM inventory record to match the private allowed source VM UUID.
+- The implementation does not persist Prism credentials or browser-entered passwords.
+
+## [v9.7.0-pe-pc-validation-rings] - 2026-07-24
+
+### Added
+
+- Staged PE/PC validation rings guide covering local safety checks, connection validation, read-only inventory, scope approval, guardrails, controlled lifecycle, audit redaction, and resilience testing.
+- `validate:pe-pc-test-pack` script to confirm the validation guide, PE/PC smoke scripts, lab lifecycle docs, and safety language are present.
+- README tester sequence for running safe PE/PC validation before any opt-in lifecycle smoke.
+
+### Notes
+
+- The new validator makes no Prism call and does not enable infrastructure mutation.
+- Real PE/PC lifecycle remains lab-only, disabled by default, Platform Admin-gated, and dependent on private environment variables plus approved lab scope.
+
+## [v9.6.0-preview-inventory-import] - 2026-07-23
+
+### Added
+
+- API route to import sanitized one-time Prism Element or Prism Central connection-test inventory previews into the main inventory browser.
+- Connect Infrastructure wizard action to load successful read-only previews into the inventory browser.
+- Connection preview inventory import summary with read-only scope evidence, blocked mutation operations, and profile candidate counts.
+- Server-side preview sanitization that keeps only safe inventory metadata, resets approval state to `Discovered`, and caps imported records.
+- Audit event for preview inventory imports that records endpoint host and counts without credential material.
+
+### Notes
+
+- Browser-entered passwords are still used only for the one-time connection test and are not persisted.
+- Preview imports are read-only inventory evidence. They do not enable Prism mutation.
+
+## [v9.5.0-lifecycle-reconciliation] - 2026-07-23
+
+### Added
+
+- AHV lifecycle event ledger on controlled provisioning runs for create submitted, poll, power submitted, destroy submitted, reconciliation, and safe-mode notices.
+- Prism Central and Prism Element lab adapters now append lifecycle event evidence as actions progress.
+- Disabled and browser mock preflights now emit a non-mutating lifecycle notice so the demo workflow has visible operational evidence.
+- Admin AHV lifecycle panel now renders recent lifecycle events below run evidence.
+- Admin Infrastructure audit and reconciliation dashboard now summarizes active runs, reconciled runs, and recent lifecycle events alongside redacted audit entries.
+- API audit metadata for AHV actions now includes redacted lifecycle event evidence.
+
+### Notes
+
+- Lifecycle events do not include credentials, tokens, or Authorization headers.
+- Reconciliation remains explicit evidence. Operators should still verify Prism inventory after destroy in a real lab.
+
+## [v9.4.0-controlled-ahv-create-ui] - 2026-07-23
+
+### Added
+
+- Controlled AHV create/preflight requests now carry selected approved Prism cluster, network/subnet, and image inventory record IDs.
+- API and lab adapter validation now require approved inventory scope before active AHV create can submit a Prism task.
+- Admin AHV lifecycle panel now provides approved cluster, network/subnet, and image selectors and records the chosen scope on each run.
+- Browser mock mode now enforces and records the same selected approved scope evidence as the hosted/on-prem API.
+- Audit metadata for AHV create/preflight runs now includes the selected sanitized scope envelope.
+
+### Notes
+
+- The selected scope is governance evidence and sanitized inventory metadata. Actual Prism credentials and mutation UUIDs still come from private lab environment variables.
+- Missing or unapproved scope keeps controlled create fail-closed.
+
+## [v9.3.0-inventory-scope-approval] - 2026-07-23
+
+### Added
+
+- API-backed approve/reject decisions for discovered Prism cluster, network/subnet, and image records.
+- Platform Admin-only inventory scope governance route with 403 coverage for Developer sessions.
+- Admin Infrastructure approval controls that show discovered, approved, and rejected scope records before controlled AHV create.
+- Browser-demo fallback for inventory scope decisions, including local audit events that keep static demo behavior testable.
+- Sanitized approval evidence on inventory records; decisions do not enable Prism mutation or persist credentials.
+
+### Notes
+
+- Project, VM, and category inventory remains read-only evidence and cannot be approved as controlled provisioning scope.
+- Scope approval is a prerequisite evidence layer. Real AHV create still requires lab mode, private credentials, bounded UUIDs, controlled provisioning gates, and Platform Admin authorization.
+
+## [v9.2.0-infrastructure-tester-console] - 2026-07-23
+
+### Added
+
+- Admin Infrastructure tab that presents the tester workflow in order: connect Prism Element/Prism Central, import read-only inventory, record connection profiles, approve image/network/cluster catalog candidates, run controlled AHV create/preflight, operate lab runs, and review audit/reconciliation evidence.
+- One-time Prism Element/Prism Central connection tests now return sanitized read-only inventory previews for clusters, images, networks/subnets, projects, and VMs when the target endpoint responds.
+- Successful one-time connection tests can now be promoted from the browser wizard into an approved read-only lab profile using safe endpoint and credential references plus bounded UUID scope.
+- Browser-facing lifecycle controls for AHV lab runs: poll, power on, power off, and destroy.
+- API client helpers for AHV controlled-provisioning poll, power, and destroy routes.
+- Infrastructure audit and reconciliation dashboard focused on Prism, AHV, inventory, lab-runtime, and controlled-provisioning events.
+
+### Notes
+
+- The public GitHub Pages demo remains browser-only and cannot contact Prism.
+- Real infrastructure mutation remains lab-only, Platform Admin-gated, and available only when the hosted/on-prem API is deployed with the required private lab environment switches and credentials.
+- Browser-entered Prism passwords are used only for one-time read-only connection tests and are not persisted, documented, logged, or included in audit exports.
 
 ## [v9.1.0-prism-element-lab-adapter] - 2026-07-23
 
