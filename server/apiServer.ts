@@ -435,6 +435,7 @@ import type {
   PlatformSettingsExport,
   AhvLabConnectionTestRequest,
   AhvLabConnectionTestResult,
+  AhvLabRuntimePreflight,
   ProvisioningAdapterName,
   PrismInventoryImportResult,
   PrismInventoryRecord,
