@@ -143,6 +143,14 @@ Run real lifecycle only after explicit approval:
 npm run smoke:ahv-lab-lifecycle -- -BaseUrl http://127.0.0.1:18080 -EnvironmentName ndc-lab-smoke-01
 ```
 
+For Prism Central labs that use a source VM instead of an Image Service image, validate the live scope first:
+
+```powershell
+npm run validate:ahv-live-scope-readonly
+```
+
+If the source VM is powered on, stop and power it off before clone testing, or rerun the validator with `-AllowPoweredOnSourceVm` only after explicit lab approval accepts that risk.
+
 Validate:
 
 - Create submits one Prism task.
@@ -198,6 +206,7 @@ Validate:
 - Cluster targeting.
 - Prism Central v3 task polling.
 - Cross-cluster reconciliation for NDC-created `ndc-lab-*` VMs.
+- If Prism Central v3 returns 404 for VM power actions in a lab, enable `NDC_AHV_PC_POWER_FALLBACK_TO_PE=true` and provide Prism Element credentials privately so power validation is routed through the local cluster API.
 
 ## Evidence Checklist
 

@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "9.8.0-controlled-source-vm-clone",
+  "version": "9.9.0-live-readonly-validation",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -24,6 +24,7 @@
     "lab:env": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/new-ahv-lab-env.ps1",
     "validate:ahv-lab-readiness": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-ahv-lab-readiness.ps1",
     "validate:ahv-lab-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-lab-config.ps1",
+    "validate:ahv-live-scope-readonly": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-live-scope-readonly.ps1",
     "validate:pe-pc-test-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-pe-pc-test-pack.ps1",
     "validate:mock-prism-config": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-mock-prism-config.ps1",
     "validate:ahv-lab-acceptance-pack": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/validate-ahv-lab-acceptance-pack.ps1",

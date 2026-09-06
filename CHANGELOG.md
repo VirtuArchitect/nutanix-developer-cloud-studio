@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v9.8.0-controlled-source-vm-clone`.
+This project uses release tags for public milestones. The current release is `v9.9.0-live-readonly-validation`.
 
 ## [Unreleased]
 
@@ -12,6 +12,20 @@ This project uses release tags for public milestones. The current release is `v9
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v9.9.0-live-readonly-validation] - 2026-09-06
+
+### Added
+
+- Live Prism Central scope validator for controlled AHV lab testing.
+- `validate:ahv-live-scope-readonly` checks that configured cluster, subnet, optional project, image, and source VM UUIDs exist in read-only PC inventory before clone testing.
+- Powered-on source VM guardrail that blocks the clone readiness check unless the operator explicitly accepts it with `-AllowPoweredOnSourceVm`.
+
+### Notes
+
+- The validator makes only read-only Prism Central list calls.
+- It does not create, clone, power, delete, or mutate infrastructure.
+- The first live lab pass showed PE and PC reachable, PC inventory visible, and `TestVM-01` available as a source VM candidate, but `TestVM-01` was powered on at validation time.
 
 ## [v9.8.0-controlled-source-vm-clone] - 2026-07-24
 

@@ -15,11 +15,13 @@ testing, linting, security scanning, or smoke testing.
 - `new-ahv-lab-env.ps1`: interactively creates a private `.env.lab` for authorized Prism Element or Prism Central testers without echoing the password.
 - `test-ahv-lab-readiness.ps1`: loads `.env.lab`, validates AHV lab configuration, and runs the provider-specific read-only smoke.
 - `validate-ahv-lab-config.ps1`: validates private AHV lab environment variables without making Prism mutation calls.
+- `validate-ahv-live-scope-readonly.ps1`: validates configured Prism Central cluster, subnet, optional project, image, and source VM UUIDs with read-only list calls before controlled clone testing.
 - `validate-ahv-lab-acceptance-pack.ps1`: validates the AHV lab acceptance documentation pack and confirms lab lifecycle defaults remain disabled.
 - `validate-mock-prism-config.ps1`: validates a local mock Prism Central endpoint, Basic Auth, and fixture UUID coverage without making mutation calls.
 - `smoke-ahv-lab-readonly.ps1`: calls Prism Central v3 list endpoints only.
 - `smoke-ahv-pe-readonly.ps1`: calls Prism Element v2 cluster, image, network, and VM read-only endpoints only.
 - `smoke-ahv-lab-lifecycle.ps1`: opt-in AHV create/poll/power/destroy smoke for authorized lab infrastructure.
+- `smoke-ahv-source-vm-clone.ps1`: opt-in Prism Central source VM clone smoke; when PC v3 power actions are unavailable, set `NDC_AHV_PC_POWER_FALLBACK_TO_PE=true` on the API host with private Prism Element credentials.
 - `smoke-mock-prism-lifecycle.ps1`: runs NDC AHV create/poll/power/destroy/reconciliation against the standalone mock Prism Central harness.
 - `validate-audit-export-config.ps1`: validates audit retention and export destination references without connecting to external storage.
 - `validate-provider-credential-references.ps1`: validates provider credential profile references and rejects inline access material.

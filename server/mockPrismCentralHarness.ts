@@ -123,6 +123,10 @@ export function handleMockPrismRequest(
     return createVm(state, request.body ?? {});
   }
 
+  if (method === "POST" && path === "/api/nutanix/v3/idempotence_identifiers") {
+    return createIdempotenceIdentifier();
+  }
+
   const cloneMatch = path.match(/^\/api\/nutanix\/v3\/vms\/([^/]+)\/clone$/);
   if (method === "POST" && cloneMatch) {
     return cloneVm(state, decodeURIComponent(cloneMatch[1]), request.body ?? {});
@@ -187,7 +191,8 @@ function createVm(state: MockPrismState, body: Record<string, unknown>): MockPri
     };
   }
 
-  const vmUuid = `mock-vm-${slug(name)}-${Date.now()}`;
+  const metadata = (body.metadata && typeof body.metadata === "object" ? body.metadata : {}) as Record<string, unknown>;
+  const vmUuid = typeof metadata.uuid === "string" ? metadata.uuid : `mock-vm-${slug(name)}-${Date.now()}`;
   const vm: PrismEntity = {
     metadata: { uuid: vmUuid, kind: "vm" },
     spec,
@@ -212,7 +217,7 @@ function cloneVm(state: MockPrismState, sourceVmUuid: string, body: Record<strin
   }
 
   const spec = (body.spec && typeof body.spec === "object" ? body.spec : {}) as Record<string, unknown>;
-  const name = typeof spec.name === "string" ? spec.name : `ndc-lab-clone-${Date.now()}`;
+  const name = typeof body.name === "string" ? body.name : typeof spec.name === "string" ? spec.name : `ndc-lab-clone-${Date.now()}`;
   if (!name.startsWith("ndc-lab-") || /prod|production/i.test(name)) {
     return {
       statusCode: 400,
@@ -256,6 +261,15 @@ function cloneVm(state: MockPrismState, sourceVmUuid: string, body: Record<strin
   const task = createTask("clone_vm", vmUuid, `Clone VM accepted by Mock Prism Central from ${sourceVmUuid}.`);
   state.tasks.push(task);
   return ok(task, 202);
+}
+
+function createIdempotenceIdentifier(): MockPrismResponse {
+  return ok({
+    client_identifier: null,
+    count: 1,
+    expiration_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    uuid_list: [`mock-vm-idempotence-${Date.now()}-${Math.floor(Math.random() * 10000)}`],
+  });
 }
 
 function pollTask(state: MockPrismState, taskUuid: string): MockPrismResponse {

@@ -94,11 +94,13 @@ describe("AHV lab runtime", () => {
     await client.list("listClusters");
     await client.createVm({ spec: { name: "ndc-lab-api-01" } });
     await client.cloneVm("source-vm-uuid", { spec_list: [{ name: "ndc-lab-api-02" }] });
+    await client.createIdempotenceIdentifier();
 
     expect(requests).toEqual([
       expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/clusters/list", body: expect.objectContaining({ kind: "cluster" }) }),
       expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/vms" }),
       expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/vms/source-vm-uuid/clone" }),
+      expect.objectContaining({ method: "POST", path: "/api/nutanix/v3/idempotence_identifiers" }),
     ]);
   });
 
@@ -113,12 +115,14 @@ describe("AHV lab runtime", () => {
     await client.list("listNetworks");
     await client.createVm({ name: "ndc-lab-pe-01" });
     await client.cloneVm("source-vm-uuid", { spec_list: [{ name: "ndc-lab-pe-02" }] });
+    await client.setPowerState("vm-uuid", "OFF");
 
     expect(requests).toEqual([
       expect.objectContaining({ method: "GET", path: "/PrismGateway/services/rest/v2.0/cluster" }),
       expect.objectContaining({ method: "GET", path: "/PrismGateway/services/rest/v2.0/networks" }),
       expect.objectContaining({ method: "POST", path: "/PrismGateway/services/rest/v2.0/vms" }),
       expect.objectContaining({ method: "POST", path: "/PrismGateway/services/rest/v2.0/vms/source-vm-uuid/clone" }),
+      expect.objectContaining({ method: "POST", path: "/PrismGateway/services/rest/v2.0/vms/vm-uuid/set_power_state" }),
     ]);
   });
 

@@ -42,11 +42,16 @@ type PrismTaskResponse = {
   entity_uuid?: string;
   logical_timestamp?: number;
   progress_status?: string;
+  operation_type?: string;
+  percentage_complete?: number;
+  entity_reference_list?: Array<{ uuid?: string; kind?: string }>;
+  entity_reference?: { uuid?: string; kind?: string };
   metadata?: { uuid?: string };
-  status?: {
+  status?: string | {
     state?: PrismTaskState;
     percentage_complete?: number;
     message?: string;
+    execution_context?: { task_uuid?: string };
     entity_reference_list?: Array<{ uuid?: string; kind?: string }>;
     entity_reference?: { uuid?: string; kind?: string };
   };
@@ -221,6 +226,13 @@ export class PrismCentralV3Client {
     return this.request("POST", "/api/nutanix/v3/vms", payload);
   }
 
+  createIdempotenceIdentifier() {
+    return this.request("POST", "/api/nutanix/v3/idempotence_identifiers", {
+      count: 1,
+      valid_duration_in_minutes: 60,
+    });
+  }
+
   cloneVm(sourceVmUuid: string, payload: Record<string, unknown>) {
     return this.request("POST", `/api/nutanix/v3/vms/${encodeURIComponent(sourceVmUuid)}/clone`, payload);
   }
@@ -272,7 +284,7 @@ export class PrismCentralV3Client {
             const text = Buffer.concat(chunks).toString("utf8");
             const parsed = text ? JSON.parse(text) : {};
             if ((res.statusCode ?? 500) >= 400) {
-              reject(new AhvLabRuntimeError("prism_request_failed", `Prism request failed with HTTP ${res.statusCode}.`));
+              reject(new AhvLabRuntimeError("prism_request_failed", prismHttpErrorMessage(res.statusCode, text, "Prism")));
               return;
             }
             resolve(parsed as Record<string, unknown>);
@@ -325,7 +337,7 @@ export class PrismElementV2Client {
   }
 
   setPowerState(vmUuid: string, state: "ON" | "OFF") {
-    return this.request("PUT", `/PrismGateway/services/rest/v2.0/vms/${encodeURIComponent(vmUuid)}/set_power_state`, {
+    return this.request("POST", `/PrismGateway/services/rest/v2.0/vms/${encodeURIComponent(vmUuid)}/set_power_state`, {
       transition: state,
     });
   }
@@ -366,7 +378,7 @@ export class PrismElementV2Client {
             const text = Buffer.concat(chunks).toString("utf8");
             const parsed = text ? JSON.parse(text) : {};
             if ((res.statusCode ?? 500) >= 400) {
-              reject(new AhvLabRuntimeError("prism_element_request_failed", `Prism Element request failed with HTTP ${res.statusCode}.`));
+              reject(new AhvLabRuntimeError("prism_element_request_failed", prismHttpErrorMessage(res.statusCode, text, "Prism Element")));
               return;
             }
             resolve(parsed as Record<string, unknown>);
@@ -469,8 +481,9 @@ export class LabAhvPrismAdapter {
       throw new AhvLabRuntimeError("ahv_task_missing", "Run does not have a Prism task UUID.");
     }
     const task = (await this.client.pollTask(taskUuid)) as PrismTaskResponse;
-    const state = task.status?.state ?? "RUNNING";
-    const vmUuid = extractVmUuid(task) ?? run.vmUuid;
+    const state = extractTaskState(task);
+    const sourceVmUuid = run.selectedScope?.sourceVm ? extractUuidFromRawRef(run.selectedScope.sourceVm.rawRef) : undefined;
+    const vmUuid = extractVmUuid(task, sourceVmUuid) ?? run.vmUuid;
     const succeeded = state === "SUCCEEDED";
     const failed = state === "FAILED";
     return {
@@ -478,7 +491,7 @@ export class LabAhvPrismAdapter {
       status: succeeded ? "Succeeded" : failed ? "Failed" : "Polling",
       vmUuid,
       createStatus: run.createStatus === "Submitted" ? (succeeded ? "Succeeded" : failed ? "Failed" : "Submitted") : run.createStatus,
-      failureReason: failed ? task.status?.message ?? "Prism task failed." : run.failureReason,
+      failureReason: failed ? extractTaskMessage(task) ?? "Prism task failed." : run.failureReason,
       lastPollAt: new Date().toISOString(),
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -496,7 +509,7 @@ export class LabAhvPrismAdapter {
 
   async power(run: AhvControlledProvisioningRun, state: "ON" | "OFF"): Promise<AhvControlledProvisioningRun> {
     const vmUuid = requireVmUuid(run);
-    const response = (await this.client.setPowerState(vmUuid, state)) as PrismTaskResponse;
+    const response = (await setPrismCentralPowerState(this.client, vmUuid, state)) as PrismTaskResponse;
     const taskUuid = extractTaskUuid(response);
     return {
       ...run,
@@ -555,6 +568,31 @@ export class LabAhvPrismAdapter {
       updatedAt: new Date().toISOString(),
     };
   }
+}
+
+async function setPrismCentralPowerState(client: PrismCentralV3Client, vmUuid: string, state: "ON" | "OFF") {
+  try {
+    return await client.setPowerState(vmUuid, state);
+  } catch (error) {
+    if (!shouldUsePrismElementPowerFallback(error)) {
+      throw error;
+    }
+    const peClient = new PrismElementV2Client(process.env);
+    return peClient.setPowerState(vmUuid, state);
+  }
+}
+
+function shouldUsePrismElementPowerFallback(error: unknown) {
+  return (
+    process.env.APP_ENV === "lab" &&
+    process.env.NDC_AHV_PC_POWER_FALLBACK_TO_PE === "true" &&
+    Boolean(process.env.NUTANIX_PRISM_ELEMENT_URL) &&
+    Boolean(process.env.NUTANIX_PRISM_ELEMENT_USERNAME) &&
+    Boolean(process.env.NUTANIX_PRISM_ELEMENT_PASSWORD) &&
+    error instanceof AhvLabRuntimeError &&
+    error.code === "prism_request_failed" &&
+    error.message.includes("HTTP 404")
+  );
 }
 
 export class LabAhvPrismElementAdapter {
@@ -644,8 +682,9 @@ export class LabAhvPrismElementAdapter {
       throw new AhvLabRuntimeError("ahv_task_missing", "Run does not have a Prism task UUID.");
     }
     const task = (await this.client.pollTask(taskUuid)) as PrismTaskResponse;
-    const state = normalizePrismTaskState(task.status?.state ?? task.progress_status);
-    const vmUuid = extractVmUuid(task) ?? task.entity_uuid ?? run.vmUuid;
+    const state = extractTaskState(task);
+    const sourceVmUuid = run.selectedScope?.sourceVm ? extractUuidFromRawRef(run.selectedScope.sourceVm.rawRef) : undefined;
+    const vmUuid = extractVmUuid(task, sourceVmUuid) ?? task.entity_uuid ?? run.vmUuid;
     const succeeded = state === "SUCCEEDED";
     const failed = state === "FAILED";
     return {
@@ -653,7 +692,7 @@ export class LabAhvPrismElementAdapter {
       status: succeeded ? "Succeeded" : failed ? "Failed" : "Polling",
       vmUuid,
       createStatus: run.createStatus === "Submitted" ? (succeeded ? "Succeeded" : failed ? "Failed" : "Submitted") : run.createStatus,
-      failureReason: failed ? task.status?.message ?? "Prism Element task failed." : run.failureReason,
+      failureReason: failed ? extractTaskMessage(task) ?? "Prism Element task failed." : run.failureReason,
       lastPollAt: new Date().toISOString(),
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -798,7 +837,7 @@ async function submitPrismCentralCreateOrClone(
 ) {
   const sourceVmUuid = selectedScope.sourceVm ? requireAllowedSourceVmUuid(selectedScope.sourceVm.rawRef, process.env.NDC_AHV_ALLOWED_SOURCE_VM_UUID) : undefined;
   const response = sourceVmUuid
-    ? ((await client.cloneVm(sourceVmUuid, createPrismCentralClonePayload(dryRun))) as PrismTaskResponse)
+    ? ((await client.cloneVm(sourceVmUuid, await createPrismCentralClonePayload(client, dryRun))) as PrismTaskResponse)
     : ((await client.createVm(createVmPayload(dryRun))) as PrismTaskResponse);
 
   return { response, sourceVmUuid };
@@ -860,25 +899,17 @@ function createVmPayload(dryRun: VmSandboxDryRunPlan) {
   };
 }
 
-function createPrismCentralClonePayload(dryRun: VmSandboxDryRunPlan) {
-  const projectReference = process.env.NDC_AHV_ALLOWED_PROJECT_UUID
-    ? { project_reference: { uuid: process.env.NDC_AHV_ALLOWED_PROJECT_UUID, kind: "project" } }
-    : {};
+async function createPrismCentralClonePayload(client: PrismCentralV3Client, dryRun: VmSandboxDryRunPlan) {
+  const idempotence = (await client.createIdempotenceIdentifier()) as { uuid_list?: string[] };
+  const cloneUuid = idempotence.uuid_list?.[0];
+  if (!cloneUuid) {
+    throw new AhvLabRuntimeError("prism_idempotence_uuid_missing", "Prism Central did not return an idempotence UUID for clone.");
+  }
 
   return {
-    spec_list: [
-      {
-        name: dryRun.environmentName,
-        resources: {
-          num_sockets: dryRun.quota.cpu,
-          memory_size_mib: dryRun.quota.memoryGb * 1024,
-          subnet_reference: { uuid: process.env.NDC_AHV_ALLOWED_SUBNET_UUID, kind: "subnet" },
-          cluster_reference: { uuid: process.env.NDC_AHV_ALLOWED_CLUSTER_UUID, kind: "cluster" },
-          ...projectReference,
-        },
-        categories: { Lifecycle: `${dryRun.expiryDays}-day-expiry`, Owner: dryRun.owner, Source: "NDCStudioSourceVmClone" },
-      },
-    ],
+    metadata: {
+      uuid: cloneUuid,
+    },
   };
 }
 
@@ -939,15 +970,37 @@ function createPrismElementClonePayload(dryRun: VmSandboxDryRunPlan) {
 }
 
 function extractTaskUuid(response: PrismTaskResponse) {
-  const uuid = response.task_reference?.uuid ?? response.task_uuid ?? response.metadata?.uuid ?? response.uuid;
+  const status = response.status;
+  const executionTaskUuid = typeof status === "object" ? status.execution_context?.task_uuid : undefined;
+  const uuid = response.task_reference?.uuid ?? response.task_uuid ?? executionTaskUuid ?? response.metadata?.uuid ?? response.uuid;
   if (!uuid) {
     throw new AhvLabRuntimeError("prism_task_uuid_missing", "Prism response did not include a task UUID.");
   }
   return uuid;
 }
 
-function extractVmUuid(response: PrismTaskResponse) {
-  return response.status?.entity_reference?.uuid ?? response.status?.entity_reference_list?.find((item) => item.kind === "vm")?.uuid;
+function extractTaskState(response: PrismTaskResponse) {
+  const status = response.status;
+  return normalizePrismTaskState(
+    typeof status === "string" ? status : status?.state ?? response.progress_status
+  );
+}
+
+function extractTaskMessage(response: PrismTaskResponse) {
+  const status = response.status;
+  return typeof status === "object" ? status.message : response.progress_status;
+}
+
+function extractVmUuid(response: PrismTaskResponse, sourceVmUuid?: string) {
+  const status = response.status;
+  const statusReferences = typeof status === "object" ? status.entity_reference_list ?? [] : [];
+  const references = [
+    ...(response.entity_reference_list ?? []),
+    ...statusReferences,
+    ...(response.entity_reference ? [response.entity_reference] : []),
+    ...(typeof status === "object" && status.entity_reference ? [status.entity_reference] : []),
+  ];
+  return references.find((item) => item.kind === "vm" && item.uuid && item.uuid !== sourceVmUuid)?.uuid;
 }
 
 function requireVmUuid(run: AhvControlledProvisioningRun) {
@@ -1004,6 +1057,19 @@ function safeUrl(value: string) {
   } catch {
     return undefined;
   }
+}
+
+function prismHttpErrorMessage(statusCode: number | undefined, bodyText: string, label: string) {
+  const status = statusCode ?? 500;
+  const summary = redactPrismErrorText(bodyText).slice(0, 700);
+  return summary ? `${label} request failed with HTTP ${status}: ${summary}` : `${label} request failed with HTTP ${status}.`;
+}
+
+function redactPrismErrorText(value: string) {
+  return value
+    .replace(/("?(?:password|token|authorization|secret)"?\s*:\s*)"[^"]*"/gi, "$1\"[REDACTED]\"")
+    .replace(/Basic\s+[A-Za-z0-9+/=]+/g, "Basic [REDACTED]")
+    .replace(/https:\/\/[^/"\s?]+[^\s"]*/gi, "[REDACTED_URL]");
 }
 
 function trimSlash(value: string) {

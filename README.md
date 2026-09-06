@@ -4,7 +4,7 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v9.8.0-controlled-source-vm-clone`
+Current release: `v9.9.0-live-readonly-validation`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -65,6 +65,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - One-time Prism Element or Prism Central connection-test previews can now be loaded directly into the inventory browser for approval and controlled-create selection.
 - PE/PC validation rings guide testers from local safety checks through connection, read-only discovery, scope approval, guardrails, controlled lifecycle, audit redaction, and resilience testing.
 - Controlled source VM clone flow allows Platform Admins to approve a discovered VM as a bounded golden source when no Image Service disk image is available.
+- Live Prism Central scope validation confirms the configured cluster, subnet, optional project, image, and source VM exist before any controlled clone is attempted.
 
 ### Governance And Release Readiness
 

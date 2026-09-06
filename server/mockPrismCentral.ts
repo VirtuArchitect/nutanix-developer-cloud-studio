@@ -133,6 +133,16 @@ export async function routeMockPrismCentral(
     return true;
   }
 
+  if (request.method === "POST" && url.pathname === "/mock-prism/api/nutanix/v3/idempotence_identifiers") {
+    sendMockPrismJson(response, 200, {
+      client_identifier: null,
+      count: 1,
+      expiration_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      uuid_list: [`mock-vm-idempotence-${Date.now()}-${Math.floor(Math.random() * 10000)}`],
+    });
+    return true;
+  }
+
   const cloneMatch = url.pathname.match(/^\/mock-prism\/api\/nutanix\/v3\/vms\/([^/]+)\/clone$/);
   if (request.method === "POST" && cloneMatch) {
     const body = await readMockPrismJson<Record<string, unknown>>(request);
@@ -275,6 +285,9 @@ export function createMockPrismTask(message: string, vmUuid = "mock-vm-task-targ
 }
 
 function extractVmName(body: Record<string, unknown>) {
+  if (typeof body.name === "string" && body.name.trim()) {
+    return body.name.trim();
+  }
   const spec = typeof body.spec === "object" && body.spec ? (body.spec as Record<string, unknown>) : {};
   return typeof spec.name === "string" && spec.name.trim() ? spec.name.trim() : "ndc-studio-mock-vm";
 }

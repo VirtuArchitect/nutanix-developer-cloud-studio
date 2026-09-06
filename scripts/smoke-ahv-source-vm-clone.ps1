@@ -170,7 +170,22 @@ if (-not $run.data.provisioningEnabled -or -not $run.data.selectedScope.sourceVm
   throw "Create run did not use the approved source VM clone path."
 }
 
-$polled = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/poll"
+$polled = $null
+for ($attempt = 1; $attempt -le 30; $attempt++) {
+  $polled = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/poll"
+  if ($polled.data.status -eq "Succeeded") {
+    break
+  }
+  if ($polled.data.status -eq "Failed") {
+    throw "Create task failed before power/destroy. $($polled.data.failureReason)"
+  }
+  Start-Sleep -Seconds 2
+}
+
+if (-not $polled -or $polled.data.status -ne "Succeeded") {
+  throw "Create task did not reach Succeeded before the smoke timeout."
+}
+
 $powered = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/power" @{ powerState = "OFF" }
 $destroyed = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/destroy"
 
