@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v10.3.0-lab-evidence-validator`.
+This project uses release tags for public milestones. The current release is `v10.5.0-guided-lab-vm-workflow`.
 
 ## [Unreleased]
 
@@ -12,6 +12,20 @@ This project uses release tags for public milestones. The current release is `v1
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v10.5.0-guided-lab-vm-workflow] - 2026-09-06
+
+### Added
+
+- API-backed AHV lab profile manager for Local Mock, PE Lab, PC Lab, and PC + PE fallback operating profiles.
+- Admin Settings and Admin Infrastructure profile-selection panels that show readiness, credential boundary, lifecycle availability, and tester next actions.
+- Product-guided lab VM workflow language that connects profile selection, setup validation, scope approval, create/clone, task polling, power checks, destroy, reconciliation, and evidence export.
+- Client, API, and Playwright smoke coverage for lab profile discovery and selection.
+
+### Security
+
+- Lab profiles store readiness metadata only. Prism passwords, tokens, and Authorization headers remain outside persisted profile state and API responses.
+- Profile selection remains Platform Admin-only and records redacted audit evidence.
 
 ## [v10.3.0-lab-evidence-validator] - 2026-09-06
 

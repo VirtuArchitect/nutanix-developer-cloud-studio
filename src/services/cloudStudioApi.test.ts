@@ -111,6 +111,7 @@ import {
   decideControlledProvisioningGateViaApi,
   fetchAuthBoundaryDiagnosticsFromApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAhvLabProfilesFromApi,
   fetchAhvLabSetupValidationFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdminUpgradeHealthConsoleFromApi,
@@ -277,6 +278,7 @@ import {
   runIntegrationCheckViaApi,
   runTemplateRegistryActionViaApi,
   saveIntegrationConfigViaApi,
+  selectAhvLabProfileViaApi,
   selectPrismSimulatorProfileViaApi,
 } from "./cloudStudioApi";
 
@@ -938,11 +940,23 @@ describe("cloudStudioApi", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await fetchAhvLabSetupValidationFromApi();
+    await fetchAhvLabProfilesFromApi();
+    await selectAhvLabProfileViaApi("prism-central-lab");
     await exportAhvControlledProvisioningRunReportViaApi("ahv-run-1");
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/ahv/lab-runtime/setup-validation", expect.any(Object));
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
+      "/api/ahv/lab-runtime/profiles",
+      expect.any(Object)
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "/api/ahv/lab-runtime/profiles/prism-central-lab/select",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
       "/api/ahv/controlled-provisioning/runs/ahv-run-1/evidence-report",
       expect.any(Object)
     );

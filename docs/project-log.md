@@ -1,5 +1,9 @@
 # Nutanix Developer Cloud Studio - Project Log
 
+## 2026-09-06
+
+- Implemented `v10.5.0-guided-lab-vm-workflow` with API-backed AHV lab profiles, Admin Settings and Infrastructure profile manager panels, profile-selection audit evidence, guided VM workflow documentation, and smoke coverage for browser profile selection.
+
 ## 2026-07-09
 
 - Implemented `v10.3.0-lab-evidence-validator` with API-backed AHV lab setup validation, Admin Infrastructure blocker guidance, redacted lab session evidence export, and smoke coverage for the validator/report workflow.

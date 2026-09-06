@@ -1495,6 +1495,20 @@ export type AhvLabEvidenceReport = {
   recommendedNextActions: string[];
 };
 
+export type AhvLabProfile = {
+  id: "local-mock" | "prism-element-lab" | "prism-central-lab" | "pc-pe-fallback";
+  name: string;
+  provider: "Mock Prism" | "Prism Element" | "Prism Central" | "Prism Central + Prism Element fallback";
+  mode: "Simulated" | "Read-only ready" | "Lifecycle armed" | "Blocked";
+  endpointConfigured: boolean;
+  credentialReference: "Private environment variables" | "Browser one-time test only" | "Mock only";
+  lifecycleAvailable: boolean;
+  selected: boolean;
+  summary: string;
+  requiredActions: string[];
+  redactionBoundary: string;
+};
+
 export type MockPrismExecution = {
   id: string;
   environmentName: string;

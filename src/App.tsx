@@ -39,6 +39,7 @@ import {
   type AhvLabConnectionTestResult,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
+  type AhvLabProfile,
   type AhvLabEvidenceReport,
   type AhvLabSetupValidation,
   type AdminUpgradeHealthConsole,
@@ -335,6 +336,7 @@ import {
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAhvLabProfilesFromApi,
   fetchAhvLabSetupValidationFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdminUpgradeHealthConsoleFromApi,
@@ -512,6 +514,7 @@ import {
   runTemplateRegistryActionViaApi,
   saveIntegrationConfigViaApi,
   savePlatformSettingsViaApi,
+  selectAhvLabProfileViaApi,
   selectPrismSimulatorProfileViaApi,
   testAhvLabConnectionViaApi,
   testPlatformSettingsConnectionViaApi,
@@ -813,6 +816,7 @@ export function App() {
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
   const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
+  const [ahvLabProfiles, setAhvLabProfiles] = useState<AhvLabProfile[]>(() => createMockAhvLabProfiles());
   const [ahvLabSetupValidation, setAhvLabSetupValidation] = useState<AhvLabSetupValidation | null>(null);
   const [ahvLabEvidenceReport, setAhvLabEvidenceReport] = useState<AhvLabEvidenceReport | null>(null);
   const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
@@ -850,8 +854,34 @@ export function App() {
       setSystemStatus(createMockSystemStatus(session, integrationConfigs, labAdapters));
       setCredentialDiagnostics(createMockCredentialDiagnostics(integrationConfigs));
       setPlatformSettings(createMockPlatformSettingsSummary(session, integrationConfigs, auditEvents.length, auditExports.length));
+      setAhvLabProfiles(createMockAhvLabProfiles());
     }
   }, [apiHealth.mode, auditEvents.length, auditExports.length, integrationConfigs, labAdapters, session]);
+
+  useEffect(() => {
+    let active = true;
+    if (apiHealth.mode !== "api") {
+      return () => {
+        active = false;
+      };
+    }
+
+    fetchAhvLabProfilesFromApi()
+      .then((profiles) => {
+        if (active) {
+          setAhvLabProfiles(profiles);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setAhvLabProfiles(createMockAhvLabProfiles());
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [apiHealth.mode]);
 
   useEffect(() => {
     let active = true;
@@ -3311,6 +3341,25 @@ export function App() {
     setAhvLabSetupValidation(validation);
   }
 
+  async function selectAhvLabProfile(profileId: AhvLabProfile["id"]) {
+    if (apiHealth.mode !== "api") {
+      setAhvLabProfiles((current) => current.map((profile) => ({ ...profile, selected: profile.id === profileId })));
+      setSettingsSaveState({
+        status: "Saved",
+        message: `Selected ${profileId} in browser mock mode. API lab deployments record this as audit evidence.`,
+      });
+      return;
+    }
+    const selected = await selectAhvLabProfileViaApi(profileId);
+    const profiles = await fetchAhvLabProfilesFromApi();
+    setAhvLabProfiles(profiles.map((profile) => ({ ...profile, selected: profile.id === selected.id })));
+    setSettingsSaveState({
+      status: "Saved",
+      message: `Selected ${selected.name} profile; credentials remain outside NDC Studio.`,
+    });
+    await refreshApiState();
+  }
+
   async function exportAhvLabEvidenceReport(runId: string) {
     if (apiHealth.mode !== "api") {
       const run = ahvControlledProvisioningRuns.find((item) => item.id === runId);
@@ -5175,6 +5224,7 @@ export function App() {
             rollbackDestroyProofs={rollbackDestroyProofs}
             ahvCreateAdapterContractReviews={ahvCreateAdapterContractReviews}
             ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
+            ahvLabProfiles={ahvLabProfiles}
             ahvLabSetupValidation={ahvLabSetupValidation}
             ahvLabEvidenceReport={ahvLabEvidenceReport}
             productionReadinessReviews={productionReadinessReviews}
@@ -5319,6 +5369,7 @@ export function App() {
             reviewAhvCreateAdapterContract={reviewAhvCreateAdapterContract}
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             runAhvControlledProvisioningAction={runAhvControlledProvisioningAction}
+            selectAhvLabProfile={selectAhvLabProfile}
             refreshAhvLabSetupValidation={refreshAhvLabSetupValidation}
             exportAhvLabEvidenceReport={exportAhvLabEvidenceReport}
             createPlatformServiceRequest={createPlatformServiceRequest}
@@ -6045,6 +6096,7 @@ function AdminView({
   rollbackDestroyProofs,
   ahvCreateAdapterContractReviews,
   ahvControlledProvisioningRuns,
+  ahvLabProfiles,
   ahvLabSetupValidation,
   ahvLabEvidenceReport,
   productionReadinessReviews,
@@ -6173,6 +6225,7 @@ function AdminView({
   reviewAhvCreateAdapterContract,
   runAhvControlledProvisioningPreflight,
   runAhvControlledProvisioningAction,
+  selectAhvLabProfile,
   refreshAhvLabSetupValidation,
   exportAhvLabEvidenceReport,
   createPlatformServiceRequest,
@@ -6341,6 +6394,7 @@ function AdminView({
   rollbackDestroyProofs: RollbackDestroyProofRecord[];
   ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
+  ahvLabProfiles: AhvLabProfile[];
   ahvLabSetupValidation: AhvLabSetupValidation | null;
   ahvLabEvidenceReport: AhvLabEvidenceReport | null;
   productionReadinessReviews: ProductionReadinessReview[];
@@ -6486,6 +6540,7 @@ function AdminView({
     runId: string,
     action: "poll" | "power-on" | "power-off" | "destroy"
   ) => void;
+  selectAhvLabProfile: (profileId: AhvLabProfile["id"]) => void;
   refreshAhvLabSetupValidation: () => void;
   exportAhvLabEvidenceReport: (runId: string) => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
@@ -6667,6 +6722,9 @@ function AdminView({
               importPrismConnectionPreview={importPrismConnectionPreview}
             />
           </Panel>
+          <Panel title="Lab profile manager" action={`${ahvLabProfiles.length} profiles`}>
+            <AhvLabProfileManagerPanel profiles={ahvLabProfiles} selectAhvLabProfile={selectAhvLabProfile} compact />
+          </Panel>
           <Panel title="Active Directory connectivity" action={platformSettings.configurable.activeDirectory.status}>
             <ActiveDirectorySettingsPanel settings={platformSettings} savePlatformSettings={savePlatformSettings} />
           </Panel>
@@ -6744,6 +6802,9 @@ function AdminView({
               createReadOnlyPrismLabGate={createReadOnlyPrismLabGate}
               testPlatformSettingsConnection={testPlatformSettingsConnection}
             />
+          </Panel>
+          <Panel title="Lab profile manager" action={`${ahvLabProfiles.filter((profile) => profile.selected).length || 1} selected`}>
+            <AhvLabProfileManagerPanel profiles={ahvLabProfiles} selectAhvLabProfile={selectAhvLabProfile} />
           </Panel>
           <Panel title="Lab setup validator" action={ahvLabSetupValidation?.status ?? "Not checked"}>
             <AhvLabSetupValidationPanel
@@ -8352,6 +8413,68 @@ function FeatureFlagSettingsPanel({ settings }: { settings: PlatformSettingsSumm
           <span className={`status ${flag.enabled ? "ready" : "failed"}`}>{flag.enabled ? "Enabled" : "Disabled"}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+function AhvLabProfileManagerPanel({
+  profiles,
+  selectAhvLabProfile,
+  compact = false,
+}: {
+  profiles: AhvLabProfile[];
+  selectAhvLabProfile: (profileId: AhvLabProfile["id"]) => void;
+  compact?: boolean;
+}) {
+  const selectedProfile = profiles.find((profile) => profile.selected) ?? profiles[0];
+  const readyProfiles = profiles.filter((profile) => profile.mode === "Read-only ready" || profile.mode === "Lifecycle armed").length;
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <MonitorCog size={18} />
+        <div>
+          <strong>Named lab profiles</strong>
+          <span>Choose the operating mode testers should follow. Profiles store readiness metadata only; credentials remain private.</span>
+        </div>
+      </div>
+      <div className="controlGrid">
+        <CheckLine icon={Cloud} label="Selected profile" value={selectedProfile?.name ?? "None"} passed={Boolean(selectedProfile)} />
+        <CheckLine icon={Gauge} label="Ready profiles" value={`${readyProfiles}/${profiles.length}`} passed={readyProfiles > 0} />
+        <CheckLine icon={LockKeyhole} label="Credential storage" value="Outside NDC" passed />
+        <CheckLine icon={ShieldCheck} label="Lifecycle mode" value={selectedProfile?.mode ?? "Blocked"} passed={selectedProfile?.mode === "Lifecycle armed"} />
+      </div>
+      <div className="settingsList">
+        {profiles.map((profile) => (
+          <div className="settingsRow" key={profile.id}>
+            <div>
+              <strong>{profile.name}</strong>
+              <span>{profile.provider} / {profile.credentialReference}</span>
+              {!compact && <small>{profile.summary}</small>}
+            </div>
+            <div className="inlineActions">
+              <span className={`status ${profile.mode === "Lifecycle armed" ? "ready" : profile.mode === "Blocked" ? "failed" : "approval"}`}>
+                {profile.selected ? `Selected: ${profile.mode}` : profile.mode}
+              </span>
+              <button className="iconTextButton" onClick={() => selectAhvLabProfile(profile.id)}>
+                <Settings size={15} />
+                Select
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {selectedProfile && !compact && (
+        <div className="dryRunSummary">
+          <strong>{selectedProfile.name} next actions</strong>
+          <div className="evidenceList">
+            {selectedProfile.requiredActions.map((action) => (
+              <span key={action}>{action}</span>
+            ))}
+          </div>
+          <small>{selectedProfile.redactionBoundary}</small>
+        </div>
+      )}
     </div>
   );
 }
@@ -19163,6 +19286,64 @@ function createMockAhvLabSetupValidation(): AhvLabSetupValidation {
     provisioningEnabled: false,
     realPrismCallsEnabled: false,
   };
+}
+
+function createMockAhvLabProfiles(): AhvLabProfile[] {
+  const redactionBoundary = "Profiles store safe readiness metadata only. Passwords, tokens, and Authorization headers are never stored in browser profile records.";
+  return [
+    {
+      id: "local-mock",
+      name: "Local Mock",
+      provider: "Mock Prism",
+      mode: "Simulated",
+      endpointConfigured: true,
+      credentialReference: "Mock only",
+      lifecycleAvailable: true,
+      selected: true,
+      summary: "Fixture-backed lifecycle rehearsal for public demos and local development.",
+      requiredActions: ["Use this profile to rehearse create, poll, power, destroy, and evidence export without Nutanix infrastructure."],
+      redactionBoundary,
+    },
+    {
+      id: "prism-element-lab",
+      name: "PE Lab",
+      provider: "Prism Element",
+      mode: "Blocked",
+      endpointConfigured: false,
+      credentialReference: "Browser one-time test only",
+      lifecycleAvailable: false,
+      selected: false,
+      summary: "One-node AHV / Prism Element lab target for bounded lifecycle validation.",
+      requiredActions: ["Deploy the hosted/on-prem API in lab mode.", "Run a one-time PE read-only connection test.", "Set private PE credentials and allowed UUIDs on the lab host."],
+      redactionBoundary,
+    },
+    {
+      id: "prism-central-lab",
+      name: "PC Lab",
+      provider: "Prism Central",
+      mode: "Blocked",
+      endpointConfigured: false,
+      credentialReference: "Browser one-time test only",
+      lifecycleAvailable: false,
+      selected: false,
+      summary: "Prism Central v3 control-plane profile for approved image or source-VM clone testing.",
+      requiredActions: ["Run the Connect Infrastructure wizard.", "Import sanitized preview inventory.", "Approve cluster, network, and image or source VM scope."],
+      redactionBoundary,
+    },
+    {
+      id: "pc-pe-fallback",
+      name: "PC + PE fallback",
+      provider: "Prism Central + Prism Element fallback",
+      mode: "Blocked",
+      endpointConfigured: false,
+      credentialReference: "Browser one-time test only",
+      lifecycleAvailable: false,
+      selected: false,
+      summary: "Use PC for create/clone and PE for power fallback in labs that need both paths.",
+      requiredActions: ["Configure both PC and PE private endpoints.", "Enable fallback only after lab approval.", "Validate read-only access against both provider paths."],
+      redactionBoundary,
+    },
+  ];
 }
 
 function createMockAhvLabEvidenceReport(run: AhvControlledProvisioningRun, actor: string): AhvLabEvidenceReport {

@@ -159,6 +159,11 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByRole("heading", { name: "Connect infrastructure" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Real PE / PC inventory browser" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Connection profiles and validation" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab profile manager" }).first()).toBeVisible();
+  await expect(page.getByText("Named lab profiles").first()).toBeVisible();
+  await expect(page.getByText("Local Mock").first()).toBeVisible();
+  await page.getByRole("button", { name: "Select" }).first().click();
+  await expect(page.getByText("Selected: Simulated").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Lab setup validator" })).toBeVisible();
   await page.getByRole("button", { name: "Refresh validation" }).click();
   await expect(page.getByText("Guided lab setup validator")).toBeVisible();

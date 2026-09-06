@@ -4,7 +4,7 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v10.3.0-lab-evidence-validator`
+Current release: `v10.5.0-guided-lab-vm-workflow`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -70,6 +70,8 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - Prism Central and Prism Element lifecycle runs retain task-provider evidence so audit and UI records show which provider accepted each lifecycle task.
 - Guided AHV lab setup validation shows whether runtime switches, private Prism configuration, read-only preflight evidence, approved scope, lifecycle proof, and create authorization are ready before a tester submits a lab run.
 - Redacted AHV lab session evidence packs export run metadata, selected scope, Prism task IDs, lifecycle events, destroy/reconciliation status, and redaction assertions without including credentials or Authorization headers.
+- AHV lab profile manager lets Platform Admin testers choose Local Mock, PE Lab, PC Lab, or PC + PE fallback operating profiles from the Admin console while keeping credentials outside the application.
+- Guided lab VM workflow combines profile selection, setup validation, scope approval, create/clone, task polling, power checks, destroy, reconciliation, and evidence export into one browser-operable tester path.
 
 ### Governance And Release Readiness
 

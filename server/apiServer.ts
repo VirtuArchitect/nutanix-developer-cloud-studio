@@ -435,6 +435,7 @@ import type {
   PlatformSettingsConnectionTest,
   PlatformSettingsExport,
   AhvControlledProvisioningRun,
+  AhvLabProfile,
   AhvLabEvidenceReport,
   AhvLabSetupValidation,
   AhvLabConnectionTestRequest,
@@ -2076,6 +2077,38 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/ahv/lab-runtime/setup-validation") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: createAhvLabSetupValidation(state) });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/ahv/lab-runtime/profiles") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createAhvLabProfiles(state) });
+    return;
+  }
+
+  const profileSelectMatch = url.pathname.match(/^\/api\/ahv\/lab-runtime\/profiles\/([^/]+)\/select$/);
+  if (request.method === "POST" && profileSelectMatch) {
+    requireRole(context, ["Platform Admin"]);
+    const profileId = decodeURIComponent(profileSelectMatch[1]);
+    const profile = createAhvLabProfiles(state).find((item) => item.id === profileId);
+    if (!profile) {
+      sendJson(response, 404, {
+        error: {
+          code: "not_found",
+          message: `Unknown AHV lab profile ${profileId}.`,
+        },
+      });
+      return;
+    }
+    addAuditEvent(state, "ahv.lab-profile.selected", context.session.user, profile.id, {
+      provider: profile.provider,
+      mode: profile.mode,
+      lifecycleAvailable: profile.lifecycleAvailable,
+      credentialReference: profile.credentialReference,
+      redactionApplied: true,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: { ...profile, selected: true } });
     return;
   }
 
@@ -6297,6 +6330,102 @@ function createAhvLabSetupValidation(state: ApiState): AhvLabSetupValidation {
     provisioningEnabled: config.provisioningEnabled,
     realPrismCallsEnabled: config.realPrismCallsEnabled,
   };
+}
+
+function createAhvLabProfiles(state: ApiState): AhvLabProfile[] {
+  const config = createAhvLabRuntimeConfig();
+  const latestConnectionProfile = state.readOnlyLabConnectionProfiles[0];
+  const latestPreflight = state.ahvLabRuntimePreflights[0];
+  const pcReady = config.prismCentralUrlConfigured && config.usernameConfigured && config.passwordConfigured;
+  const peReady = config.prismElementUrlConfigured && config.usernameConfigured && config.passwordConfigured;
+  const selectedRuntime =
+    config.provider === "prism-element"
+      ? "prism-element-lab"
+      : config.provider === "prism-central" && process.env.NDC_AHV_PC_POWER_FALLBACK_TO_PE === "true"
+        ? "pc-pe-fallback"
+        : config.provider === "prism-central"
+          ? "prism-central-lab"
+          : "local-mock";
+  const lifecycleArmed = config.provisioningEnabled && config.realPrismCallsEnabled;
+  const commonRedaction = "Profiles store endpoint/readiness metadata only. Passwords, tokens, and Authorization headers remain outside profile records.";
+
+  const profiles: AhvLabProfile[] = [
+    {
+      id: "local-mock",
+      name: "Local Mock",
+      provider: "Mock Prism",
+      mode: "Simulated",
+      endpointConfigured: true,
+      credentialReference: "Mock only",
+      lifecycleAvailable: true,
+      selected: selectedRuntime === "local-mock",
+      summary: "Use the fixture-backed Mock Prism harness to rehearse lifecycle operations without Nutanix infrastructure.",
+      requiredActions: state.mockPrismStatus.status === "Healthy"
+        ? ["Run the mock lifecycle smoke or use the Admin lifecycle panel in browser mock mode."]
+        : ["Start the mock Prism harness before API-backed mock lifecycle testing."],
+      redactionBoundary: commonRedaction,
+    },
+    {
+      id: "prism-element-lab",
+      name: "PE Lab",
+      provider: "Prism Element",
+      mode: lifecycleArmed && config.provider === "prism-element" ? "Lifecycle armed" : peReady ? "Read-only ready" : "Blocked",
+      endpointConfigured: config.prismElementUrlConfigured,
+      credentialReference: "Private environment variables",
+      lifecycleAvailable: lifecycleArmed && config.provider === "prism-element",
+      selected: selectedRuntime === "prism-element-lab",
+      summary: "Use a one-node AHV / Prism Element test target for bounded VM lifecycle validation.",
+      requiredActions: [
+        !config.prismElementUrlConfigured ? "Set NUTANIX_PRISM_ELEMENT_URL on the private API host." : "",
+        !config.usernameConfigured || !config.passwordConfigured ? "Set Prism credentials as private environment variables." : "",
+        !latestPreflight ? "Run read-only PE validation before lifecycle testing." : "",
+        !lifecycleArmed ? "Enable all lab lifecycle switches only after authorization is recorded." : "",
+      ].filter(Boolean),
+      redactionBoundary: commonRedaction,
+    },
+    {
+      id: "prism-central-lab",
+      name: "PC Lab",
+      provider: "Prism Central",
+      mode: lifecycleArmed && config.provider === "prism-central" ? "Lifecycle armed" : pcReady ? "Read-only ready" : "Blocked",
+      endpointConfigured: config.prismCentralUrlConfigured,
+      credentialReference: "Private environment variables",
+      lifecycleAvailable: lifecycleArmed && config.provider === "prism-central",
+      selected: selectedRuntime === "prism-central-lab",
+      summary: "Use Prism Central v3 as the preferred lab control plane for image/source-VM clone testing.",
+      requiredActions: [
+        !config.prismCentralUrlConfigured ? "Set NUTANIX_PRISM_CENTRAL_URL on the private API host." : "",
+        !config.usernameConfigured || !config.passwordConfigured ? "Set Prism credentials as private environment variables." : "",
+        !latestConnectionProfile ? "Create or import a read-only connection profile from the Connect Infrastructure wizard." : "",
+        !latestPreflight ? "Run read-only PC validation before lifecycle testing." : "",
+        !lifecycleArmed ? "Enable all lab lifecycle switches only after authorization is recorded." : "",
+      ].filter(Boolean),
+      redactionBoundary: commonRedaction,
+    },
+    {
+      id: "pc-pe-fallback",
+      name: "PC + PE fallback",
+      provider: "Prism Central + Prism Element fallback",
+      mode: lifecycleArmed && pcReady && peReady ? "Lifecycle armed" : pcReady && peReady ? "Read-only ready" : "Blocked",
+      endpointConfigured: config.prismCentralUrlConfigured && config.prismElementUrlConfigured,
+      credentialReference: "Private environment variables",
+      lifecycleAvailable: lifecycleArmed && pcReady && peReady,
+      selected: selectedRuntime === "pc-pe-fallback",
+      summary: "Use Prism Central for create/clone and Prism Element fallback for lab power operations when required.",
+      requiredActions: [
+        !pcReady ? "Configure private Prism Central endpoint and credentials." : "",
+        !peReady ? "Configure private Prism Element endpoint and credentials." : "",
+        process.env.NDC_AHV_PC_POWER_FALLBACK_TO_PE !== "true" ? "Enable PC-to-PE power fallback only for approved labs that require it." : "",
+        !latestPreflight ? "Run read-only validation against the selected provider path." : "",
+      ].filter(Boolean),
+      redactionBoundary: commonRedaction,
+    },
+  ];
+
+  return profiles.map((profile) => ({
+    ...profile,
+    requiredActions: profile.requiredActions.length > 0 ? profile.requiredActions : ["Profile is ready for the next guided lab workflow step."],
+  }));
 }
 
 function createAhvLabEvidenceReport(run: AhvControlledProvisioningRun, actor: string): AhvLabEvidenceReport {

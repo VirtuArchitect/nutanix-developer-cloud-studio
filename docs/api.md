@@ -148,6 +148,8 @@ Required role: `Platform Admin`.
 
 - `GET /api/ahv/lab-runtime/config`
 - `GET /api/ahv/lab-runtime/setup-validation`
+- `GET /api/ahv/lab-runtime/profiles`
+- `POST /api/ahv/lab-runtime/profiles/:id/select`
 - `POST /api/ahv/lab-runtime/preflight`
 - `GET /api/ahv/lab-runtime/preflights`
 - `POST /api/ahv/controlled-provisioning/runs`
@@ -159,6 +161,10 @@ Required role: `Platform Admin`.
 The lab runtime remains disabled unless `APP_ENV=lab`, `NDC_AHV_REAL_ADAPTER_ENABLED=true`, `NDC_CONTROLLED_PROVISIONING_ENABLED=true`, and `NDC_AHV_LAB_LIFECYCLE_ENABLED=true` are all set. It uses private environment variables for Prism Central credentials, enforces allowed cluster/project/subnet/image UUIDs, requires the `ndc-lab-` VM prefix, records audit evidence, and redacts secret-shaped fields.
 
 `GET /api/ahv/lab-runtime/setup-validation` returns a Platform Admin-only readiness summary for tester workflow gates, including runtime switches, read-only preflight evidence, approved inventory scope, controlled provisioning gate, VM lifecycle proof, and controlled create authorization.
+
+`GET /api/ahv/lab-runtime/profiles` returns Platform Admin-only operating profiles for the lab workflow: Local Mock, Prism Element Lab, Prism Central Lab, and Prism Central plus Prism Element fallback. Profiles contain readiness metadata and required next actions only; they do not contain credentials.
+
+`POST /api/ahv/lab-runtime/profiles/:id/select` records profile selection as audit evidence and returns the selected profile. It does not persist passwords, tokens, or Authorization headers.
 
 `GET /api/ahv/controlled-provisioning/runs/:id/evidence-report` returns a redacted lab session evidence pack for a controlled AHV run. It includes run metadata, selected scope, task IDs, lifecycle events, status, reconciliation result, and redaction assertions without passwords, tokens, Authorization headers, or endpoint query strings.
 

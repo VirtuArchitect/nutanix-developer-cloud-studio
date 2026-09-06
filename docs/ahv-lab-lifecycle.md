@@ -70,26 +70,28 @@ In the browser:
 3. Run the one-time read-only connection test.
 4. Load the sanitized preview into the inventory browser.
 5. Open **Admin > Infrastructure**.
-6. Approve the discovered cluster, network/subnet, and image or source VM candidates.
-7. Run the lab setup validator and clear any blocked readiness item.
-8. Use the controlled AHV lifecycle panel to create or clone a lab VM.
-9. Poll the submitted Prism task until the create status succeeds.
-10. Submit and poll the power check if lab policy permits it.
-11. Submit destroy, poll the destroy task, and confirm inventory reconciliation.
-12. Export the redacted lab evidence report for the completed run.
+6. Select the intended lab profile: **Local Mock**, **PE Lab**, **PC Lab**, or **PC + PE fallback**.
+7. Approve the discovered cluster, network/subnet, and image or source VM candidates.
+8. Run the lab setup validator and clear any blocked readiness item.
+9. Use the controlled AHV lifecycle panel to create or clone a lab VM.
+10. Poll the submitted Prism task until the create status succeeds.
+11. Submit and poll the power check if lab policy permits it.
+12. Submit destroy, poll the destroy task, and confirm inventory reconciliation.
+13. Export the redacted lab evidence report for the completed run.
 
 The API keeps the same gated workflow behind the UI:
 
-1. Create VM sandbox dry-run.
-2. Record lab authorization scope.
-3. Record rollback/destroy proof.
-4. Request and approve controlled provisioning gate.
-5. Record VM lifecycle proof.
-6. Record controlled create authorization envelope.
-7. Submit AHV create run.
-8. Poll the Prism create task.
-9. Optionally submit and poll a power transition.
-10. Submit destroy, poll the destroy task, and reconcile inventory absence.
+1. Review and select an AHV lab profile.
+2. Create VM sandbox dry-run.
+3. Record lab authorization scope.
+4. Record rollback/destroy proof.
+5. Request and approve controlled provisioning gate.
+6. Record VM lifecycle proof.
+7. Record controlled create authorization envelope.
+8. Submit AHV create run.
+9. Poll the Prism create task.
+10. Optionally submit and poll a power transition.
+11. Submit destroy, poll the destroy task, and reconcile inventory absence.
 
 ## Lifecycle Evidence
 

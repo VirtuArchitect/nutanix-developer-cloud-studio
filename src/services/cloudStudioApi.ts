@@ -6,6 +6,7 @@ import type {
   AdapterPromotionReadinessDossier,
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
+  AhvLabProfile,
   AhvCreateAdapterContractReview,
   AhvLabEvidenceReport,
   AhvLabSetupValidation,
@@ -291,6 +292,16 @@ export async function testAhvLabConnectionViaApi(payload: AhvLabConnectionTestRe
 
 export async function fetchAhvLabSetupValidationFromApi() {
   return fetchJson<AhvLabSetupValidation>("/api/ahv/lab-runtime/setup-validation");
+}
+
+export async function fetchAhvLabProfilesFromApi() {
+  return fetchJson<AhvLabProfile[]>("/api/ahv/lab-runtime/profiles");
+}
+
+export async function selectAhvLabProfileViaApi(profileId: AhvLabProfile["id"]) {
+  return fetchJson<AhvLabProfile>(`/api/ahv/lab-runtime/profiles/${encodeURIComponent(profileId)}/select`, {
+    method: "POST",
+  });
 }
 
 export async function exportPlatformSettingsViaApi() {

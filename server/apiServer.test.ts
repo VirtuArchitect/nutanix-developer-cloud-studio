@@ -2451,6 +2451,17 @@ describe("api server", () => {
       },
       { headers: developerHeaders }
     );
+    await expectJson(
+      "/api/ahv/lab-runtime/profiles",
+      403,
+      {
+        error: {
+          code: "forbidden",
+          message: "The current session does not have permission for this action.",
+        },
+      },
+      { headers: developerHeaders }
+    );
   });
 
   it("reports Prism Element lab runtime config when PE mode is selected", async () => {
@@ -2595,6 +2606,11 @@ describe("api server", () => {
 
     const adminHeaders = { "x-ndc-user": "platform.admin", "x-ndc-roles": "Platform Admin" };
     const preflight = await requestJson("/api/ahv/lab-runtime/preflight", { method: "POST", headers: adminHeaders });
+    const profiles = await requestJson("/api/ahv/lab-runtime/profiles", { headers: adminHeaders });
+    const selectedProfile = await requestJson("/api/ahv/lab-runtime/profiles/prism-central-lab/select", {
+      method: "POST",
+      headers: adminHeaders,
+    });
     await requestJson("/api/integration-config/NCI", {
       method: "PUT",
       headers: adminHeaders,
@@ -2695,6 +2711,21 @@ describe("api server", () => {
     const auditEvents = await requestJson("/api/audit-events", { headers: adminHeaders });
 
     expect(preflight.data).toMatchObject({ status: "Ready", realPrismCallsEnabled: true });
+    expect(profiles.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "prism-central-lab",
+          provider: "Prism Central",
+          mode: "Lifecycle armed",
+          lifecycleAvailable: true,
+          credentialReference: "Private environment variables",
+        }),
+      ])
+    );
+    expect(selectedProfile.data).toMatchObject({
+      id: "prism-central-lab",
+      selected: true,
+    });
     expect(preflight.data.readOnlyChecks).toEqual(expect.arrayContaining([expect.objectContaining({ operation: "listVms" })]));
     expect(approved.data).toMatchObject({ status: "Approved for controlled create" });
     expect(envelope.data).toMatchObject({ status: "Ready for authorization review" });
@@ -2784,6 +2815,7 @@ describe("api server", () => {
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "ahv.controlled.create.submitted", target: "ndc-lab-api-01" }),
+        expect.objectContaining({ action: "ahv.lab-profile.selected", target: "prism-central-lab" }),
         expect.objectContaining({ action: "ahv.controlled.destroy", target: "ndc-lab-api-01" }),
         expect.objectContaining({ action: "ahv.controlled.evidence-report.exported", target: "ndc-lab-api-01" }),
       ])
