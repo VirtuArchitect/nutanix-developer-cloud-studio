@@ -8326,13 +8326,18 @@ function AhvLabSettingsPanel({
   const [connectionTestState, setConnectionTestState] = useState<"Idle" | "Testing" | "Passed" | "Blocked">("Idle");
   const [connectionTestMessage, setConnectionTestMessage] = useState("");
   const draftProviderLabel = draft.provider === "prism-element" ? "Prism Element" : "Prism Central";
+  const hasEndpointInput = Boolean(draft.endpoint && draft.username && draft.password);
+  const hasAllowedScopeInput = Boolean(draft.allowedClusterUuid && draft.allowedSubnetUuid && (draft.allowedImageUuid || draft.allowedSourceVmUuid));
+  const previewLoaded = Boolean(connectionTest?.inventoryPreview && connectionTest.inventoryPreview.length > 0);
+  const labRuntimeReady = lab.labMode && lab.realAdapterEnabled && lab.controlledProvisioningEnabled && lab.lifecycleEnabled;
   const envPreview = [
     "APP_ENV=lab",
     `NDC_AHV_LAB_PROVIDER=${draft.provider}`,
     "NDC_AHV_REAL_ADAPTER_ENABLED=true",
     `NDC_AHV_PE_LAB_ADAPTER_ENABLED=${draft.provider === "prism-element" ? "true" : "false"}`,
     "NDC_CONTROLLED_PROVISIONING_ENABLED=true",
-    "NDC_AHV_LAB_LIFECYCLE_ENABLED=false",
+    "NDC_AHV_LAB_LIFECYCLE_ENABLED=true",
+    draft.provider === "prism-central" ? "NDC_AHV_PC_POWER_FALLBACK_TO_PE=false" : "",
     `NDC_PRISM_TLS_INSECURE=${draft.tlsInsecure ? "true" : "false"}`,
     draft.provider === "prism-element" ? `NUTANIX_PRISM_ELEMENT_URL=${draft.endpoint || "<pe-url>"}` : `NUTANIX_PRISM_CENTRAL_URL=${draft.endpoint || "<pc-url>"}`,
     draft.provider === "prism-element" ? `NUTANIX_PRISM_ELEMENT_USERNAME=${draft.username || "<username>"}` : `NUTANIX_PRISM_USERNAME=${draft.username || "<username>"}`,
@@ -8377,9 +8382,16 @@ function AhvLabSettingsPanel({
       <div className="guardrailBanner">
         <Network size={18} />
         <div>
-          <strong>Connect infrastructure</strong>
-          <span>Enter Prism details for a one-time read-only test. The password is not saved, returned, or added to audit records.</span>
+          <strong>Connect Infrastructure wizard</strong>
+          <span>Test PE or PC from the browser, preview discovered objects, approve the allowed scope, then run the controlled lifecycle from the AHV panel.</span>
         </div>
+      </div>
+      <div className="wizardStepGrid" aria-label="Connect infrastructure stages">
+        <WizardStep index={1} title="Enter endpoint" detail={`${draftProviderLabel} URL, username, and password for this test only.`} complete={hasEndpointInput} />
+        <WizardStep index={2} title="Bound the scope" detail="Cluster, subnet/network, and image or source VM UUID are required." complete={hasAllowedScopeInput} />
+        <WizardStep index={3} title="Validate read-only" detail={connectionTestState === "Idle" ? "Run the browser connection test." : connectionTestState} complete={connectionTestState === "Passed"} active={connectionTestState === "Testing"} />
+        <WizardStep index={4} title="Load candidates" detail="Preview inventory can be loaded into the approval browser." complete={previewLoaded} />
+        <WizardStep index={5} title="Arm lab runtime" detail={labRuntimeReady ? "API host is armed for lab lifecycle." : "Set the generated private env block on the API host."} complete={labRuntimeReady} />
       </div>
       <div className="settingsFormGrid">
         <label>
@@ -8517,7 +8529,7 @@ function AhvLabSettingsPanel({
         <TerminalSquare size={18} />
         <div>
           <strong>Deployment configuration</strong>
-          <span>Use this redacted block for the lab API container after read-only testing. Lifecycle stays off until explicitly enabled.</span>
+          <span>Use this redacted block for the lab API container after read-only testing. Secrets are placeholders; supply the password privately on the host.</span>
         </div>
       </div>
       <pre className="codeBlock">{envPreview.join("\n")}</pre>
@@ -15067,6 +15079,15 @@ function AhvControlledPreflightPanel({
   const [imageRecordId, setImageRecordId] = useState(approvedImages[0]?.id ?? "");
   const [sourceVmRecordId, setSourceVmRecordId] = useState(approvedSourceVms[0]?.id ?? "");
   const selectedScopeReady = Boolean(clusterRecordId && networkRecordId && (imageRecordId || sourceVmRecordId));
+  const createComplete = latest?.createStatus === "Succeeded";
+  const powerComplete = latest?.powerStatus === "Succeeded";
+  const destroyComplete = latest?.destroyStatus === "Succeeded" && latest.status === "Destroyed";
+  const reconciliationComplete = latest?.inventoryReconciliation?.status === "Reconciled";
+  const statusClass = latest?.status === "Destroyed" || latest?.status === "Succeeded"
+    ? "ready"
+    : latest?.status === "Failed" || latest?.status === "Preflight blocked"
+      ? "failed"
+      : "approval";
 
   useEffect(() => {
     if (!clusterRecordId && approvedClusters[0]) {
@@ -15088,9 +15109,16 @@ function AhvControlledPreflightPanel({
       <div className="guardrailBanner">
         <LockKeyhole size={18} />
         <div>
-          <strong>Fail-closed AHV boundary</strong>
-          <span>Evaluates the controlled create chain through a disabled real-adapter preflight without mutating Prism Central.</span>
+          <strong>Guided lab lifecycle test</strong>
+          <span>Select an approved cluster, network, and image or source VM. The API then follows the gated path: create or clone, poll, power, destroy, and reconcile.</span>
         </div>
+      </div>
+      <div className="wizardStepGrid" aria-label="AHV lab lifecycle stages">
+        <WizardStep index={1} title="Approve scope" detail="Cluster, network, and image/source VM selected." complete={selectedScopeReady} />
+        <WizardStep index={2} title="Create / clone" detail={latest?.createStatus ?? "Waiting for controlled run."} complete={createComplete} active={latest?.createStatus === "Submitted"} />
+        <WizardStep index={3} title="Power check" detail={latest?.powerStatus ?? "Run after create success."} complete={powerComplete} active={latest?.action === "Power VM" && latest.powerStatus === "Submitted"} />
+        <WizardStep index={4} title="Destroy" detail={latest?.destroyStatus ?? "Run after lifecycle proof."} complete={destroyComplete} active={latest?.action === "Destroy VM" && latest.destroyStatus === "Submitted"} />
+        <WizardStep index={5} title="Reconcile" detail={latest?.inventoryReconciliation?.status ?? "Final inventory check pending."} complete={reconciliationComplete} />
       </div>
       <div className="settingsGrid">
         <label>
@@ -15148,6 +15176,7 @@ function AhvControlledPreflightPanel({
       <div className="inlineActions">
         <button
           className="iconTextButton"
+          disabled={!selectedScopeReady}
           onClick={() =>
             runAhvControlledProvisioningPreflight({
               clusterRecordId,
@@ -15166,15 +15195,15 @@ function AhvControlledPreflightPanel({
               <RefreshCw size={15} />
               Poll
             </button>
-            <button className="iconTextButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "power-on")} disabled={!lifecycleEnabled}>
+            <button className="iconTextButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "power-on")} disabled={!lifecycleEnabled || !createComplete}>
               <PlayCircle size={15} />
               Power on
             </button>
-            <button className="iconTextButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "power-off")} disabled={!lifecycleEnabled}>
+            <button className="iconTextButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "power-off")} disabled={!lifecycleEnabled || !createComplete}>
               <Gauge size={15} />
               Power off
             </button>
-            <button className="iconTextButton dangerButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "destroy")} disabled={!lifecycleEnabled}>
+            <button className="iconTextButton dangerButton" onClick={() => runAhvControlledProvisioningAction(latest.id, "destroy")} disabled={!lifecycleEnabled || !createComplete || destroyComplete}>
               <Archive size={15} />
               Destroy
             </button>
@@ -15192,7 +15221,7 @@ function AhvControlledPreflightPanel({
                 {latest.action} / {latest.adapterMode}
               </span>
             </div>
-            <span className={`status ${latest.status === "Ready but disabled" ? "approval" : "failed"}`}>{latest.status}</span>
+            <span className={`status ${statusClass}`}>{latest.status}</span>
           </div>
           <div className="platformConfigGrid">
             <CheckLine icon={ShieldCheck} label="Adapter" value={latest.adapterMode} passed={lifecycleEnabled} />
@@ -15212,6 +15241,7 @@ function AhvControlledPreflightPanel({
             <span>Create: {latest.createStatus ?? "Not submitted"} / Power: {latest.powerStatus ?? "Not requested"} / Destroy: {latest.destroyStatus ?? "Not requested"}</span>
             <span>Last poll: {latest.lastPollAt ? formatDateTime(latest.lastPollAt) : "not polled"}</span>
             <span>Reconciliation: {latest.inventoryReconciliation?.detail ?? "pending"}</span>
+            {latest.prismTaskProviders && <span>Task providers: {Object.entries(latest.prismTaskProviders).map(([task, provider]) => `${task}: ${provider}`).join(", ")}</span>}
             {latest.failureReason && <span>Latest notice: {latest.failureReason}</span>}
           </div>
           {(latest.lifecycleEvents?.length ?? 0) > 0 && (
@@ -15241,6 +15271,30 @@ function AhvControlledPreflightPanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function WizardStep({
+  index,
+  title,
+  detail,
+  complete,
+  active = false,
+}: {
+  index: number;
+  title: string;
+  detail: string;
+  complete: boolean;
+  active?: boolean;
+}) {
+  return (
+    <div className={`wizardStep ${complete ? "complete" : active ? "active" : ""}`}>
+      <span>{complete ? <CheckCircle2 size={15} /> : index}</span>
+      <div>
+        <strong>{title}</strong>
+        <small>{detail}</small>
+      </div>
     </div>
   );
 }

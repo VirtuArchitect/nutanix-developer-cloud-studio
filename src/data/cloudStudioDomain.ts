@@ -1926,6 +1926,7 @@ export type AhvControlledProvisioningRun = {
   };
   prismTaskUuid?: string;
   prismTaskUuids?: string[];
+  prismTaskProviders?: Record<string, "prism-central" | "prism-element">;
   vmUuid?: string;
   createStatus?: "Not submitted" | "Submitted" | "Succeeded" | "Failed";
   powerStatus?: "Not requested" | "Submitted" | "Succeeded" | "Failed";
@@ -1938,6 +1939,7 @@ export type AhvControlledProvisioningRun = {
     status: string;
     detail: string;
     prismTaskUuid?: string;
+    provider?: "prism-central" | "prism-element";
   }>;
   rollbackDestroyEvidence?: string[];
   inventoryReconciliation?: {

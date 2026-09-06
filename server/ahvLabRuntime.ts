@@ -64,6 +64,8 @@ type PrismTransport = (request: {
   body?: Record<string, unknown>;
 }) => Promise<Record<string, unknown>>;
 
+type PrismTaskProvider = "prism-central" | "prism-element";
+
 export class AhvLabRuntimeError extends Error {
   constructor(
     readonly code: string,
@@ -452,6 +454,7 @@ export class LabAhvPrismAdapter {
       selectedScope,
       prismTaskUuid: taskUuid,
       prismTaskUuids: [taskUuid],
+      prismTaskProviders: { [taskUuid]: "prism-central" },
       vmUuid,
       createStatus: "Submitted",
       powerStatus: "Not requested",
@@ -465,6 +468,7 @@ export class LabAhvPrismAdapter {
             ? `Clone VM task submitted for ${dryRun.environmentName} from approved source VM.`
             : `Create VM task submitted for ${dryRun.environmentName}.`,
           prismTaskUuid: taskUuid,
+          provider: "prism-central",
         },
       ],
       rollbackDestroyEvidence: [`Destroy route available for ${dryRun.environmentName}.`],
@@ -480,18 +484,35 @@ export class LabAhvPrismAdapter {
     if (!taskUuid) {
       throw new AhvLabRuntimeError("ahv_task_missing", "Run does not have a Prism task UUID.");
     }
-    const task = (await this.client.pollTask(taskUuid)) as PrismTaskResponse;
+    const taskProvider = run.prismTaskProviders?.[taskUuid] ?? "prism-central";
+    const task = (await pollTaskByProvider(this.client, taskUuid, taskProvider)) as PrismTaskResponse;
     const state = extractTaskState(task);
     const sourceVmUuid = run.selectedScope?.sourceVm ? extractUuidFromRawRef(run.selectedScope.sourceVm.rawRef) : undefined;
     const vmUuid = extractVmUuid(task, sourceVmUuid) ?? run.vmUuid;
     const succeeded = state === "SUCCEEDED";
     const failed = state === "FAILED";
+    const update = lifecycleStatusUpdate(run, succeeded, failed);
+    const inventoryReconciliation =
+      run.action === "Destroy VM" && succeeded && vmUuid
+        ? await reconcileVmAbsence(() => this.client.list("listVms"), vmUuid)
+        : run.inventoryReconciliation;
     return {
       ...run,
-      status: succeeded ? "Succeeded" : failed ? "Failed" : "Polling",
+      status: run.action === "Destroy VM" && succeeded
+        ? inventoryReconciliation?.status === "Reconciled"
+          ? "Destroyed"
+          : "Failed"
+        : succeeded
+          ? "Succeeded"
+          : failed
+            ? "Failed"
+            : "Polling",
       vmUuid,
-      createStatus: run.createStatus === "Submitted" ? (succeeded ? "Succeeded" : failed ? "Failed" : "Submitted") : run.createStatus,
+      createStatus: update.createStatus,
+      powerStatus: update.powerStatus,
+      destroyStatus: update.destroyStatus,
       failureReason: failed ? extractTaskMessage(task) ?? "Prism task failed." : run.failureReason,
+      inventoryReconciliation,
       lastPollAt: new Date().toISOString(),
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -499,9 +520,19 @@ export class LabAhvPrismAdapter {
           at: new Date().toISOString(),
           action: "Poll",
           status: state,
-          detail: succeeded ? "Create task succeeded." : failed ? "Create task failed." : "Create task is still running.",
+          detail: lifecyclePollDetail(run.action, succeeded, failed, inventoryReconciliation),
           prismTaskUuid: taskUuid,
+          provider: taskProvider,
         },
+        ...(run.action === "Destroy VM" && succeeded && inventoryReconciliation
+          ? [{
+              at: new Date().toISOString(),
+              action: "Reconciled" as const,
+              status: inventoryReconciliation.status,
+              detail: inventoryReconciliation.detail,
+              provider: "prism-central" as const,
+            }]
+          : []),
       ],
       updatedAt: new Date().toISOString(),
     };
@@ -509,7 +540,7 @@ export class LabAhvPrismAdapter {
 
   async power(run: AhvControlledProvisioningRun, state: "ON" | "OFF"): Promise<AhvControlledProvisioningRun> {
     const vmUuid = requireVmUuid(run);
-    const response = (await setPrismCentralPowerState(this.client, vmUuid, state)) as PrismTaskResponse;
+    const { response, provider } = await setPrismCentralPowerState(this.client, vmUuid, state);
     const taskUuid = extractTaskUuid(response);
     return {
       ...run,
@@ -517,6 +548,7 @@ export class LabAhvPrismAdapter {
       status: "Submitted",
       prismTaskUuid: taskUuid,
       prismTaskUuids: [...(run.prismTaskUuids ?? []), taskUuid],
+      prismTaskProviders: { ...(run.prismTaskProviders ?? {}), [taskUuid]: provider },
       powerStatus: "Submitted",
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -524,8 +556,9 @@ export class LabAhvPrismAdapter {
           at: new Date().toISOString(),
           action: "Power submitted",
           status: state,
-          detail: `Power ${state} task submitted for ${run.environmentName}.`,
+          detail: `Power ${state} task submitted for ${run.environmentName} via ${providerLabel(provider)}.`,
           prismTaskUuid: taskUuid,
+          provider,
         },
       ],
       updatedAt: new Date().toISOString(),
@@ -539,15 +572,16 @@ export class LabAhvPrismAdapter {
     return {
       ...run,
       action: "Destroy VM",
-      status: "Destroyed",
+      status: "Submitted",
       prismTaskUuid: taskUuid,
       prismTaskUuids: [...(run.prismTaskUuids ?? []), taskUuid],
+      prismTaskProviders: { ...(run.prismTaskProviders ?? {}), [taskUuid]: "prism-central" },
       destroyStatus: "Submitted",
       inventoryReconciliation: {
         checkedAt: new Date().toISOString(),
-        vmPresent: false,
-        status: "Reconciled",
-        detail: "Destroy task submitted; operator must confirm Prism inventory remains clean after task completion.",
+        vmPresent: true,
+        status: "Pending",
+        detail: "Destroy task submitted; reconciliation waits for Prism task success and inventory absence.",
       },
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -557,12 +591,7 @@ export class LabAhvPrismAdapter {
           status: "Submitted",
           detail: `Destroy task submitted for ${run.environmentName}.`,
           prismTaskUuid: taskUuid,
-        },
-        {
-          at: new Date().toISOString(),
-          action: "Reconciled",
-          status: "Reconciled",
-          detail: "Destroy task submitted and inventory reconciliation evidence recorded.",
+          provider: "prism-central",
         },
       ],
       updatedAt: new Date().toISOString(),
@@ -570,15 +599,19 @@ export class LabAhvPrismAdapter {
   }
 }
 
-async function setPrismCentralPowerState(client: PrismCentralV3Client, vmUuid: string, state: "ON" | "OFF") {
+async function setPrismCentralPowerState(
+  client: PrismCentralV3Client,
+  vmUuid: string,
+  state: "ON" | "OFF"
+): Promise<{ response: Record<string, unknown>; provider: PrismTaskProvider }> {
   try {
-    return await client.setPowerState(vmUuid, state);
+    return { response: await client.setPowerState(vmUuid, state), provider: "prism-central" };
   } catch (error) {
     if (!shouldUsePrismElementPowerFallback(error)) {
       throw error;
     }
     const peClient = new PrismElementV2Client(process.env);
-    return peClient.setPowerState(vmUuid, state);
+    return { response: await peClient.setPowerState(vmUuid, state), provider: "prism-element" };
   }
 }
 
@@ -593,6 +626,98 @@ function shouldUsePrismElementPowerFallback(error: unknown) {
     error.code === "prism_request_failed" &&
     error.message.includes("HTTP 404")
   );
+}
+
+function providerLabel(provider: PrismTaskProvider) {
+  return provider === "prism-element" ? "Prism Element" : "Prism Central";
+}
+
+async function pollTaskByProvider(
+  pcClient: PrismCentralV3Client,
+  taskUuid: string,
+  provider: PrismTaskProvider
+) {
+  if (provider === "prism-element") {
+    return new PrismElementV2Client(process.env).pollTask(taskUuid);
+  }
+  return pcClient.pollTask(taskUuid);
+}
+
+function lifecycleStatusUpdate(run: AhvControlledProvisioningRun, succeeded: boolean, failed: boolean) {
+  const result: Pick<AhvControlledProvisioningRun, "createStatus" | "powerStatus" | "destroyStatus"> = {
+    createStatus: run.createStatus,
+    powerStatus: run.powerStatus,
+    destroyStatus: run.destroyStatus,
+  };
+  const next: "Submitted" | "Succeeded" | "Failed" = succeeded ? "Succeeded" : failed ? "Failed" : "Submitted";
+  if (run.action === "Create VM" && run.createStatus === "Submitted") {
+    result.createStatus = next;
+  }
+  if (run.action === "Power VM" && run.powerStatus === "Submitted") {
+    result.powerStatus = next;
+  }
+  if (run.action === "Destroy VM" && run.destroyStatus === "Submitted") {
+    result.destroyStatus = next;
+  }
+  return result;
+}
+
+function lifecyclePollDetail(
+  action: AhvControlledProvisioningRun["action"],
+  succeeded: boolean,
+  failed: boolean,
+  reconciliation?: AhvControlledProvisioningRun["inventoryReconciliation"]
+) {
+  const subject = action === "Create VM" ? "Create" : action === "Power VM" ? "Power" : "Destroy";
+  if (action === "Destroy VM" && succeeded && reconciliation) {
+    return `${subject} task succeeded. ${reconciliation.detail}`;
+  }
+  if (succeeded) {
+    return `${subject} task succeeded.`;
+  }
+  if (failed) {
+    return `${subject} task failed.`;
+  }
+  return `${subject} task is still running.`;
+}
+
+async function reconcileVmAbsence(
+  listVms: () => Promise<Record<string, unknown>>,
+  vmUuid: string
+): Promise<NonNullable<AhvControlledProvisioningRun["inventoryReconciliation"]>> {
+  const inventory = await listVms();
+  const vmPresent = inventoryContainsVm(inventory, vmUuid);
+  return {
+    checkedAt: new Date().toISOString(),
+    vmPresent,
+    status: vmPresent ? "Still present" : "Reconciled",
+    detail: vmPresent
+      ? "Destroy task succeeded, but the VM still appears in Prism inventory."
+      : "Destroy task succeeded and the VM no longer appears in Prism inventory.",
+  };
+}
+
+function inventoryContainsVm(response: Record<string, unknown>, vmUuid: string) {
+  return extractInventoryEntities(response).some((entity) => {
+    const metadata = asRecord(entity.metadata);
+    return stringValue(metadata.uuid) === vmUuid || stringValue(entity.uuid) === vmUuid || stringValue(entity.id) === vmUuid;
+  });
+}
+
+function extractInventoryEntities(response: Record<string, unknown>) {
+  const entities = response.entities ?? response.value ?? response.data;
+  if (Array.isArray(entities)) {
+    return entities.map(asRecord);
+  }
+  return [asRecord(response)].filter((item) => Object.keys(item).length > 0);
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
 export class LabAhvPrismElementAdapter {
@@ -653,6 +778,7 @@ export class LabAhvPrismElementAdapter {
       selectedScope,
       prismTaskUuid: taskUuid,
       prismTaskUuids: [taskUuid],
+      prismTaskProviders: { [taskUuid]: "prism-element" },
       vmUuid,
       createStatus: "Submitted",
       powerStatus: "Not requested",
@@ -666,6 +792,7 @@ export class LabAhvPrismElementAdapter {
             ? `Clone VM task submitted for ${dryRun.environmentName} from approved source VM.`
             : `Create VM task submitted for ${dryRun.environmentName}.`,
           prismTaskUuid: taskUuid,
+          provider: "prism-element",
         },
       ],
       rollbackDestroyEvidence: [`Destroy route available for ${dryRun.environmentName}.`],
@@ -687,12 +814,28 @@ export class LabAhvPrismElementAdapter {
     const vmUuid = extractVmUuid(task, sourceVmUuid) ?? task.entity_uuid ?? run.vmUuid;
     const succeeded = state === "SUCCEEDED";
     const failed = state === "FAILED";
+    const update = lifecycleStatusUpdate(run, succeeded, failed);
+    const inventoryReconciliation =
+      run.action === "Destroy VM" && succeeded && vmUuid
+        ? await reconcileVmAbsence(() => this.client.list("listVms"), vmUuid)
+        : run.inventoryReconciliation;
     return {
       ...run,
-      status: succeeded ? "Succeeded" : failed ? "Failed" : "Polling",
+      status: run.action === "Destroy VM" && succeeded
+        ? inventoryReconciliation?.status === "Reconciled"
+          ? "Destroyed"
+          : "Failed"
+        : succeeded
+          ? "Succeeded"
+          : failed
+            ? "Failed"
+            : "Polling",
       vmUuid,
-      createStatus: run.createStatus === "Submitted" ? (succeeded ? "Succeeded" : failed ? "Failed" : "Submitted") : run.createStatus,
+      createStatus: update.createStatus,
+      powerStatus: update.powerStatus,
+      destroyStatus: update.destroyStatus,
       failureReason: failed ? extractTaskMessage(task) ?? "Prism Element task failed." : run.failureReason,
+      inventoryReconciliation,
       lastPollAt: new Date().toISOString(),
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -700,9 +843,19 @@ export class LabAhvPrismElementAdapter {
           at: new Date().toISOString(),
           action: "Poll",
           status: state,
-          detail: succeeded ? "Create task succeeded." : failed ? "Create task failed." : "Create task is still running.",
+          detail: lifecyclePollDetail(run.action, succeeded, failed, inventoryReconciliation),
           prismTaskUuid: taskUuid,
+          provider: "prism-element",
         },
+        ...(run.action === "Destroy VM" && succeeded && inventoryReconciliation
+          ? [{
+              at: new Date().toISOString(),
+              action: "Reconciled" as const,
+              status: inventoryReconciliation.status,
+              detail: inventoryReconciliation.detail,
+              provider: "prism-element" as const,
+            }]
+          : []),
       ],
       updatedAt: new Date().toISOString(),
     };
@@ -718,6 +871,7 @@ export class LabAhvPrismElementAdapter {
       status: "Submitted",
       prismTaskUuid: taskUuid,
       prismTaskUuids: [...(run.prismTaskUuids ?? []), taskUuid],
+      prismTaskProviders: { ...(run.prismTaskProviders ?? {}), [taskUuid]: "prism-element" },
       powerStatus: "Submitted",
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -727,6 +881,7 @@ export class LabAhvPrismElementAdapter {
           status: state,
           detail: `Power ${state} task submitted for ${run.environmentName}.`,
           prismTaskUuid: taskUuid,
+          provider: "prism-element",
         },
       ],
       updatedAt: new Date().toISOString(),
@@ -740,15 +895,16 @@ export class LabAhvPrismElementAdapter {
     return {
       ...run,
       action: "Destroy VM",
-      status: "Destroyed",
+      status: "Submitted",
       prismTaskUuid: taskUuid,
       prismTaskUuids: [...(run.prismTaskUuids ?? []), taskUuid],
+      prismTaskProviders: { ...(run.prismTaskProviders ?? {}), [taskUuid]: "prism-element" },
       destroyStatus: "Submitted",
       inventoryReconciliation: {
         checkedAt: new Date().toISOString(),
-        vmPresent: false,
-        status: "Reconciled",
-        detail: "Destroy task submitted; operator must confirm Prism Element inventory remains clean after task completion.",
+        vmPresent: true,
+        status: "Pending",
+        detail: "Destroy task submitted; reconciliation waits for Prism Element task success and inventory absence.",
       },
       lifecycleEvents: [
         ...(run.lifecycleEvents ?? []),
@@ -758,12 +914,7 @@ export class LabAhvPrismElementAdapter {
           status: "Submitted",
           detail: `Destroy task submitted for ${run.environmentName}.`,
           prismTaskUuid: taskUuid,
-        },
-        {
-          at: new Date().toISOString(),
-          action: "Reconciled",
-          status: "Reconciled",
-          detail: "Destroy task submitted and inventory reconciliation evidence recorded.",
+          provider: "prism-element",
         },
       ],
       updatedAt: new Date().toISOString(),

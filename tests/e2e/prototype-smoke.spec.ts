@@ -126,7 +126,8 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByText("dev-segment-placeholder").last()).toBeVisible();
   await expect(page.getByText("Rocky Linux 9 Hardened").last()).toBeVisible();
   await page.getByRole("button", { name: "Create / preflight VM" }).click();
-  await expect(page.getByText("Fail-closed AHV boundary")).toBeVisible();
+  await expect(page.getByText("Guided lab lifecycle test")).toBeVisible();
+  await expect(page.getByText("Create / clone")).toBeVisible();
   await expect(page.getByText("Preflight blocked").first()).toBeVisible();
   await expect(page.getByText("Approved Prism scope selected")).toBeVisible();
   await expect(page.getByText("Notice", { exact: true })).toBeVisible();

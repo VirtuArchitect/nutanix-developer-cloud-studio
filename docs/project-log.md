@@ -2,6 +2,7 @@
 
 ## 2026-07-09
 
+- Implemented `v10.1.0-lab-lifecycle-wizard` to move the AHV lab flow from script-driven validation into guided product wizards for infrastructure connection, scope approval, create/clone, power, destroy, and reconciliation evidence.
 - Released `v8.5.0-ahv-lab-lifecycle`.
 - Released `v8.6.0-console-operations-hardening` to package the Admin Settings, IAM/directory configuration, audit review, and console operations hardening work.
 - Implemented `v8.7.0-mock-prism-central-harness` to test the AHV lifecycle flow against a local Prism Central v3-shaped service before authorized lab acceptance.

@@ -167,6 +167,57 @@ describe("AHV lab runtime", () => {
       restoreEnv(previousEnv);
     }
   });
+
+  it("polls create, power, and destroy tasks into completed lifecycle evidence", async () => {
+    const responses: Record<string, Record<string, unknown>> = {
+      "/api/nutanix/v3/tasks/create-task": {
+        status: "SUCCEEDED",
+        entity_reference_list: [{ kind: "vm", uuid: "created-vm-uuid" }],
+      },
+      "/api/nutanix/v3/tasks/power-task": {
+        status: "SUCCEEDED",
+      },
+      "/api/nutanix/v3/tasks/destroy-task": {
+        status: "SUCCEEDED",
+      },
+      "/api/nutanix/v3/vms/list": {
+        entities: [],
+      },
+    };
+    const adapter = new LabAhvPrismAdapter(
+      new PrismCentralV3Client(labEnv(), async (request) => responses[request.path] ?? { status: "SUCCEEDED" })
+    );
+    const baseRun = ahvRunFixture();
+
+    const created = await adapter.poll({ ...baseRun, action: "Create VM", prismTaskUuid: "create-task" });
+    const powered = await adapter.poll({
+      ...created,
+      action: "Power VM",
+      prismTaskUuid: "power-task",
+      prismTaskUuids: [...(created.prismTaskUuids ?? []), "power-task"],
+      prismTaskProviders: { ...(created.prismTaskProviders ?? {}), "power-task": "prism-central" },
+      powerStatus: "Submitted",
+    });
+    const destroyed = await adapter.poll({
+      ...powered,
+      action: "Destroy VM",
+      prismTaskUuid: "destroy-task",
+      prismTaskUuids: [...(powered.prismTaskUuids ?? []), "destroy-task"],
+      prismTaskProviders: { ...(powered.prismTaskProviders ?? {}), "destroy-task": "prism-central" },
+      destroyStatus: "Submitted",
+    });
+
+    expect(created).toMatchObject({ status: "Succeeded", createStatus: "Succeeded", vmUuid: "created-vm-uuid" });
+    expect(powered).toMatchObject({ status: "Succeeded", powerStatus: "Succeeded" });
+    expect(destroyed).toMatchObject({
+      status: "Destroyed",
+      destroyStatus: "Succeeded",
+      inventoryReconciliation: {
+        status: "Reconciled",
+        vmPresent: false,
+      },
+    });
+  });
 });
 
 function labEnv() {
@@ -213,4 +264,34 @@ function restoreEnv(snapshot: NodeJS.ProcessEnv) {
     delete process.env[key];
   }
   Object.assign(process.env, snapshot);
+}
+
+function ahvRunFixture() {
+  return {
+    id: "ahv-run-test",
+    gateId: "gate-test",
+    dryRunPlanId: "dry-run-test",
+    environmentName: "ndc-lab-test",
+    action: "Create VM" as const,
+    adapterMode: "Lab AHV Prism adapter" as const,
+    status: "Submitted" as const,
+    checks: [],
+    requestedBy: "platform.admin",
+    selectedScope: {
+      cluster: { recordId: "cluster-record", name: "cluster", rawRef: "prism://cluster/cluster-uuid" },
+      network: { recordId: "network-record", name: "network", rawRef: "prism://subnet/subnet-uuid" },
+      sourceVm: { recordId: "source-vm-record", name: "source-vm", rawRef: "prism://vm/source-vm-uuid" },
+    },
+    prismTaskUuid: "create-task",
+    prismTaskUuids: ["create-task"],
+    prismTaskProviders: { "create-task": "prism-central" as const },
+    createStatus: "Submitted" as const,
+    powerStatus: "Not requested" as const,
+    destroyStatus: "Not requested" as const,
+    lifecycleEvents: [],
+    rollbackDestroyEvidence: [],
+    mutationOperationsBlocked: [],
+    provisioningEnabled: true,
+    createdAt: "2026-09-06T00:00:00.000Z",
+  };
 }

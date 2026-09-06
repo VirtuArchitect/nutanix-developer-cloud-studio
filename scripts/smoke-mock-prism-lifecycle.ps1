@@ -94,6 +94,49 @@ if ($preflight.data.status -ne "Ready") {
   throw "AHV lab runtime preflight was not Ready."
 }
 
+$importedAt = (Get-Date).ToUniversalTime().ToString("o")
+Invoke-NdcPost "/api/prism/inventory/preview-import" @{
+  provider = "prism-central"
+  records = @(
+    @{
+      id = "mock-cluster-uuid"
+      kind = "Cluster"
+      name = "Mock AHV Cluster"
+      source = "Prism Central"
+      cluster = "Mock AHV Cluster"
+      categories = @("NDC:Mock")
+      importedAt = $importedAt
+      rawRef = "mock-prism:cluster:mock-cluster-uuid"
+    },
+    @{
+      id = "mock-subnet-uuid"
+      kind = "Network"
+      name = "Mock Lab Subnet"
+      source = "Prism Central"
+      cluster = "Mock AHV Cluster"
+      network = "Mock Lab Subnet"
+      categories = @("NDC:Mock")
+      importedAt = $importedAt
+      rawRef = "mock-prism:subnet:mock-subnet-uuid"
+    },
+    @{
+      id = "mock-image-uuid"
+      kind = "Image"
+      name = "Mock Rocky Linux 9 Hardened Image"
+      source = "Prism Central"
+      cluster = "Mock AHV Cluster"
+      profileCandidate = $true
+      categories = @("NDC:Mock")
+      importedAt = $importedAt
+      rawRef = "mock-prism:image:mock-image-uuid"
+    }
+  )
+} | Out-Null
+
+$approvedCluster = Invoke-NdcPost "/api/prism/inventory/mock-cluster-uuid/approve"
+$approvedNetwork = Invoke-NdcPost "/api/prism/inventory/mock-subnet-uuid/approve"
+$approvedImage = Invoke-NdcPost "/api/prism/inventory/mock-image-uuid/approve"
+
 $plan = Invoke-NdcPost "/api/vm-sandbox/dry-runs" @{ environmentName = $EnvironmentName }
 Invoke-NdcPost "/api/lab-authorization/scopes" @{
   name = "Mock Prism Central lifecycle smoke"
@@ -121,7 +164,13 @@ if ($envelope.data.status -ne "Ready for authorization review") {
   throw "Controlled create authorization envelope was $($envelope.data.status). Failed checks: $($failed -join '; ')"
 }
 
-$run = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs" @{ gateId = $gate.data.id; action = "Create VM" }
+$run = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs" @{
+  gateId = $gate.data.id
+  action = "Create VM"
+  clusterRecordId = $approvedCluster.data.id
+  networkRecordId = $approvedNetwork.data.id
+  imageRecordId = $approvedImage.data.id
+}
 if (-not $run.data.provisioningEnabled -or $run.data.adapterMode -ne "Lab AHV Prism adapter") {
   throw "Create run did not use the Lab AHV Prism adapter."
 }
@@ -136,9 +185,35 @@ if ($powered.data.powerStatus -ne "Submitted") {
   throw "Power operation was not submitted."
 }
 
+$powerPolled = $null
+for ($i = 0; $i -lt 30; $i++) {
+  $powerPolled = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/poll"
+  if ($powerPolled.data.powerStatus -eq "Succeeded") { break }
+  if ($powerPolled.data.powerStatus -eq "Failed" -or $powerPolled.data.status -eq "Failed") {
+    throw "Power task failed: $($powerPolled.data.failureReason)"
+  }
+  Start-Sleep -Milliseconds 500
+}
+if (-not $powerPolled -or $powerPolled.data.powerStatus -ne "Succeeded") {
+  throw "Power task did not poll to Succeeded."
+}
+
 $destroyed = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/destroy"
-if ($destroyed.data.destroyStatus -ne "Submitted" -or $destroyed.data.inventoryReconciliation.status -ne "Reconciled") {
-  throw "Destroy operation did not record reconciliation evidence."
+if ($destroyed.data.destroyStatus -ne "Submitted") {
+  throw "Destroy operation was not submitted."
+}
+
+$destroyPolled = $null
+for ($i = 0; $i -lt 30; $i++) {
+  $destroyPolled = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/poll"
+  if ($destroyPolled.data.status -eq "Destroyed" -and $destroyPolled.data.inventoryReconciliation.status -eq "Reconciled") { break }
+  if ($destroyPolled.data.destroyStatus -eq "Failed" -or $destroyPolled.data.status -eq "Failed") {
+    throw "Destroy task failed: $($destroyPolled.data.failureReason)"
+  }
+  Start-Sleep -Milliseconds 500
+}
+if (-not $destroyPolled -or $destroyPolled.data.status -ne "Destroyed" -or $destroyPolled.data.inventoryReconciliation.status -ne "Reconciled") {
+  throw "Destroy task did not poll to Destroyed with reconciled inventory."
 }
 
 $vms = Invoke-PrismList "/api/nutanix/v3/vms/list"
@@ -147,7 +222,7 @@ if ($remaining.Count -gt 0) {
   throw "Mock Prism reconciliation failed: VM $EnvironmentName still exists."
 }
 
-Write-Output "Mock Prism lifecycle smoke passed for $EnvironmentName. Create task $($run.data.prismTaskUuid), poll $($polled.data.status), power task $($powered.data.prismTaskUuid), destroy task $($destroyed.data.prismTaskUuid), reconciliation confirmed."
+Write-Output "Mock Prism lifecycle smoke passed for $EnvironmentName. Create task $($run.data.prismTaskUuid), poll $($polled.data.status), power task $($powered.data.prismTaskUuid), power poll $($powerPolled.data.powerStatus), destroy task $($destroyed.data.prismTaskUuid), destroy poll $($destroyPolled.data.status), reconciliation confirmed."
 
 function Import-EnvFile([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path)) {

@@ -2676,7 +2676,15 @@ describe("api server", () => {
       headers: adminHeaders,
       body: JSON.stringify({ powerState: "OFF" }),
     });
+    const powerPolled = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/poll`, {
+      method: "POST",
+      headers: adminHeaders,
+    });
     const destroyed = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/destroy`, {
+      method: "POST",
+      headers: adminHeaders,
+    });
+    const destroyPolled = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/poll`, {
       method: "POST",
       headers: adminHeaders,
     });
@@ -2712,10 +2720,25 @@ describe("api server", () => {
       powerStatus: "Submitted",
       lifecycleEvents: expect.arrayContaining([expect.objectContaining({ action: "Power submitted", status: "OFF" })]),
     });
+    expect(powerPolled.data).toMatchObject({
+      action: "Power VM",
+      status: "Succeeded",
+      powerStatus: "Succeeded",
+      lifecycleEvents: expect.arrayContaining([expect.objectContaining({ action: "Poll", status: "SUCCEEDED" })]),
+    });
     expect(destroyed.data).toMatchObject({
       action: "Destroy VM",
-      status: "Destroyed",
+      status: "Submitted",
       destroyStatus: "Submitted",
+      inventoryReconciliation: expect.objectContaining({ status: "Pending", vmPresent: true }),
+      lifecycleEvents: expect.arrayContaining([
+        expect.objectContaining({ action: "Destroy submitted", status: "Submitted" }),
+      ]),
+    });
+    expect(destroyPolled.data).toMatchObject({
+      action: "Destroy VM",
+      status: "Destroyed",
+      destroyStatus: "Succeeded",
       inventoryReconciliation: expect.objectContaining({ status: "Reconciled", vmPresent: false }),
       lifecycleEvents: expect.arrayContaining([
         expect.objectContaining({ action: "Destroy submitted", status: "Submitted" }),

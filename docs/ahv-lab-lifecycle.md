@@ -1,6 +1,6 @@
 # AHV Lab Lifecycle Testing
 
-This guide describes the first lab-only real AHV lifecycle path for NDC Studio.
+This guide describes the lab-only real AHV lifecycle path for NDC Studio.
 
 The feature is disabled by default. Enable it only for an explicitly authorized AHV test cluster with disposable image, project, subnet, and rollback ownership.
 
@@ -61,7 +61,22 @@ npm run smoke:ahv-source-vm-clone -- -BaseUrl http://127.0.0.1:18080 -Environmen
 
 ## Lifecycle Path
 
-The API keeps the existing gated workflow:
+The product now exposes the lab path through guided Admin console steps, so a tester can understand and operate the flow without relying on script output alone.
+
+In the browser:
+
+1. Open **Admin > Settings > Connect Infrastructure**.
+2. Enter Prism Element or Prism Central details for the private lab.
+3. Run the one-time read-only connection test.
+4. Load the sanitized preview into the inventory browser.
+5. Open **Admin > Infrastructure**.
+6. Approve the discovered cluster, network/subnet, and image or source VM candidates.
+7. Use the controlled AHV lifecycle panel to create or clone a lab VM.
+8. Poll the submitted Prism task until the create status succeeds.
+9. Submit and poll the power check if lab policy permits it.
+10. Submit destroy, poll the destroy task, and confirm inventory reconciliation.
+
+The API keeps the same gated workflow behind the UI:
 
 1. Create VM sandbox dry-run.
 2. Record lab authorization scope.
@@ -70,9 +85,22 @@ The API keeps the existing gated workflow:
 5. Record VM lifecycle proof.
 6. Record controlled create authorization envelope.
 7. Submit AHV create run.
-8. Poll Prism task.
-9. Optionally submit power transition.
-10. Submit destroy and record inventory reconciliation.
+8. Poll the Prism create task.
+9. Optionally submit and poll a power transition.
+10. Submit destroy, poll the destroy task, and reconcile inventory absence.
+
+## Lifecycle Evidence
+
+Each controlled AHV run records:
+
+- Adapter mode and provider path.
+- Prism task UUIDs.
+- Per-task provider metadata for Prism Central or Prism Element.
+- VM UUID after create or clone.
+- Create, power, destroy, and reconciliation status.
+- Last poll time, failure reason, and lifecycle event ledger.
+
+Destroy is intentionally two-phase. The destroy request submits the Prism task and records pending reconciliation. The run is marked destroyed only after polling confirms task success and the VM no longer appears in read-only inventory.
 
 ## Guardrails
 

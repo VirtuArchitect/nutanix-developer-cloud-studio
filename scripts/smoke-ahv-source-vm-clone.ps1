@@ -187,6 +187,35 @@ if (-not $polled -or $polled.data.status -ne "Succeeded") {
 }
 
 $powered = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/power" @{ powerState = "OFF" }
+for ($attempt = 1; $attempt -le 30; $attempt++) {
+  $powered = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/poll"
+  if ($powered.data.powerStatus -eq "Succeeded") {
+    break
+  }
+  if ($powered.data.powerStatus -eq "Failed" -or $powered.data.status -eq "Failed") {
+    throw "Power task failed before destroy. $($powered.data.failureReason)"
+  }
+  Start-Sleep -Seconds 2
+}
+
+if ($powered.data.powerStatus -ne "Succeeded") {
+  throw "Power task did not reach Succeeded before the smoke timeout."
+}
+
 $destroyed = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/destroy"
+for ($attempt = 1; $attempt -le 30; $attempt++) {
+  $destroyed = Invoke-NdcPost "/api/ahv/controlled-provisioning/runs/$($run.data.id)/poll"
+  if ($destroyed.data.status -eq "Destroyed" -and $destroyed.data.inventoryReconciliation.status -eq "Reconciled") {
+    break
+  }
+  if ($destroyed.data.status -eq "Failed" -or $destroyed.data.destroyStatus -eq "Failed") {
+    throw "Destroy task failed or reconciliation did not pass. $($destroyed.data.failureReason)"
+  }
+  Start-Sleep -Seconds 2
+}
+
+if ($destroyed.data.status -ne "Destroyed" -or $destroyed.data.inventoryReconciliation.status -ne "Reconciled") {
+  throw "Destroy task did not reach Destroyed/Reconciled before the smoke timeout."
+}
 
 Write-Output "AHV source VM clone smoke submitted $($run.data.adapterMode) create task $($run.data.prismTaskUuid), poll status $($polled.data.status), power status $($powered.data.powerStatus), destroy status $($destroyed.data.destroyStatus), reconciliation $($destroyed.data.inventoryReconciliation.status)."

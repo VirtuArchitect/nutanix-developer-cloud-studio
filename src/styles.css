@@ -551,9 +551,70 @@ button {
 .settingsList,
 .auditLogList,
 .settingsFormGrid,
+.wizardStepGrid,
 .toggleGrid {
   display: grid;
   gap: 10px;
+}
+
+.wizardStepGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.wizardStep {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.wizardStep > span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #5c6f77;
+  background: #eef4f5;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wizardStep strong,
+.wizardStep small {
+  display: block;
+  min-width: 0;
+}
+
+.wizardStep small {
+  margin-top: 2px;
+  color: #60747c;
+  line-height: 1.35;
+}
+
+.wizardStep.complete {
+  border-color: #b9e5c4;
+  background: #f2fbf4;
+}
+
+.wizardStep.complete > span {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.wizardStep.active {
+  border-color: #f2d492;
+  background: #fff9e9;
+}
+
+.wizardStep.active > span {
+  color: #8a5200;
+  background: #ffeec1;
 }
 
 .settingsFormGrid {
@@ -1431,6 +1492,7 @@ meter {
   .opsCommandGrid,
   .adminTabs,
   .adminTabPanel,
+  .wizardStepGrid,
   .createGrid,
   .statusGrid,
   .adminGrid,
@@ -1505,6 +1567,7 @@ meter {
   .miniIntegrationGrid,
   .compactMetrics,
   .platformConfigGrid,
+  .wizardStepGrid,
   .targetGrid {
     grid-template-columns: 1fr;
   }

@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v9.9.0-live-readonly-validation`.
+This project uses release tags for public milestones. The current release is `v10.1.0-lab-lifecycle-wizard`.
 
 ## [Unreleased]
 
@@ -12,6 +12,27 @@ This project uses release tags for public milestones. The current release is `v9
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v10.1.0-lab-lifecycle-wizard] - 2026-09-06
+
+### Added
+
+- Product-guided Connect Infrastructure wizard for the AHV lab path, showing endpoint entry, allowed scope, read-only validation, candidate loading, and lab-runtime arming steps.
+- Product-guided AHV lifecycle wizard for Platform Admin testers, covering scope approval, create/clone, power check, destroy, and reconciliation evidence from the Admin console.
+- Prism task-provider tracking so lifecycle evidence distinguishes Prism Central and Prism Element task execution.
+- Lifecycle smoke checks now poll create, power, destroy, and inventory reconciliation to completion instead of treating submitted tasks as completed.
+- API tests for completed create, power, destroy, and reconciliation lifecycle evidence.
+
+### Changed
+
+- Destroy submission now remains `Submitted` until Prism task polling confirms success and the VM is absent from inventory.
+- Power operations now record the provider that accepted the task, including Prism Central-to-Prism Element fallback paths.
+- README and lab lifecycle documentation now describe the UI-operated tester flow, not only script-driven validation.
+
+### Security
+
+- Lab lifecycle remains disabled by default and requires `APP_ENV=lab`, explicit feature switches, private environment variables, and Platform Admin access.
+- Credential material remains server-side only; lifecycle evidence records provider/task metadata without persisting passwords, tokens, or Authorization headers.
 
 ## [v9.9.0-live-readonly-validation] - 2026-09-06
 
