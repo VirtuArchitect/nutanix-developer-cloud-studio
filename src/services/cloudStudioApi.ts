@@ -7,6 +7,8 @@ import type {
   AdapterEnablementRecord,
   AhvControlledProvisioningRun,
   AhvCreateAdapterContractReview,
+  AhvLabEvidenceReport,
+  AhvLabSetupValidation,
   AhvLabConnectionTestRequest,
   AhvLabConnectionTestResult,
   AdminUpgradeHealthConsole,
@@ -285,6 +287,10 @@ export async function testAhvLabConnectionViaApi(payload: AhvLabConnectionTestRe
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export async function fetchAhvLabSetupValidationFromApi() {
+  return fetchJson<AhvLabSetupValidation>("/api/ahv/lab-runtime/setup-validation");
 }
 
 export async function exportPlatformSettingsViaApi() {
@@ -1024,6 +1030,12 @@ export async function fetchAhvCreateAdapterContractReviewsFromApi() {
 
 export async function fetchAhvControlledProvisioningRunsFromApi() {
   return fetchJson<AhvControlledProvisioningRun[]>("/api/ahv/controlled-provisioning/runs");
+}
+
+export async function exportAhvControlledProvisioningRunReportViaApi(runId: string) {
+  return fetchJson<AhvLabEvidenceReport>(
+    `/api/ahv/controlled-provisioning/runs/${encodeURIComponent(runId)}/evidence-report`
+  );
 }
 
 export async function fetchPlatformServiceRequestsFromApi() {

@@ -159,8 +159,17 @@ test("developer can browse catalog, create an environment, and review admin read
   await expect(page.getByRole("heading", { name: "Connect infrastructure" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Real PE / PC inventory browser" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Connection profiles and validation" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab setup validator" })).toBeVisible();
+  await page.getByRole("button", { name: "Refresh validation" }).click();
+  await expect(page.getByText("Guided lab setup validator")).toBeVisible();
+  await expect(page.getByText("The static demo can explain the workflow")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Image, subnet, and cluster approval" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Controlled AHV VM lifecycle" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab evidence report" })).toBeVisible();
+  await page.getByRole("button", { name: "Export latest report" }).click();
+  await expect(page.getByText("Redacted lab session evidence")).toBeVisible();
+  await expect(page.getByText("Task IDs", { exact: true })).toBeVisible();
+  await expect(page.getByText("Excluded").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Audit and reconciliation" })).toBeVisible();
   await expect(page.getByText("Active runs")).toBeVisible();
   await expect(page.getByText("Preflight blocked").last()).toBeVisible();

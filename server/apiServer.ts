@@ -407,6 +407,7 @@ import {
   createLiveReadOnlyPrismCallDesign,
   createProductionReadinessScorecard,
   createRuntimeObservabilitySnapshot,
+  currentVersion,
 } from "./runtimeReadiness";
 import {
   createApiContractBaseline,
@@ -433,6 +434,9 @@ import type {
   PlatformSettingsConfig,
   PlatformSettingsConnectionTest,
   PlatformSettingsExport,
+  AhvControlledProvisioningRun,
+  AhvLabEvidenceReport,
+  AhvLabSetupValidation,
   AhvLabConnectionTestRequest,
   AhvLabConnectionTestResult,
   AhvLabRuntimePreflight,
@@ -2066,6 +2070,12 @@ async function routeApi(
   if (request.method === "GET" && url.pathname === "/api/ahv/lab-runtime/config") {
     requireRole(context, ["Platform Admin"]);
     sendJson(response, 200, { data: createAhvLabRuntimeConfig() });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/ahv/lab-runtime/setup-validation") {
+    requireRole(context, ["Platform Admin"]);
+    sendJson(response, 200, { data: createAhvLabSetupValidation(state) });
     return;
   }
 
@@ -3758,6 +3768,35 @@ async function routeApi(
       }
       throw error;
     }
+    return;
+  }
+
+  const ahvRunEvidenceReportMatch = url.pathname.match(/^\/api\/ahv\/controlled-provisioning\/runs\/([^/]+)\/evidence-report$/);
+  if (request.method === "GET" && ahvRunEvidenceReportMatch) {
+    requireRole(context, ["Platform Admin"]);
+    const runId = decodeURIComponent(ahvRunEvidenceReportMatch[1]);
+    const existing = state.ahvControlledProvisioningRuns.find((item) => item.id === runId);
+    if (!existing) {
+      sendJson(response, 404, {
+        error: {
+          code: "ahv_run_not_found",
+          message: "AHV controlled provisioning run was not found.",
+        },
+      });
+      return;
+    }
+    const report = createAhvLabEvidenceReport(existing, context.session.user);
+    addAuditEvent(state, "ahv.controlled.evidence-report.exported", context.session.user, existing.environmentName, {
+      runId: existing.id,
+      status: existing.status,
+      adapterMode: existing.adapterMode,
+      taskCount: existing.prismTaskUuids?.length ?? 0,
+      lifecycleEventCount: existing.lifecycleEvents?.length ?? 0,
+      credentialsIncluded: false,
+      authorizationHeadersIncluded: false,
+    });
+    await store.save(state);
+    sendJson(response, 200, { data: report });
     return;
   }
 
@@ -6179,6 +6218,130 @@ function sanitizePreviewInventoryRecords(records: PrismInventoryRecord[], import
       approvalStatus: "Discovered",
     };
   });
+}
+
+function createAhvLabSetupValidation(state: ApiState): AhvLabSetupValidation {
+  const config = createAhvLabRuntimeConfig();
+  const latestPreflight = state.ahvLabRuntimePreflights[0];
+  const approvedClusters = state.prismInventory.filter((record) => record.kind === "Cluster" && record.approvalStatus === "Approved");
+  const approvedNetworks = state.prismInventory.filter((record) => record.kind === "Network" && record.approvalStatus === "Approved");
+  const approvedImages = state.prismInventory.filter((record) => record.kind === "Image" && record.approvalStatus === "Approved");
+  const approvedSourceVms = state.prismInventory.filter((record) => record.kind === "VM" && record.approvalStatus === "Approved");
+  const latestGate = state.controlledProvisioningGates[0];
+  const latestLifecycleProof = state.vmLifecycleProofs[0];
+  const latestAuthorization = state.controlledCreateAuthorizationEnvelopes[0];
+
+  const checks: AhvLabSetupValidation["checks"] = [
+    ...config.checks.map((check) => ({
+      name: check.name,
+      status: check.passed ? "Passed" as const : "Blocked" as const,
+      detail: check.detail,
+      remediation: check.passed ? "No action required." : "Update the private lab environment variables or runtime switches, then restart the API.",
+    })),
+    {
+      name: "Read-only preflight evidence",
+      status: latestPreflight?.status === "Ready" ? "Passed" : "Blocked",
+      detail: latestPreflight
+        ? `${latestPreflight.status}; ${latestPreflight.readOnlyChecks.filter((check) => check.passed).length}/${latestPreflight.readOnlyChecks.length} read-only checks passed.`
+        : "No AHV lab-runtime preflight has been recorded.",
+      remediation: "Run the Connect Infrastructure read-only test or POST /api/ahv/lab-runtime/preflight before creating a lab VM.",
+    },
+    {
+      name: "Approved inventory scope",
+      status: approvedClusters.length > 0 && approvedNetworks.length > 0 && (approvedImages.length > 0 || approvedSourceVms.length > 0) ? "Passed" : "Blocked",
+      detail: `${approvedClusters.length} cluster(s), ${approvedNetworks.length} network(s), ${approvedImages.length} image(s), and ${approvedSourceVms.length} source VM(s) approved.`,
+      remediation: "Import a sanitized Prism preview and approve one cluster, one network/subnet, and one image or source VM in Admin > Infrastructure.",
+    },
+    {
+      name: "Controlled provisioning gate",
+      status: latestGate?.status === "Approved for controlled create" ? "Passed" : "Blocked",
+      detail: latestGate ? `${latestGate.environmentName}: ${latestGate.status}.` : "No controlled provisioning gate has been approved.",
+      remediation: "Create a VM dry-run, record rollback/destroy proof, request the gate, and approve it as Platform Admin.",
+    },
+    {
+      name: "Lifecycle proof",
+      status: latestLifecycleProof?.status === "Verified" ? "Passed" : "Blocked",
+      detail: latestLifecycleProof ? `${latestLifecycleProof.gateId}: ${latestLifecycleProof.status}.` : "No VM lifecycle proof has been recorded.",
+      remediation: "Record lifecycle proof that rollback and destroy have been verified for the controlled gate.",
+    },
+    {
+      name: "Create authorization envelope",
+      status: latestAuthorization?.status === "Ready for authorization review" ? "Passed" : "Blocked",
+      detail: latestAuthorization ? `${latestAuthorization.status}; ${latestAuthorization.checks.filter((check) => check.passed).length}/${latestAuthorization.checks.length} checks passed.` : "No controlled create authorization envelope is ready.",
+      remediation: "Review the controlled create authorization envelope after the gate and lifecycle proof are ready.",
+    },
+  ];
+
+  const blocked = checks.filter((check) => check.status === "Blocked");
+  const warnings = checks.filter((check) => check.status === "Warning");
+  const status: AhvLabSetupValidation["status"] = blocked.length > 0 ? "Blocked" : warnings.length > 0 ? "Warning" : "Ready";
+  const provider: AhvLabSetupValidation["provider"] =
+    config.provider === "prism-element" ? "Prism Element" : config.prismCentralUrlConfigured ? "Prism Central" : "Not selected";
+
+  return {
+    version: currentVersion(),
+    generatedAt: new Date().toISOString(),
+    status,
+    provider,
+    summary: status === "Ready"
+      ? "AHV lab setup is ready for a controlled create or clone from the Admin console."
+      : `${blocked.length} required setup item(s) must be completed before a tester should submit a controlled create.`,
+    checks,
+    nextActions: blocked.length > 0
+      ? blocked.slice(0, 4).map((check) => check.remediation)
+      : [
+          "Submit a controlled AHV create or clone from Admin > Infrastructure.",
+          "Poll create and optional power tasks until Prism reports success.",
+          "Destroy the lab VM and export the evidence report after reconciliation.",
+        ],
+    provisioningEnabled: config.provisioningEnabled,
+    realPrismCallsEnabled: config.realPrismCallsEnabled,
+  };
+}
+
+function createAhvLabEvidenceReport(run: AhvControlledProvisioningRun, actor: string): AhvLabEvidenceReport {
+  const providerPath = Array.from(new Set(Object.values(run.prismTaskProviders ?? {}))) as AhvLabEvidenceReport["providerPath"];
+  const prismTaskUuids = run.prismTaskUuids ?? [];
+  const complete = run.status === "Destroyed" && run.inventoryReconciliation?.status === "Reconciled";
+  return {
+    reportId: `ahv-lab-evidence-${run.id}`,
+    generatedAt: new Date().toISOString(),
+    generatedBy: actor,
+    runId: run.id,
+    environmentName: run.environmentName,
+    adapterMode: run.adapterMode,
+    providerPath,
+    status: run.status,
+    gateId: run.gateId,
+    vmUuid: run.vmUuid,
+    prismTaskUuid: run.prismTaskUuid,
+    prismTaskUuids,
+    createStatus: run.createStatus,
+    powerStatus: run.powerStatus,
+    destroyStatus: run.destroyStatus,
+    lastPollAt: run.lastPollAt,
+    inventoryReconciliation: run.inventoryReconciliation,
+    selectedScope: run.selectedScope,
+    lifecycleEvents: run.lifecycleEvents ?? [],
+    redaction: {
+      credentialsIncluded: false,
+      authorizationHeadersIncluded: false,
+      endpointQueryStringsIncluded: false,
+      notes: [
+        "Report contains run metadata, selected scope names/UUID references, task IDs, lifecycle events, and reconciliation status only.",
+        "Prism passwords, tokens, Authorization headers, and browser-entered credentials are not included.",
+      ],
+    },
+    evidence: [
+      `Adapter mode: ${run.adapterMode}.`,
+      `Lifecycle status: ${run.status}.`,
+      `Prism task count: ${prismTaskUuids.length}.`,
+      `Inventory reconciliation: ${run.inventoryReconciliation?.status ?? "Not recorded"}.`,
+    ],
+    recommendedNextActions: complete
+      ? ["Attach this report to the lab acceptance notes.", "Archive the run output with the relevant change or test record."]
+      : ["Continue polling until pending tasks complete.", "Do not reuse the environment name until destroy and reconciliation are complete."],
+  };
 }
 
 function isPrismInventoryKind(kind: unknown): kind is PrismInventoryRecord["kind"] {

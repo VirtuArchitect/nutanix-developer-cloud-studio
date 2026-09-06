@@ -147,14 +147,20 @@ All v6 hardening endpoints are read-only snapshots. They do not provision, mutat
 Required role: `Platform Admin`.
 
 - `GET /api/ahv/lab-runtime/config`
+- `GET /api/ahv/lab-runtime/setup-validation`
 - `POST /api/ahv/lab-runtime/preflight`
 - `GET /api/ahv/lab-runtime/preflights`
 - `POST /api/ahv/controlled-provisioning/runs`
+- `GET /api/ahv/controlled-provisioning/runs/:id/evidence-report`
 - `POST /api/ahv/controlled-provisioning/runs/:id/poll`
 - `POST /api/ahv/controlled-provisioning/runs/:id/power`
 - `POST /api/ahv/controlled-provisioning/runs/:id/destroy`
 
 The lab runtime remains disabled unless `APP_ENV=lab`, `NDC_AHV_REAL_ADAPTER_ENABLED=true`, `NDC_CONTROLLED_PROVISIONING_ENABLED=true`, and `NDC_AHV_LAB_LIFECYCLE_ENABLED=true` are all set. It uses private environment variables for Prism Central credentials, enforces allowed cluster/project/subnet/image UUIDs, requires the `ndc-lab-` VM prefix, records audit evidence, and redacts secret-shaped fields.
+
+`GET /api/ahv/lab-runtime/setup-validation` returns a Platform Admin-only readiness summary for tester workflow gates, including runtime switches, read-only preflight evidence, approved inventory scope, controlled provisioning gate, VM lifecycle proof, and controlled create authorization.
+
+`GET /api/ahv/controlled-provisioning/runs/:id/evidence-report` returns a redacted lab session evidence pack for a controlled AHV run. It includes run metadata, selected scope, task IDs, lifecycle events, status, reconciliation result, and redaction assertions without passwords, tokens, Authorization headers, or endpoint query strings.
 
 ### Durable On-Prem Operations Foundation
 

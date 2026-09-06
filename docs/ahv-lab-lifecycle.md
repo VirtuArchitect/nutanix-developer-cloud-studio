@@ -71,10 +71,12 @@ In the browser:
 4. Load the sanitized preview into the inventory browser.
 5. Open **Admin > Infrastructure**.
 6. Approve the discovered cluster, network/subnet, and image or source VM candidates.
-7. Use the controlled AHV lifecycle panel to create or clone a lab VM.
-8. Poll the submitted Prism task until the create status succeeds.
-9. Submit and poll the power check if lab policy permits it.
-10. Submit destroy, poll the destroy task, and confirm inventory reconciliation.
+7. Run the lab setup validator and clear any blocked readiness item.
+8. Use the controlled AHV lifecycle panel to create or clone a lab VM.
+9. Poll the submitted Prism task until the create status succeeds.
+10. Submit and poll the power check if lab policy permits it.
+11. Submit destroy, poll the destroy task, and confirm inventory reconciliation.
+12. Export the redacted lab evidence report for the completed run.
 
 The API keeps the same gated workflow behind the UI:
 
@@ -99,8 +101,11 @@ Each controlled AHV run records:
 - VM UUID after create or clone.
 - Create, power, destroy, and reconciliation status.
 - Last poll time, failure reason, and lifecycle event ledger.
+- Redacted lab evidence report metadata for acceptance records.
 
 Destroy is intentionally two-phase. The destroy request submits the Prism task and records pending reconciliation. The run is marked destroyed only after polling confirms task success and the VM no longer appears in read-only inventory.
+
+Use **Admin > Infrastructure > Lab evidence report** after destroy/reconciliation to export a JSON evidence pack. The report contains task IDs, selected scope references, lifecycle events, status, reconciliation result, and redaction assertions. It does not include Prism credentials, tokens, Authorization headers, or inline endpoint query strings.
 
 ## Guardrails
 

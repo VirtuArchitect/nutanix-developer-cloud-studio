@@ -4,7 +4,7 @@ A hosted/on-prem internal developer platform prototype for governed environment 
 
 Nutanix Developer Cloud Studio models how developers can request, launch, and govern application environments across Nutanix infrastructure, Kubernetes, databases, storage, and AI services from one self-service portal while platform teams retain policy, approval, audit, and lifecycle control.
 
-Current release: `v10.1.0-lab-lifecycle-wizard`
+Current release: `v10.3.0-lab-evidence-validator`
 
 Live demo: https://virtuarchitect.github.io/nutanix-developer-cloud-studio/
 
@@ -68,6 +68,8 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 - Live Prism Central scope validation confirms the configured cluster, subnet, optional project, image, and source VM exist before any controlled clone is attempted.
 - Product-guided AHV lab lifecycle testing walks testers through connection, scope approval, create/clone, Prism task polling, power checks, destroy, and inventory reconciliation from the Admin console.
 - Prism Central and Prism Element lifecycle runs retain task-provider evidence so audit and UI records show which provider accepted each lifecycle task.
+- Guided AHV lab setup validation shows whether runtime switches, private Prism configuration, read-only preflight evidence, approved scope, lifecycle proof, and create authorization are ready before a tester submits a lab run.
+- Redacted AHV lab session evidence packs export run metadata, selected scope, Prism task IDs, lifecycle events, destroy/reconciliation status, and redaction assertions without including credentials or Authorization headers.
 
 ### Governance And Release Readiness
 
@@ -78,7 +80,7 @@ Nutanix Developer Cloud Studio is currently a polished, simulated hosted/on-prem
 
 ### Current Boundary
 
-Simulated provisioning is enabled for the prototype control plane. The public GitHub Pages demo never provisions infrastructure. A local mock Prism Central harness can exercise Prism-shaped AHV lifecycle calls without touching Nutanix infrastructure. Real AHV lifecycle is available only in an explicitly configured `APP_ENV=lab` deployment with all AHV lab switches enabled, authorized test infrastructure, private credentials, and Platform Admin approval gates. Prism Central and Prism Element lab providers are separate opt-in modes. The Admin Infrastructure and Settings views provide tester-facing wizards for connection, scope approval, lifecycle execution, and evidence review, but the public GitHub Pages demo still uses mock/simulated data only. All other real Nutanix adapters, Prism calls, credential resolution, and infrastructure mutation remain disabled by default.
+Simulated provisioning is enabled for the prototype control plane. The public GitHub Pages demo never provisions infrastructure. A local mock Prism Central harness can exercise Prism-shaped AHV lifecycle calls without touching Nutanix infrastructure. Real AHV lifecycle is available only in an explicitly configured `APP_ENV=lab` deployment with all AHV lab switches enabled, authorized test infrastructure, private credentials, and Platform Admin approval gates. Prism Central and Prism Element lab providers are separate opt-in modes. The Admin Infrastructure and Settings views provide tester-facing wizards for connection, setup validation, scope approval, lifecycle execution, evidence export, and reconciliation review, but the public GitHub Pages demo still uses mock/simulated data only. All other real Nutanix adapters, Prism calls, credential resolution, and infrastructure mutation remain disabled by default.
 
 ![Nutanix Developer Cloud Studio dashboard with provisioning modes](docs/assets/dashboard-v9.png)
 

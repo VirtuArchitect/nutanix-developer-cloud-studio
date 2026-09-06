@@ -1448,6 +1448,53 @@ export type MockPrismHarnessConsole = {
   realPrismCallsEnabled: boolean;
 };
 
+export type AhvLabSetupValidation = {
+  version: string;
+  generatedAt: string;
+  status: "Ready" | "Blocked" | "Warning";
+  provider: "Prism Central" | "Prism Element" | "Not selected";
+  summary: string;
+  checks: Array<{
+    name: string;
+    status: "Passed" | "Blocked" | "Warning";
+    detail: string;
+    remediation: string;
+  }>;
+  nextActions: string[];
+  provisioningEnabled: boolean;
+  realPrismCallsEnabled: boolean;
+};
+
+export type AhvLabEvidenceReport = {
+  reportId: string;
+  generatedAt: string;
+  generatedBy: string;
+  runId: string;
+  environmentName: string;
+  adapterMode: AhvControlledProvisioningRun["adapterMode"];
+  providerPath: Array<"prism-central" | "prism-element">;
+  status: AhvControlledProvisioningRun["status"];
+  gateId: string;
+  vmUuid?: string;
+  prismTaskUuid?: string;
+  prismTaskUuids: string[];
+  createStatus?: string;
+  powerStatus?: string;
+  destroyStatus?: string;
+  lastPollAt?: string;
+  inventoryReconciliation?: AhvControlledProvisioningRun["inventoryReconciliation"];
+  selectedScope?: AhvControlledProvisioningRun["selectedScope"];
+  lifecycleEvents: NonNullable<AhvControlledProvisioningRun["lifecycleEvents"]>;
+  redaction: {
+    credentialsIncluded: false;
+    authorizationHeadersIncluded: false;
+    endpointQueryStringsIncluded: false;
+    notes: string[];
+  };
+  evidence: string[];
+  recommendedNextActions: string[];
+};
+
 export type MockPrismExecution = {
   id: string;
   environmentName: string;

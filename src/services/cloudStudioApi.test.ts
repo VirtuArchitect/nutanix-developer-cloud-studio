@@ -111,6 +111,7 @@ import {
   decideControlledProvisioningGateViaApi,
   fetchAuthBoundaryDiagnosticsFromApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAhvLabSetupValidationFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdminUpgradeHealthConsoleFromApi,
   fetchAdapterContractTestHarnessesFromApi,
@@ -265,6 +266,7 @@ import {
   createRealPrismPreflightRunViaApi,
   createReadOnlyPrismLabGateViaApi,
   decidePrismInventoryRecordViaApi,
+  exportAhvControlledProvisioningRunReportViaApi,
   importPrismInventoryViaApi,
   importPrismInventoryPreviewViaApi,
   runResourceProfileActionViaApi,
@@ -928,6 +930,21 @@ describe("cloudStudioApi", () => {
         method: "POST",
         body: expect.stringContaining("pc-vm-testvm-01"),
       })
+    );
+  });
+
+  it("fetches AHV lab setup validation and run evidence reports", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse({ data: { status: "Ready" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchAhvLabSetupValidationFromApi();
+    await exportAhvControlledProvisioningRunReportViaApi("ahv-run-1");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/ahv/lab-runtime/setup-validation", expect.any(Object));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/ahv/controlled-provisioning/runs/ahv-run-1/evidence-report",
+      expect.any(Object)
     );
   });
 

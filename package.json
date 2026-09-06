@@ -1,7 +1,7 @@
 {
   "name": "nutanix-developer-cloud-studio",
   "private": true,
-  "version": "10.1.0-lab-lifecycle-wizard",
+  "version": "10.3.0-lab-evidence-validator",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

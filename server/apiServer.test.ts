@@ -2688,6 +2688,10 @@ describe("api server", () => {
       method: "POST",
       headers: adminHeaders,
     });
+    const setupValidation = await requestJson("/api/ahv/lab-runtime/setup-validation", { headers: adminHeaders });
+    const evidenceReport = await requestJson(`/api/ahv/controlled-provisioning/runs/${created.data.id}/evidence-report`, {
+      headers: adminHeaders,
+    });
     const auditEvents = await requestJson("/api/audit-events", { headers: adminHeaders });
 
     expect(preflight.data).toMatchObject({ status: "Ready", realPrismCallsEnabled: true });
@@ -2745,12 +2749,43 @@ describe("api server", () => {
         expect.objectContaining({ action: "Reconciled", status: "Reconciled" }),
       ]),
     });
+    expect(setupValidation.data).toMatchObject({
+      status: "Ready",
+      provider: "Prism Central",
+      provisioningEnabled: true,
+      realPrismCallsEnabled: true,
+    });
+    expect(setupValidation.data.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Read-only preflight evidence", status: "Passed" }),
+        expect.objectContaining({ name: "Approved inventory scope", status: "Passed" }),
+        expect.objectContaining({ name: "Create authorization envelope", status: "Passed" }),
+      ])
+    );
+    expect(evidenceReport.data).toMatchObject({
+      runId: created.data.id,
+      environmentName: "ndc-lab-api-01",
+      adapterMode: "Lab AHV Prism adapter",
+      status: "Destroyed",
+      destroyStatus: "Succeeded",
+      inventoryReconciliation: expect.objectContaining({ status: "Reconciled", vmPresent: false }),
+      redaction: {
+        credentialsIncluded: false,
+        authorizationHeadersIncluded: false,
+        endpointQueryStringsIncluded: false,
+        notes: expect.any(Array),
+      },
+    });
+    expect(evidenceReport.data.prismTaskUuids.length).toBeGreaterThanOrEqual(3);
+    expect(JSON.stringify(evidenceReport.data)).not.toContain("placeholder-not-a-secret");
+    expect(JSON.stringify(evidenceReport.data)).not.toContain("Authorization: Basic");
     expect(JSON.stringify(auditEvents.data)).not.toContain("placeholder-not-a-secret");
     expect(JSON.stringify(auditEvents.data)).not.toContain("Authorization");
     expect(auditEvents.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ action: "ahv.controlled.create.submitted", target: "ndc-lab-api-01" }),
         expect.objectContaining({ action: "ahv.controlled.destroy", target: "ndc-lab-api-01" }),
+        expect.objectContaining({ action: "ahv.controlled.evidence-report.exported", target: "ndc-lab-api-01" }),
       ])
     );
   });

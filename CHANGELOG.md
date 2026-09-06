@@ -2,7 +2,7 @@
 
 All notable changes to Nutanix Developer Cloud Studio will be documented in this file.
 
-This project uses release tags for public milestones. The current release is `v10.1.0-lab-lifecycle-wizard`.
+This project uses release tags for public milestones. The current release is `v10.3.0-lab-evidence-validator`.
 
 ## [Unreleased]
 
@@ -12,6 +12,28 @@ This project uses release tags for public milestones. The current release is `v1
 - Add production execution archive recovery service restoration acceptance records after final operations handoff records are complete.
 - Promote platform-service plans to real adapters only after VM lifecycle proof and service-specific authorization.
 - Prevent deprecated profiles from being selected in new request flows after profile selection becomes user-facing.
+
+## [v10.3.0-lab-evidence-validator] - 2026-09-06
+
+### Added
+
+- API-backed AHV lab setup validator that checks runtime switches, private Prism configuration, read-only preflight evidence, approved scope, controlled provisioning gate, lifecycle proof, and create authorization readiness.
+- Admin Infrastructure lab setup validator panel with blocker remediation and next-action guidance for testers.
+- API-backed redacted AHV lab evidence report export for controlled provisioning runs.
+- Admin Infrastructure lab evidence report panel with export and JSON download controls.
+- Unit/API/client coverage for setup validation, evidence report export, redaction assertions, and audit-event recording.
+- End-to-end smoke coverage for the validator and evidence export surfaces in the Admin Infrastructure workflow.
+
+### Changed
+
+- Lifecycle evidence reporting now normalizes older controlled provisioning runs that do not yet have task arrays or lifecycle events.
+- README and API documentation now describe setup validation and redacted lab session evidence packs as first-class tester workflow features.
+
+### Security
+
+- Evidence reports explicitly exclude Prism passwords, tokens, Authorization headers, and endpoint query strings.
+- Setup validation and evidence export routes remain Platform Admin-only.
+- Public/static demo behavior remains simulated; real Prism mutation stays lab-only and disabled unless the private lab runtime is deliberately enabled.
 
 ## [v10.1.0-lab-lifecycle-wizard] - 2026-09-06
 

@@ -39,6 +39,8 @@ import {
   type AhvLabConnectionTestResult,
   type AhvControlledProvisioningRun,
   type AhvCreateAdapterContractReview,
+  type AhvLabEvidenceReport,
+  type AhvLabSetupValidation,
   type AdminUpgradeHealthConsole,
   type ApiContractBaseline,
   type AuditEvent,
@@ -333,6 +335,7 @@ import {
   decideControlledProvisioningGateViaApi,
   decideApprovalViaApi,
   fetchAhvControlledProvisioningRunsFromApi,
+  fetchAhvLabSetupValidationFromApi,
   fetchAhvCreateAdapterContractReviewsFromApi,
   fetchAdminUpgradeHealthConsoleFromApi,
   fetchAdapterContractTestHarnessesFromApi,
@@ -495,6 +498,7 @@ import {
   createReadOnlyPrismLabGateViaApi,
   destroyAhvControlledProvisioningRunViaApi,
   decidePrismInventoryRecordViaApi,
+  exportAhvControlledProvisioningRunReportViaApi,
   importPrismInventoryViaApi,
   importPrismInventoryPreviewViaApi,
   pollAhvControlledProvisioningRunViaApi,
@@ -809,6 +813,8 @@ export function App() {
   const [rollbackDestroyProofs, setRollbackDestroyProofs] = useState<RollbackDestroyProofRecord[]>([]);
   const [ahvCreateAdapterContractReviews, setAhvCreateAdapterContractReviews] = useState<AhvCreateAdapterContractReview[]>([]);
   const [ahvControlledProvisioningRuns, setAhvControlledProvisioningRuns] = useState<AhvControlledProvisioningRun[]>([]);
+  const [ahvLabSetupValidation, setAhvLabSetupValidation] = useState<AhvLabSetupValidation | null>(null);
+  const [ahvLabEvidenceReport, setAhvLabEvidenceReport] = useState<AhvLabEvidenceReport | null>(null);
   const [productionReadinessReviews, setProductionReadinessReviews] = useState<ProductionReadinessReview[]>([]);
   const [lifecycleOperations, setLifecycleOperations] = useState<LifecycleOperationRecord[]>([]);
   const [auditExports, setAuditExports] = useState<AuditExportRecord[]>([]);
@@ -1012,6 +1018,7 @@ export function App() {
             apiRollbackDestroyProofs,
             apiAhvCreateAdapterContractReviews,
             apiAhvControlledProvisioningRuns,
+            apiAhvLabSetupValidation,
             apiProductionReadinessReviews,
             apiLifecycleOperations,
             apiAuditExports,
@@ -1169,6 +1176,7 @@ export function App() {
             fetchRollbackDestroyProofsFromApi(),
             fetchAhvCreateAdapterContractReviewsFromApi(),
             fetchAhvControlledProvisioningRunsFromApi(),
+            fetchAhvLabSetupValidationFromApi(),
             fetchProductionReadinessReviewsFromApi(),
             fetchLifecycleOperationsFromApi(),
             fetchAuditExportsFromApi(),
@@ -1360,6 +1368,7 @@ export function App() {
             setRollbackDestroyProofs(apiRollbackDestroyProofs);
             setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
             setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
+            setAhvLabSetupValidation(apiAhvLabSetupValidation);
             setProductionReadinessReviews(apiProductionReadinessReviews);
             setLifecycleOperations(apiLifecycleOperations);
             setAuditExports(apiAuditExports);
@@ -1639,10 +1648,11 @@ export function App() {
       apiProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecords,
       apiProductionExecutionArchiveRecoveryFinalOperationsHandoffRecords,
       apiVmLifecycleProofs,
-      apiRollbackDestroyProofs,
-      apiAhvCreateAdapterContractReviews,
-      apiAhvControlledProvisioningRuns,
-      apiProductionReadinessReviews,
+            apiRollbackDestroyProofs,
+            apiAhvCreateAdapterContractReviews,
+            apiAhvControlledProvisioningRuns,
+            apiAhvLabSetupValidation,
+            apiProductionReadinessReviews,
       apiLifecycleOperations,
       apiAuditExports,
       apiAuditEvents,
@@ -1796,10 +1806,11 @@ export function App() {
       fetchProductionExecutionArchiveRecoveryMonitoringOwnershipClosureRecordsFromApi(),
       fetchProductionExecutionArchiveRecoveryFinalOperationsHandoffRecordsFromApi(),
       fetchVmLifecycleProofsFromApi(),
-      fetchRollbackDestroyProofsFromApi(),
-      fetchAhvCreateAdapterContractReviewsFromApi(),
-      fetchAhvControlledProvisioningRunsFromApi(),
-      fetchProductionReadinessReviewsFromApi(),
+            fetchRollbackDestroyProofsFromApi(),
+            fetchAhvCreateAdapterContractReviewsFromApi(),
+            fetchAhvControlledProvisioningRunsFromApi(),
+            fetchAhvLabSetupValidationFromApi(),
+            fetchProductionReadinessReviewsFromApi(),
       fetchLifecycleOperationsFromApi(),
       fetchAuditExportsFromApi(),
       fetchAuditEventsFromApi(),
@@ -1970,10 +1981,11 @@ export function App() {
       apiProductionExecutionArchiveRecoveryFinalOperationsHandoffRecords
     );
     setVmLifecycleProofs(apiVmLifecycleProofs);
-    setRollbackDestroyProofs(apiRollbackDestroyProofs);
-    setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
-    setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
-    setProductionReadinessReviews(apiProductionReadinessReviews);
+            setRollbackDestroyProofs(apiRollbackDestroyProofs);
+            setAhvCreateAdapterContractReviews(apiAhvCreateAdapterContractReviews);
+            setAhvControlledProvisioningRuns(apiAhvControlledProvisioningRuns);
+            setAhvLabSetupValidation(apiAhvLabSetupValidation);
+            setProductionReadinessReviews(apiProductionReadinessReviews);
     setLifecycleOperations(apiLifecycleOperations);
     setAuditExports(apiAuditExports);
     setAuditEvents(apiAuditEvents);
@@ -3287,6 +3299,30 @@ export function App() {
 
     await refreshApiState();
     setAhvControlledProvisioningRuns((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
+  }
+
+  async function refreshAhvLabSetupValidation() {
+    if (apiHealth.mode !== "api") {
+      setAhvLabSetupValidation(createMockAhvLabSetupValidation());
+      return;
+    }
+
+    const validation = await fetchAhvLabSetupValidationFromApi();
+    setAhvLabSetupValidation(validation);
+  }
+
+  async function exportAhvLabEvidenceReport(runId: string) {
+    if (apiHealth.mode !== "api") {
+      const run = ahvControlledProvisioningRuns.find((item) => item.id === runId);
+      if (run) {
+        setAhvLabEvidenceReport(createMockAhvLabEvidenceReport(run, session.user));
+      }
+      return;
+    }
+
+    const report = await exportAhvControlledProvisioningRunReportViaApi(runId);
+    setAhvLabEvidenceReport(report);
+    await refreshApiState();
   }
 
   async function createPlatformServiceRequest(kind: PlatformServiceKind) {
@@ -5139,6 +5175,8 @@ export function App() {
             rollbackDestroyProofs={rollbackDestroyProofs}
             ahvCreateAdapterContractReviews={ahvCreateAdapterContractReviews}
             ahvControlledProvisioningRuns={ahvControlledProvisioningRuns}
+            ahvLabSetupValidation={ahvLabSetupValidation}
+            ahvLabEvidenceReport={ahvLabEvidenceReport}
             productionReadinessReviews={productionReadinessReviews}
             lifecycleOperations={lifecycleOperations}
             auditExports={auditExports}
@@ -5281,6 +5319,8 @@ export function App() {
             reviewAhvCreateAdapterContract={reviewAhvCreateAdapterContract}
             runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
             runAhvControlledProvisioningAction={runAhvControlledProvisioningAction}
+            refreshAhvLabSetupValidation={refreshAhvLabSetupValidation}
+            exportAhvLabEvidenceReport={exportAhvLabEvidenceReport}
             createPlatformServiceRequest={createPlatformServiceRequest}
             runPlatformServicePreflight={runPlatformServicePreflight}
             reviewPlatformServiceAdapterContract={reviewPlatformServiceAdapterContract}
@@ -6005,6 +6045,8 @@ function AdminView({
   rollbackDestroyProofs,
   ahvCreateAdapterContractReviews,
   ahvControlledProvisioningRuns,
+  ahvLabSetupValidation,
+  ahvLabEvidenceReport,
   productionReadinessReviews,
   lifecycleOperations,
   auditExports,
@@ -6131,6 +6173,8 @@ function AdminView({
   reviewAhvCreateAdapterContract,
   runAhvControlledProvisioningPreflight,
   runAhvControlledProvisioningAction,
+  refreshAhvLabSetupValidation,
+  exportAhvLabEvidenceReport,
   createPlatformServiceRequest,
   runPlatformServicePreflight,
   reviewPlatformServiceAdapterContract,
@@ -6297,6 +6341,8 @@ function AdminView({
   rollbackDestroyProofs: RollbackDestroyProofRecord[];
   ahvCreateAdapterContractReviews: AhvCreateAdapterContractReview[];
   ahvControlledProvisioningRuns: AhvControlledProvisioningRun[];
+  ahvLabSetupValidation: AhvLabSetupValidation | null;
+  ahvLabEvidenceReport: AhvLabEvidenceReport | null;
   productionReadinessReviews: ProductionReadinessReview[];
   lifecycleOperations: LifecycleOperationRecord[];
   auditExports: AuditExportRecord[];
@@ -6440,6 +6486,8 @@ function AdminView({
     runId: string,
     action: "poll" | "power-on" | "power-off" | "destroy"
   ) => void;
+  refreshAhvLabSetupValidation: () => void;
+  exportAhvLabEvidenceReport: (runId: string) => void;
   createPlatformServiceRequest: (kind: PlatformServiceKind) => void;
   runPlatformServicePreflight: () => void;
   reviewPlatformServiceAdapterContract: () => void;
@@ -6697,6 +6745,12 @@ function AdminView({
               testPlatformSettingsConnection={testPlatformSettingsConnection}
             />
           </Panel>
+          <Panel title="Lab setup validator" action={ahvLabSetupValidation?.status ?? "Not checked"}>
+            <AhvLabSetupValidationPanel
+              validation={ahvLabSetupValidation}
+              refreshAhvLabSetupValidation={refreshAhvLabSetupValidation}
+            />
+          </Panel>
           <Panel title="Image, subnet, and cluster approval" action={`${resourceProfiles.filter((profile) => profile.kind === "AHV Image").length} images`}>
             <InfrastructureDiscoveryApprovalPanel
               inventory={prismInventory}
@@ -6711,6 +6765,13 @@ function AdminView({
               inventory={prismInventory}
               runAhvControlledProvisioningPreflight={runAhvControlledProvisioningPreflight}
               runAhvControlledProvisioningAction={runAhvControlledProvisioningAction}
+            />
+          </Panel>
+          <Panel title="Lab evidence report" action={ahvLabEvidenceReport ? "Exported" : "Ready"}>
+            <AhvLabEvidenceReportPanel
+              runs={ahvControlledProvisioningRuns}
+              report={ahvLabEvidenceReport}
+              exportAhvLabEvidenceReport={exportAhvLabEvidenceReport}
             />
           </Panel>
           <Panel title="Audit and reconciliation" action={`${auditEvents.length} events`}>
@@ -15049,6 +15110,159 @@ function AhvCreateAdapterContractPanel({
   );
 }
 
+function AhvLabSetupValidationPanel({
+  validation,
+  refreshAhvLabSetupValidation,
+}: {
+  validation: AhvLabSetupValidation | null;
+  refreshAhvLabSetupValidation: () => void;
+}) {
+  const blocked = validation?.checks.filter((check) => check.status === "Blocked").length ?? 0;
+  const passed = validation?.checks.filter((check) => check.status === "Passed").length ?? 0;
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <MonitorCog size={18} />
+        <div>
+          <strong>Guided lab setup validator</strong>
+          <span>Checks runtime switches, private server-side configuration, read-only preflight evidence, approved inventory scope, and lifecycle authorization before a tester creates or clones a VM.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" onClick={refreshAhvLabSetupValidation}>
+          <RefreshCw size={15} />
+          Refresh validation
+        </button>
+      </div>
+      {!validation ? (
+        <p className="emptyState">Refresh validation to inspect whether this API deployment is ready for controlled AHV lab testing.</p>
+      ) : (
+        <>
+          <div className="controlGrid">
+            <CheckLine icon={ShieldCheck} label="Overall status" value={validation.status} passed={validation.status === "Ready"} />
+            <CheckLine icon={Cloud} label="Provider" value={validation.provider} passed={validation.provider !== "Not selected"} />
+            <CheckLine icon={CheckCircle2} label="Passed checks" value={`${passed}/${validation.checks.length}`} passed={blocked === 0} />
+            <CheckLine icon={LockKeyhole} label="Provisioning switch" value={validation.provisioningEnabled ? "Enabled" : "Disabled"} passed={validation.provisioningEnabled} />
+          </div>
+          <div className="dryRunSummary">
+            <strong>{validation.summary}</strong>
+            <div className="timelineList">
+              {validation.checks.map((check) => (
+                <div className="timelineItem" key={check.name}>
+                  <span className={`statusPill ${check.status === "Passed" ? "ready" : check.status === "Warning" ? "approval" : "failed"}`}>
+                    {check.status}
+                  </span>
+                  <div>
+                    <strong>{check.name}</strong>
+                    <span>{check.detail}</span>
+                    {check.status !== "Passed" && <small>{check.remediation}</small>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="evidenceList">
+              {validation.nextActions.map((action) => (
+                <span key={action}>{action}</span>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function AhvLabEvidenceReportPanel({
+  runs,
+  report,
+  exportAhvLabEvidenceReport,
+}: {
+  runs: AhvControlledProvisioningRun[];
+  report: AhvLabEvidenceReport | null;
+  exportAhvLabEvidenceReport: (runId: string) => void;
+}) {
+  const latest = runs[0];
+  const latestTaskUuids = latest?.prismTaskUuids ?? [];
+
+  function downloadReport() {
+    if (!report) {
+      return;
+    }
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${report.reportId}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div className="dryRunPanel">
+      <div className="guardrailBanner">
+        <Archive size={18} />
+        <div>
+          <strong>Redacted lab session evidence</strong>
+          <span>Exports run metadata, selected scope, task IDs, lifecycle events, and reconciliation status without Prism credentials or Authorization headers.</span>
+        </div>
+      </div>
+      <div className="inlineActions">
+        <button className="iconTextButton" disabled={!latest} onClick={() => latest && exportAhvLabEvidenceReport(latest.id)}>
+          <ScrollText size={15} />
+          Export latest report
+        </button>
+        <button className="iconTextButton" disabled={!report} onClick={downloadReport}>
+          <Archive size={15} />
+          Download JSON
+        </button>
+      </div>
+      {!latest ? (
+        <p className="emptyState">No AHV lab run is available for evidence export.</p>
+      ) : !report ? (
+        <div className="controlGrid">
+          <CheckLine icon={Cloud} label="Latest run" value={latest.environmentName} passed />
+          <CheckLine icon={Gauge} label="Status" value={latest.status} passed={latest.status === "Destroyed" || latest.status === "Succeeded"} />
+          <CheckLine icon={Archive} label="Tasks" value={`${latestTaskUuids.length} recorded`} passed={latestTaskUuids.length > 0} />
+          <CheckLine icon={ShieldCheck} label="Reconciliation" value={latest.inventoryReconciliation?.status ?? "Not recorded"} passed={latest.inventoryReconciliation?.status === "Reconciled"} />
+        </div>
+      ) : (
+        <div className="dryRunSummary">
+          <div className="integrationConfigHeader">
+            <div>
+              <strong>{report.environmentName}</strong>
+              <span>{report.reportId}</span>
+            </div>
+            <span className={`statusPill ${report.status === "Destroyed" ? "ready" : report.status === "Failed" ? "failed" : "approval"}`}>{report.status}</span>
+          </div>
+          <div className="controlGrid">
+            <CheckLine icon={Cloud} label="Adapter" value={report.adapterMode} passed />
+            <CheckLine icon={Archive} label="Task IDs" value={`${report.prismTaskUuids.length} exported`} passed={report.prismTaskUuids.length > 0} />
+            <CheckLine icon={ShieldCheck} label="Credentials" value={report.redaction.credentialsIncluded ? "Included" : "Excluded"} passed={!report.redaction.credentialsIncluded} />
+            <CheckLine icon={Network} label="Reconciliation" value={report.inventoryReconciliation?.status ?? "Not recorded"} passed={report.inventoryReconciliation?.status === "Reconciled"} />
+          </div>
+          <div className="evidenceList">
+            {report.evidence.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+          <div className="timelineList">
+            {report.lifecycleEvents.slice(0, 8).map((event) => (
+              <div className="timelineItem" key={`${event.action}-${event.at}`}>
+                <span>{formatDateTime(event.at)}</span>
+                <div>
+                  <strong>{event.action}</strong>
+                  <span>{event.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AhvControlledPreflightPanel({
   runs,
   inventory,
@@ -18908,6 +19122,82 @@ function createMockAhvCreateAdapterContractReview({
     },
     provisioningEnabled: false,
     createdAt: new Date().toISOString(),
+  };
+}
+
+function createMockAhvLabSetupValidation(): AhvLabSetupValidation {
+  const now = new Date().toISOString();
+  const checks: AhvLabSetupValidation["checks"] = [
+    {
+      name: "Hosted/on-prem API",
+      status: "Blocked",
+      detail: "Static browser mode cannot validate private AHV lab environment variables.",
+      remediation: "Start the hosted/on-prem API and open the Admin Infrastructure tab from that deployment.",
+    },
+    {
+      name: "Private credentials",
+      status: "Blocked",
+      detail: "No server-side Prism credential resolver is available in the public demo.",
+      remediation: "Supply credentials through private environment variables on the lab host.",
+    },
+    {
+      name: "Approved inventory scope",
+      status: "Warning",
+      detail: "Browser mock inventory can show the approval workflow, but it does not prove real PE/PC scope.",
+      remediation: "Run a one-time read-only connection test and import the sanitized preview.",
+    },
+  ];
+
+  return {
+    version: "browser-mock",
+    generatedAt: now,
+    status: "Blocked",
+    provider: "Not selected",
+    summary: "The static demo can explain the workflow, but real AHV lab validation requires the API deployment.",
+    checks,
+    nextActions: [
+      "Deploy NDC Studio with the hosted/on-prem API.",
+      "Configure private Prism Element or Prism Central credentials outside Git.",
+      "Run the Connect Infrastructure wizard and approve discovered scope.",
+    ],
+    provisioningEnabled: false,
+    realPrismCallsEnabled: false,
+  };
+}
+
+function createMockAhvLabEvidenceReport(run: AhvControlledProvisioningRun, actor: string): AhvLabEvidenceReport {
+  return {
+    reportId: `browser-mock-ahv-lab-evidence-${run.id}`,
+    generatedAt: new Date().toISOString(),
+    generatedBy: actor,
+    runId: run.id,
+    environmentName: run.environmentName,
+    adapterMode: run.adapterMode,
+    providerPath: Object.values(run.prismTaskProviders ?? {}),
+    status: run.status,
+    gateId: run.gateId,
+    vmUuid: run.vmUuid,
+    prismTaskUuid: run.prismTaskUuid,
+    prismTaskUuids: run.prismTaskUuids ?? [],
+    createStatus: run.createStatus,
+    powerStatus: run.powerStatus,
+    destroyStatus: run.destroyStatus,
+    lastPollAt: run.lastPollAt,
+    inventoryReconciliation: run.inventoryReconciliation,
+    selectedScope: run.selectedScope,
+    lifecycleEvents: run.lifecycleEvents ?? [],
+    redaction: {
+      credentialsIncluded: false,
+      authorizationHeadersIncluded: false,
+      endpointQueryStringsIncluded: false,
+      notes: ["Browser mock report contains no Prism credentials or Authorization headers."],
+    },
+    evidence: [
+      `Adapter mode: ${run.adapterMode}.`,
+      `Lifecycle status: ${run.status}.`,
+      "Static demo evidence is illustrative only.",
+    ],
+    recommendedNextActions: ["Export authoritative evidence from a hosted/on-prem API deployment after a real or mock API-backed lab run."],
   };
 }
 
