@@ -5506,6 +5506,13 @@ function Dashboard({
   );
   const reachableIntegrations = integrationConfigs.filter((config) => config.status === "Reachable").length;
   const activeControlPlaneJobs = controlPlaneJobs.filter((job) => !["Ready", "Failed", "Expired"].includes(job.state));
+  const [dashboardSection, setDashboardSection] = useState<"overview" | "queues" | "provisioning" | "readiness">("overview");
+  const dashboardSections = [
+    { id: "overview", label: "Overview", detail: "Environment operations" },
+    { id: "queues", label: "Queues", detail: "Approvals and jobs" },
+    { id: "provisioning", label: "Provisioning", detail: "Runtime modes" },
+    { id: "readiness", label: "Readiness", detail: "Access and integrations" },
+  ] as const;
 
   return (
     <section className="screen">
@@ -5542,7 +5549,22 @@ function Dashboard({
         </div>
       </div>
 
-      <div className="opsDashboardGrid">
+      <div className="dashboardSubnav" role="tablist" aria-label="Dashboard sections">
+        {dashboardSections.map((section) => (
+          <button
+            key={section.id}
+            role="tab"
+            aria-selected={dashboardSection === section.id}
+            className={dashboardSection === section.id ? "active" : ""}
+            onClick={() => setDashboardSection(section.id)}
+          >
+            <strong>{section.label}</strong>
+            <span>{section.detail}</span>
+          </button>
+        ))}
+      </div>
+
+      {dashboardSection === "overview" && (
         <div className="opsMain">
           <Panel title="Environment operations" action="API-backed detail">
             <div className="opsTable">
@@ -5568,7 +5590,29 @@ function Dashboard({
             </div>
           </Panel>
         </div>
-        <div className="opsSide">
+      )}
+
+      {dashboardSection === "queues" && (
+        <div className="twoColumn">
+          <Panel title="Approval queue" action={`${openApprovals.length} pending`}>
+            <ApprovalQueue approvals={approvals} compact openEnvironmentDetail={openEnvironmentDetail} />
+          </Panel>
+          <Panel title="Control plane queue" action={`${activeControlPlaneJobs.length} active`}>
+            <ControlPlaneQueue jobs={controlPlaneJobs.slice(0, 4)} compact />
+          </Panel>
+        </div>
+      )}
+
+      {dashboardSection === "provisioning" && (
+        <div className="dashboardDetailGrid">
+          <Panel title="Provisioning modes" action={provisioningModeStatus.activeMode}>
+            <ProvisioningModePanel status={provisioningModeStatus} readOnlyCandidates={systemStatus.integrations.readOnlyCandidates} />
+          </Panel>
+        </div>
+      )}
+
+      {dashboardSection === "readiness" && (
+        <div className="twoColumn">
           <Panel title="Access context" action={session.authMode}>
             <div className="identityPanel">
               <div className="statusBadge compact">
@@ -5580,15 +5624,6 @@ function Dashboard({
                 <small>{session.identityProvider}</small>
               </div>
             </div>
-          </Panel>
-          <Panel title="Approval queue" action={`${openApprovals.length} pending`}>
-            <ApprovalQueue approvals={approvals} compact openEnvironmentDetail={openEnvironmentDetail} />
-          </Panel>
-          <Panel title="Control plane queue" action={`${activeControlPlaneJobs.length} active`}>
-            <ControlPlaneQueue jobs={controlPlaneJobs.slice(0, 4)} compact />
-          </Panel>
-          <Panel title="Provisioning modes" action={provisioningModeStatus.activeMode}>
-            <ProvisioningModePanel status={provisioningModeStatus} readOnlyCandidates={systemStatus.integrations.readOnlyCandidates} />
           </Panel>
           <Panel title="Integration readiness" action={`${readinessAverage}%`}>
             <div className="miniIntegrationGrid">
@@ -5602,7 +5637,7 @@ function Dashboard({
             </div>
           </Panel>
         </div>
-      </div>
+      )}
 
       <div className="opsCommandGrid">
         <Panel title="Private cloud command center" action="Prototype">
@@ -16935,9 +16970,9 @@ function createMockPlatformSettingsSummary(
     },
     validation: createMockSettingsValidation(),
     roleMappings: [
-      { source: "OIDC claim", match: "roles:Developer", role: "Developer", status: "Active" },
-      { source: "OIDC claim", match: "roles:Approver", role: "Approver", status: "Active" },
-      { source: "AD group", match: "CN=NDC-Platform-Admins,OU=Groups", role: "Platform Admin", status: "Needs review" },
+      { source: "OIDC claim", match: "roles: Developer", role: "Developer", status: "Active" },
+      { source: "OIDC claim", match: "roles: Approver", role: "Approver", status: "Active" },
+      { source: "AD group", match: "CN=NDC-Platform-Admins, OU=Groups", role: "Platform Admin", status: "Needs review" },
       { source: "Local user", match: session.user, role: "Platform Admin", status: "Active" },
     ],
   };

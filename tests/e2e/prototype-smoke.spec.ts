@@ -4,10 +4,17 @@ test("developer can browse catalog, create an environment, and review admin read
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Developer portal" })).toBeVisible();
-  await expect(page.getByText("Environment operations")).toBeVisible();
-  await expect(page.getByText("Access context")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Environment operations" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Overview/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Queues/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Provisioning/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Readiness/ })).toBeVisible();
+  await page.getByRole("tab", { name: /Queues/ }).click();
   await expect(page.getByText("Approval queue")).toBeVisible();
   await expect(page.getByText("Control plane queue")).toBeVisible();
+  await page.getByRole("tab", { name: /Readiness/ }).click();
+  await expect(page.getByText("Access context")).toBeVisible();
+  await page.getByRole("tab", { name: /Overview/ }).click();
 
   await page.getByRole("button", { name: "Details" }).first().click();
   await expect(page.getByRole("heading", { name: "Environment details" })).toBeVisible();

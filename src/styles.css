@@ -393,6 +393,53 @@ button {
   align-items: start;
 }
 
+.dashboardSubnav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dashboardSubnav button {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 12px 14px;
+  text-align: left;
+  color: #304750;
+  background: #fff;
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+}
+
+.dashboardSubnav button.active {
+  color: #0f1b22;
+  border-color: #2ca58d;
+  box-shadow: inset 3px 0 0 #2ca58d;
+}
+
+.dashboardSubnav strong,
+.dashboardSubnav span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dashboardSubnav strong {
+  font-size: 14px;
+}
+
+.dashboardSubnav span {
+  color: #60747c;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.dashboardDetailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
 .opsMain,
 .opsSide,
 .detailStack {
@@ -558,16 +605,16 @@ button {
 }
 
 .wizardStepGrid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .wizardStep {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  align-items: start;
-  gap: 9px;
+  grid-template-columns: 30px minmax(180px, 240px) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
   min-width: 0;
-  padding: 10px;
+  padding: 11px 12px;
   background: #f8fafb;
   border: 1px solid #e1e8ea;
   border-radius: 8px;
@@ -585,16 +632,20 @@ button {
   font-weight: 800;
 }
 
+.wizardStep small {
+  color: #60747c;
+  line-height: 1.45;
+}
+
 .wizardStep strong,
 .wizardStep small {
   display: block;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.wizardStep small {
-  margin-top: 2px;
-  color: #60747c;
-  line-height: 1.35;
+.wizardStep div {
+  display: contents;
 }
 
 .wizardStep.complete {
@@ -690,7 +741,6 @@ button {
 .envRow,
 .resourceRow,
 .integrationRow,
-.checkLine,
 .templateEditRow,
 .readinessRow,
 .approvalRow,
@@ -714,11 +764,44 @@ button {
   border-radius: 8px;
 }
 
+.checkLine {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  min-width: 0;
+  padding: 12px;
+  background: #f8fafb;
+  border: 1px solid #e1e8ea;
+  border-radius: 8px;
+}
+
+.checkLine > div {
+  min-width: 0;
+}
+
+.checkLine strong,
+.checkLine span {
+  display: block;
+  min-width: 0;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.checkLine span {
+  color: #60747c;
+}
+
+.checkLine > svg:last-child {
+  justify-self: end;
+}
+
 .settingsRow,
 .auditLogRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
   min-height: 58px;
   padding: 12px;
@@ -746,6 +829,14 @@ button {
 .auditLogRow span,
 .auditLogRow small {
   color: #60747c;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.settingsRow .inlineActions,
+.auditLogRow .inlineActions {
+  justify-content: flex-end;
+  min-width: 180px;
 }
 
 .settingsPills {
@@ -1492,6 +1583,7 @@ meter {
   .opsCommandGrid,
   .adminTabs,
   .adminTabPanel,
+  .dashboardSubnav,
   .wizardStepGrid,
   .createGrid,
   .statusGrid,
@@ -1563,6 +1655,7 @@ meter {
   }
 
   .dashboardGrid,
+  .dashboardSubnav,
   .catalogGrid,
   .miniIntegrationGrid,
   .compactMetrics,
@@ -1570,6 +1663,28 @@ meter {
   .wizardStepGrid,
   .targetGrid {
     grid-template-columns: 1fr;
+  }
+
+  .wizardStep {
+    grid-template-columns: 30px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .wizardStep div {
+    display: block;
+  }
+
+  .settingsRow,
+  .auditLogRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .settingsRow .inlineActions,
+  .auditLogRow .inlineActions,
+  .settingsPills {
+    justify-content: flex-start;
+    min-width: 0;
   }
 
   .heroPanel {
